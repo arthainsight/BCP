@@ -1,7 +1,14 @@
-import type { NextConfig } from "next";
+﻿import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push("swisseph");
+    }
+    return config;
+  },
+  serverExternalPackages: ["swisseph"],
 };
 
 export default nextConfig;
