@@ -53,3 +53,11 @@ export interface FormData {
   city: string;
   targetDate: string;
 }
+
+export interface CharaKaraka {
+  karaka: string;
+  karakaFull: string;
+  karakaDesc: string;
+  planet: string;
+  degree: number;
+}

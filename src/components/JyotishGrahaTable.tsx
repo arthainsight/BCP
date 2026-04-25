@@ -1,30 +1,20 @@
 import { ChartData, PlanetData } from '@/types';
 
 const SIGN_ABBR: Record<number, string> = {
-  1: 'Ar',
-  2: 'Ta',
-  3: 'Ge',
-  4: 'Cn',
-  5: 'Le',
-  6: 'Vi',
-  7: 'Li',
-  8: 'Sc',
-  9: 'Sg',
-  10: 'Cp',
-  11: 'Aq',
-  12: 'Pi',
+  1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
+  7: 'Li', 8: 'Sc', 9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
 };
 
 const GRAHA_NAMES: Record<string, { code: string; name: string }> = {
-  Sun: { code: 'Su', name: 'Sūrya' },
-  Moon: { code: 'Mo', name: 'Chandra' },
-  Mars: { code: 'Ma', name: 'Maṅgala' },
+  Sun:     { code: 'Su', name: 'Sūrya' },
+  Moon:    { code: 'Mo', name: 'Chandra' },
+  Mars:    { code: 'Ma', name: 'Maṅgala' },
   Mercury: { code: 'Me', name: 'Budha' },
   Jupiter: { code: 'Jp', name: 'Guru' },
-  Venus: { code: 'Ve', name: 'Śukra' },
-  Saturn: { code: 'Sa', name: 'Śani' },
-  Rahu: { code: 'Ra', name: 'Rāhu' },
-  Ketu: { code: 'Ke', name: 'Ketu' },
+  Venus:   { code: 'Ve', name: 'Śukra' },
+  Saturn:  { code: 'Sa', name: 'Śani' },
+  Rahu:    { code: 'Ra', name: 'Rāhu' },
+  Ketu:    { code: 'Ke', name: 'Ketu' },
 };
 
 const NAKSHATRAS = [
@@ -62,40 +52,26 @@ function formatDms(deg: number): string {
   const minFloat = (deg - d) * 60;
   const m = Math.floor(minFloat);
   const s = Math.round((minFloat - m) * 60);
-
   return `${d}°${m}'${s}''`;
 }
 
 function getNakshatra(longitude: number) {
   const nakSize = 13 + 1 / 3;
   const padaSize = 3 + 1 / 3;
-
   const nakIndex = Math.floor(longitude / nakSize);
   const nak = NAKSHATRAS[nakIndex];
-
   const remainder = longitude % nakSize;
   const pada = Math.floor(remainder / padaSize) + 1;
-
-  return {
-    name: nak.name,
-    number: nakIndex + 1,
-    lord: nak.lord,
-    pada,
-  };
+  return { name: nak.name, number: nakIndex + 1, lord: nak.lord, pada };
 }
 
-function buildPlanetRow(planet: PlanetData) {
-  const graha = GRAHA_NAMES[planet.name] ?? {
-    code: planet.name.slice(0, 2),
-    name: planet.name,
-  };
-
+function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>) {
+  const graha = GRAHA_NAMES[planet.name] ?? { code: planet.name.slice(0, 2), name: planet.name };
   const nak = getNakshatra(planet.longitude);
-
   return {
     code: graha.code,
     name: graha.name,
-    karaka: '',
+    karaka: karakaByPlanet[planet.name] ?? '',
     position: `${SIGN_ABBR[planet.sign]} ${formatDms(planet.degree)}`,
     nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
     pada: nak.pada,
@@ -104,9 +80,10 @@ function buildPlanetRow(planet: PlanetData) {
 
 interface Props {
   chart: ChartData;
+  karakaByPlanet?: Record<string, string>;
 }
 
-export default function JyotishGrahaTable({ chart }: Props) {
+export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props) {
   const ascNak = getNakshatra(chart.ascendant.longitude);
 
   const rows = [
@@ -114,49 +91,35 @@ export default function JyotishGrahaTable({ chart }: Props) {
       code: 'As',
       name: 'Lagna',
       karaka: '',
-      position: `${SIGN_ABBR[chart.ascendant.sign]} ${formatDms(
-        chart.ascendant.degree
-      )}`,
+      position: `${SIGN_ABBR[chart.ascendant.sign]} ${formatDms(chart.ascendant.degree)}`,
       nakshatra: `${ascNak.name}(${ascNak.number}) ${ascNak.lord}`,
       pada: ascNak.pada,
     },
-    ...chart.planets.map(buildPlanetRow),
+    ...chart.planets.map((p) => buildPlanetRow(p, karakaByPlanet)),
   ];
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-xs border-collapse font-mono">
         <thead>
-          <tr className="bg-zinc-800">
-            <th className="text-left p-2 border border-zinc-700 text-zinc-400">Code</th>
-            <th className="text-left p-2 border border-zinc-700 text-zinc-400">Graha</th>
-            <th className="text-left p-2 border border-zinc-700 text-zinc-400">Karaka</th>
-            <th className="text-left p-2 border border-zinc-700 text-zinc-400">Position</th>
-            <th className="text-left p-2 border border-zinc-700 text-zinc-400">Nakṣatra</th>
-            <th className="text-left p-2 border border-zinc-700 text-zinc-400">Pada</th>
+          <tr className="bg-zinc-100 dark:bg-zinc-800">
+            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Code</th>
+            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Graha</th>
+            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Karaka</th>
+            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Position</th>
+            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Nakṣatra</th>
+            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Pada</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.code} className="border-b border-zinc-800 hover:bg-zinc-800/50">
-              <td className="p-2 border border-zinc-800 text-green-400 font-bold">
-                {row.code}
-              </td>
-              <td className="p-2 border border-zinc-800 text-zinc-100">
-                {row.name}
-              </td>
-              <td className="p-2 border border-zinc-800 text-amber-400">
-                {row.karaka}
-              </td>
-              <td className="p-2 border border-zinc-800 text-zinc-300">
-                {row.position}
-              </td>
-              <td className="p-2 border border-zinc-800 text-cyan-300">
-                {row.nakshatra}
-              </td>
-              <td className="p-2 border border-zinc-800 text-zinc-300">
-                {row.pada}
-              </td>
+            <tr key={row.code} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-emerald-700 dark:text-green-400 font-bold">{row.code}</td>
+              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-800 dark:text-zinc-100">{row.name}</td>
+              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-amber-600 dark:text-amber-400 font-semibold">{row.karaka}</td>
+              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.position}</td>
+              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-cyan-700 dark:text-cyan-300">{row.nakshatra}</td>
+              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300">{row.pada}</td>
             </tr>
           ))}
         </tbody>

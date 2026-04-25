@@ -147,39 +147,39 @@ export default function BcpSummary({ bcp, planets, ascSign }: Props) {
 
   return (
     <div className="w-full space-y-4 text-sm">
-      <h3 className="font-mono text-xs text-zinc-400 uppercase tracking-widest">&gt; bcp.engine</h3>
+      <h3 className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; bcp.engine</h3>
 
       {/* Age & cycle */}
-      <div className="bg-zinc-800 border border-zinc-700 rounded p-4">
+      <div className="bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded p-4">
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
           <div className="text-zinc-500">completed age</div>
-          <div className="text-zinc-200">{bcp.completedAge} years</div>
+          <div className="text-zinc-700 dark:text-zinc-200">{bcp.completedAge} years</div>
 
           <div className="text-zinc-500">running year</div>
-          <div className="text-zinc-200">{bcp.runningYear}</div>
+          <div className="text-zinc-700 dark:text-zinc-200">{bcp.runningYear}</div>
 
           <div className="text-zinc-500">bcp cycle</div>
-          <div className="text-zinc-200">cycle {bcp.bcpCycle}</div>
+          <div className="text-zinc-700 dark:text-zinc-200">cycle {bcp.bcpCycle}</div>
 
           <div className="text-zinc-500">month in year</div>
-          <div className="text-zinc-200">month {bcp.monthInRunningYear}</div>
+          <div className="text-zinc-700 dark:text-zinc-200">month {bcp.monthInRunningYear}</div>
 
           <div className="text-zinc-500">active year house</div>
-          <div className="text-cyan-400 font-semibold">
+          <div className="text-cyan-600 dark:text-cyan-400 font-semibold">
             H{bcp.activeYearHouse} · {yearAnalysis.signName} · {HOUSE_NAMES[bcp.activeYearHouse]}
           </div>
 
           <div className="text-zinc-500">active month house</div>
-          <div className="text-green-400 font-semibold">
+          <div className="text-emerald-700 dark:text-green-400 font-semibold">
             H{bcp.activeMonthHouse} · {monthAnalysis.signName} · {HOUSE_NAMES[bcp.activeMonthHouse]}
           </div>
         </div>
       </div>
 
       {/* Year house */}
-      <div className="bg-zinc-800 border border-cyan-900 rounded p-4 space-y-3">
+      <div className="bg-zinc-100 dark:bg-zinc-800 border border-cyan-300 dark:border-cyan-900 rounded p-4 space-y-3">
         <div>
-          <h4 className="font-mono font-semibold text-cyan-400">
+          <h4 className="font-mono font-semibold text-cyan-600 dark:text-cyan-400">
             year — H{bcp.activeYearHouse} ({yearAnalysis.signName})
           </h4>
           <p className="text-xs text-zinc-500 font-mono mt-0.5">{HOUSE_MEANINGS[bcp.activeYearHouse]}</p>
@@ -187,22 +187,22 @@ export default function BcpSummary({ bcp, planets, ascSign }: Props) {
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
           <div className="text-zinc-500">planets in house</div>
-          <div className="text-zinc-300">{yearAnalysis.planetsInHouse.length > 0 ? yearAnalysis.planetsInHouse.join(', ') : 'none'}</div>
+          <div className="text-zinc-600 dark:text-zinc-300">{yearAnalysis.planetsInHouse.length > 0 ? yearAnalysis.planetsInHouse.join(', ') : 'none'}</div>
           <div className="text-zinc-500">sign ruler</div>
-          <div className="text-zinc-300">{yearAnalysis.ruler}</div>
+          <div className="text-zinc-600 dark:text-zinc-300">{yearAnalysis.ruler}</div>
           <div className="text-zinc-500">ruler placed in</div>
-          <div className="text-zinc-300">{yearAnalysis.rulerHouse > 0 ? `H${yearAnalysis.rulerHouse} — ${HOUSE_BRIEF[yearAnalysis.rulerHouse]}` : '—'}</div>
+          <div className="text-zinc-600 dark:text-zinc-300">{yearAnalysis.rulerHouse > 0 ? `H${yearAnalysis.rulerHouse} — ${HOUSE_BRIEF[yearAnalysis.rulerHouse]}` : '—'}</div>
         </div>
 
-        <p className="text-xs text-zinc-400 leading-relaxed border-t border-zinc-700 pt-2 font-mono">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed border-t border-zinc-200 dark:border-zinc-700 pt-2 font-mono">
           {yearText}
         </p>
       </div>
 
       {/* Month house */}
-      <div className="bg-zinc-800 border border-green-900 rounded p-4 space-y-3">
+      <div className="bg-zinc-100 dark:bg-zinc-800 border border-emerald-300 dark:border-green-900 rounded p-4 space-y-3">
         <div>
-          <h4 className="font-mono font-semibold text-green-400">
+          <h4 className="font-mono font-semibold text-emerald-700 dark:text-green-400">
             month {bcp.monthInRunningYear} — H{bcp.activeMonthHouse} ({monthAnalysis.signName})
           </h4>
           <p className="text-xs text-zinc-500 font-mono mt-0.5">{HOUSE_MEANINGS[bcp.activeMonthHouse]}</p>
@@ -210,24 +210,24 @@ export default function BcpSummary({ bcp, planets, ascSign }: Props) {
 
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
           <div className="text-zinc-500">planets in house</div>
-          <div className="text-zinc-300">{monthAnalysis.planetsInHouse.length > 0 ? monthAnalysis.planetsInHouse.join(', ') : 'none'}</div>
+          <div className="text-zinc-600 dark:text-zinc-300">{monthAnalysis.planetsInHouse.length > 0 ? monthAnalysis.planetsInHouse.join(', ') : 'none'}</div>
           <div className="text-zinc-500">sign ruler</div>
-          <div className="text-zinc-300">{monthAnalysis.ruler}</div>
+          <div className="text-zinc-600 dark:text-zinc-300">{monthAnalysis.ruler}</div>
           <div className="text-zinc-500">ruler placed in</div>
-          <div className="text-zinc-300">{monthAnalysis.rulerHouse > 0 ? `H${monthAnalysis.rulerHouse} — ${HOUSE_BRIEF[monthAnalysis.rulerHouse]}` : '—'}</div>
+          <div className="text-zinc-600 dark:text-zinc-300">{monthAnalysis.rulerHouse > 0 ? `H${monthAnalysis.rulerHouse} — ${HOUSE_BRIEF[monthAnalysis.rulerHouse]}` : '—'}</div>
         </div>
 
-        <p className="text-xs text-zinc-400 leading-relaxed border-t border-zinc-700 pt-2 font-mono">
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed border-t border-zinc-200 dark:border-zinc-700 pt-2 font-mono">
           {monthText}
         </p>
       </div>
 
       {/* Combined interpretation */}
-      <div className={`border rounded p-4 space-y-2 bg-zinc-800 ${sameHouse ? 'border-purple-900' : 'border-amber-900'}`}>
-        <h4 className={`font-mono text-xs font-semibold ${sameHouse ? 'text-purple-400' : 'text-amber-400'}`}>
+      <div className={`border rounded p-4 space-y-2 bg-zinc-100 dark:bg-zinc-800 ${sameHouse ? 'border-purple-300 dark:border-purple-900' : 'border-amber-300 dark:border-amber-900'}`}>
+        <h4 className={`font-mono text-xs font-semibold ${sameHouse ? 'text-purple-600 dark:text-purple-400' : 'text-amber-600 dark:text-amber-400'}`}>
           {sameHouse ? '// combined year + month — same house' : '// combined year + month'}
         </h4>
-        <p className="text-xs text-zinc-400 leading-relaxed font-mono">{combinedText}</p>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed font-mono">{combinedText}</p>
       </div>
     </div>
   );

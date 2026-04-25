@@ -33,14 +33,10 @@ function getPlanetHouse(planetName: string, planets: PlanetDetail[]): number {
 }
 
 function analyzeHouse(houseNum: number, planets: PlanetDetail[], ascSign: number) {
-  const planetsInHouse = planets
-    .filter(p => p.house === houseNum)
-    .map(p => p.name);
-
+  const planetsInHouse = planets.filter(p => p.house === houseNum).map(p => p.name);
   const houseSign = ((ascSign + houseNum - 1 - 1 + 12) % 12) + 1;
   const ruler = getSignRuler(houseSign);
   const rulerHouse = getPlanetHouse(ruler, planets);
-
   return { planets: planetsInHouse, ruler, rulerHouse, houseSign };
 }
 
@@ -50,48 +46,48 @@ export default function HouseAnalysisDisplay({ yearHouse, monthHouse, planets, a
 
   return (
     <div className="space-y-3 text-sm">
-      <h3 className="font-mono text-xs text-zinc-400 uppercase tracking-widest">&gt; house.analysis</h3>
+      <h3 className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; house.analysis</h3>
 
-      <div className="bg-zinc-800 border border-cyan-900 rounded p-3 space-y-1">
-        <div className="font-mono text-xs text-cyan-400">
+      <div className="bg-zinc-100 dark:bg-zinc-800 border border-cyan-300 dark:border-cyan-900 rounded p-3 space-y-1">
+        <div className="font-mono text-xs text-cyan-600 dark:text-cyan-400">
           H{yearHouse} — {SIGN_NAMES[yearAnalysis.houseSign]} · active year house
         </div>
-        <div className="text-zinc-400 text-xs font-mono">
-          <span className="text-zinc-500">planets: </span>
+        <div className="text-zinc-500 dark:text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-400 dark:text-zinc-500">planets: </span>
           {yearAnalysis.planets.length > 0 ? yearAnalysis.planets.join(', ') : 'none'}
         </div>
-        <div className="text-zinc-400 text-xs font-mono">
-          <span className="text-zinc-500">ruler: </span>
+        <div className="text-zinc-500 dark:text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-400 dark:text-zinc-500">ruler: </span>
           {yearAnalysis.ruler}
         </div>
-        <div className="text-zinc-400 text-xs font-mono">
-          <span className="text-zinc-500">ruler in: </span>
+        <div className="text-zinc-500 dark:text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-400 dark:text-zinc-500">ruler in: </span>
           {yearAnalysis.rulerHouse > 0 ? `H${yearAnalysis.rulerHouse}` : '—'}
         </div>
       </div>
 
-      <div className="bg-zinc-800 border border-green-900 rounded p-3 space-y-1">
-        <div className="font-mono text-xs text-green-400">
+      <div className="bg-zinc-100 dark:bg-zinc-800 border border-emerald-300 dark:border-green-900 rounded p-3 space-y-1">
+        <div className="font-mono text-xs text-emerald-700 dark:text-green-400">
           H{monthHouse} — {SIGN_NAMES[monthAnalysis.houseSign]} · active month house
         </div>
-        <div className="text-zinc-400 text-xs font-mono">
-          <span className="text-zinc-500">planets: </span>
+        <div className="text-zinc-500 dark:text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-400 dark:text-zinc-500">planets: </span>
           {monthAnalysis.planets.length > 0 ? monthAnalysis.planets.join(', ') : 'none'}
         </div>
-        <div className="text-zinc-400 text-xs font-mono">
-          <span className="text-zinc-500">ruler: </span>
+        <div className="text-zinc-500 dark:text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-400 dark:text-zinc-500">ruler: </span>
           {monthAnalysis.ruler}
         </div>
-        <div className="text-zinc-400 text-xs font-mono">
-          <span className="text-zinc-500">ruler in: </span>
+        <div className="text-zinc-500 dark:text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-400 dark:text-zinc-500">ruler in: </span>
           {monthAnalysis.rulerHouse > 0 ? `H${monthAnalysis.rulerHouse}` : '—'}
         </div>
       </div>
 
       {yearHouse === monthHouse && (
-        <div className="bg-zinc-800 border border-purple-900 rounded p-3">
-          <span className="font-mono text-xs text-purple-400">// double activation — </span>
-          <span className="text-zinc-400 text-xs font-mono">H{yearHouse} is active for both year and month.</span>
+        <div className="bg-zinc-100 dark:bg-zinc-800 border border-purple-300 dark:border-purple-900 rounded p-3">
+          <span className="font-mono text-xs text-purple-600 dark:text-purple-400">// double activation — </span>
+          <span className="text-zinc-500 dark:text-zinc-400 text-xs font-mono">H{yearHouse} is active for both year and month.</span>
         </div>
       )}
     </div>

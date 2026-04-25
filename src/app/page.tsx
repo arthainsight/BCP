@@ -1,26 +1,34 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import { GeoResult, BcpResult, ChartData, PlanetData } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
-import NorthIndianChart from '@/components/NorthIndianChart';
-import BcpSummary from '@/components/BcpSummary';
-import HouseAnalysisDisplay from '@/components/HouseAnalysisDisplay';
-import JyotishGrahaTable from '@/components/JyotishGrahaTable';
+import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
+import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
+import { APP_NAME, APP_VERSION } from '@/lib/config';
+import BottomNav, { TabId } from '@/components/BottomNav';
+import ThemeToggle from '@/components/ThemeToggle';
+import SettingsPanel from '@/components/SettingsPanel';
+import GrahasPanel from '@/components/GrahasPanel';
+import KarakasPanel from '@/components/KarakasPanel';
+import DashaPanel from '@/components/DashaPanel';
+import ChartSection from '@/components/ChartSection';
 
 function getTodayString(): string {
   const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return y + '-' + m + '-' + day;
+  return (
+    d.getFullYear() +
+    '-' +
+    String(d.getMonth() + 1).padStart(2, '0') +
+    '-' +
+    String(d.getDate()).padStart(2, '0')
+  );
 }
 
 function computeManualBcp(completedAge: number, month: number): BcpResult {
   const runningYear = completedAge + 1;
   const activeYearHouse = ((runningYear - 1) % 12) + 1;
   const activeMonthHouse = ((activeYearHouse + month - 2) % 12) + 1;
-
   return {
     completedAge,
     runningYear,
@@ -37,61 +45,116 @@ interface BirthProfile {
   city: string;
   latitude: number;
   longitude: number;
+  timezone?: string;
   timezoneOffset: number;
 }
 
+type ChartOptionKey = 'showSigns' | 'showNatalPlanets' | 'showTransitPlanets';
+
+const DESKTOP_TABS = ['grahas', 'karakas', 'dasha', 'settings'] as const;
+type DesktopTab = (typeof DESKTOP_TABS)[number];
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">
+      {message}
+    </div>
+  );
+}
+
+function Panel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
+      {children}
+    </div>
+  );
+}
+
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<TabId>('settings');
+  const [desktopTab, setDesktopTab] = useState<DesktopTab>('grahas');
+
+  // Birth data
   const [birthDatetime, setBirthDatetime] = useState('');
   const [city, setCity] = useState('');
   const [targetDate, setTargetDate] = useState(getTodayString());
+
+  // Geo / location
   const [geoResults, setGeoResults] = useState<GeoResult[]>([]);
   const [selectedGeo, setSelectedGeo] = useState<GeoResult | null>(null);
+  const [showCoords, setShowCoords] = useState(false);
   const [manualLat, setManualLat] = useState('');
   const [manualLng, setManualLng] = useState('');
-  const [manualTzOffset, setManualTzOffset] = useState('');
-  const [showCoords, setShowCoords] = useState(false);
+  const [ianaTimezone, setIanaTimezone] = useState('');
+  const [tzOverride, setTzOverride] = useState('');
+
+  // Results
   const [bcpResult, setBcpResult] = useState<BcpResult | null>(null);
   const [chartData, setChartData] = useState<ChartData | null>(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   const [transitDatetime, setTransitDatetime] = useState('');
   const [transitPlanets, setTransitPlanets] = useState<PlanetData[]>([]);
+
+  // UI
+  const [loading, setLoading] = useState(false);
   const [transitLoading, setTransitLoading] = useState(false);
+  const [error, setError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [useManualBcpMode, setUseManualBcpMode] = useState(false);
-  const [manualBcpAge, setManualBcpAge] = useState('');
-  const [manualBcpMonth, setManualBcpMonth] = useState('');
-
-  type SectionKey =
-    | 'birthData'
-    | 'chart'
-    | 'planetPositions'
-    | 'houseAnalysis'
-    | 'bcpSummary'
-    | 'manualBcp';
-
-  const [visibleSections, setVisibleSections] = useState<Record<SectionKey, boolean>>({
-    birthData: true,
-    chart: true,
-    planetPositions: true,
-    houseAnalysis: true,
-    bcpSummary: true,
-    manualBcp: false,
-  });
-
-  const toggleSection = useCallback((key: SectionKey) => {
-    setVisibleSections((prev) => ({ ...prev, [key]: !prev[key] }));
-  }, []);
-
-  type ChartOptionKey = 'showSigns' | 'showNatalPlanets' | 'showTransitPlanets';
-
+  // Chart options
   const [chartOptions, setChartOptions] = useState<Record<ChartOptionKey, boolean>>({
     showSigns: true,
     showNatalPlanets: true,
     showTransitPlanets: false,
   });
+
+  // Manual BCP
+  const [useManualBcpMode, setUseManualBcpMode] = useState(false);
+  const [manualBcpAge, setManualBcpAge] = useState('');
+  const [manualBcpMonth, setManualBcpMonth] = useState('');
+
+  // --- Derived state ---
+
+  const autoTzOffset = useMemo<number | null>(() => {
+    if (!ianaTimezone || !birthDatetime) return null;
+    const date = parseBirthDatetimeForTz(birthDatetime);
+    if (!date) return null;
+    return getUtcOffsetHours(ianaTimezone, date);
+  }, [ianaTimezone, birthDatetime]);
+
+  const effectiveTzOffset = useMemo<number | null>(() => {
+    if (tzOverride !== '') {
+      const n = parseFloat(tzOverride);
+      return isNaN(n) ? null : n;
+    }
+    return autoTzOffset;
+  }, [tzOverride, autoTzOffset]);
+
+  const manualBcpAgeNum = parseInt(manualBcpAge);
+  const manualBcpMonthNum = parseInt(manualBcpMonth);
+  const manualBcpResult: BcpResult | null =
+    useManualBcpMode &&
+    !isNaN(manualBcpAgeNum) && manualBcpAgeNum >= 0 &&
+    !isNaN(manualBcpMonthNum) && manualBcpMonthNum >= 1 && manualBcpMonthNum <= 12
+      ? computeManualBcp(manualBcpAgeNum, manualBcpMonthNum)
+      : null;
+
+  const effectiveBcpResult = useManualBcpMode ? manualBcpResult : bcpResult;
+
+  const canCalculate =
+    !!birthDatetime && showCoords && !!manualLat && !!manualLng && effectiveTzOffset !== null;
+
+  const charaKarakas: CharaKaraka[] = useMemo(
+    () => (chartData ? calculateCharaKarakas(chartData.planets) : []),
+    [chartData]
+  );
+
+  const karakaByPlanet = useMemo(() => {
+    const map: Record<string, string> = {};
+    charaKarakas.forEach((k) => { map[k.planet] = k.karaka; });
+    return map;
+  }, [charaKarakas]);
+
+  // --- Handlers ---
 
   const toggleChartOption = useCallback((key: ChartOptionKey) => {
     setChartOptions((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -99,29 +162,23 @@ export default function Home() {
 
   const handleGeocode = useCallback(async () => {
     if (!city.trim()) return;
-
     setLoading(true);
     setError('');
     setGeoResults([]);
     setSelectedGeo(null);
-
     try {
       const res = await fetch('/api/geocode?city=' + encodeURIComponent(city));
       const data = await res.json();
-
-      if (data.error) {
-        setError(data.error);
-        return;
-      }
-
-      if (data.results && data.results.length > 0) {
+      if (data.error) { setError(data.error); return; }
+      if (data.results?.length > 0) {
         setGeoResults(data.results);
-
         if (data.results.length === 1) {
           const geo: GeoResult = data.results[0];
           setSelectedGeo(geo);
           setManualLat(String(geo.latitude));
           setManualLng(String(geo.longitude));
+          setIanaTimezone(geo.timezone ?? '');
+          setTzOverride('');
           setShowCoords(true);
         }
       } else {
@@ -134,18 +191,19 @@ export default function Home() {
     }
   }, [city]);
 
-  const handleSelectGeoFromDropdown = useCallback((idx: number, results: GeoResult[]) => {
+  const handleSelectGeo = useCallback((idx: number, results: GeoResult[]) => {
     const geo = results[idx];
     setSelectedGeo(geo);
     setManualLat(String(geo.latitude));
     setManualLng(String(geo.longitude));
+    setIanaTimezone(geo.timezone ?? '');
+    setTzOverride('');
     setShowCoords(true);
   }, []);
 
   const performCalculation = useCallback(
     async (dt: string, lat: number, lng: number, tzOffset: number, tDate: string) => {
       setError('');
-
       const birthDate = parseDateTime(dt);
       if (!birthDate) {
         setError('Invalid birth datetime format. Use dd.mm.yyyy hh.mm.ss');
@@ -153,47 +211,22 @@ export default function Home() {
       }
 
       const targetParts = tDate.split('-');
-      if (targetParts.length !== 3) {
-        setError('Invalid target date.');
-        return;
-      }
+      if (targetParts.length !== 3) { setError('Invalid target date.'); return; }
 
       const target = new Date(
-        parseInt(targetParts[0]),
-        parseInt(targetParts[1]) - 1,
-        parseInt(targetParts[2]),
-        12,
-        0,
-        0
+        parseInt(targetParts[0]), parseInt(targetParts[1]) - 1, parseInt(targetParts[2]), 12, 0, 0
       );
-
-      const result = calculateBcp(birthDate, target);
-      setBcpResult(result);
-
+      setBcpResult(calculateBcp(birthDate, target));
       setLoading(true);
 
       try {
-        const pattern = /^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/;
-        const match = dt.trim().match(pattern);
-
-        if (!match) {
-          setError('Invalid birth datetime format.');
-          setLoading(false);
-          return;
-        }
+        const match = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
+        if (!match) { setError('Invalid birth datetime format.'); return; }
 
         const [, dd, mm, yyyy, hh, min, ss] = match;
-
         const params = new URLSearchParams({
-          year: yyyy,
-          month: mm,
-          day: dd,
-          hour: hh,
-          minute: min,
-          second: ss,
-          lat: String(lat),
-          lng: String(lng),
-          tz: String(tzOffset),
+          year: yyyy, month: mm, day: dd, hour: hh, minute: min, second: ss,
+          lat: String(lat), lng: String(lng), tz: String(tzOffset),
         });
 
         const res = await fetch('/api/chart?' + params.toString());
@@ -204,6 +237,8 @@ export default function Home() {
         } else {
           setChartData(data);
           setTransitPlanets([]);
+          setActiveTab('chart');
+          setDesktopTab('grahas');
         }
       } catch (e) {
         setError('Failed to calculate chart. ' + String(e));
@@ -215,148 +250,111 @@ export default function Home() {
   );
 
   const handleCalculate = useCallback(async () => {
-    if (!birthDatetime.trim()) {
-      setError('Please enter birth date and time.');
-      return;
-    }
-
+    if (!birthDatetime.trim()) { setError('Please enter birth date and time.'); return; }
     const lat = parseFloat(manualLat);
     const lng = parseFloat(manualLng);
-    const tzOffset = parseFloat(manualTzOffset);
-
-    if (isNaN(lat) || isNaN(lng)) {
-      setError('Please enter valid latitude and longitude.');
+    if (isNaN(lat) || isNaN(lng)) { setError('Please enter valid latitude and longitude.'); return; }
+    if (effectiveTzOffset === null) {
+      setError('Timezone could not be determined. Enter a city or set a manual UTC offset.');
       return;
     }
-
-    if (isNaN(tzOffset)) {
-      setError(
-        'Please enter a valid timezone offset (e.g. 5.5 for India, 2 for Finland winter, 3 for Finland summer).'
-      );
-      return;
-    }
-
-    await performCalculation(birthDatetime, lat, lng, tzOffset, targetDate);
-  }, [birthDatetime, manualLat, manualLng, manualTzOffset, targetDate, performCalculation]);
+    await performCalculation(birthDatetime, lat, lng, effectiveTzOffset, targetDate);
+  }, [birthDatetime, manualLat, manualLng, effectiveTzOffset, targetDate, performCalculation]);
 
   const handleCalculateTransit = useCallback(async () => {
     if (!transitDatetime.trim() || !chartData) return;
-
-    const pattern = /^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/;
-    const match = transitDatetime.trim().match(pattern);
-
-    if (!match) {
-      setError('Invalid transit datetime format. Use dd.mm.yyyy hh.mm.ss');
-      return;
-    }
+    const match = transitDatetime.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
+    if (!match) { setError('Invalid transit datetime format. Use dd.mm.yyyy hh.mm.ss'); return; }
 
     const lat = parseFloat(manualLat);
     const lng = parseFloat(manualLng);
-    const tzOffset = parseFloat(manualTzOffset);
-
-    if (isNaN(lat) || isNaN(lng) || isNaN(tzOffset)) {
+    if (isNaN(lat) || isNaN(lng) || effectiveTzOffset === null) {
       setError('Natal location data is required for transit calculation.');
       return;
     }
 
     const [, dd, mm, yyyy, hh, min, ss] = match;
-
     setTransitLoading(true);
     setError('');
 
     try {
       const params = new URLSearchParams({
-        year: yyyy,
-        month: mm,
-        day: dd,
-        hour: hh,
-        minute: min,
-        second: ss,
-        lat: String(lat),
-        lng: String(lng),
-        tz: String(tzOffset),
+        year: yyyy, month: mm, day: dd, hour: hh, minute: min, second: ss,
+        lat: String(lat), lng: String(lng), tz: String(effectiveTzOffset),
       });
-
       const res = await fetch('/api/chart?' + params.toString());
       const data = await res.json();
-
-      if (data.error) {
-        setError('Transit calculation error: ' + data.error);
-        return;
-      }
+      if (data.error) { setError('Transit calculation error: ' + data.error); return; }
 
       const natalAsc = chartData.ascendant.sign;
-
-      const remapped: PlanetData[] = (data.planets as PlanetData[]).map((p) => ({
-        ...p,
-        house: ((p.sign - natalAsc + 12) % 12) + 1,
-      }));
-
-      setTransitPlanets(remapped);
+      setTransitPlanets(
+        (data.planets as PlanetData[]).map((p) => ({
+          ...p,
+          house: ((p.sign - natalAsc + 12) % 12) + 1,
+        }))
+      );
     } catch (e) {
       setError('Failed to calculate transit. ' + String(e));
     } finally {
       setTransitLoading(false);
     }
-  }, [transitDatetime, chartData, manualLat, manualLng, manualTzOffset]);
+  }, [transitDatetime, chartData, manualLat, manualLng, effectiveTzOffset]);
 
   const handleSaveProfile = useCallback(() => {
     const lat = parseFloat(manualLat);
     const lng = parseFloat(manualLng);
-    const tzOffset = parseFloat(manualTzOffset);
     const profileName = selectedGeo ? selectedGeo.name : city || 'Unknown';
-
     const profile: BirthProfile = {
       name: profileName,
       birthDatetime,
       city: selectedGeo ? `${selectedGeo.name}, ${selectedGeo.country}` : city,
       latitude: isNaN(lat) ? 0 : lat,
       longitude: isNaN(lng) ? 0 : lng,
-      timezoneOffset: isNaN(tzOffset) ? 0 : tzOffset,
+      timezone: ianaTimezone,
+      timezoneOffset: effectiveTzOffset ?? 0,
     };
-
-    const blob = new Blob([JSON.stringify(profile, null, 2)], {
-      type: 'application/json',
-    });
-
+    const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-
     a.href = url;
     a.download = profileName.replace(/\s+/g, '_') + '_birth_profile.json';
-
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-
     URL.revokeObjectURL(url);
-  }, [birthDatetime, city, selectedGeo, manualLat, manualLng, manualTzOffset]);
+  }, [birthDatetime, city, selectedGeo, manualLat, manualLng, ianaTimezone, effectiveTzOffset]);
 
   const handleLoadProfile = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-
       e.target.value = '';
-
       try {
         const text = await file.text();
         const profile: BirthProfile = JSON.parse(text);
-
         setBirthDatetime(profile.birthDatetime);
         setCity(profile.city);
         setManualLat(String(profile.latitude));
         setManualLng(String(profile.longitude));
-        setManualTzOffset(String(profile.timezoneOffset));
+        const tz = profile.timezone ?? '';
+        setIanaTimezone(tz);
+        setTzOverride(tz ? '' : String(profile.timezoneOffset ?? 0));
         setShowCoords(true);
         setGeoResults([]);
         setSelectedGeo(null);
+
+        const tzOffset = tz
+          ? (() => {
+              const d = parseBirthDatetimeForTz(profile.birthDatetime);
+              return d ? getUtcOffsetHours(tz, d) : (profile.timezoneOffset ?? 0);
+            })()
+          : (profile.timezoneOffset ?? 0);
 
         await performCalculation(
           profile.birthDatetime,
           profile.latitude,
           profile.longitude,
-          profile.timezoneOffset,
+          tzOffset,
           targetDate
         );
       } catch {
@@ -366,414 +364,152 @@ export default function Home() {
     [targetDate, performCalculation]
   );
 
-  const manualBcpAgeNum = parseInt(manualBcpAge);
-  const manualBcpMonthNum = parseInt(manualBcpMonth);
+  // Shared props objects
+  const chartSectionProps = {
+    bcp: effectiveBcpResult,
+    chart: chartData,
+    transitPlanets,
+    chartOptions,
+    onToggleOption: toggleChartOption,
+    transitDatetime,
+    onTransitDatetimeChange: setTransitDatetime,
+    onCalculateTransit: handleCalculateTransit,
+    transitLoading,
+  };
 
-  const manualBcpResult: BcpResult | null =
-    useManualBcpMode &&
-    !isNaN(manualBcpAgeNum) &&
-    manualBcpAgeNum >= 0 &&
-    !isNaN(manualBcpMonthNum) &&
-    manualBcpMonthNum >= 1 &&
-    manualBcpMonthNum <= 12
-      ? computeManualBcp(manualBcpAgeNum, manualBcpMonthNum)
-      : null;
-
-  const effectiveBcpResult = useManualBcpMode ? manualBcpResult : bcpResult;
-  const planetsForChart = chartData ? chartData.planets : [];
-
-  const canCalculate =
-    !!birthDatetime && showCoords && !!manualLat && !!manualLng && manualTzOffset !== '';
+  const settingsProps = {
+    birthDatetime, onBirthDatetimeChange: setBirthDatetime,
+    city, onCityChange: setCity,
+    targetDate, onTargetDateChange: setTargetDate,
+    geoResults, showCoords,
+    manualLat, onManualLatChange: setManualLat,
+    manualLng, onManualLngChange: setManualLng,
+    ianaTimezone, autoTzOffset, tzOverride, onTzOverrideChange: setTzOverride,
+    onGeocode: handleGeocode,
+    onSelectGeo: handleSelectGeo,
+    onCalculate: handleCalculate,
+    onSaveProfile: handleSaveProfile,
+    fileInputRef,
+    onLoadProfile: handleLoadProfile,
+    useManualBcpMode, onUseManualBcpModeChange: setUseManualBcpMode,
+    manualBcpAge, onManualBcpAgeChange: setManualBcpAge,
+    manualBcpMonth, onManualBcpMonthChange: setManualBcpMonth,
+    manualBcpResult,
+    loading, error, canCalculate,
+  };
 
   return (
-    <div className="min-h-screen bg-zinc-950 py-8 px-4">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <h1 className="text-2xl font-bold text-center font-mono text-green-400 tracking-tight">
-          bhrigu_chakra_paddhati.exe
-        </h1>
-
-        <p className="text-xs text-zinc-500 text-center font-mono">
-          // jyotish BCP calculator — lahiri ayanamsa, whole-sign houses
-        </p>
-
-        <div className="bg-zinc-900 border border-zinc-700 rounded p-3 flex flex-wrap gap-3 items-center">
-          <span className="text-xs text-zinc-500 font-mono uppercase tracking-widest">
-            &gt; profile
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">
+            {APP_NAME}
           </span>
+          <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
+        </div>
+        <ThemeToggle />
+      </header>
 
-          <label className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-600 rounded text-xs font-mono cursor-pointer">
-            load
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              className="hidden"
-              onChange={handleLoadProfile}
-            />
-          </label>
-
-          <button
-            onClick={handleSaveProfile}
-            disabled={!birthDatetime || !manualLat || !manualLng || manualTzOffset === ''}
-            className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-600 rounded text-xs font-mono disabled:opacity-30"
-          >
-            save
-          </button>
+      {/* ── DESKTOP: 2-column grid ────────────────────────────────────── */}
+      <div className="hidden md:grid md:grid-cols-2 gap-4 p-4 max-w-6xl mx-auto">
+        {/* Left: Chart (always visible) */}
+        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
+          <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
+          <ChartSection {...chartSectionProps} />
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-700 rounded p-3">
-          <div className="text-xs text-zinc-500 font-mono mb-2">&gt; sections</div>
-
-          <div className="flex flex-wrap gap-2">
-            {(
-              [
-                { key: 'birthData', label: 'birth.data' },
-                { key: 'manualBcp', label: 'bcp.manual' },
-                { key: 'chart', label: 'chart.render' },
-                { key: 'planetPositions', label: 'graha.positions' },
-                { key: 'houseAnalysis', label: 'house.analysis' },
-                { key: 'bcpSummary', label: 'bcp.engine' },
-              ] as { key: SectionKey; label: string }[]
-            ).map(({ key, label }) => (
+        {/* Right: tabbed panels */}
+        <div className="space-y-3">
+          <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
+            {DESKTOP_TABS.map((tab) => (
               <button
-                key={key}
-                onClick={() => toggleSection(key)}
-                className={`px-3 py-1 rounded text-xs font-mono transition-colors border ${
-                  visibleSections[key]
-                    ? 'bg-green-900/60 text-green-400 border-green-700'
-                    : 'bg-zinc-800 text-zinc-500 border-zinc-700 hover:bg-zinc-700 hover:text-zinc-300'
+                key={tab}
+                onClick={() => setDesktopTab(tab)}
+                className={`flex-1 py-1.5 text-xs font-mono rounded-md transition-colors ${
+                  desktopTab === tab
+                    ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm'
+                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
                 }`}
               >
-                {label}
+                {tab}
               </button>
             ))}
           </div>
+
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
+            {desktopTab === 'grahas' && (
+              chartData
+                ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} />
+                : <EmptyState message="Calculate a chart to see graha positions" />
+            )}
+            {desktopTab === 'karakas' && (
+              chartData
+                ? <KarakasPanel charaKarakas={charaKarakas} />
+                : <EmptyState message="Calculate a chart to see Chara Karakas" />
+            )}
+            {desktopTab === 'dasha' && (
+              effectiveBcpResult && chartData
+                ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
+                : <EmptyState message="Calculate a chart to see BCP dasha analysis" />
+            )}
+            {desktopTab === 'settings' && (
+              <SettingsPanel {...settingsProps} />
+            )}
+          </div>
         </div>
+      </div>
 
-        {visibleSections.birthData && (
-          <div className="bg-zinc-900 border border-zinc-700 rounded p-5 space-y-4">
-            <div className="text-xs text-zinc-500 font-mono">&gt; birth.data</div>
-
-            <div>
-              <label className="block text-xs font-mono text-zinc-400 mb-1 uppercase tracking-wide">
-                birth datetime (dd.mm.yyyy hh.mm.ss)
-              </label>
-
-              <input
-                type="text"
-                value={birthDatetime}
-                onChange={(e) => setBirthDatetime(e.target.value)}
-                placeholder="15.08.1947 09.15.00"
-                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-mono text-zinc-400 mb-1 uppercase tracking-wide">
-                city
-              </label>
-
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="e.g. New Delhi"
-                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                />
-
-                <button
-                  onClick={handleGeocode}
-                  disabled={loading || !city.trim()}
-                  className="px-4 py-2 bg-zinc-800 border border-cyan-700 text-cyan-400 rounded text-xs font-mono hover:bg-zinc-700 disabled:opacity-30 whitespace-nowrap"
-                >
-                  {loading ? '...' : 'geocode'}
-                </button>
-              </div>
-            </div>
-
-            {geoResults.length > 1 && (
-              <div>
-                <label className="block text-xs font-mono text-zinc-400 mb-1 uppercase tracking-wide">
-                  select location
-                </label>
-
-                <select
-                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-zinc-100 focus:outline-none focus:ring-1 focus:ring-green-500"
-                  onChange={(e) =>
-                    handleSelectGeoFromDropdown(parseInt(e.target.value), geoResults)
-                  }
-                  defaultValue=""
-                >
-                  <option value="" disabled>
-                    -- select --
-                  </option>
-
-                  {geoResults.map((r, i) => (
-                    <option key={i} value={i}>
-                      {r.name}, {r.country} ({r.latitude}, {r.longitude})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {showCoords && (
-              <div className="space-y-3 border-t border-zinc-700 pt-4">
-                <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest">
-                  &gt; location.override
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-mono text-zinc-400 mb-1 uppercase tracking-wide">
-                      lat
-                    </label>
-
-                    <input
-                      type="number"
-                      step="any"
-                      value={manualLat}
-                      onChange={(e) => setManualLat(e.target.value)}
-                      placeholder="28.6139"
-                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-mono text-zinc-400 mb-1 uppercase tracking-wide">
-                      lng
-                    </label>
-
-                    <input
-                      type="number"
-                      step="any"
-                      value={manualLng}
-                      onChange={(e) => setManualLng(e.target.value)}
-                      placeholder="77.2090"
-                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono text-zinc-400 mb-1 uppercase tracking-wide">
-                    tz offset (hours from UTC)
-                  </label>
-
-                  <input
-                    type="number"
-                    step="any"
-                    value={manualTzOffset}
-                    onChange={(e) => setManualTzOffset(e.target.value)}
-                    placeholder="5.5 = India, 2 = FIN winter, 3 = FIN summer, -5 = US Eastern"
-                    className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                  />
-
-                  <p className="mt-1 text-xs text-amber-500 font-mono">
-                    // offset must account for DST on the birth date
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-mono text-zinc-400 mb-1 uppercase tracking-wide">
-                target date
-              </label>
-
-              <input
-                type="date"
-                value={targetDate}
-                onChange={(e) => setTargetDate(e.target.value)}
-                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-zinc-100 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-              />
-            </div>
-
-            {error && (
-              <div className="text-red-400 text-xs font-mono bg-red-950/50 border border-red-800 p-2 rounded">
-                {error}
-              </div>
-            )}
-
-            <button
-              onClick={handleCalculate}
-              disabled={!canCalculate || loading}
-              className="w-full py-2 bg-zinc-800 border border-green-700 text-green-400 rounded text-sm font-mono font-semibold hover:bg-green-900/40 disabled:opacity-30"
-            >
-              {loading ? 'calculating...' : '$ run bcp'}
-            </button>
-          </div>
+      {/* ── MOBILE: single panel + bottom nav ────────────────────────── */}
+      <div className="md:hidden pb-20 p-4">
+        {activeTab === 'chart' && (
+          <Panel>
+            <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
+            <ChartSection {...chartSectionProps} />
+          </Panel>
         )}
 
-        {visibleSections.manualBcp && (
-          <div className="bg-zinc-900 border border-zinc-700 rounded p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <h3 className="font-mono text-xs text-zinc-400 uppercase tracking-widest">
-                &gt; bcp.manual
-              </h3>
-
-              <label className="flex items-center gap-2 text-xs font-mono text-zinc-400 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={useManualBcpMode}
-                  onChange={(e) => setUseManualBcpMode(e.target.checked)}
-                  className="w-4 h-4 accent-green-500"
-                />
-                override auto-bcp
-              </label>
-            </div>
-
-            {useManualBcpMode && (
-              <>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-mono text-zinc-400 mb-1 uppercase tracking-wide">
-                      completed age
-                    </label>
-
-                    <input
-                      type="number"
-                      min="0"
-                      value={manualBcpAge}
-                      onChange={(e) => setManualBcpAge(e.target.value)}
-                      placeholder="41"
-                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-mono text-zinc-400 mb-1 uppercase tracking-wide">
-                      month (1–12)
-                    </label>
-
-                    <input
-                      type="number"
-                      min="1"
-                      max="12"
-                      value={manualBcpMonth}
-                      onChange={(e) => setManualBcpMonth(e.target.value)}
-                      placeholder="1"
-                      className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-sm font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500"
-                    />
-                  </div>
-                </div>
-
-                {manualBcpResult && (
-                  <div className="bg-zinc-800 border border-amber-700/60 rounded p-2 text-xs font-mono text-amber-400 space-y-0.5">
-                    <div>
-                      year: {manualBcpResult.runningYear} · cycle:{' '}
-                      {manualBcpResult.bcpCycle}
-                    </div>
-
-                    <div>
-                      year_house: <strong>H{manualBcpResult.activeYearHouse}</strong>
-                      {' · '}
-                      month_house:{' '}
-                      <strong>H{manualBcpResult.activeMonthHouse}</strong>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+        {activeTab === 'grahas' && (
+          <Panel>
+            {chartData
+              ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} />
+              : <EmptyState message="Calculate a chart in Settings to see graha positions" />
+            }
+          </Panel>
         )}
 
-        {effectiveBcpResult && chartData && visibleSections.chart && (
-          <div className="bg-zinc-900 border border-zinc-700 rounded p-4 space-y-3">
-            <div className="text-xs text-zinc-500 font-mono">&gt; chart.render</div>
-
-            <div className="flex flex-wrap gap-2">
-              {(
-                [
-                  { key: 'showSigns', label: 'signs' },
-                  { key: 'showNatalPlanets', label: 'natal' },
-                  { key: 'showTransitPlanets', label: 'transit' },
-                ] as { key: ChartOptionKey; label: string }[]
-              ).map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => toggleChartOption(key)}
-                  className={`px-2 py-0.5 rounded text-xs font-mono border ${
-                    chartOptions[key]
-                      ? 'bg-green-900/60 text-green-400 border-green-700'
-                      : 'bg-zinc-800 text-zinc-500 border-zinc-700 hover:text-zinc-300'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {chartOptions.showTransitPlanets && (
-              <div className="flex gap-2 items-center border-t border-zinc-700 pt-2">
-                <input
-                  type="text"
-                  value={transitDatetime}
-                  onChange={(e) => setTransitDatetime(e.target.value)}
-                  placeholder="transit: dd.mm.yyyy hh.mm.ss"
-                  className="flex-1 px-2 py-1.5 bg-zinc-800 border border-zinc-600 rounded text-xs font-mono text-zinc-100 placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500"
-                />
-
-                <button
-                  onClick={handleCalculateTransit}
-                  disabled={transitLoading || !transitDatetime.trim()}
-                  className="px-3 py-1.5 bg-zinc-800 border border-cyan-700 text-cyan-400 rounded text-xs font-mono hover:bg-zinc-700 disabled:opacity-30 whitespace-nowrap"
-                >
-                  {transitLoading ? '...' : '$ transit'}
-                </button>
-              </div>
-            )}
-
-            <NorthIndianChart
-              activeYearHouse={effectiveBcpResult.activeYearHouse}
-              activeMonthHouse={effectiveBcpResult.activeMonthHouse}
-              ascendantSign={chartData.ascendant.sign}
-              planets={planetsForChart}
-              transitPlanets={transitPlanets}
-              showSigns={chartOptions.showSigns}
-              showNatalPlanets={chartOptions.showNatalPlanets}
-              showTransitPlanets={chartOptions.showTransitPlanets}
-            />
-          </div>
+        {activeTab === 'karakas' && (
+          <Panel>
+            {chartData
+              ? <KarakasPanel charaKarakas={charaKarakas} />
+              : <EmptyState message="Calculate a chart in Settings to see Chara Karakas" />
+            }
+          </Panel>
         )}
 
-        {effectiveBcpResult && chartData && visibleSections.planetPositions && (
-          <div className="bg-zinc-900 border border-zinc-700 rounded p-4">
-            <h3 className="font-mono text-xs text-zinc-400 uppercase tracking-widest mb-3">
-              &gt; graha.positions
-            </h3>
-
-            <JyotishGrahaTable chart={chartData} />
-          </div>
+        {activeTab === 'dasha' && (
+          <Panel>
+            {effectiveBcpResult && chartData
+              ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
+              : <EmptyState message="Calculate a chart in Settings to see BCP dasha analysis" />
+            }
+          </Panel>
         )}
 
-        {effectiveBcpResult && chartData && visibleSections.houseAnalysis && (
-          <div className="bg-zinc-900 border border-zinc-700 rounded p-4">
-            <HouseAnalysisDisplay
-              yearHouse={effectiveBcpResult.activeYearHouse}
-              monthHouse={effectiveBcpResult.activeMonthHouse}
-              planets={chartData.planets.map((p) => ({
-                name: p.name,
-                sign: p.sign,
-                degree: p.degree,
-                house: p.house,
-              }))}
-              ascSign={chartData.ascendant.sign}
-            />
-          </div>
-        )}
-
-        {effectiveBcpResult && chartData && visibleSections.bcpSummary && (
-          <div className="bg-zinc-900 border border-zinc-700 rounded p-4">
-            <BcpSummary
-              bcp={effectiveBcpResult}
-              planets={chartData.planets}
-              ascSign={chartData.ascendant.sign}
-            />
-          </div>
+        {activeTab === 'settings' && (
+          <Panel>
+            <SettingsPanel {...settingsProps} showThemeToggle />
+          </Panel>
         )}
       </div>
+
+      {/* Mobile bottom nav */}
+      <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+
+      {/* Footer (desktop only) */}
+      <footer className="hidden md:block text-center text-xs font-mono text-zinc-400 dark:text-zinc-700 py-6">
+        {APP_NAME} {APP_VERSION} — lahiri ayanamsa · whole-sign houses · chara karakas
+      </footer>
     </div>
   );
 }
