@@ -64,8 +64,8 @@ const HOUSES: HouseShape[] = [
   { house: 9, points: '500,500 375,375 500,250', text: { x: 452, y: 365 } },
   { house: 10, points: '500,250 375,375 250,250 375,125', text: { x: 355, y: 250 } },
   { house: 11, points: '500,250 375,125 500,0', text: { x: 452, y: 135 } },
-
-{ house: 12, points: '500,0 375,125 250,0', text: { x: 385, y: 75 } },];
+  { house: 12, points: '500,0 375,125 250,0', text: { x: 385, y: 75 } },
+];
 
 function getHouseFill(
   house: number,
