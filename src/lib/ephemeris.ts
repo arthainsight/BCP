@@ -12,6 +12,10 @@ const PLANET_NAMES: Record<number, string> = {
   [swisseph.SE_SATURN]: "Saturn",
 };
 
+function normalize(value: number): number {
+  return ((value % 360) + 360) % 360;
+}
+
 export function calculateChart(
   year: number,
   month: number,
@@ -28,25 +32,137 @@ export function calculateChart(
   }
 
   // Convert local time to UTC
-  // First create a date in local time, then adjust by timezone offset
-  const localDate = new Date(year, month - 1, day, hour, minute, second);
-  const utcDate = new Date(localDate.getTime() - timezoneOffset * 3600000);
-
-  const utcYear = utcDate.getFullYear();
-  const utcMonth = utcDate.getMonth() + 1;
-  const utcDay = utcDate.getDate();
-  const utcHour = utcDate.getHours();
-  const utcMin = utcDate.getMinutes();
-  const utcSec = utcDate.getSeconds();
+  const localEpoch = Date.UTC(year, month - 1, day, hour, minute, second, 0);
+  const utcEpoch = localEpoch - timezoneOffset * 3600000;
+  const utcDate = new Date(utcEpoch);
+  const utcYear = utcDate.getUTCFullYear();
+  const utcMonth = utcDate.getUTCMonth() + 1;
+  const utcDay = utcDate.getUTCDate();
+  const utcHour = utcDate.getUTCHours();
+  const utcMin = utcDate.getUTCMinutes();
+  const utcSec = utcDate.getUTCSeconds();
 
   const utcTotalHours = utcHour + utcMin / 60 + utcSec / 3600;
   const jd = swisseph.swe_julday(utcYear, utcMonth, utcDay, utcTotalHours, swisseph.SE_GREG_CAL);
 
-  // Set sidereal mode to Lahiri
+  // Set sidereal mode to Lahiri (used for ayanamsa calculation)
   swisseph.swe_set_sid_mode(swisseph.SE_SIDM_LAHIRI, 0, 0);
 
-  // Calculate sidereal positions
-  const flags = swisseph.SEFLG_SWIEPH | swisseph.SEFLG_SIDEREAL;
+  // Get Lahiri ayanamsa
+  const lahiriAyanamsa = swisseph.swe_get_ayanamsa_ut(jd);
+
+  // Use tropical flag (no SIDEREAL) - we will subtract ayanamsa manually
+  const flagsTropical = swisseph.SEFLG_SWIEPH;
+
+  const planetIds = [
+    swisseph.SE_SUN,
+    swisseph.SE_MOON,
+    swisseph.SE_MARS,
+    swisseph.SE_MERCURY,
+    swisseph.SE_JUPITER,
+    swisseph.SE_VENUS,
+    swisseph.SE_SATURN,
+  ];
+
+  const planets: PlanetData[] = [];
+
+  // 1. Calculate all planets tropical longitudes
+  for (const planetId of planetIds) {
+    const result = swisseph.swe_calc_ut(jd, planetId, flagsTropical);
+    const tropicalLon = result.longitude;
+    const siderealLon = normalize(tropicalLon - lahiriAyanamsa);
+    const sign = Math.floor(siderealLon / 30) + 1;
+    const degree = siderealLon % 30;
+
+    planets.push({
+      name: PLANET_NAMES[planetId],
+      longitude: siderealLon,
+      sign,
+      degree,
+      house: 0,
+    });
+  }
+
+  // Rahu (Mean North Node) - tropical
+  const rahuResult = swisseph.swe_calc_ut(jd, swisseph.SE_MEAN_NODE, flagsTropical);
+  const rahuTropical = rahuResult.longitude;
+  const rahuSidereal = normalize(rahuTropical - lahiriAyanamsa);
+  planets.push({
+    name: "Rahu",
+    longitude: rahuSidereal,
+    sign: Math.floor(rahuSidereal / 30) + 1,
+    degree: rahuSidereal % 30,
+    house: 0,
+  });
+
+  // Ketu is opposite Rahu
+  const ketuSidereal = normalize(rahuSidereal + 180);
+  planets.push({
+    name: "Ketu",
+    longitude: ketuSidereal,
+    sign: Math.floor(ketuSidereal / 30) + 1,
+    degree: ketuSidereal % 30,
+    house: 0,
+  });
+
+  // 2. Calculate tropical ascendant, then convert to sidereal
+  const housesResult = swisseph.swe_houses(jd, lat, lng, "W");
+  const ascTropical = housesResult.ascendant;
+  const ascSidereal = normalize(ascTropical - lahiriAyanamsa);
+  const ascSignIndex = Math.floor(ascSidereal / 30);
+  const ascDegree = ascSidereal % 30;
+
+  // 3. Calculate whole sign houses using sidereal sign indices
+  for (const p of planets) {
+    const planetSignIndex = Math.floor(p.longitude / 30);
+    p.house = ((planetSignIndex - ascSignIndex + 12) % 12) + 1;
+  }
+
+  return {
+    ascendant: {
+      sign: ascSignIndex + 1,
+      degree: ascDegree,
+      longitude: ascSidereal,
+    },
+    planets,
+  };
+}
+
+/**
+ * Calculate transit planets for a given date/time and overlay them onto
+ * the natal chart houses (relative to the natal ascendant sign).
+ */
+export function calculateTransits(
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+  timezoneOffset: number,
+  natalAscSignIndex: number // 0-based sign index of natal ascendant
+): PlanetData[] {
+  if (!swisseph || !swisseph.swe_calc_ut) {
+    throw new Error("Swiss Ephemeris not available");
+  }
+
+  // Convert local time to UTC
+  const localEpoch = Date.UTC(year, month - 1, day, hour, minute, second, 0);
+  const utcEpoch = localEpoch - timezoneOffset * 3600000;
+  const utcDate = new Date(utcEpoch);
+  const utcYear = utcDate.getUTCFullYear();
+  const utcMonth = utcDate.getUTCMonth() + 1;
+  const utcDay = utcDate.getUTCDate();
+  const utcHour = utcDate.getUTCHours();
+  const utcMin = utcDate.getUTCMinutes();
+  const utcSec = utcDate.getUTCSeconds();
+
+  const utcTotalHours = utcHour + utcMin / 60 + utcSec / 3600;
+  const jd = swisseph.swe_julday(utcYear, utcMonth, utcDay, utcTotalHours, swisseph.SE_GREG_CAL);
+
+  swisseph.swe_set_sid_mode(swisseph.SE_SIDM_LAHIRI, 0, 0);
+  const lahiriAyanamsa = swisseph.swe_get_ayanamsa_ut(jd);
+  const flagsTropical = swisseph.SEFLG_SWIEPH;
 
   const planetIds = [
     swisseph.SE_SUN,
@@ -61,71 +177,43 @@ export function calculateChart(
   const planets: PlanetData[] = [];
 
   for (const planetId of planetIds) {
-    const result = swisseph.swe_calc_ut(jd, planetId, flags);
-    const longitude = result.longitude;
-    const sign = Math.floor(longitude / 30) + 1;
-    const degree = longitude % 30;
+    const result = swisseph.swe_calc_ut(jd, planetId, flagsTropical);
+    const siderealLon = normalize(result.longitude - lahiriAyanamsa);
+    const sign = Math.floor(siderealLon / 30) + 1;
+    const signIndex = Math.floor(siderealLon / 30);
+    const house = ((signIndex - natalAscSignIndex + 12) % 12) + 1;
 
     planets.push({
       name: PLANET_NAMES[planetId],
-      longitude,
+      longitude: siderealLon,
       sign,
-      degree,
-      house: 0,
+      degree: siderealLon % 30,
+      house,
     });
   }
 
-  // Rahu (Mean North Node)
-  const rahuResult = swisseph.swe_calc_ut(jd, swisseph.SE_MEAN_NODE, flags);
-  const rahuLon = rahuResult.longitude;
+  // Rahu
+  const rahuResult = swisseph.swe_calc_ut(jd, swisseph.SE_MEAN_NODE, flagsTropical);
+  const rahuSidereal = normalize(rahuResult.longitude - lahiriAyanamsa);
+  const rahuSignIndex = Math.floor(rahuSidereal / 30);
   planets.push({
     name: "Rahu",
-    longitude: rahuLon,
-    sign: Math.floor(rahuLon / 30) + 1,
-    degree: rahuLon % 30,
-    house: 0,
+    longitude: rahuSidereal,
+    sign: rahuSignIndex + 1,
+    degree: rahuSidereal % 30,
+    house: ((rahuSignIndex - natalAscSignIndex + 12) % 12) + 1,
   });
 
-  // Ketu is opposite Rahu
-  const ketuLon = (rahuLon + 180) % 360;
+  // Ketu
+  const ketuSidereal = normalize(rahuSidereal + 180);
+  const ketuSignIndex = Math.floor(ketuSidereal / 30);
   planets.push({
     name: "Ketu",
-    longitude: ketuLon,
-    sign: Math.floor(ketuLon / 30) + 1,
-    degree: ketuLon % 30,
-    house: 0,
+    longitude: ketuSidereal,
+    sign: ketuSignIndex + 1,
+    degree: ketuSidereal % 30,
+    house: ((ketuSignIndex - natalAscSignIndex + 12) % 12) + 1,
   });
 
-  // Calculate houses and ascendant
-  const housesResult = swisseph.swe_houses(jd, lat, lng, "W");
-  const ascTropical = housesResult.ascendant;
-
-  // Get ayanamsa for sidereal conversion
-  const ayanamsa = swisseph.swe_get_ayanamsa_ut(jd);
-
-  // Sidereal ascendant
-  const ascSidereal = (ascTropical - ayanamsa + 360) % 360;
-  const ascSign = Math.floor(ascSidereal / 30);
-  const ascDegree = ascSidereal % 30;
-
-  // Whole sign houses
-  const ascStart = ascSign * 30;
-
-  function getWholeSignHouse(longitude: number): number {
-    const offset = (longitude - ascStart + 360) % 360;
-    return Math.floor(offset / 30) + 1;
-  }
-
-  for (const p of planets) {
-    p.house = getWholeSignHouse(p.longitude);
-  }
-
-  return {
-    ascendant: {
-      sign: ascSign + 1,
-      degree: ascDegree,
-      longitude: ascSidereal,
-    },
-    planets,
-  };
+  return planets;
 }

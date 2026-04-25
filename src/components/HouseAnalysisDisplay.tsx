@@ -1,4 +1,4 @@
-﻿interface PlanetDetail {
+interface PlanetDetail {
   name: string;
   sign: number;
   degree: number;
@@ -37,13 +37,11 @@ function analyzeHouse(houseNum: number, planets: PlanetDetail[], ascSign: number
     .filter(p => p.house === houseNum)
     .map(p => p.name);
 
-  // The sign of house N (whole sign): ascSign determines house 1 sign
-  // House 1 = sign ascSign, House 2 = sign ascSign+1, etc.
   const houseSign = ((ascSign + houseNum - 1 - 1 + 12) % 12) + 1;
   const ruler = getSignRuler(houseSign);
   const rulerHouse = getPlanetHouse(ruler, planets);
 
-  return { planets: planetsInHouse, ruler, rulerHouse };
+  return { planets: planetsInHouse, ruler, rulerHouse, houseSign };
 }
 
 export default function HouseAnalysisDisplay({ yearHouse, monthHouse, planets, ascSign }: Props) {
@@ -52,48 +50,48 @@ export default function HouseAnalysisDisplay({ yearHouse, monthHouse, planets, a
 
   return (
     <div className="space-y-3 text-sm">
-      <h3 className="font-semibold text-lg">BCP House Analysis</h3>
+      <h3 className="font-mono text-xs text-zinc-400 uppercase tracking-widest">&gt; house.analysis</h3>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-        <div className="font-medium text-blue-800">Active Year House: {yearHouse}H</div>
-        <div className="mt-1 text-gray-700">
-          <span className="font-medium">Planets in house: </span>
-          {yearAnalysis.planets.length > 0
-            ? yearAnalysis.planets.join(", ")
-            : "None"}
+      <div className="bg-zinc-800 border border-cyan-900 rounded p-3 space-y-1">
+        <div className="font-mono text-xs text-cyan-400">
+          H{yearHouse} — {SIGN_NAMES[yearAnalysis.houseSign]} · active year house
         </div>
-        <div className="text-gray-700">
-          <span className="font-medium">Ruler: </span>
+        <div className="text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-500">planets: </span>
+          {yearAnalysis.planets.length > 0 ? yearAnalysis.planets.join(', ') : 'none'}
+        </div>
+        <div className="text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-500">ruler: </span>
           {yearAnalysis.ruler}
         </div>
-        <div className="text-gray-700">
-          <span className="font-medium">Ruler in house: </span>
-          {yearAnalysis.rulerHouse > 0 ? yearAnalysis.rulerHouse + "H" : "Not placed in chart"}
+        <div className="text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-500">ruler in: </span>
+          {yearAnalysis.rulerHouse > 0 ? `H${yearAnalysis.rulerHouse}` : '—'}
         </div>
       </div>
 
-      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-        <div className="font-medium text-green-800">Active Month House: {monthHouse}H</div>
-        <div className="mt-1 text-gray-700">
-          <span className="font-medium">Planets in house: </span>
-          {monthAnalysis.planets.length > 0
-            ? monthAnalysis.planets.join(", ")
-            : "None"}
+      <div className="bg-zinc-800 border border-green-900 rounded p-3 space-y-1">
+        <div className="font-mono text-xs text-green-400">
+          H{monthHouse} — {SIGN_NAMES[monthAnalysis.houseSign]} · active month house
         </div>
-        <div className="text-gray-700">
-          <span className="font-medium">Ruler: </span>
+        <div className="text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-500">planets: </span>
+          {monthAnalysis.planets.length > 0 ? monthAnalysis.planets.join(', ') : 'none'}
+        </div>
+        <div className="text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-500">ruler: </span>
           {monthAnalysis.ruler}
         </div>
-        <div className="text-gray-700">
-          <span className="font-medium">Ruler in house: </span>
-          {monthAnalysis.rulerHouse > 0 ? monthAnalysis.rulerHouse + "H" : "Not placed in chart"}
+        <div className="text-zinc-400 text-xs font-mono">
+          <span className="text-zinc-500">ruler in: </span>
+          {monthAnalysis.rulerHouse > 0 ? `H${monthAnalysis.rulerHouse}` : '—'}
         </div>
       </div>
 
       {yearHouse === monthHouse && (
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-          <span className="font-medium text-purple-800">Combined Year + Month:</span>
-          <span className="text-gray-700"> Same house ({yearHouse}H) is active for both year and month.</span>
+        <div className="bg-zinc-800 border border-purple-900 rounded p-3">
+          <span className="font-mono text-xs text-purple-400">// double activation — </span>
+          <span className="text-zinc-400 text-xs font-mono">H{yearHouse} is active for both year and month.</span>
         </div>
       )}
     </div>
