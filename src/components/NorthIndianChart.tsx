@@ -44,46 +44,98 @@ const PLANET_COLORS: Record<string, string> = {
 type HouseShape = {
   house: number;
   points: string;
-  text: { x: number; y: number };
+  planet: { x: number; y: number };
+  sign: { x: number; y: number };
 };
 
 const HOUSES: HouseShape[] = [
-  { house: 1, points: '250,0 375,125 250,250 125,125', text: { x: 250, y: 105 } },
-  { house: 2, points: '0,0 250,0 125,125', text: { x: 155, y: 70 } },
-
-  // LEFT SIDE TRIANGLES — move LEFT, not right
-  { house: 3, points: '0,0 125,125 0,250', text: { x: 48, y: 135 } },
-  { house: 4, points: '0,250 125,125 250,250 125,375', text: { x: 145, y: 250 } },
-  { house: 5, points: '0,250 125,375 0,500', text: { x: 48, y: 365 } },
-
-  { house: 6, points: '0,500 125,375 250,500', text: { x: 155, y: 430 } },
-  { house: 7, points: '250,500 125,375 250,250 375,375', text: { x: 250, y: 395 } },
-  { house: 8, points: '250,500 375,375 500,500', text: { x: 345, y: 430 } },
-
-  // RIGHT SIDE TRIANGLES — move RIGHT, not left
-  { house: 9, points: '500,500 375,375 500,250', text: { x: 452, y: 365 } },
-  { house: 10, points: '500,250 375,375 250,250 375,125', text: { x: 355, y: 250 } },
-  { house: 11, points: '500,250 375,125 500,0', text: { x: 452, y: 135 } },
-  { house: 12, points: '500,0 375,125 250,0', text: { x: 385, y: 75 } },
+  {
+    house: 1,
+    points: '250,0 375,125 250,250 125,125',
+    planet: { x: 250, y: 115 },
+    sign: { x: 250, y: 220 },
+  },
+  {
+    house: 2,
+    points: '0,0 250,0 125,125',
+    planet: { x: 125, y: 70 },
+    sign: { x: 125, y: 95 },
+  },
+  {
+    house: 3,
+    points: '0,0 125,125 0,250',
+    planet: { x: 55, y: 130 },
+    sign: { x: 95, y: 130 },
+  },
+  {
+    house: 4,
+    points: '0,250 125,125 250,250 125,375',
+    planet: { x: 135, y: 250 },
+    sign: { x: 220, y: 250 },
+  },
+  {
+    house: 5,
+    points: '0,250 125,375 0,500',
+    planet: { x: 55, y: 370 },
+    sign: { x: 95, y: 380 },
+  },
+  {
+    house: 6,
+    points: '0,500 125,375 250,500',
+    planet: { x: 125, y: 430 },
+    sign: { x: 125, y: 400 },
+  },
+  {
+    house: 7,
+    points: '250,500 125,375 250,250 375,375',
+    planet: { x: 250, y: 390 },
+    sign: { x: 250, y: 280 },
+  },
+  {
+    house: 8,
+    points: '250,500 375,375 500,500',
+    planet: { x: 375, y: 430 },
+    sign: { x: 375, y: 400 },
+  },
+  {
+    house: 9,
+    points: '500,500 375,375 500,250',
+    planet: { x: 445, y: 370 },
+    sign: { x: 400, y: 380 },
+  },
+  {
+    house: 10,
+    points: '500,250 375,375 250,250 375,125',
+    planet: { x: 365, y: 250 },
+    sign: { x: 280, y: 250 },
+  },
+  {
+    house: 11,
+    points: '500,250 375,125 500,0',
+    planet: { x: 445, y: 130 },
+    sign: { x: 400, y: 130 },
+  },
+  {
+    house: 12,
+    points: '500,0 375,125 250,0',
+    planet: { x: 375, y: 70 },
+    sign: { x: 375, y: 95 },
+  },
 ];
 
-function getHouseFill(
-  house: number,
-  activeYearHouse: number,
-  activeMonthHouse: number
-) {
+function getHouseFill(house: number, activeYearHouse: number, activeMonthHouse: number) {
   if (house === activeYearHouse && house === activeMonthHouse) return '#3b0764';
   if (house === activeYearHouse) return '#1e3a5f';
   if (house === activeMonthHouse) return '#14532d';
   return '#18181b';
 }
 
-function houseSign(ascendantSign: number, house: number): number {
-  return ((ascendantSign - 1 + house - 1) % 12) + 1;
-}
-
 function getPlanetColor(name: string) {
   return PLANET_COLORS[name] ?? '#e5e7eb';
+}
+
+function getSignForHouse(ascendantSign: number, house: number): number {
+  return ((ascendantSign - house + 12) % 12) + 1;
 }
 
 export default function NorthIndianChart({
@@ -95,6 +147,7 @@ export default function NorthIndianChart({
   showNatalPlanets = true,
   showTransitPlanets = false,
   showSigns = true,
+  showHouseNumbers = false,
 }: Props) {
   return (
     <div className="w-full max-w-[620px] mx-auto">
@@ -105,8 +158,7 @@ export default function NorthIndianChart({
         aria-label="North Indian Jyotish chart"
       >
         {HOUSES.map((item) => {
-          const { x, y } = item.text;
-          const sign = houseSign(ascendantSign, item.house);
+          const sign = getSignForHouse(ascendantSign, item.house);
 
           const natalInHouse = showNatalPlanets
             ? planets.filter((p) => Number(p.house) === item.house)
@@ -116,9 +168,7 @@ export default function NorthIndianChart({
             ? transitPlanets.filter((p) => Number(p.house) === item.house)
             : [];
 
-          const hasSigns = showSigns;
-          const signY = y - 22;
-          const natalStartY = hasSigns ? y : y - 8;
+          const natalStartY = item.planet.y;
           const lineHeight = 18;
 
           const transitStartY =
@@ -130,33 +180,43 @@ export default function NorthIndianChart({
             <g key={item.house}>
               <polygon
                 points={item.points}
-                fill={getHouseFill(
-                  item.house,
-                  activeYearHouse,
-                  activeMonthHouse
-                )}
+                fill={getHouseFill(item.house, activeYearHouse, activeMonthHouse)}
                 stroke="#52525b"
                 strokeWidth="2"
               />
 
               {showSigns && (
                 <text
-                  x={x}
-                  y={signY}
+                  x={item.sign.x}
+                  y={item.sign.y}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fontSize="11"
-                  fontWeight="500"
+                  fontWeight="600"
                   fill="#a1a1aa"
                 >
                   {SIGN_ABBR[sign]}
                 </text>
               )}
 
+              {showHouseNumbers && (
+                <text
+                  x={item.sign.x}
+                  y={item.sign.y + 14}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="9"
+                  fontWeight="600"
+                  fill="#71717a"
+                >
+                  H{item.house}
+                </text>
+              )}
+
               {natalInHouse.map((planet, index) => (
                 <text
                   key={`natal-${item.house}-${planet.name}-${index}`}
-                  x={x}
+                  x={item.planet.x}
                   y={natalStartY + index * lineHeight}
                   textAnchor="middle"
                   dominantBaseline="middle"
@@ -171,12 +231,12 @@ export default function NorthIndianChart({
               {transitInHouse.map((planet, index) => (
                 <text
                   key={`transit-${item.house}-${planet.name}-${index}`}
-                  x={x}
+                  x={item.planet.x}
                   y={transitStartY + index * 15}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fontSize="12"
-                  fontWeight="500"
+                  fontWeight="800"
                   fill="#9ca3af"
                 >
                   T-{planet.name}
