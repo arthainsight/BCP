@@ -141,7 +141,8 @@ export default function NorthIndianChart({
             allPlanets.length > 3 ? 14 :
             16;
 
-          const startY = item.planet.y;
+          const totalHeight = (allPlanets.length - 1) * dynamicLineHeight;
+          const startY = item.planet.y - totalHeight / 2;
 
           return (
             <g key={item.house}>
