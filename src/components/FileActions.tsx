@@ -32,7 +32,7 @@ const BTN =
   "hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed";
 
 const MENU_ITEM =
-  "w-full min-h-12 px-4 py-3 text-left text-sm font-mono text-zinc-700 dark:text-zinc-200 " +
+  "block w-full min-h-12 px-4 py-3 text-left text-sm font-mono text-zinc-700 dark:text-zinc-200 " +
   "border-b border-zinc-100 dark:border-zinc-700/70 last:border-b-0 " +
   "hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed";
 
@@ -193,7 +193,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
       {showMenu && compact && (
         <>
           <div className="fixed inset-0 z-[120] bg-black/30" onClick={() => setShowMenu(false)} />
-          <div className={`${sheetPosition} overflow-y-auto rounded-xl bg-white dark:bg-zinc-800 shadow-2xl border border-zinc-200 dark:border-zinc-700`}>
+          <div className={`${sheetPosition} overflow-y-auto whitespace-normal rounded-xl bg-white dark:bg-zinc-800 shadow-2xl border border-zinc-200 dark:border-zinc-700`}>
             <div className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500 border-b border-zinc-100 dark:border-zinc-700/70">
               chart actions
             </div>
@@ -210,7 +210,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
       {showLoad && (
         <>
           <div className="fixed inset-0 z-[120] bg-black/30" onClick={() => setShowLoad(false)} />
-          <div className={`${sheetPosition} overflow-y-auto bg-white dark:bg-zinc-800 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700`}>
+          <div className={`${sheetPosition} overflow-y-auto whitespace-normal bg-white dark:bg-zinc-800 rounded-xl shadow-2xl border border-zinc-200 dark:border-zinc-700`}>
             <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
               <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">saved charts</span>
               <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500">{savedList.length}</span>
@@ -249,7 +249,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
       {showSaveAs && (
         <>
           <div className="fixed inset-0 z-[140] bg-black/30" onClick={() => setShowSaveAs(false)} />
-          <div className={`${modalPosition} bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl p-3`}>
+          <div className={`${modalPosition} whitespace-normal bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl p-3`}>
             <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">save chart as</div>
             <input
               type="text"
@@ -271,7 +271,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
       {confirmNew && (
         <>
           <div className="fixed inset-0 z-[140] bg-black/30" onClick={() => setConfirmNew(false)} />
-          <div className={`${modalPosition} bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl p-3`}>
+          <div className={`${modalPosition} whitespace-normal bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl p-3`}>
             <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 mb-2">Discard current chart?</div>
             <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-3">Unsaved changes will be lost.</div>
             <div className="flex gap-2 justify-end">
