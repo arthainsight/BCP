@@ -36,7 +36,8 @@ const BTN_BASE =
 
 const BTN = "px-2 py-1 text-xs " + BTN_BASE;
 const MENU_ITEM =
-  "w-full px-3 py-2.5 text-left text-xs font-mono text-zinc-600 dark:text-zinc-300 " +
+  "w-full px-4 py-3 text-left text-sm font-mono text-zinc-700 dark:text-zinc-200 " +
+  "border-b border-zinc-100 dark:border-zinc-700/70 last:border-b-0 " +
   "hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed";
 
 export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport, onActiveNameChange, hideSave, compact }: Props) {
@@ -55,20 +56,17 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
       const chart = loadSavedCharts().find((c) => c.id === id);
       onActiveNameChange(chart?.name ?? null);
     }
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const refreshList = useCallback(() => {
     setSavedList(loadSavedCharts());
   }, []);
 
-  const hasSnapshotData =
-    !!snapshot.birthDatetime && !!snapshot.manualLat && !!snapshot.manualLng;
+  const hasSnapshotData = !!snapshot.birthDatetime && !!snapshot.manualLat && !!snapshot.manualLng;
+  const isActiveSaved = activeId !== null && loadSavedCharts().some((c) => c.id === activeId);
 
-  const isActiveSaved =
-    activeId !== null && loadSavedCharts().some((c) => c.id === activeId);
-
-  const popoverBase = compact
-    ? "fixed left-4 top-32 z-[100]"
+  const compactSheet = compact
+    ? "fixed left-4 right-4 bottom-24 z-[100]"
     : "absolute top-full right-0 mt-1 z-40";
 
   const handleNew = () => {
@@ -174,9 +172,12 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
           {showMenu && (
             <>
-              <div className="fixed inset-0 z-[90]" onClick={() => setShowMenu(false)} />
-              <div className="fixed left-4 top-32 z-[100] w-44 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xl">
-                <button onClick={handleNew} className={MENU_ITEM}>{confirmNew ? "confirm?" : "NEW"}</button>
+              <div className="fixed inset-0 z-[90] bg-black/20" onClick={() => setShowMenu(false)} />
+              <div className="fixed left-4 right-4 bottom-24 z-[100] overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xl">
+                <div className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500 border-b border-zinc-100 dark:border-zinc-700/70">
+                  chart actions
+                </div>
+                <button onClick={handleNew} className={MENU_ITEM}>{confirmNew ? "CONFIRM NEW" : "NEW"}</button>
                 <button onClick={toggleLoad} className={MENU_ITEM}>LOAD</button>
                 {!hideSave && (
                   <button onClick={handleSave} disabled={!isActiveSaved || !hasSnapshotData} className={MENU_ITEM}>SAVE</button>
@@ -224,8 +225,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
       {showLoad && (
         <>
-          <div className="fixed inset-0 z-[90]" onClick={() => setShowLoad(false)} />
-          <div className={`${popoverBase} w-72 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl overflow-hidden`}>
+          <div className="fixed inset-0 z-[90] bg-black/20" onClick={() => setShowLoad(false)} />
+          <div className={`${compactSheet} ${compact ? "max-h-[60vh]" : "w-72"} bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl overflow-hidden`}>
             <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
               <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">saved charts</span>
               <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500">{savedList.length}</span>
@@ -262,8 +263,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
       {showSaveAs && (
         <>
-          <div className="fixed inset-0 z-[90]" onClick={() => setShowSaveAs(false)} />
-          <div className={`${popoverBase} w-64 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl p-3`}>
+          <div className="fixed inset-0 z-[90] bg-black/20" onClick={() => setShowSaveAs(false)} />
+          <div className={`${compactSheet} ${compact ? "" : "w-64"} bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl p-3`}>
             <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">save chart as</div>
             <input
               type="text"
@@ -284,8 +285,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
       {confirmNew && (
         <>
-          <div className="fixed inset-0 z-[90]" onClick={() => setConfirmNew(false)} />
-          <div className={`${popoverBase} w-64 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl p-3`}>
+          <div className="fixed inset-0 z-[90] bg-black/20" onClick={() => setConfirmNew(false)} />
+          <div className={`${compactSheet} ${compact ? "" : "w-64"} bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl p-3`}>
             <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 mb-2">Discard current chart?</div>
             <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-3">Unsaved changes will be lost.</div>
             <div className="flex gap-2 justify-end">
