@@ -175,21 +175,21 @@ export default function VimshottariPanel({ planets, birthDatetime }: Props) {
         </div>
         <button
           onClick={openNow}
-          className="px-2 py-1 rounded-md border border-amber-300/70 dark:border-amber-600/60 bg-amber-50 dark:bg-amber-900/20 text-[10px] font-mono text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+          className="px-2 py-1 rounded-md border border-cyan-300/70 dark:border-cyan-600/60 bg-cyan-50 dark:bg-cyan-900/20 text-[10px] font-mono text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors"
         >
           NOW
         </button>
       </div>
 
-      <div className="rounded-lg border border-amber-200/70 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/20 px-3 py-2 min-w-0">
-        <div className="text-[9px] font-mono uppercase tracking-widest text-amber-600/80 dark:text-amber-400/80 mb-1">
+      <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-2 min-w-0">
+        <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-500 mb-1">
           active now
         </div>
-        <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono text-amber-800 dark:text-amber-300 leading-5">
+        <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono text-cyan-700 dark:text-cyan-300 leading-5">
           {activePath.map((entry, index) => (
             <span key={`${entryKey(entry)}-${index}`} className="inline-flex items-center gap-1">
               <span>{ABBR[entry.lord] ?? entry.lord} {LEVEL_LABEL[LEVELS[index]]}</span>
-              {index < activePath.length - 1 && <span className="text-amber-400 dark:text-amber-600">›</span>}
+              {index < activePath.length - 1 && <span className="text-zinc-400 dark:text-zinc-600">›</span>}
             </span>
           ))}
         </div>
@@ -253,7 +253,7 @@ export default function VimshottariPanel({ planets, birthDatetime }: Props) {
               onClick={() => handleRowClick(entry)}
               className={`w-full min-w-0 text-left flex items-center gap-2 px-2 py-2 rounded-lg border transition-colors group ${
                 active
-                  ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'
+                  ? 'border-cyan-300 dark:border-cyan-700 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300'
                   : selectedHere
                   ? 'border-emerald-300 dark:border-green-700 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300'
                   : 'border-transparent text-zinc-600 dark:text-zinc-400 hover:border-zinc-200 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
@@ -274,7 +274,7 @@ export default function VimshottariPanel({ planets, birthDatetime }: Props) {
                 </span>
               )}
 
-              {active && <span className="text-[8px] text-amber-500 dark:text-amber-400 flex-shrink-0">●</span>}
+              {active && <span className="text-[8px] text-cyan-500 dark:text-cyan-400 flex-shrink-0">●</span>}
             </button>
           );
         })}
