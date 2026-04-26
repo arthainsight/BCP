@@ -1,4 +1,4 @@
-import { ChartData, PlanetData } from "@/types";
+import { ChartData, DebugInfo, PlanetData } from "@/types";
 import {
   SE_SUN, SE_MOON, SE_MARS, SE_MERCURY, SE_JUPITER, SE_VENUS, SE_SATURN, SE_MEAN_NODE,
   sweJulday, sweGetAyanamsa, sweCalcUt, sweGetAscendant,
@@ -90,6 +90,19 @@ export async function calculateChart(
     p.house = ((planetSignIndex - ascSignIndex + 12) % 12) + 1;
   }
 
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const debug: DebugInfo = {
+    julianDay: jd,
+    ayanamsa: lahiriAyanamsa,
+    utcOffset: timezoneOffset,
+    ascendantDegree: ascDegree,
+    ascendantSign: ascSignIndex + 1,
+    ephemerisEngine: 'swisseph-wasm',
+    inputDateTime: `${year}-${pad(month)}-${pad(day)} ${pad(hour)}:${pad(minute)}:${pad(second)}`,
+    latitude: lat,
+    longitude: lng,
+  };
+
   return {
     ascendant: {
       sign: ascSignIndex + 1,
@@ -97,6 +110,7 @@ export async function calculateChart(
       longitude: ascSidereal,
     },
     planets,
+    debug,
   };
 }
 

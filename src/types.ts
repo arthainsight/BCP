@@ -28,6 +28,18 @@ export interface PlanetData {
   house: number;
 }
 
+export interface DebugInfo {
+  julianDay: number;
+  ayanamsa: number;
+  utcOffset: number;
+  ascendantDegree: number;
+  ascendantSign: number;
+  ephemerisEngine: string;
+  inputDateTime: string;
+  latitude: number;
+  longitude: number;
+}
+
 export interface ChartData {
   ascendant: {
     sign: number;
@@ -35,6 +47,7 @@ export interface ChartData {
     longitude: number;
   };
   planets: PlanetData[];
+  debug?: DebugInfo;
 }
 
 export interface HouseAnalysis {

@@ -13,6 +13,8 @@ import GrahasPanel from '@/components/GrahasPanel';
 import KarakasPanel from '@/components/KarakasPanel';
 import DashaPanel from '@/components/DashaPanel';
 import ChartSection from '@/components/ChartSection';
+import CalculationDebugPanel from '@/components/CalculationDebugPanel';
+import { buildReportMarkdown } from '@/lib/exportReport';
 
 function getTodayString(): string {
   const d = new Date();
@@ -300,6 +302,31 @@ export default function Home() {
     }
   }, [transitDatetime, chartData, manualLat, manualLng, effectiveTzOffset]);
 
+  const handleExportReport = useCallback(() => {
+    const lat = parseFloat(manualLat);
+    const lng = parseFloat(manualLng);
+    const markdown = buildReportMarkdown({
+      birthDatetime,
+      city: selectedGeo ? `${selectedGeo.name}, ${selectedGeo.country}` : city,
+      ianaTimezone,
+      effectiveTzOffset,
+      latitude: isNaN(lat) ? 0 : lat,
+      longitude: isNaN(lng) ? 0 : lng,
+      chart: chartData,
+      charaKarakas,
+      bcp: effectiveBcpResult,
+    });
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'bhrigu-code-report.md';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [birthDatetime, city, selectedGeo, ianaTimezone, effectiveTzOffset, manualLat, manualLng, chartData, charaKarakas, effectiveBcpResult]);
+
   const handleSaveProfile = useCallback(() => {
     const lat = parseFloat(manualLat);
     const lng = parseFloat(manualLng);
@@ -449,9 +476,25 @@ export default function Home() {
                 : <EmptyState message="Calculate a chart to see Chara Karakas" />
             )}
             {desktopTab === 'dasha' && (
-              effectiveBcpResult && chartData
-                ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
-                : <EmptyState message="Calculate a chart to see BCP dasha analysis" />
+              chartData ? (
+                <div className="space-y-1">
+                  {effectiveBcpResult
+                    ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
+                    : <EmptyState message="BCP data unavailable" />
+                  }
+                  <CalculationDebugPanel debug={chartData.debug} ianaTimezone={ianaTimezone} />
+                  <div className="pt-2">
+                    <button
+                      onClick={handleExportReport}
+                      className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 rounded text-xs font-mono hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                    >
+                      ↓ export report
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <EmptyState message="Calculate a chart to see BCP dasha analysis" />
+              )
             )}
             {desktopTab === 'settings' && (
               <SettingsPanel {...settingsProps} />
@@ -489,10 +532,25 @@ export default function Home() {
 
         {activeTab === 'dasha' && (
           <Panel>
-            {effectiveBcpResult && chartData
-              ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
-              : <EmptyState message="Calculate a chart in Settings to see BCP dasha analysis" />
-            }
+            {chartData ? (
+              <div className="space-y-1">
+                {effectiveBcpResult
+                  ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
+                  : <EmptyState message="BCP data unavailable" />
+                }
+                <CalculationDebugPanel debug={chartData.debug} ianaTimezone={ianaTimezone} />
+                <div className="pt-2">
+                  <button
+                    onClick={handleExportReport}
+                    className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 rounded text-xs font-mono hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                  >
+                    ↓ export report
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <EmptyState message="Calculate a chart in Settings to see BCP dasha analysis" />
+            )}
           </Panel>
         )}
 
