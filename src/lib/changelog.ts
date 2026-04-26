@@ -1,5 +1,13 @@
 export const CHANGELOG = [
   {
+    version: 'v1.13',
+    changes: [
+      'Mobile Grahas view now uses stacked cards instead of horizontal table scrolling',
+      'Nakṣatra Pada is now visible in the mobile Grahas view',
+      'Desktop Grahas table remains unchanged',
+    ],
+  },
+  {
     version: 'v1.12',
     changes: [
       'Removed Sanskrit toggle from Settings → Chart',
