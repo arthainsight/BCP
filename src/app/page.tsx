@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
@@ -54,6 +54,10 @@ function computeManualBcp(completedAge: number, month: number): BcpResult {
 const DESKTOP_TABS = ['data', 'grahas', 'dasha', 'settings'] as const;
 type DesktopTab = (typeof DESKTOP_TABS)[number];
 
+type CalculationOptions = {
+  preserveCurrentPanel?: boolean;
+};
+
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">
@@ -103,6 +107,8 @@ export default function Home() {
   const [chartDisplaySettings, setChartDisplaySettings] = useState<ChartDisplaySettings>(DEFAULT_CHART_DISPLAY);
   const [calculationSettings, setCalculationSettings] = useState<CalculationSettings>(DEFAULT_CALCULATION_SETTINGS);
   const [dashaSettings, setDashaSettings] = useState<DashaSettings>(DEFAULT_DASHA_SETTINGS);
+  const [settingsRestored, setSettingsRestored] = useState(false);
+  const previousCalculationKeyRef = useRef('');
 
   // Manual BCP
   const [useManualBcpMode, setUseManualBcpMode] = useState(false);
@@ -172,6 +178,7 @@ export default function Home() {
       const dash = localStorage.getItem('dashaSettings');
       if (dash) setDashaSettings({ ...DEFAULT_DASHA_SETTINGS, ...JSON.parse(dash) });
     } catch {}
+    setSettingsRestored(true);
   }, []);
 
 
@@ -220,6 +227,7 @@ export default function Home() {
     setManualBcpAge('');
     setManualBcpMonth('');
     setTargetDate(getTodayString());
+    previousCalculationKeyRef.current = '';
   }, []);
 
   const handleGeocode = useCallback(async () => {
@@ -264,7 +272,7 @@ export default function Home() {
   }, []);
 
   const performCalculation = useCallback(
-    async (dt: string, lat: number, lng: number, tzOffset: number, tDate: string) => {
+    async (dt: string, lat: number, lng: number, tzOffset: number, tDate: string, options?: CalculationOptions) => {
       setError('');
       const birthDate = parseDateTime(dt);
       if (!birthDate) {
@@ -286,6 +294,8 @@ export default function Home() {
         const params = new URLSearchParams({
           year: yyyy, month: mm, day: dd, hour: hh, minute: min, second: ss,
           lat: String(lat), lng: String(lng), tz: String(tzOffset),
+          ayanamsa: calculationSettings.ayanamsa,
+          nodeMode: calculationSettings.nodeMode,
         });
 
         const res = await fetch('/api/chart?' + params.toString());
@@ -296,8 +306,10 @@ export default function Home() {
         } else {
           setChartData(data);
           setTransitPlanets([]);
-          setActiveTab('chart');
-          setDesktopTab('grahas');
+          if (!options?.preserveCurrentPanel) {
+            setActiveTab('chart');
+            setDesktopTab('grahas');
+          }
         }
       } catch (e) {
         setError('Failed to calculate chart. ' + String(e));
@@ -305,10 +317,10 @@ export default function Home() {
         setLoading(false);
       }
     },
-    []
+    [calculationSettings.ayanamsa, calculationSettings.nodeMode]
   );
 
-  const handleCalculate = useCallback(async () => {
+  const handleCalculate = useCallback(async (options?: CalculationOptions) => {
     if (!birthDatetime.trim()) { setError('Please enter birth date and time.'); return; }
     const lat = parseFloat(manualLat);
     const lng = parseFloat(manualLng);
@@ -317,8 +329,39 @@ export default function Home() {
       setError('Timezone could not be determined. Enter a city or set a manual UTC offset.');
       return;
     }
-    await performCalculation(birthDatetime, lat, lng, effectiveTzOffset, targetDate);
+    await performCalculation(birthDatetime, lat, lng, effectiveTzOffset, targetDate, options);
   }, [birthDatetime, manualLat, manualLng, effectiveTzOffset, targetDate, performCalculation]);
+
+  useEffect(() => {
+    if (!settingsRestored || !chartData || !canCalculate) return;
+
+    const calculationKey = [
+      birthDatetime,
+      manualLat,
+      manualLng,
+      effectiveTzOffset,
+      targetDate,
+      calculationSettings.ayanamsa,
+      calculationSettings.nodeMode,
+    ].join('|');
+
+    if (previousCalculationKeyRef.current === calculationKey) return;
+    previousCalculationKeyRef.current = calculationKey;
+
+    void handleCalculate({ preserveCurrentPanel: true });
+  }, [
+    settingsRestored,
+    chartData,
+    canCalculate,
+    birthDatetime,
+    manualLat,
+    manualLng,
+    effectiveTzOffset,
+    targetDate,
+    calculationSettings.ayanamsa,
+    calculationSettings.nodeMode,
+    handleCalculate,
+  ]);
 
   const handleCalculateTransit = useCallback(async () => {
     if (!transitDatetime.trim() || !chartData) return;
@@ -340,6 +383,8 @@ export default function Home() {
       const params = new URLSearchParams({
         year: yyyy, month: mm, day: dd, hour: hh, minute: min, second: ss,
         lat: String(lat), lng: String(lng), tz: String(effectiveTzOffset),
+        ayanamsa: calculationSettings.ayanamsa,
+        nodeMode: calculationSettings.nodeMode,
       });
       const res = await fetch('/api/chart?' + params.toString());
       const data = await res.json();
@@ -357,7 +402,7 @@ export default function Home() {
     } finally {
       setTransitLoading(false);
     }
-  }, [transitDatetime, chartData, manualLat, manualLng, effectiveTzOffset]);
+  }, [transitDatetime, chartData, manualLat, manualLng, effectiveTzOffset, calculationSettings.ayanamsa, calculationSettings.nodeMode]);
 
   const handleExportReport = useCallback(() => {
     const lat = parseFloat(manualLat);
@@ -461,6 +506,7 @@ export default function Home() {
       setChartData(null);
       setTransitPlanets([]);
       setError('');
+      previousCalculationKeyRef.current = '';
 
       const lat = parseFloat(snap.manualLat);
       const lng = parseFloat(snap.manualLng);
@@ -692,7 +738,7 @@ export default function Home() {
 
       {/* Footer (desktop only) */}
       <footer className="hidden md:block text-center text-xs font-mono text-zinc-400 dark:text-zinc-700 py-6">
-        {APP_NAME} {APP_VERSION} — lahiri ayanamsa · whole-sign houses · chara karakas
+        {APP_NAME} {APP_VERSION} — selected ayanamsa · whole-sign houses · chara karakas
       </footer>
     </div>
   );
