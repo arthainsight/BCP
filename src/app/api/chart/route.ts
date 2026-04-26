@@ -1,5 +1,9 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { calculateChart } from "@/lib/ephemeris";
+
+function getCookie(request: NextRequest, name: string): string | null {
+  return request.cookies.get(name)?.value ?? null;
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -13,8 +17,17 @@ export async function GET(request: NextRequest) {
   const lat = parseFloat(searchParams.get("lat") || "0");
   const lng = parseFloat(searchParams.get("lng") || "0");
   const tz = parseFloat(searchParams.get("tz") || "0");
-  const ayanamsa = searchParams.get("ayanamsa") || "lahiri";
-  const nodeMode = searchParams.get("nodeMode") || "mean";
+
+  // NEW: fallback to cookies if query params missing
+  const ayanamsa =
+    searchParams.get("ayanamsa") ||
+    getCookie(request, "bcp_ayanamsa") ||
+    "lahiri";
+
+  const nodeMode =
+    searchParams.get("nodeMode") ||
+    getCookie(request, "bcp_nodeMode") ||
+    "mean";
 
   if (!year || !month || !day) {
     return NextResponse.json({ error: "Missing required parameters: year, month, day" }, { status: 400 });
