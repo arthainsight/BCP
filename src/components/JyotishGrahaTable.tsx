@@ -114,34 +114,68 @@ export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props)
   ];
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-xs border-collapse font-mono">
-        <thead>
-          <tr className="bg-zinc-100 dark:bg-zinc-800">
-            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Code</th>
-            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Graha</th>
-            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Karaka</th>
-            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Position</th>
-            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Nakṣatra</th>
-            <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Pada</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => {
-            const prevIsSpecial = i > 0 && !rows[i - 1].isSpecial && row.isSpecial;
-            return (
-              <tr key={row.code} className={`border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${prevIsSpecial ? 'border-t-2 border-t-zinc-200 dark:border-t-zinc-700' : ''}`}>
-                <td className={`p-2 border border-zinc-100 dark:border-zinc-800 font-bold ${row.isSpecial ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-700 dark:text-green-400'}`}>{row.code}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-800 dark:text-zinc-100">{row.isSpecial ? '' : row.name}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-amber-600 dark:text-amber-400 font-semibold">{row.karaka}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.position}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-cyan-700 dark:text-cyan-300">{row.nakshatra}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300">{row.pada}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <>
+      {/* Desktop/tablet table — hidden below 640 px */}
+      <div className="hidden sm:block overflow-x-auto">
+        <table className="w-full text-xs border-collapse font-mono">
+          <thead>
+            <tr className="bg-zinc-100 dark:bg-zinc-800">
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Code</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Graha</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Karaka</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Position</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Nakṣatra</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Pada</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => {
+              const prevIsSpecial = i > 0 && !rows[i - 1].isSpecial && row.isSpecial;
+              return (
+                <tr key={row.code} className={`border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${prevIsSpecial ? 'border-t-2 border-t-zinc-200 dark:border-t-zinc-700' : ''}`}>
+                  <td className={`p-2 border border-zinc-100 dark:border-zinc-800 font-bold ${row.isSpecial ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-700 dark:text-green-400'}`}>{row.code}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-800 dark:text-zinc-100">{row.isSpecial ? '' : row.name}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-amber-600 dark:text-amber-400 font-semibold">{row.karaka}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.position}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-cyan-700 dark:text-cyan-300">{row.nakshatra}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300">{row.pada}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile cards — visible only below 640 px */}
+      <div className="sm:hidden flex flex-col gap-2 w-full max-w-full">
+        {rows.map((row) => (
+          <div
+            key={row.code}
+            className="rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 p-2 font-mono text-xs flex flex-col gap-1 w-full max-w-full"
+          >
+            {/* Row 1: Code · Name · Karaka */}
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className={`font-bold ${row.isSpecial ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-700 dark:text-green-400'}`}>
+                {row.code}
+              </span>
+              {!row.isSpecial && (
+                <span className="text-zinc-800 dark:text-zinc-100">{row.name}</span>
+              )}
+              {row.karaka && (
+                <span className="text-amber-600 dark:text-amber-400 font-semibold ml-auto">{row.karaka}</span>
+              )}
+            </div>
+            {/* Row 2: Position */}
+            <div className="text-zinc-700 dark:text-zinc-300">
+              {row.position}
+            </div>
+            {/* Row 3: Nakshatra · Pada */}
+            <div className="text-cyan-700 dark:text-cyan-300" style={{ overflowWrap: 'anywhere' }}>
+              {row.nakshatra} · {row.pada}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
