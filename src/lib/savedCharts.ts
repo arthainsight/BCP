@@ -1,3 +1,5 @@
+import { ChartDisplaySettings, CalculationSettings, DashaSettings } from '@/types';
+
 export interface SavedChartData {
   birthDatetime: string;
   city: string;
@@ -7,6 +9,9 @@ export interface SavedChartData {
   tzOverride: string;
   targetDate: string;
   showCoords: boolean;
+  calculationSettings?: CalculationSettings;
+  chartDisplaySettings?: ChartDisplaySettings;
+  dashaSettings?: DashaSettings;
 }
 
 export interface SavedChart {
