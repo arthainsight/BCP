@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v1.15',
+    changes: [
+      'Increased planet label font size for better readability on desktop and mobile',
+      'Increased sign abbreviation font size from 11 to 13',
+      'Improved chart line contrast in dark and light mode',
+      'Increased vertical spacing between stacked planet labels',
+      'Strengthened BCP Year / Month / Both house highlight fills',
+      'Neutral planet labels now use higher-contrast zinc-200 (dark) and zinc-800 (light)',
+      'Legend text size increased to 13px',
+    ],
+  },
+  {
     version: 'v1.14',
     changes: [
       'Unified BCP Engine and Vimshottari Dasha styling into one shared visual system',

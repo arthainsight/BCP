@@ -83,14 +83,14 @@ function getHouseFill(
   const month = house === activeMonthHouse;
 
   if (isDark) {
-    if (both)  return 'rgba(168, 85, 247, 0.15)';
-    if (year)  return 'rgba(34, 211, 238, 0.13)';
-    if (month) return 'rgba(74, 222, 128, 0.12)';
+    if (both)  return 'rgba(168, 85, 247, 0.20)';
+    if (year)  return 'rgba(34, 211, 238, 0.18)';
+    if (month) return 'rgba(74, 222, 128, 0.16)';
     return '#18181b';
   } else {
-    if (both)  return '#f3e8ff';
-    if (year)  return '#dbeafe';
-    if (month) return '#dcfce7';
+    if (both)  return 'rgba(147, 51, 234, 0.14)';
+    if (year)  return 'rgba(0, 160, 220, 0.14)';
+    if (month) return 'rgba(22, 163, 74, 0.12)';
     return '#ffffff';
   }
 }
@@ -110,7 +110,7 @@ function getPlanetFill(
   if (both)  return isDark ? '#c084fc' : '#9333ea'; // purple-400 / purple-600
   if (year)  return isDark ? '#22d3ee' : '#0891b2'; // cyan-400   / cyan-600
   if (month) return isDark ? '#4ade80' : '#16a34a'; // green-400  / green-600
-  return isDark ? '#d4d4d8' : '#3f3f46';             // zinc-300   / zinc-700
+  return isDark ? '#e4e4e7' : '#27272a';             // zinc-200   / zinc-800
 }
 
 function getSignForHouse(ascendantSign: number, house: number): number {
@@ -138,8 +138,8 @@ export default function NorthIndianChart({
   // Before mount, assume dark to avoid a light-flash on dark systems
   const isDark = !mounted || resolvedTheme === 'dark';
 
-  const strokeColor   = isDark ? '#52525b' : '#a1a1aa';
-  const signFill      = isDark ? '#a1a1aa' : '#3f3f46';
+  const strokeColor   = isDark ? '#71717a' : '#71717a'; // zinc-500 both modes — clearer contrast
+  const signFill      = isDark ? '#a1a1aa' : '#52525b'; // zinc-400 dark / zinc-600 light
   const hNumFill      = isDark ? '#71717a' : '#71717a';
 
   return (
@@ -167,9 +167,9 @@ export default function NorthIndianChart({
           const allPlanets: MergedPlanet[] = [...natalInHouse, ...transitInHouse];
 
           const dynamicLineHeight =
-            allPlanets.length > 5 ? 12 :
-            allPlanets.length > 3 ? 14 :
-            16;
+            allPlanets.length > 5 ? 14 :
+            allPlanets.length > 3 ? 16 :
+            18;
 
           const totalHeight = (allPlanets.length - 1) * dynamicLineHeight;
           const startY = item.planet.y - totalHeight / 2;
@@ -189,7 +189,7 @@ export default function NorthIndianChart({
                   y={item.sign.y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fontSize="11"
+                  fontSize="13"
                   fontWeight="600"
                   fill={signFill}
                 >
@@ -226,7 +226,7 @@ export default function NorthIndianChart({
                 }
 
                 const label = parts.join(' ');
-                const fontSize = planet.isTransit ? '11' : (parts.length > 1 ? '11' : '15');
+                const fontSize = planet.isTransit ? '12' : (parts.length > 1 ? '13' : '16');
 
                 return (
                   <text
@@ -249,7 +249,7 @@ export default function NorthIndianChart({
         })}
       </svg>
 
-      <div className="mt-3 flex justify-center gap-4 text-xs font-mono">
+      <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono">
         <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ Year</span>
         <span className="text-emerald-700 dark:text-green-400 font-semibold">■ Month</span>
         <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>
