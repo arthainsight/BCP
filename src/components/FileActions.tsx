@@ -158,12 +158,12 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
   };
 
   return (
-    <div className="relative inline-flex items-center gap-1">
+    <div className="relative inline-flex items-center gap-1 shrink-0">
       {compact ? (
         <>
           <button
             onClick={() => setShowMenu((p) => !p)}
-            className="px-3 py-1.5 min-w-10 rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-lg leading-none font-mono hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+            className="w-10 h-10 shrink-0 flex items-center justify-center p-0 rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-xl leading-none font-mono hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
             title="Chart actions"
             aria-label="Chart actions"
           >
