@@ -1,5 +1,12 @@
 export const CHANGELOG = [
   {
+    version: 'v1.07',
+    changes: [
+      'Added current chart/session name display in the top header',
+      'Shows saved chart name after LOAD or SAVE AS, Untitled if data exists without a saved name, None when session is empty',
+    ],
+  },
+  {
     version: 'v1.06',
     changes: [
       'Added top header file toolbar: NEW, LOAD, SAVE, SAVE AS, EXPORT, IMPORT',

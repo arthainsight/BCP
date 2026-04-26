@@ -22,6 +22,7 @@ interface Props {
   onLoad: (snapshot: ChartSnapshot, id: string) => void;
   onExport: () => void;
   onImport: () => void;
+  onActiveNameChange?: (name: string | null) => void;
 }
 
 const BTN =
@@ -31,7 +32,7 @@ const BTN =
   "disabled:opacity-30 disabled:cursor-not-allowed " +
   "disabled:hover:bg-white dark:disabled:hover:bg-zinc-800";
 
-export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport }: Props) {
+export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport, onActiveNameChange }: Props) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showLoad, setShowLoad] = useState(false);
   const [savedList, setSavedList] = useState<SavedChart[]>([]);
@@ -40,8 +41,13 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
   const [confirmNew, setConfirmNew] = useState(false);
 
   useEffect(() => {
-    setActiveId(getActiveSavedChartId());
-  }, []);
+    const id = getActiveSavedChartId();
+    setActiveId(id);
+    if (id && onActiveNameChange) {
+      const chart = loadSavedCharts().find((c) => c.id === id);
+      onActiveNameChange(chart?.name ?? null);
+    }
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const refreshList = useCallback(() => {
     setSavedList(loadSavedCharts());
@@ -60,6 +66,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
     } else {
       clearActiveSavedChartId();
       setActiveId(null);
+      onActiveNameChange?.(null);
       onNew();
     }
   };
@@ -68,6 +75,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
     setConfirmNew(false);
     clearActiveSavedChartId();
     setActiveId(null);
+    onActiveNameChange?.(null);
     onNew();
   };
 
@@ -87,6 +95,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
   const handlePickChart = (chart: SavedChart) => {
     setActiveSavedChartId(chart.id);
     setActiveId(chart.id);
+    onActiveNameChange?.(chart.name);
     setShowLoad(false);
     onLoad(chart.chartData, chart.id);
   };
@@ -98,6 +107,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
     if (activeId === id) {
       clearActiveSavedChartId();
       setActiveId(null);
+      onActiveNameChange?.(null);
     }
   };
 
@@ -120,6 +130,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
     const created = saveChartAsNew(name, snapshot);
     setActiveSavedChartId(created.id);
     setActiveId(created.id);
+    onActiveNameChange?.(created.name);
     setShowSaveAs(false);
     setSaveAsName("");
   };

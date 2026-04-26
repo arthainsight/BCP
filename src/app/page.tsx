@@ -98,6 +98,9 @@ export default function Home() {
   const [manualBcpAge, setManualBcpAge] = useState('');
   const [manualBcpMonth, setManualBcpMonth] = useState('');
 
+  // Active saved chart name (null = no saved chart active)
+  const [activeChartName, setActiveChartName] = useState<string | null>(null);
+
   // --- Derived state ---
 
   const autoTzOffset = useMemo<number | null>(() => {
@@ -465,6 +468,8 @@ export default function Home() {
   };
 
   const hasChart = !!chartData;
+  const hasSnapshotData = !!birthDatetime && !!manualLat && !!manualLng;
+  const displayChartName = activeChartName ?? (hasSnapshotData ? 'Untitled' : 'None');
 
   // Shared props objects
   const chartSectionProps = {
@@ -515,6 +520,12 @@ export default function Home() {
           <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
         </div>
         <div className="flex items-center gap-3">
+          <span className="hidden sm:block text-xs font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+            <span className="text-zinc-300 dark:text-zinc-600">chart:</span>{' '}
+            <span className={activeChartName ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-300 dark:text-zinc-600 italic'}>
+              {displayChartName}
+            </span>
+          </span>
           <FileActions
             snapshot={chartSnapshot}
             hasChart={hasChart}
@@ -522,6 +533,7 @@ export default function Home() {
             onLoad={handleLoadChartSnapshot}
             onExport={handleExportCharts}
             onImport={handleImportCharts}
+            onActiveNameChange={setActiveChartName}
           />
           <ThemeToggle />
         </div>
