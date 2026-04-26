@@ -523,32 +523,66 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
+    <div className="min-h-screen overflow-x-hidden bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">
-            {APP_NAME}
-          </span>
-          <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="hidden sm:block text-xs font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
-            <span className="text-zinc-300 dark:text-zinc-600">chart:</span>{' '}
-            <span className={activeChartName ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-300 dark:text-zinc-600 italic'}>
-              {displayChartName}
+      <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+        {/* Desktop: single row */}
+        <div className="hidden md:flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
+            <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+              <span className="text-zinc-300 dark:text-zinc-600">chart:</span>{' '}
+              <span className={activeChartName ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-300 dark:text-zinc-600 italic'}>
+                {displayChartName}
+              </span>
             </span>
-          </span>
-          <FileActions
-            snapshot={chartSnapshot}
-            hasChart={hasChart}
-            onNew={handleNewChart}
-            onLoad={handleLoadChartSnapshot}
-            onExport={handleExportCharts}
-            onImport={handleImportCharts}
-            onActiveNameChange={setActiveChartName}
-          />
-          <ThemeToggle />
+            <FileActions
+              snapshot={chartSnapshot}
+              hasChart={hasChart}
+              onNew={handleNewChart}
+              onLoad={handleLoadChartSnapshot}
+              onExport={handleExportCharts}
+              onImport={handleImportCharts}
+              onActiveNameChange={setActiveChartName}
+            />
+            <ThemeToggle />
+          </div>
+        </div>
+
+        {/* Mobile: two rows */}
+        <div className="md:hidden">
+          {/* Row 1: app name + theme icon */}
+          <div className="flex items-center justify-between px-4 pt-2.5 pb-1">
+            <div className="flex items-center gap-2">
+              <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
+              <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
+            </div>
+            <ThemeToggle icon />
+          </div>
+          {/* Row 2: scrollable toolbar */}
+          <div className="overflow-x-auto pb-2.5 px-4">
+            <div className="inline-flex items-center gap-1 whitespace-nowrap">
+              {displayChartName !== 'None' && (
+                <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mr-0.5">
+                  {displayChartName}
+                </span>
+              )}
+              <FileActions
+                snapshot={chartSnapshot}
+                hasChart={hasChart}
+                onNew={handleNewChart}
+                onLoad={handleLoadChartSnapshot}
+                onExport={handleExportCharts}
+                onImport={handleImportCharts}
+                onActiveNameChange={setActiveChartName}
+                hideSave
+                compact
+              />
+            </div>
+          </div>
         </div>
       </header>
 

@@ -23,16 +23,22 @@ interface Props {
   onExport: () => void;
   onImport: () => void;
   onActiveNameChange?: (name: string | null) => void;
+  hideSave?: boolean;
+  compact?: boolean;
 }
 
-const BTN =
-  "px-2 py-1 text-xs font-mono rounded transition-colors bg-white dark:bg-zinc-800 " +
+const BTN_BASE =
+  "font-mono rounded transition-colors bg-white dark:bg-zinc-800 " +
   "border border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 " +
   "hover:bg-zinc-100 dark:hover:bg-zinc-700 " +
   "disabled:opacity-30 disabled:cursor-not-allowed " +
   "disabled:hover:bg-white dark:disabled:hover:bg-zinc-800";
 
-export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport, onActiveNameChange }: Props) {
+const BTN = "px-2 py-1 text-xs " + BTN_BASE;
+const BTN_COMPACT = "px-1.5 py-0.5 text-[10px] " + BTN_BASE;
+
+export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport, onActiveNameChange, hideSave, compact }: Props) {
+  const btn = compact ? BTN_COMPACT : BTN;
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showLoad, setShowLoad] = useState(false);
   const [savedList, setSavedList] = useState<SavedChart[]>([]);
@@ -140,7 +146,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
       <button
         onClick={handleNew}
         className={
-          "px-2 py-1 text-xs font-mono rounded transition-colors border " +
+          (compact ? "px-1.5 py-0.5 text-[10px]" : "px-2 py-1 text-xs") +
+          " font-mono rounded transition-colors border " +
           (confirmNew
             ? "bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 border-red-300 dark:border-red-700"
             : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-700")
@@ -150,37 +157,39 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
         {confirmNew ? "confirm?" : "NEW"}
       </button>
 
-      <button onClick={toggleLoad} className={BTN} title="Load saved chart">
+      <button onClick={toggleLoad} className={btn} title="Load saved chart">
         LOAD
       </button>
 
-      <button
-        onClick={handleSave}
-        disabled={!isActiveSaved || !hasSnapshotData}
-        className={BTN}
-        title={
-          !isActiveSaved
-            ? "Use SAVE AS first to name this chart"
-            : "Update current saved chart"
-        }
-      >
-        SAVE
-      </button>
+      {!hideSave && (
+        <button
+          onClick={handleSave}
+          disabled={!isActiveSaved || !hasSnapshotData}
+          className={btn}
+          title={
+            !isActiveSaved
+              ? "Use SAVE AS first to name this chart"
+              : "Update current saved chart"
+          }
+        >
+          SAVE
+        </button>
+      )}
 
       <button
         onClick={openSaveAs}
         disabled={!hasSnapshotData}
-        className={BTN}
+        className={btn}
         title="Save current chart as a new entry"
       >
         SAVE AS
       </button>
 
-      <button onClick={onExport} className={BTN} title="Export all saved charts to JSON file">
+      <button onClick={onExport} className={btn} title="Export all saved charts to JSON file">
         EXPORT
       </button>
 
-      <button onClick={onImport} className={BTN} title="Import charts from JSON export file">
+      <button onClick={onImport} className={btn} title="Import charts from JSON export file">
         IMPORT
       </button>
 
