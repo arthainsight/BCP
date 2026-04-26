@@ -33,8 +33,21 @@ function fmtDate(d: Date): string {
   return `${day}.${month}.${year}`;
 }
 
-function fmtDateRange(start: Date, end: Date): string {
-  return `${fmtDate(start)}–${fmtDate(end)}`;
+function fmtTime(d: Date): string {
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+}
+
+function fmtDateTime(d: Date): string {
+  return `${fmtDate(d)} ${fmtTime(d)}`;
+}
+
+function fmtRange(start: Date, end: Date, level: Level): string {
+  const showTime = levelIndex(level) >= levelIndex('pd');
+  return showTime
+    ? `${fmtDateTime(start)}–${fmtDateTime(end)}`
+    : `${fmtDate(start)}–${fmtDate(end)}`;
 }
 
 function isActive(e: MahadashaEntry, now: Date): boolean {
@@ -147,13 +160,21 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
   };
 
   const handleRowClick = (entry: MahadashaEntry) => {
-    if (!canDrill || !currentNextLevel) return;
+    if (canDrill && currentNextLevel) {
+      setSelected((prev) => {
+        const next = prev.slice(0, currentLevelIndex);
+        next[currentLevelIndex] = entry;
+        return next;
+      });
+      setLevel(currentNextLevel);
+      return;
+    }
+
     setSelected((prev) => {
       const next = prev.slice(0, currentLevelIndex);
       next[currentLevelIndex] = entry;
       return next;
     });
-    setLevel(currentNextLevel);
   };
 
   return (
@@ -185,23 +206,13 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
       </div>
 
       <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono min-h-[24px]">
-        <button
-          onClick={() => goToLevel('md')}
-          className={`px-2 py-1 rounded-md border transition-colors ${
-            level === 'md'
-              ? 'border-emerald-300 dark:border-green-700 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300'
-              : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-          }`}
-        >
-          MD
-        </button>
         {selected.map((entry, index) => {
           const selectedLevel = LEVELS[index];
           const targetLevel = LEVELS[index + 1];
           if (!selectedLevel || !targetLevel) return null;
           return (
             <span key={`${entryKey(entry)}-crumb`} className="inline-flex items-center gap-1">
-              <span className="text-zinc-300 dark:text-zinc-700">›</span>
+              {index > 0 && <span className="text-zinc-300 dark:text-zinc-700">›</span>}
               <button
                 onClick={() => goToLevel(targetLevel)}
                 className={`px-2 py-1 rounded-md border transition-colors ${
@@ -215,14 +226,15 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
             </span>
           );
         })}
-        {level !== 'md' && (
-          <span className="inline-flex items-center gap-1">
-            <span className="text-zinc-300 dark:text-zinc-700">›</span>
-            <span className="px-2 py-1 rounded-md border border-emerald-300 dark:border-green-700 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300">
-              {LEVEL_LABEL[level]}
-            </span>
-          </span>
-        )}
+        <span className="inline-flex items-center gap-1">
+          {selected.length > 0 && <span className="text-zinc-300 dark:text-zinc-700">›</span>}
+          <button
+            onClick={() => goToLevel(level)}
+            className="px-2 py-1 rounded-md border border-emerald-300 dark:border-green-700 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300"
+          >
+            {LEVEL_LABEL[level]}
+          </button>
+        </span>
       </div>
 
       <div className="flex items-center justify-between gap-2">
@@ -261,7 +273,7 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
                 {abbr}
               </span>
               <span className="font-mono text-[11px] md:text-xs text-zinc-500 dark:text-zinc-500 flex-1 tabular-nums whitespace-nowrap">
-                {fmtDateRange(entry.startDate, entry.endDate)}
+                {fmtRange(entry.startDate, entry.endDate, level)}
               </span>
               {active && <span className="text-[8px] text-amber-500 dark:text-amber-400 flex-shrink-0">●</span>}
               {canDrill && (
