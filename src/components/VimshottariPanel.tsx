@@ -43,9 +43,12 @@ function fmtDateTime(d: Date): string {
   return `${fmtDate(d)} ${fmtTime(d)}`;
 }
 
+function showTimeForLevel(level: Level): boolean {
+  return levelIndex(level) >= levelIndex('pd');
+}
+
 function fmtRange(start: Date, end: Date, level: Level): string {
-  const showTime = levelIndex(level) >= levelIndex('pd');
-  return showTime
+  return showTimeForLevel(level)
     ? `${fmtDateTime(start)}–${fmtDateTime(end)}`
     : `${fmtDate(start)}–${fmtDate(end)}`;
 }
@@ -137,6 +140,7 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
   const currentActive = activeEntry(entries, now);
   const currentNextLevel = nextLevel(level);
   const selectedAtThisLevel = selected[currentLevelIndex] ?? null;
+  const deep = showTimeForLevel(level);
 
   const canDrill = !!currentNextLevel && (level === 'md' ? showAd : level === 'ad' ? showPd : true);
 
@@ -178,7 +182,7 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 min-w-0 overflow-hidden">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
           &gt; vimshottari
@@ -191,11 +195,11 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
         </button>
       </div>
 
-      <div className="rounded-lg border border-amber-200/70 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/20 px-3 py-2">
+      <div className="rounded-lg border border-amber-200/70 dark:border-amber-800/60 bg-amber-50/70 dark:bg-amber-950/20 px-3 py-2 min-w-0">
         <div className="text-[9px] font-mono uppercase tracking-widest text-amber-600/80 dark:text-amber-400/80 mb-1">
           active now
         </div>
-        <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono text-amber-800 dark:text-amber-300">
+        <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono text-amber-800 dark:text-amber-300 leading-5">
           {activePath.map((entry, index) => (
             <span key={`${entryKey(entry)}-${index}`} className="inline-flex items-center gap-1">
               <span>{ABBR[entry.lord] ?? entry.lord} {LEVEL_LABEL[LEVELS[index]]}</span>
@@ -205,7 +209,7 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono min-h-[24px]">
+      <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono min-h-[24px] min-w-0">
         {selected.map((entry, index) => {
           const selectedLevel = LEVELS[index];
           const targetLevel = LEVELS[index + 1];
@@ -250,7 +254,7 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
         </div>
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-1 min-w-0">
         {entries.map((entry) => {
           const key = entryKey(entry);
           const active = currentActive ? entryKey(currentActive) === key : false;
@@ -261,7 +265,7 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
             <button
               key={key}
               onClick={() => handleRowClick(entry)}
-              className={`w-full text-left flex items-center gap-2 px-2 py-2 rounded-lg border transition-colors group ${
+              className={`w-full min-w-0 text-left flex items-center gap-2 px-2 py-2 rounded-lg border transition-colors group ${
                 active
                   ? 'border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300'
                   : selectedHere
@@ -272,15 +276,19 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
               <span className="font-mono text-xs font-bold w-7 flex-shrink-0">
                 {abbr}
               </span>
-              <span className="font-mono text-[11px] md:text-xs text-zinc-500 dark:text-zinc-500 flex-1 tabular-nums whitespace-nowrap">
-                {fmtRange(entry.startDate, entry.endDate, level)}
-              </span>
-              {active && <span className="text-[8px] text-amber-500 dark:text-amber-400 flex-shrink-0">●</span>}
-              {canDrill && (
-                <span className="text-[10px] text-zinc-300 dark:text-zinc-700 group-hover:text-zinc-500 dark:group-hover:text-zinc-400 flex-shrink-0">
-                  ›
+
+              {deep ? (
+                <span className="min-w-0 flex-1 font-mono text-[10px] md:text-[11px] text-zinc-500 dark:text-zinc-500 tabular-nums leading-4">
+                  <span className="block truncate">{fmtDateTime(entry.startDate)}</span>
+                  <span className="block truncate text-zinc-400 dark:text-zinc-600">→ {fmtDateTime(entry.endDate)}</span>
+                </span>
+              ) : (
+                <span className="min-w-0 flex-1 font-mono text-[11px] md:text-xs text-zinc-500 dark:text-zinc-500 tabular-nums truncate">
+                  {fmtRange(entry.startDate, entry.endDate, level)}
                 </span>
               )}
+
+              {active && <span className="text-[8px] text-amber-500 dark:text-amber-400 flex-shrink-0">●</span>}
             </button>
           );
         })}
