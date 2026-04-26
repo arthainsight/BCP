@@ -41,9 +41,28 @@ interface Props {
 const INPUT =
   'w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm font-mono text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500 focus:border-emerald-500 dark:focus:border-green-500';
 
+const TIME_NAV_BTN =
+  'px-2 py-1 rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-[10px] font-mono text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors';
+
 function fmtOffset(offset: number): string {
   const sign = offset >= 0 ? '+' : '';
   return `${sign}${offset % 1 === 0 ? offset.toFixed(0) : offset.toFixed(1)}h UTC`;
+}
+
+function toDateInputValue(date: Date): string {
+  return (
+    date.getFullYear() +
+    '-' +
+    String(date.getMonth() + 1).padStart(2, '0') +
+    '-' +
+    String(date.getDate()).padStart(2, '0')
+  );
+}
+
+function parseTargetDate(value: string): Date | null {
+  const [year, month, day] = value.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day, 12, 0, 0);
 }
 
 export default function DataPanel({
@@ -61,6 +80,15 @@ export default function DataPanel({
   manualBcpResult,
   loading, error, canCalculate,
 }: Props) {
+  const shiftTargetDate = (unit: 'month' | 'year', amount: number) => {
+    const current = parseTargetDate(targetDate) ?? new Date();
+    if (unit === 'month') current.setMonth(current.getMonth() + amount);
+    if (unit === 'year') current.setFullYear(current.getFullYear() + amount);
+    onTargetDateChange(toDateInputValue(current));
+  };
+
+  const resetTargetDate = () => onTargetDateChange(toDateInputValue(new Date()));
+
   return (
     <div className="space-y-5">
       <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; data</div>
@@ -182,10 +210,10 @@ export default function DataPanel({
         </div>
       )}
 
-      {/* Target date */}
+      {/* Target date / time navigation */}
       <div>
         <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-          target date (BCP reference)
+          target date (time navigation)
         </label>
         <input
           type="date"
@@ -193,6 +221,13 @@ export default function DataPanel({
           onChange={(e) => onTargetDateChange(e.target.value)}
           className={INPUT}
         />
+        <div className="mt-2 grid grid-cols-5 gap-1.5">
+          <button type="button" onClick={() => shiftTargetDate('year', -1)} className={TIME_NAV_BTN}>-1y</button>
+          <button type="button" onClick={() => shiftTargetDate('month', -1)} className={TIME_NAV_BTN}>-1m</button>
+          <button type="button" onClick={resetTargetDate} className={TIME_NAV_BTN}>today</button>
+          <button type="button" onClick={() => shiftTargetDate('month', 1)} className={TIME_NAV_BTN}>+1m</button>
+          <button type="button" onClick={() => shiftTargetDate('year', 1)} className={TIME_NAV_BTN}>+1y</button>
+        </div>
       </div>
 
       {/* Error */}
