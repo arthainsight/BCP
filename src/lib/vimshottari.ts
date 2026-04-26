@@ -65,14 +65,16 @@ export function calculateVimshottari(
   };
 }
 
-// AD duration = MD duration * AD lord years / 120
-// ADs start from the MD lord and cycle through LORDS order
-export function calculateAntardashas(md: MahadashaEntry): MahadashaEntry[] {
-  const mdLordIndex = LORDS.findIndex((l) => l === md.lord);
-  let cursor = md.startDate;
+// Generic Vimshottari sub-period calculator.
+// Next level duration = parent duration * sub-lord years / 120.
+// The sub-period sequence starts from the parent lord.
+export function calculateSubDashas(parent: MahadashaEntry): MahadashaEntry[] {
+  const parentLordIndex = LORDS.findIndex((l) => l === parent.lord);
+  let cursor = parent.startDate;
+
   return LORDS.map((_, i) => {
-    const lord = LORDS[(mdLordIndex + i) % 9];
-    const duration = (md.durationYears * YEARS[lord]) / 120;
+    const lord = LORDS[(parentLordIndex + i) % 9];
+    const duration = (parent.durationYears * YEARS[lord]) / 120;
     const endDate = addYears(cursor, duration);
     const entry: MahadashaEntry = { lord, startDate: cursor, endDate, durationYears: duration };
     cursor = endDate;
@@ -80,16 +82,25 @@ export function calculateAntardashas(md: MahadashaEntry): MahadashaEntry[] {
   });
 }
 
+// AD duration = MD duration * AD lord years / 120
+export function calculateAntardashas(md: MahadashaEntry): MahadashaEntry[] {
+  return calculateSubDashas(md);
+}
+
 // PD duration = AD duration * PD lord years / 120
 export function calculatePratyantardashas(ad: MahadashaEntry): MahadashaEntry[] {
-  const adLordIndex = LORDS.findIndex((l) => l === ad.lord);
-  let cursor = ad.startDate;
-  return LORDS.map((_, i) => {
-    const lord = LORDS[(adLordIndex + i) % 9];
-    const duration = (ad.durationYears * YEARS[lord]) / 120;
-    const endDate = addYears(cursor, duration);
-    const entry: MahadashaEntry = { lord, startDate: cursor, endDate, durationYears: duration };
-    cursor = endDate;
-    return entry;
-  });
+  return calculateSubDashas(ad);
+}
+
+// Three deeper sub-levels after PD.
+export function calculateSookshmaDashas(pd: MahadashaEntry): MahadashaEntry[] {
+  return calculateSubDashas(pd);
+}
+
+export function calculatePranaDashas(sd: MahadashaEntry): MahadashaEntry[] {
+  return calculateSubDashas(sd);
+}
+
+export function calculateDehaDashas(prana: MahadashaEntry): MahadashaEntry[] {
+  return calculateSubDashas(prana);
 }
