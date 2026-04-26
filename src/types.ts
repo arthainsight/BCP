@@ -40,6 +40,13 @@ export interface DebugInfo {
   longitude: number;
 }
 
+export interface SpecialLagna {
+  name: string;
+  longitude: number;
+  sign: number;
+  degree: number;
+}
+
 export interface ChartData {
   ascendant: {
     sign: number;
@@ -47,6 +54,7 @@ export interface ChartData {
     longitude: number;
   };
   planets: PlanetData[];
+  specialLagnas?: SpecialLagna[];
   debug?: DebugInfo;
 }
 

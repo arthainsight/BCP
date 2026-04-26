@@ -1,4 +1,4 @@
-import { ChartData, DebugInfo, PlanetData } from "@/types";
+import { ChartData, DebugInfo, PlanetData, SpecialLagna } from "@/types";
 import {
   SE_SUN, SE_MOON, SE_MARS, SE_MERCURY, SE_JUPITER, SE_VENUS, SE_SATURN,
   SE_MEAN_NODE, SE_TRUE_NODE,
@@ -107,6 +107,24 @@ export async function calculateChart(
     p.house = ((planetSignIndex - ascSignIndex + 12) % 12) + 1;
   }
 
+  const localHours = hour + minute / 60 + second / 3600;
+  const dayFraction = localHours / 24;
+  const sun = planets.find((p) => p.name === 'Sun')!;
+  const moon = planets.find((p) => p.name === 'Moon')!;
+
+  function sl(lon: number): SpecialLagna & { name: string } {
+    return { name: '', longitude: lon, sign: Math.floor(lon / 30) + 1, degree: lon % 30 };
+  }
+
+  const specialLagnas: SpecialLagna[] = [
+    { ...sl(normalize(sun.longitude + dayFraction * 360)), name: 'HL' },
+    { ...sl(normalize(ascLon + dayFraction * 360)), name: 'BL' },
+    { ...sl(normalize(ascLon + dayFraction * 720)), name: 'GL' },
+    { ...sl(normalize((ascLon + moon.longitude) / 2)), name: 'SL' },
+    { ...sl(normalize(ascLon + dayFraction * 1080)), name: 'PP' },
+    { ...sl(normalize(ascLon + dayFraction * 1440)), name: 'ViL' },
+  ];
+
   const pad = (n: number) => String(n).padStart(2, '0');
   const debug: DebugInfo = {
     julianDay: jd,
@@ -127,6 +145,7 @@ export async function calculateChart(
       longitude: ascLon,
     },
     planets,
+    specialLagnas,
     debug,
   };
 }

@@ -77,12 +77,9 @@ function activeEntry(entries: MahadashaEntry[], now: Date): MahadashaEntry | nul
 interface Props {
   planets: PlanetData[];
   birthDatetime: string;
-  showMd: boolean;
-  showAd: boolean;
-  showPd: boolean;
 }
 
-export default function VimshottariPanel({ planets, birthDatetime, showMd, showAd, showPd }: Props) {
+export default function VimshottariPanel({ planets, birthDatetime }: Props) {
   const [level, setLevel] = useState<Level>('md');
   const [selected, setSelected] = useState<MahadashaEntry[]>([]);
 
@@ -123,17 +120,6 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
     );
   }
 
-  if (!showMd) {
-    return (
-      <div className="space-y-2">
-        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; vimshottari</div>
-        <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 italic">
-          MD disabled — enable in Settings → Dasha.
-        </div>
-      </div>
-    );
-  }
-
   const currentLevelIndex = levelIndex(level);
   const parent = currentLevelIndex === 0 ? null : selected[currentLevelIndex - 1];
   const entries = level === 'md' ? result.entries : parent ? calculateSubDashas(parent) : [];
@@ -142,7 +128,7 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
   const selectedAtThisLevel = selected[currentLevelIndex] ?? null;
   const deep = showTimeForLevel(level);
 
-  const canDrill = !!currentNextLevel && (level === 'md' ? showAd : level === 'ad' ? showPd : true);
+  const canDrill = !!currentNextLevel;
 
   const goToLevel = (target: Level) => {
     const idx = levelIndex(target);

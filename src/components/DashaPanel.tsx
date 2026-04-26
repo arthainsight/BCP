@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function DashaPanel({ bcp, planets, ascSign, birthDatetime, dashaSettings }: Props) {
-  const { showBcp, showVimshottari, showMd, showAd, showPd } = dashaSettings;
+  const { showBcp, showVimshottari } = dashaSettings;
   const both = showBcp && showVimshottari;
 
   if (!showBcp && !showVimshottari) {
@@ -34,9 +34,6 @@ export default function DashaPanel({ bcp, planets, ascSign, birthDatetime, dasha
           <VimshottariPanel
             planets={planets}
             birthDatetime={birthDatetime}
-            showMd={showMd}
-            showAd={showAd}
-            showPd={showPd}
           />
         </div>
       )}

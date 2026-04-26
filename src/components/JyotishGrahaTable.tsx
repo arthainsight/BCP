@@ -1,4 +1,4 @@
-import { ChartData, PlanetData } from '@/types';
+import { ChartData, PlanetData, SpecialLagna } from '@/types';
 
 const SIGN_ABBR: Record<number, string> = {
   1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
@@ -86,6 +86,19 @@ interface Props {
 export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props) {
   const ascNak = getNakshatra(chart.ascendant.longitude);
 
+  const buildSpecialLagnaRow = (sl: SpecialLagna) => {
+    const nak = getNakshatra(sl.longitude);
+    return {
+      code: sl.name,
+      name: sl.name,
+      karaka: '',
+      position: `${SIGN_ABBR[sl.sign]} ${formatDms(sl.degree)}`,
+      nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
+      pada: nak.pada,
+      isSpecial: true,
+    };
+  };
+
   const rows = [
     {
       code: 'As',
@@ -94,8 +107,10 @@ export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props)
       position: `${SIGN_ABBR[chart.ascendant.sign]} ${formatDms(chart.ascendant.degree)}`,
       nakshatra: `${ascNak.name}(${ascNak.number}) ${ascNak.lord}`,
       pada: ascNak.pada,
+      isSpecial: false,
     },
-    ...chart.planets.map((p) => buildPlanetRow(p, karakaByPlanet)),
+    ...chart.planets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet), isSpecial: false })),
+    ...(chart.specialLagnas ?? []).map(buildSpecialLagnaRow),
   ];
 
   return (
@@ -112,16 +127,19 @@ export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props)
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={row.code} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-emerald-700 dark:text-green-400 font-bold">{row.code}</td>
-              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-800 dark:text-zinc-100">{row.name}</td>
-              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-amber-600 dark:text-amber-400 font-semibold">{row.karaka}</td>
-              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.position}</td>
-              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-cyan-700 dark:text-cyan-300">{row.nakshatra}</td>
-              <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300">{row.pada}</td>
-            </tr>
-          ))}
+          {rows.map((row, i) => {
+            const prevIsSpecial = i > 0 && !rows[i - 1].isSpecial && row.isSpecial;
+            return (
+              <tr key={row.code} className={`border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${prevIsSpecial ? 'border-t-2 border-t-zinc-200 dark:border-t-zinc-700' : ''}`}>
+                <td className={`p-2 border border-zinc-100 dark:border-zinc-800 font-bold ${row.isSpecial ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-700 dark:text-green-400'}`}>{row.code}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-800 dark:text-zinc-100">{row.isSpecial ? '' : row.name}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-amber-600 dark:text-amber-400 font-semibold">{row.karaka}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.position}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-cyan-700 dark:text-cyan-300">{row.nakshatra}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300">{row.pada}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
