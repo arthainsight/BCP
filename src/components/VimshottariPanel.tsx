@@ -17,12 +17,15 @@ const ABBR: Record<string, string> = {
 
 type Level = 'md' | 'ad' | 'pd';
 
-function fmtYears(start: Date, end: Date): string {
-  return `${start.getFullYear()}–${end.getFullYear()}`;
+function fmtDate(d: Date): string {
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}.${month}.${year}`;
 }
 
-function fmtFull(d: Date): string {
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+function fmtDateRange(start: Date, end: Date): string {
+  return `${fmtDate(start)}–${fmtDate(end)}`;
 }
 
 function isActive(e: MahadashaEntry, now: Date): boolean {
@@ -178,8 +181,8 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
                 <span className="font-mono text-xs font-bold w-6 flex-shrink-0">
                   {abbr}
                 </span>
-                <span className="font-mono text-xs text-zinc-500 dark:text-zinc-500 flex-1">
-                  {fmtYears(entry.startDate, entry.endDate)}
+                <span className="font-mono text-[11px] md:text-xs text-zinc-500 dark:text-zinc-500 flex-1 tabular-nums whitespace-nowrap">
+                  {fmtDateRange(entry.startDate, entry.endDate)}
                 </span>
                 {active && (
                   <span className="text-[8px] text-amber-500 dark:text-amber-400 flex-shrink-0">●</span>
@@ -191,8 +194,8 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
                 )}
               </button>
               {expanded && (
-                <div className="pl-8 pb-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-                  {entry.lord} · {fmtFull(entry.startDate)} – {fmtFull(entry.endDate)}
+                <div className="pl-8 pb-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-600 tabular-nums">
+                  {entry.lord} · {fmtDate(entry.startDate)} – {fmtDate(entry.endDate)}
                 </div>
               )}
             </div>
