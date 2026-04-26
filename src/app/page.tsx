@@ -27,6 +27,16 @@ function getTodayString(): string {
   );
 }
 
+function parseTargetDateString(value: string): Date | null {
+  const parts = value.split('-');
+  if (parts.length !== 3) return null;
+  const year = parseInt(parts[0]);
+  const month = parseInt(parts[1]);
+  const day = parseInt(parts[2]);
+  if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+  return new Date(year, month - 1, day, 12, 0, 0);
+}
+
 function computeManualBcp(completedAge: number, month: number): BcpResult {
   const runningYear = completedAge + 1;
   const activeYearHouse = ((runningYear - 1) % 12) + 1;
@@ -144,6 +154,14 @@ export default function Home() {
     return map;
   }, [charaKarakas]);
 
+  useEffect(() => {
+    if (useManualBcpMode || !bcpResult) return;
+    const birthDate = parseDateTime(birthDatetime);
+    const target = parseTargetDateString(targetDate);
+    if (!birthDate || !target) return;
+    setBcpResult(calculateBcp(birthDate, target));
+  }, [targetDate, birthDatetime, useManualBcpMode, bcpResult]);
+
   // Restore persisted display/calculation/dasha settings on mount
   useEffect(() => {
     try {
@@ -254,12 +272,9 @@ export default function Home() {
         return;
       }
 
-      const targetParts = tDate.split('-');
-      if (targetParts.length !== 3) { setError('Invalid target date.'); return; }
+      const target = parseTargetDateString(tDate);
+      if (!target) { setError('Invalid target date.'); return; }
 
-      const target = new Date(
-        parseInt(targetParts[0]), parseInt(targetParts[1]) - 1, parseInt(targetParts[2]), 12, 0, 0
-      );
       setBcpResult(calculateBcp(birthDate, target));
       setLoading(true);
 
