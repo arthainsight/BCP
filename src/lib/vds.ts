@@ -64,7 +64,32 @@ function nakIndex(longitude: number): number {
   return Math.floor(longitude / NAKSHATRA_SIZE) % 27;
 }
 
+function degInNakshatra(longitude: number, nak: number): number {
+  return longitude - nak * NAKSHATRA_SIZE;
+}
+
 export type VdsCycle = 'krittikadi' | 'ardradi';
+
+export interface VdsDebug {
+  paksha: 'shukla' | 'krishna';
+  hora: 'sun' | 'moon';
+  lagnaNak: number;
+  lagnaNakshatra: string;
+  moonNak: number;
+  moonNakshatra: string;
+  inclusiveCount: number;
+  targetNak: number;
+  targetNakshatra: string;
+  dtp: string;
+  dtpPlanetNak: number;
+  dtpPlanetNakshatra: string;
+  dop: string;
+  dopNak: number;
+  dopNakshatra: string;
+  dopDegreeInNakshatra: number;
+  elapsedYears: number;
+  balanceYears: number;
+}
 
 export interface VdsResult {
   cycle: VdsCycle;
@@ -73,6 +98,7 @@ export interface VdsResult {
   dop: string;
   dopNakshatra: string;
   entries: MahadashaEntry[];
+  debug: VdsDebug;
 }
 
 export interface VdsInput {
@@ -134,7 +160,7 @@ export function calculateVds(input: VdsInput): VdsResult | null {
   const dopLng = planetLongitudes[dop];
   if (dopLng == null) return null;
   const dopNak       = nakIndex(dopLng);
-  const dopPosInNak  = dopLng - dopNak * NAKSHATRA_SIZE;
+  const dopPosInNak  = degInNakshatra(dopLng, dopNak);
   const elapsed      = (dopPosInNak / NAKSHATRA_SIZE) * YEARS[dop];
   const balance      = YEARS[dop] - elapsed;
 
@@ -155,9 +181,29 @@ export function calculateVds(input: VdsInput): VdsResult | null {
   return {
     cycle,
     dtp,
-    dtpNakshatra: NAKSHATRA_NAMES[dtpNak]     ?? `Nak ${dtpNak}`,
+    dtpNakshatra: NAKSHATRA_NAMES[dtpNak] ?? `Nak ${dtpNak}`,
     dop,
     dopNakshatra: NAKSHATRA_NAMES[dopNak] ?? `Nak ${dopNak}`,
     entries,
+    debug: {
+      paksha: isShukla ? 'shukla' : 'krishna',
+      hora: horaOfLagna,
+      lagnaNak,
+      lagnaNakshatra: NAKSHATRA_NAMES[lagnaNak] ?? `Nak ${lagnaNak}`,
+      moonNak,
+      moonNakshatra: NAKSHATRA_NAMES[moonNak] ?? `Nak ${moonNak}`,
+      inclusiveCount: count,
+      targetNak: dtpNak,
+      targetNakshatra: NAKSHATRA_NAMES[dtpNak] ?? `Nak ${dtpNak}`,
+      dtp,
+      dtpPlanetNak,
+      dtpPlanetNakshatra: NAKSHATRA_NAMES[dtpPlanetNak] ?? `Nak ${dtpPlanetNak}`,
+      dop,
+      dopNak,
+      dopNakshatra: NAKSHATRA_NAMES[dopNak] ?? `Nak ${dopNak}`,
+      dopDegreeInNakshatra: dopPosInNak,
+      elapsedYears: elapsed,
+      balanceYears: balance,
+    },
   };
 }
