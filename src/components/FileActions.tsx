@@ -162,11 +162,11 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
   const sheetPosition = compact
     ? "fixed top-20 left-4 right-4 z-[130] max-h-[70dvh]"
-    : "absolute top-full right-0 mt-1 z-50 w-72 max-h-[60vh]";
+    : "absolute top-full right-0 mt-1 z-[130] w-72 max-h-[60vh]";
 
   const modalPosition = compact
     ? "fixed top-20 left-4 right-4 z-[150]"
-    : "absolute top-full right-0 mt-1 z-50 w-72";
+    : "absolute top-full right-0 mt-1 z-[150] w-72";
 
   return (
     <div className="relative inline-flex items-center gap-1 shrink-0">
