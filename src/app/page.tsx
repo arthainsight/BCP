@@ -562,11 +562,11 @@ export default function Home() {
             </div>
             <ThemeToggle icon />
           </div>
-          {/* Row 2: scrollable toolbar */}
-          <div className="overflow-x-auto pb-2.5 px-4">
-            <div className="inline-flex items-center gap-1 whitespace-nowrap">
+          {/* Row 2: chart title + actions */}
+          <div className="pb-2.5 px-4">
+            <div className="inline-flex max-w-full min-w-0 items-center gap-1 whitespace-nowrap">
               {displayChartName !== 'None' && (
-                <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mr-0.5">
+                <span className="min-w-0 max-w-[calc(100vw-110px)] truncate text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mr-0.5">
                   {displayChartName}
                 </span>
               )}
@@ -578,7 +578,6 @@ export default function Home() {
                 onExport={handleExportCharts}
                 onImport={handleImportCharts}
                 onActiveNameChange={setActiveChartName}
-                hideSave
                 compact
               />
             </div>
