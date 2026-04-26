@@ -117,6 +117,6 @@ export const DEFAULT_DASHA_SETTINGS: DashaSettings = {
   showBcp: true,
   showVimshottari: true,
   showMd: true,
-  showAd: false,
-  showPd: false,
+  showAd: true,
+  showPd: true,
 };
