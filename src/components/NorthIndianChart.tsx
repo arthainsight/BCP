@@ -46,19 +46,7 @@ const SIGN_ABBR: Record<number, string> = {
   9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
 };
 
-const PLANET_COLORS: Record<string, string> = {
-  Sun:     '#f97316',
-  Moon:    '#93c5fd',
-  Mars:    '#ef4444',
-  Mercury: '#22c55e',
-  Jupiter: '#eab308',
-  Venus:   '#ec4899',
-  Saturn:  '#6366f1',
-  Rahu:    '#8b5cf6',
-  Ketu:    '#a16207',
-};
-
-// Rose-500 — clearly distinct from Mars red (#ef4444)
+// Rose-500 — clearly distinct from natal labels
 const TRANSIT_COLOR = '#f43f5e';
 
 type HouseShape = {
@@ -95,9 +83,9 @@ function getHouseFill(
   const month = house === activeMonthHouse;
 
   if (isDark) {
-    if (both)  return '#3b0764';
-    if (year)  return '#1e3a5f';
-    if (month) return '#14532d';
+    if (both)  return 'rgba(168, 85, 247, 0.15)';
+    if (year)  return 'rgba(34, 211, 238, 0.13)';
+    if (month) return 'rgba(74, 222, 128, 0.12)';
     return '#18181b';
   } else {
     if (both)  return '#f3e8ff';
@@ -107,8 +95,22 @@ function getHouseFill(
   }
 }
 
-function getPlanetColor(name: string): string {
-  return PLANET_COLORS[name] ?? '#e5e7eb';
+// Natal planets in active BCP houses inherit that house's accent color.
+// All other natal planets use a neutral label color.
+function getPlanetFill(
+  house: number,
+  activeYearHouse: number,
+  activeMonthHouse: number,
+  isDark: boolean,
+): string {
+  const both  = house === activeYearHouse && house === activeMonthHouse;
+  const year  = house === activeYearHouse;
+  const month = house === activeMonthHouse;
+
+  if (both)  return isDark ? '#c084fc' : '#9333ea'; // purple-400 / purple-600
+  if (year)  return isDark ? '#22d3ee' : '#0891b2'; // cyan-400   / cyan-600
+  if (month) return isDark ? '#4ade80' : '#16a34a'; // green-400  / green-600
+  return isDark ? '#d4d4d8' : '#3f3f46';             // zinc-300   / zinc-700
 }
 
 function getSignForHouse(ascendantSign: number, house: number): number {
@@ -235,7 +237,7 @@ export default function NorthIndianChart({
                     dominantBaseline="middle"
                     fontSize={fontSize}
                     fontWeight={planet.isTransit ? '800' : '700'}
-                    fill={planet.isTransit ? TRANSIT_COLOR : getPlanetColor(planet.name)}
+                    fill={planet.isTransit ? TRANSIT_COLOR : getPlanetFill(item.house, activeYearHouse, activeMonthHouse, isDark)}
                     opacity={planet.isTransit ? 0.9 : 1}
                   >
                     {label}

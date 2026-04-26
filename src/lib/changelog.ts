@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v1.14',
+    changes: [
+      'Unified BCP Engine and Vimshottari Dasha styling into one shared visual system',
+      'Removed orange/brown Vimshottari-specific alert styling',
+      'Made active dasha states use the same restrained accent logic as the rest of the app',
+      'Simplified chart renderer colors by removing planet-specific color coding',
+      'Made BCP Year / Month / Both house highlights the primary chart visual signal',
+      'Updated chart styling for a calmer, more consistent interface across desktop and mobile',
+    ],
+  },
+  {
     version: 'v1.13',
     changes: [
       'Mobile Grahas view now uses stacked cards instead of horizontal table scrolling',
