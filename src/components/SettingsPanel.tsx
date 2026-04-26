@@ -45,15 +45,10 @@ function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void 
   );
 }
 
-function CollapsibleSection({
-  label, open, onToggle, children,
-}: { label: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
+function CollapsibleSection({ label, open, onToggle, children }: any) {
   return (
     <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-2">
-      <button
-        onClick={onToggle}
-        className="flex items-center gap-2 w-full text-left"
-      >
+      <button onClick={onToggle} className="flex items-center gap-2 w-full text-left">
         <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex-1">
           &gt; {label}
         </span>
@@ -65,13 +60,9 @@ function CollapsibleSection({
 }
 
 const SELECT =
-  'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500';
+  'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300';
 
-export default function SettingsPanel({
-  chartDisplaySettings, onToggleChartDisplay,
-  calculationSettings, onUpdateCalculationSettings,
-  dashaSettings, onUpdateDashaSettings,
-}: Props) {
+export default function SettingsPanel({ chartDisplaySettings, onToggleChartDisplay, calculationSettings, onUpdateCalculationSettings, dashaSettings, onUpdateDashaSettings }: Props) {
   const [chartsOpen, setChartsOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
   const [dashaOpen, setDashaOpen] = useState(false);
@@ -81,7 +72,6 @@ export default function SettingsPanel({
     <div className="space-y-5">
       <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; settings</div>
 
-      {/* Charts — collapsible */}
       <CollapsibleSection label="charts" open={chartsOpen} onToggle={() => setChartsOpen((v) => !v)}>
         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
           {CHART_TOGGLES.map(({ key, label }) => (
@@ -93,38 +83,24 @@ export default function SettingsPanel({
         </div>
       </CollapsibleSection>
 
-      {/* Calculations */}
       <CollapsibleSection label="calculations" open={calcOpen} onToggle={() => setCalcOpen((v) => !v)}>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-              ayanamsa
-            </label>
-            <select
-              className={SELECT}
-              value={calculationSettings.ayanamsa}
-              onChange={(e) => onUpdateCalculationSettings({ ayanamsa: e.target.value })}
-            >
-              <option value="lahiri">Lahiri (Chitrapaksha)</option>
+            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">ayanamsa</label>
+            <select className={SELECT} value={calculationSettings.ayanamsa} onChange={(e) => onUpdateCalculationSettings({ ayanamsa: e.target.value })}>
+              <option value="lahiri">Lahiri</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-              rahu / ketu
-            </label>
-            <select
-              className={SELECT}
-              value={calculationSettings.nodeMode}
-              onChange={(e) => onUpdateCalculationSettings({ nodeMode: e.target.value })}
-            >
+            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">rahu / ketu</label>
+            <select className={SELECT} value={calculationSettings.nodeMode} onChange={(e) => onUpdateCalculationSettings({ nodeMode: e.target.value })}>
               <option value="mean">Mean Node</option>
             </select>
           </div>
         </div>
       </CollapsibleSection>
 
-      {/* Dasha */}
       <CollapsibleSection label="dasha" open={dashaOpen} onToggle={() => setDashaOpen((v) => !v)}>
         <div className="space-y-2">
           {[
@@ -136,35 +112,14 @@ export default function SettingsPanel({
               <MiniToggle value={dashaSettings[key]} onToggle={() => onUpdateDashaSettings({ [key]: !dashaSettings[key] })} />
             </div>
           ))}
-
-          {dashaSettings.showVimshottari && (
-            <div className="pl-3 border-l border-zinc-200 dark:border-zinc-700 mt-2 space-y-2">
-              <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 uppercase tracking-wider mb-1">
-                Vimshottari levels
-              </div>
-              {[
-                { key: 'showMd' as const, label: 'MD (Mahadasha)' },
-                { key: 'showAd' as const, label: 'AD (Antardasha)' },
-                { key: 'showPd' as const, label: 'PD (Pratyantardasha)' },
-              ].map(({ key, label }) => (
-                <div key={key} className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
-                  <MiniToggle value={dashaSettings[key]} onToggle={() => onUpdateDashaSettings({ [key]: !dashaSettings[key] })} />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </CollapsibleSection>
 
       <UpdatesPanel />
 
-      {/* About */}
       <CollapsibleSection label="about" open={aboutOpen} onToggle={() => setAboutOpen((v) => !v)}>
         <div className="space-y-1.5 pt-1">
-          <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300">
-            {APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span>
-          </div>
+          <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span></div>
           <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">by Riku Forsell</div>
         </div>
       </CollapsibleSection>
