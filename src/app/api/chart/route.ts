@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const chart = calculateChart(year, month, day, hour, minute, second, lat, lng, tz);
+    const chart = await calculateChart(year, month, day, hour, minute, second, lat, lng, tz);
     return NextResponse.json(chart);
   } catch (error) {
     console.error("Chart calculation error:", error);

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const planets = calculateTransits(
+    const planets = await calculateTransits(
       year, month, day, hour, minute, second, tz,
       natalAscSign - 1 // convert to 0-based
     );

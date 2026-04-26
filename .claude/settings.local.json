@@ -4,7 +4,13 @@
       "Bash(npx tsc *)",
       "Bash(npx next *)",
       "Bash(npm install *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npm show *)",
+      "Bash(npm pack *)",
+      "Bash(npx --yes node -e \"const p = require\\('swisseph-wasm'\\); console.log\\(Object.keys\\(p\\).slice\\(0,20\\)\\)\")",
+      "Read(//tmp/**)",
+      "Bash(node --input-type=module)",
+      "Bash(xargs grep *)"
     ]
   }
 }
