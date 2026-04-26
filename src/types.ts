@@ -74,3 +74,33 @@ export interface CharaKaraka {
   planet: string;
   degree: number;
 }
+
+export interface ChartDisplaySettings {
+  showSigns: boolean;
+  showNatalPlanets: boolean;
+  showTransitPlanets: boolean;
+  showDegrees: boolean;
+  showNakshatra: boolean;
+  showCharaKaraka: boolean;
+  showSanskrit: boolean;
+}
+
+export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
+  showSigns: true,
+  showNatalPlanets: true,
+  showTransitPlanets: false,
+  showDegrees: false,
+  showNakshatra: true,
+  showCharaKaraka: false,
+  showSanskrit: false,
+};
+
+export interface CalculationSettings {
+  ayanamsa: string;
+  nodeMode: string;
+}
+
+export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
+  ayanamsa: 'lahiri',
+  nodeMode: 'mean',
+};

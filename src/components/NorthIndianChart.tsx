@@ -14,6 +14,30 @@ interface Props {
   showTransitPlanets?: boolean;
   showSigns?: boolean;
   showHouseNumbers?: boolean;
+  showDegrees?: boolean;
+  showCharaKaraka?: boolean;
+  showNakshatra?: boolean;
+  karakaByPlanet?: Record<string, string>;
+}
+
+// Always-on short codes
+const PLANET_CODES: Record<string, string> = {
+  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me',
+  Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
+};
+
+// 3-char nakshatra abbreviations (index 0–26)
+const NAK_ABBR = [
+  'Asw', 'Bha', 'Krt', 'Roh', 'Mrg', 'Ard',
+  'Pun', 'Pus', 'Asl', 'Mag', 'PFa', 'UFa',
+  'Has', 'Cit', 'Swa', 'Vis', 'Anu', 'Jye',
+  'Mul', 'PAs', 'UAs', 'Sra', 'Dha', 'Sat',
+  'PBh', 'UBh', 'Rev',
+];
+
+function getNakAbbr(longitude: number): string {
+  const idx = Math.floor(longitude / (40 / 3));
+  return NAK_ABBR[Math.min(idx, 26)] ?? '';
 }
 
 const SIGN_ABBR: Record<number, string> = {
@@ -101,6 +125,10 @@ export default function NorthIndianChart({
   showTransitPlanets = false,
   showSigns = true,
   showHouseNumbers = false,
+  showDegrees = false,
+  showCharaKaraka = false,
+  showNakshatra = false,
+  karakaByPlanet = {},
 }: Props) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -181,21 +209,39 @@ export default function NorthIndianChart({
                 </text>
               )}
 
-              {allPlanets.map((planet, index) => (
-                <text
-                  key={`${planet.isTransit ? 'tr' : 'na'}-${item.house}-${planet.name}-${index}`}
-                  x={item.planet.x}
-                  y={startY + index * dynamicLineHeight}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize={planet.isTransit ? '11' : '15'}
-                  fontWeight={planet.isTransit ? '800' : '700'}
-                  fill={planet.isTransit ? TRANSIT_COLOR : getPlanetColor(planet.name)}
-                  opacity={planet.isTransit ? 0.9 : 1}
-                >
-                  {planet.name}
-                </text>
-              ))}
+              {allPlanets.map((planet, index) => {
+                const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
+
+                // Build suffix parts for natal planets only
+                const parts: string[] = [code];
+                if (!planet.isTransit) {
+                  if (showDegrees) parts.push(`${Math.floor(planet.degree)}°`);
+                  if (showCharaKaraka) {
+                    const k = karakaByPlanet[planet.name];
+                    if (k) parts.push(k);
+                  }
+                  if (showNakshatra) parts.push(getNakAbbr(planet.longitude));
+                }
+
+                const label = parts.join(' ');
+                const fontSize = planet.isTransit ? '11' : (parts.length > 1 ? '11' : '15');
+
+                return (
+                  <text
+                    key={`${planet.isTransit ? 'tr' : 'na'}-${item.house}-${planet.name}-${index}`}
+                    x={item.planet.x}
+                    y={startY + index * dynamicLineHeight}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={fontSize}
+                    fontWeight={planet.isTransit ? '800' : '700'}
+                    fill={planet.isTransit ? TRANSIT_COLOR : getPlanetColor(planet.name)}
+                    opacity={planet.isTransit ? 0.9 : 1}
+                  >
+                    {label}
+                  </text>
+                );
+              })}
             </g>
           );
         })}

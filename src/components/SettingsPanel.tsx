@@ -1,299 +1,148 @@
 'use client';
 
-import React from 'react';
-import { GeoResult, BcpResult } from '@/types';
+import { useState } from 'react';
+import { ChartDisplaySettings, CalculationSettings } from '@/types';
+import { APP_NAME, APP_VERSION } from '@/lib/config';
 import ThemeToggle from './ThemeToggle';
+import UpdatesPanel from './UpdatesPanel';
 
 interface Props {
-  birthDatetime: string;
-  onBirthDatetimeChange: (v: string) => void;
-  city: string;
-  onCityChange: (v: string) => void;
-  targetDate: string;
-  onTargetDateChange: (v: string) => void;
-
-  geoResults: GeoResult[];
-  showCoords: boolean;
-  manualLat: string;
-  onManualLatChange: (v: string) => void;
-  manualLng: string;
-  onManualLngChange: (v: string) => void;
-  ianaTimezone: string;
-  autoTzOffset: number | null;
-  tzOverride: string;
-  onTzOverrideChange: (v: string) => void;
-
-  onGeocode: () => void;
-  onSelectGeo: (idx: number, results: GeoResult[]) => void;
-  onCalculate: () => void;
-  onSaveProfile: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  onLoadProfile: (e: React.ChangeEvent<HTMLInputElement>) => void;
-
-  useManualBcpMode: boolean;
-  onUseManualBcpModeChange: (v: boolean) => void;
-  manualBcpAge: string;
-  onManualBcpAgeChange: (v: string) => void;
-  manualBcpMonth: string;
-  onManualBcpMonthChange: (v: string) => void;
-  manualBcpResult: BcpResult | null;
-
-  loading: boolean;
-  error: string;
-  canCalculate: boolean;
-  showThemeToggle?: boolean;
+  chartDisplaySettings: ChartDisplaySettings;
+  onToggleChartDisplay: (key: keyof ChartDisplaySettings) => void;
+  calculationSettings: CalculationSettings;
+  onUpdateCalculationSettings: (update: Partial<CalculationSettings>) => void;
 }
 
-const INPUT =
-  'w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm font-mono text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500 focus:border-emerald-500 dark:focus:border-green-500';
+const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
+  { key: 'showSigns',          label: 'signs' },
+  { key: 'showNatalPlanets',   label: 'natal' },
+  { key: 'showTransitPlanets', label: 'transit' },
+  { key: 'showDegrees',        label: 'degrees' },
+  { key: 'showNakshatra',      label: 'nakshatra' },
+  { key: 'showCharaKaraka',    label: 'karaka' },
+  { key: 'showSanskrit',       label: 'sanskrit' },
+];
 
-function fmtOffset(offset: number): string {
-  const sign = offset >= 0 ? '+' : '';
-  return `${sign}${offset % 1 === 0 ? offset.toFixed(0) : offset.toFixed(1)}h UTC`;
+function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      className={`relative inline-flex h-4 w-7 flex-shrink-0 rounded-full border transition-colors focus:outline-none ${
+        value
+          ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600'
+          : 'bg-zinc-200 dark:bg-zinc-700 border-zinc-300 dark:border-zinc-600'
+      }`}
+      role="switch"
+      aria-checked={value}
+    >
+      <span
+        className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform mt-[1px] ${
+          value ? 'translate-x-3' : 'translate-x-0.5'
+        }`}
+      />
+    </button>
+  );
 }
+
+function CollapsibleSection({
+  label, open, onToggle, children,
+}: { label: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
+  return (
+    <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-2">
+      <button
+        onClick={onToggle}
+        className="flex items-center gap-2 w-full text-left"
+      >
+        <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex-1">
+          &gt; {label}
+        </span>
+        <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{open ? '▼' : '▶'}</span>
+      </button>
+      {open && <div className="pt-1">{children}</div>}
+    </div>
+  );
+}
+
+const SELECT =
+  'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500';
 
 export default function SettingsPanel({
-  birthDatetime, onBirthDatetimeChange,
-  city, onCityChange,
-  targetDate, onTargetDateChange,
-  geoResults, showCoords,
-  manualLat, onManualLatChange,
-  manualLng, onManualLngChange,
-  ianaTimezone, autoTzOffset, tzOverride, onTzOverrideChange,
-  onGeocode, onSelectGeo, onCalculate, onSaveProfile,
-  fileInputRef, onLoadProfile,
-  useManualBcpMode, onUseManualBcpModeChange,
-  manualBcpAge, onManualBcpAgeChange,
-  manualBcpMonth, onManualBcpMonthChange,
-  manualBcpResult,
-  loading, error, canCalculate,
-  showThemeToggle,
+  chartDisplaySettings, onToggleChartDisplay,
+  calculationSettings, onUpdateCalculationSettings,
 }: Props) {
-  const effectiveTz = tzOverride !== '' ? parseFloat(tzOverride) : autoTzOffset;
+  const [chartsOpen, setChartsOpen] = useState(false);
+  const [calcOpen, setCalcOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   return (
     <div className="space-y-5">
       <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; settings</div>
 
-      {/* Profile load/save */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">profile</span>
-        <label className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono cursor-pointer transition-colors">
-          load
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            className="hidden"
-            onChange={onLoadProfile}
-          />
-        </label>
-        <button
-          onClick={onSaveProfile}
-          disabled={!birthDatetime || !manualLat || !manualLng || effectiveTz === null}
-          className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono disabled:opacity-30 transition-colors"
-        >
-          save
-        </button>
+      {/* Theme */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">theme</span>
+        <ThemeToggle />
       </div>
 
-      {/* Birth datetime */}
-      <div>
-        <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-          birth datetime
-        </label>
-        <input
-          type="text"
-          value={birthDatetime}
-          onChange={(e) => onBirthDatetimeChange(e.target.value)}
-          placeholder="15.08.1947 09.15.00"
-          className={INPUT}
-        />
-        <p className="mt-1 text-xs font-mono text-zinc-400 dark:text-zinc-600">dd.mm.yyyy hh.mm.ss</p>
-      </div>
-
-      {/* City geocode */}
-      <div>
-        <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-          city
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={city}
-            onChange={(e) => onCityChange(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && onGeocode()}
-            placeholder="e.g. New Delhi"
-            className={INPUT}
-          />
-          <button
-            onClick={onGeocode}
-            disabled={loading || !city.trim()}
-            className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 border border-emerald-600 dark:border-cyan-700 text-emerald-700 dark:text-cyan-400 rounded text-xs font-mono hover:bg-emerald-50 dark:hover:bg-zinc-700 disabled:opacity-30 whitespace-nowrap transition-colors"
-          >
-            {loading ? '...' : 'lookup'}
-          </button>
-        </div>
-      </div>
-
-      {/* Multiple results dropdown */}
-      {geoResults.length > 1 && (
-        <div>
-          <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-            select location
-          </label>
-          <select
-            className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm font-mono text-zinc-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500"
-            onChange={(e) => onSelectGeo(parseInt(e.target.value), geoResults)}
-            defaultValue=""
-          >
-            <option value="" disabled>-- select --</option>
-            {geoResults.map((r, i) => (
-              <option key={i} value={i}>
-                {r.name}, {r.country} ({r.latitude.toFixed(2)}, {r.longitude.toFixed(2)})
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Location + timezone display */}
-      {showCoords && (
-        <div className="space-y-3 border-t border-zinc-200 dark:border-zinc-700 pt-4">
-          <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">&gt; location</div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">lat</label>
-              <input type="number" step="any" value={manualLat} onChange={(e) => onManualLatChange(e.target.value)} placeholder="28.6139" className={INPUT} />
+      {/* Charts — collapsible, compact 2-col grid */}
+      <CollapsibleSection label="charts" open={chartsOpen} onToggle={() => setChartsOpen((v) => !v)}>
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+          {CHART_TOGGLES.map(({ key, label }) => (
+            <div key={key} className="flex items-center justify-between">
+              <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
+              <MiniToggle value={chartDisplaySettings[key]} onToggle={() => onToggleChartDisplay(key)} />
             </div>
-            <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">lng</label>
-              <input type="number" step="any" value={manualLng} onChange={(e) => onManualLngChange(e.target.value)} placeholder="77.2090" className={INPUT} />
-            </div>
+          ))}
+        </div>
+      </CollapsibleSection>
+
+      {/* Calculations — collapsible */}
+      <CollapsibleSection label="calculations" open={calcOpen} onToggle={() => setCalcOpen((v) => !v)}>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
+              ayanamsa
+            </label>
+            <select
+              className={SELECT}
+              value={calculationSettings.ayanamsa}
+              onChange={(e) => onUpdateCalculationSettings({ ayanamsa: e.target.value })}
+            >
+              <option value="lahiri">Lahiri (Chitrapaksha)</option>
+              <option value="raman" disabled>Raman — coming soon</option>
+              <option value="kp" disabled>KP — coming soon</option>
+            </select>
           </div>
 
-          {/* Timezone row */}
-          <div className="bg-zinc-100 dark:bg-zinc-800/60 rounded p-3 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">timezone</span>
-              {autoTzOffset !== null && tzOverride === '' && (
-                <span className="text-xs font-mono text-emerald-600 dark:text-green-500">auto</span>
-              )}
-            </div>
-
-            {ianaTimezone ? (
-              <div className="text-xs font-mono text-zinc-700 dark:text-zinc-300">
-                {ianaTimezone}
-                {autoTzOffset !== null && (
-                  <span className="ml-2 text-emerald-600 dark:text-green-400">{fmtOffset(autoTzOffset)}</span>
-                )}
-                {!birthDatetime && (
-                  <span className="ml-2 text-amber-500 dark:text-amber-400">— enter birth time to resolve DST</span>
-                )}
-              </div>
-            ) : (
-              <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">
-                geocode a city to auto-detect timezone
-              </div>
-            )}
-
-            {/* Manual override */}
-            <div>
-              <label className="block text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-1">
-                override UTC offset (leave blank for auto)
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={tzOverride}
-                onChange={(e) => onTzOverrideChange(e.target.value)}
-                placeholder={autoTzOffset !== null ? String(autoTzOffset) : '5.5'}
-                className="w-full px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
+              rahu / ketu
+            </label>
+            <select
+              className={SELECT}
+              value={calculationSettings.nodeMode}
+              onChange={(e) => onUpdateCalculationSettings({ nodeMode: e.target.value })}
+            >
+              <option value="mean">Mean Node</option>
+              <option value="true" disabled>True Node — coming soon</option>
+            </select>
           </div>
         </div>
-      )}
+      </CollapsibleSection>
 
-      {/* Target date */}
-      <div>
-        <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-          target date (BCP reference)
-        </label>
-        <input
-          type="date"
-          value={targetDate}
-          onChange={(e) => onTargetDateChange(e.target.value)}
-          className={INPUT}
-        />
-      </div>
+      {/* Updates */}
+      <UpdatesPanel />
 
-      {/* Error */}
-      {error && (
-        <div className="text-red-600 dark:text-red-400 text-xs font-mono bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 p-2 rounded">
-          {error}
+      {/* About — collapsible */}
+      <CollapsibleSection label="about" open={aboutOpen} onToggle={() => setAboutOpen((v) => !v)}>
+        <div className="space-y-1.5 pt-1">
+          <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300">
+            {APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span>
+          </div>
+          <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">by Riku Forsell</div>
+          <div className="text-xs font-mono text-zinc-300 dark:text-zinc-700">discord — coming later</div>
         </div>
-      )}
-
-      {/* Calculate button */}
-      <button
-        onClick={onCalculate}
-        disabled={!canCalculate || loading}
-        className="w-full py-2.5 bg-zinc-100 dark:bg-zinc-800 border border-emerald-600 dark:border-green-700 text-emerald-700 dark:text-green-400 rounded text-sm font-mono font-semibold hover:bg-emerald-50 dark:hover:bg-green-900/40 disabled:opacity-30 transition-colors"
-      >
-        {loading ? 'calculating...' : '$ run bcp'}
-      </button>
-
-      {/* Manual BCP override */}
-      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; bcp.manual</span>
-          <label className="flex items-center gap-2 text-xs font-mono text-zinc-500 dark:text-zinc-400 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={useManualBcpMode}
-              onChange={(e) => onUseManualBcpModeChange(e.target.checked)}
-              className="w-4 h-4 accent-emerald-600 dark:accent-green-500"
-            />
-            override
-          </label>
-        </div>
-
-        {useManualBcpMode && (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">completed age</label>
-                <input type="number" min="0" value={manualBcpAge} onChange={(e) => onManualBcpAgeChange(e.target.value)} placeholder="41" className={INPUT} />
-              </div>
-              <div>
-                <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">month (1–12)</label>
-                <input type="number" min="1" max="12" value={manualBcpMonth} onChange={(e) => onManualBcpMonthChange(e.target.value)} placeholder="1" className={INPUT} />
-              </div>
-            </div>
-
-            {manualBcpResult && (
-              <div className="bg-amber-50 dark:bg-zinc-800 border border-amber-300 dark:border-amber-700/60 rounded p-2 text-xs font-mono text-amber-700 dark:text-amber-400 space-y-0.5">
-                <div>year: {manualBcpResult.runningYear} · cycle: {manualBcpResult.bcpCycle}</div>
-                <div>
-                  year_house: <strong>H{manualBcpResult.activeYearHouse}</strong>
-                  {' · '}
-                  month_house: <strong>H{manualBcpResult.activeMonthHouse}</strong>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Theme toggle (mobile only) */}
-      {showThemeToggle && (
-        <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 flex items-center justify-between">
-          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">theme</span>
-          <ThemeToggle />
-        </div>
-      )}
+      </CollapsibleSection>
     </div>
   );
 }

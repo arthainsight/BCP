@@ -1,16 +1,14 @@
 'use client';
 
-import { BcpResult, ChartData, PlanetData } from '@/types';
+import { BcpResult, ChartData, ChartDisplaySettings, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
-
-type ChartOptionKey = 'showSigns' | 'showNatalPlanets' | 'showTransitPlanets';
 
 export interface ChartSectionProps {
   bcp: BcpResult | null;
   chart: ChartData | null;
   transitPlanets: PlanetData[];
-  chartOptions: Record<ChartOptionKey, boolean>;
-  onToggleOption: (key: ChartOptionKey) => void;
+  chartDisplaySettings: ChartDisplaySettings;
+  karakaByPlanet: Record<string, string>;
   transitDatetime: string;
   onTransitDatetimeChange: (v: string) => void;
   onCalculateTransit: () => void;
@@ -18,22 +16,16 @@ export interface ChartSectionProps {
 }
 
 export default function ChartSection({
-  bcp, chart, transitPlanets, chartOptions, onToggleOption,
+  bcp, chart, transitPlanets, chartDisplaySettings, karakaByPlanet,
   transitDatetime, onTransitDatetimeChange, onCalculateTransit, transitLoading,
 }: ChartSectionProps) {
   if (!bcp || !chart) {
     return (
       <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">
-        Enter birth data in Settings tab, then click &ldquo;$ run bcp&rdquo;
+        Enter birth data in Data tab, then click &ldquo;$ run bcp&rdquo;
       </div>
     );
   }
-
-  const OPTION_LABELS: { key: ChartOptionKey; label: string }[] = [
-    { key: 'showSigns', label: 'signs' },
-    { key: 'showNatalPlanets', label: 'natal' },
-    { key: 'showTransitPlanets', label: 'transit' },
-  ];
 
   return (
     <div className="space-y-3">
@@ -46,25 +38,8 @@ export default function ChartSection({
         </span>
       </div>
 
-      {/* Chart option toggles */}
-      <div className="flex flex-wrap gap-2">
-        {OPTION_LABELS.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => onToggleOption(key)}
-            className={`px-2 py-0.5 rounded text-xs font-mono border transition-colors ${
-              chartOptions[key]
-                ? 'bg-emerald-100 dark:bg-green-900/60 text-emerald-700 dark:text-green-400 border-emerald-400 dark:border-green-700'
-                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border-zinc-300 dark:border-zinc-700 hover:text-zinc-800 dark:hover:text-zinc-300'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Transit input */}
-      {chartOptions.showTransitPlanets && (
+      {/* Transit input — shown when transit overlay is enabled */}
+      {chartDisplaySettings.showTransitPlanets && (
         <div className="flex gap-2 items-center">
           <input
             type="text"
@@ -89,9 +64,13 @@ export default function ChartSection({
         ascendantSign={chart.ascendant.sign}
         planets={chart.planets}
         transitPlanets={transitPlanets}
-        showSigns={chartOptions.showSigns}
-        showNatalPlanets={chartOptions.showNatalPlanets}
-        showTransitPlanets={chartOptions.showTransitPlanets}
+        showSigns={chartDisplaySettings.showSigns}
+        showNatalPlanets={chartDisplaySettings.showNatalPlanets}
+        showTransitPlanets={chartDisplaySettings.showTransitPlanets}
+        showDegrees={chartDisplaySettings.showDegrees}
+        showCharaKaraka={chartDisplaySettings.showCharaKaraka}
+        showNakshatra={chartDisplaySettings.showNakshatra}
+        karakaByPlanet={karakaByPlanet}
       />
     </div>
   );

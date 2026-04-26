@@ -1,19 +1,18 @@
 'use client';
 
-import { useState, useCallback, useRef, useMemo } from 'react';
-import { GeoResult, BcpResult, ChartData, PlanetData } from '@/types';
+import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import BottomNav, { TabId } from '@/components/BottomNav';
 import ThemeToggle from '@/components/ThemeToggle';
+import DataPanel from '@/components/DataPanel';
 import SettingsPanel from '@/components/SettingsPanel';
 import GrahasPanel from '@/components/GrahasPanel';
-import KarakasPanel from '@/components/KarakasPanel';
 import DashaPanel from '@/components/DashaPanel';
 import ChartSection from '@/components/ChartSection';
-import CalculationDebugPanel from '@/components/CalculationDebugPanel';
 import { buildReportMarkdown } from '@/lib/exportReport';
 
 function getTodayString(): string {
@@ -51,9 +50,7 @@ interface BirthProfile {
   timezoneOffset: number;
 }
 
-type ChartOptionKey = 'showSigns' | 'showNatalPlanets' | 'showTransitPlanets';
-
-const DESKTOP_TABS = ['grahas', 'karakas', 'dasha', 'settings'] as const;
+const DESKTOP_TABS = ['data', 'grahas', 'dasha', 'settings'] as const;
 type DesktopTab = (typeof DESKTOP_TABS)[number];
 
 function EmptyState({ message }: { message: string }) {
@@ -73,8 +70,8 @@ function Panel({ children }: { children: React.ReactNode }) {
 }
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<TabId>('settings');
-  const [desktopTab, setDesktopTab] = useState<DesktopTab>('grahas');
+  const [activeTab, setActiveTab] = useState<TabId>('data');
+  const [desktopTab, setDesktopTab] = useState<DesktopTab>('data');
 
   // Birth data
   const [birthDatetime, setBirthDatetime] = useState('');
@@ -102,12 +99,9 @@ export default function Home() {
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Chart options
-  const [chartOptions, setChartOptions] = useState<Record<ChartOptionKey, boolean>>({
-    showSigns: true,
-    showNatalPlanets: true,
-    showTransitPlanets: false,
-  });
+  // Chart display settings
+  const [chartDisplaySettings, setChartDisplaySettings] = useState<ChartDisplaySettings>(DEFAULT_CHART_DISPLAY);
+  const [calculationSettings, setCalculationSettings] = useState<CalculationSettings>(DEFAULT_CALCULATION_SETTINGS);
 
   // Manual BCP
   const [useManualBcpMode, setUseManualBcpMode] = useState(false);
@@ -156,10 +150,32 @@ export default function Home() {
     return map;
   }, [charaKarakas]);
 
+  // Restore persisted display/calculation settings
+  useEffect(() => {
+    try {
+      const ds = localStorage.getItem('chartDisplaySettings');
+      if (ds) setChartDisplaySettings({ ...DEFAULT_CHART_DISPLAY, ...JSON.parse(ds) });
+      const cs = localStorage.getItem('calculationSettings');
+      if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
+    } catch {}
+  }, []);
+
   // --- Handlers ---
 
-  const toggleChartOption = useCallback((key: ChartOptionKey) => {
-    setChartOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+  const toggleChartDisplay = useCallback((key: keyof ChartDisplaySettings) => {
+    setChartDisplaySettings((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try { localStorage.setItem('chartDisplaySettings', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+
+  const updateCalculationSettings = useCallback((update: Partial<CalculationSettings>) => {
+    setCalculationSettings((prev) => {
+      const next = { ...prev, ...update };
+      try { localStorage.setItem('calculationSettings', JSON.stringify(next)); } catch {}
+      return next;
+    });
   }, []);
 
   const handleGeocode = useCallback(async () => {
@@ -315,6 +331,7 @@ export default function Home() {
       chart: chartData,
       charaKarakas,
       bcp: effectiveBcpResult,
+      calculationSettings,
     });
     const blob = new Blob([markdown], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -325,7 +342,7 @@ export default function Home() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [birthDatetime, city, selectedGeo, ianaTimezone, effectiveTzOffset, manualLat, manualLng, chartData, charaKarakas, effectiveBcpResult]);
+  }, [birthDatetime, city, selectedGeo, ianaTimezone, effectiveTzOffset, manualLat, manualLng, chartData, charaKarakas, effectiveBcpResult, calculationSettings]);
 
   const handleSaveProfile = useCallback(() => {
     const lat = parseFloat(manualLat);
@@ -396,15 +413,15 @@ export default function Home() {
     bcp: effectiveBcpResult,
     chart: chartData,
     transitPlanets,
-    chartOptions,
-    onToggleOption: toggleChartOption,
+    chartDisplaySettings,
+    karakaByPlanet,
     transitDatetime,
     onTransitDatetimeChange: setTransitDatetime,
     onCalculateTransit: handleCalculateTransit,
     transitLoading,
   };
 
-  const settingsProps = {
+  const dataProps = {
     birthDatetime, onBirthDatetimeChange: setBirthDatetime,
     city, onCityChange: setCity,
     targetDate, onTargetDateChange: setTargetDate,
@@ -423,6 +440,13 @@ export default function Home() {
     manualBcpMonth, onManualBcpMonthChange: setManualBcpMonth,
     manualBcpResult,
     loading, error, canCalculate,
+  };
+
+  const settingsProps = {
+    chartDisplaySettings,
+    onToggleChartDisplay: toggleChartDisplay,
+    calculationSettings,
+    onUpdateCalculationSettings: updateCalculationSettings,
   };
 
   return (
@@ -465,36 +489,18 @@ export default function Home() {
           </div>
 
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
+            {desktopTab === 'data' && (
+              <DataPanel {...dataProps} />
+            )}
             {desktopTab === 'grahas' && (
               chartData
                 ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} />
                 : <EmptyState message="Calculate a chart to see graha positions" />
             )}
-            {desktopTab === 'karakas' && (
-              chartData
-                ? <KarakasPanel charaKarakas={charaKarakas} />
-                : <EmptyState message="Calculate a chart to see Chara Karakas" />
-            )}
             {desktopTab === 'dasha' && (
-              chartData ? (
-                <div className="space-y-1">
-                  {effectiveBcpResult
-                    ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
-                    : <EmptyState message="BCP data unavailable" />
-                  }
-                  <CalculationDebugPanel debug={chartData.debug} ianaTimezone={ianaTimezone} />
-                  <div className="pt-2">
-                    <button
-                      onClick={handleExportReport}
-                      className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 rounded text-xs font-mono hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                    >
-                      ↓ export report
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <EmptyState message="Calculate a chart to see BCP dasha analysis" />
-              )
+              effectiveBcpResult && chartData
+                ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
+                : <EmptyState message="Calculate a chart to see BCP dasha analysis" />
             )}
             {desktopTab === 'settings' && (
               <SettingsPanel {...settingsProps} />
@@ -512,51 +518,33 @@ export default function Home() {
           </Panel>
         )}
 
+        {activeTab === 'data' && (
+          <Panel>
+            <DataPanel {...dataProps} />
+          </Panel>
+        )}
+
         {activeTab === 'grahas' && (
           <Panel>
             {chartData
               ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} />
-              : <EmptyState message="Calculate a chart in Settings to see graha positions" />
-            }
-          </Panel>
-        )}
-
-        {activeTab === 'karakas' && (
-          <Panel>
-            {chartData
-              ? <KarakasPanel charaKarakas={charaKarakas} />
-              : <EmptyState message="Calculate a chart in Settings to see Chara Karakas" />
+              : <EmptyState message="Calculate a chart in Data to see graha positions" />
             }
           </Panel>
         )}
 
         {activeTab === 'dasha' && (
           <Panel>
-            {chartData ? (
-              <div className="space-y-1">
-                {effectiveBcpResult
-                  ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
-                  : <EmptyState message="BCP data unavailable" />
-                }
-                <CalculationDebugPanel debug={chartData.debug} ianaTimezone={ianaTimezone} />
-                <div className="pt-2">
-                  <button
-                    onClick={handleExportReport}
-                    className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 rounded text-xs font-mono hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
-                  >
-                    ↓ export report
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <EmptyState message="Calculate a chart in Settings to see BCP dasha analysis" />
-            )}
+            {effectiveBcpResult && chartData
+              ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
+              : <EmptyState message="Calculate a chart in Data to see BCP dasha analysis" />
+            }
           </Panel>
         )}
 
         {activeTab === 'settings' && (
           <Panel>
-            <SettingsPanel {...settingsProps} showThemeToggle />
+            <SettingsPanel {...settingsProps} />
           </Panel>
         )}
       </div>

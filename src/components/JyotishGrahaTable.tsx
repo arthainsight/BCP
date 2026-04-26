@@ -10,7 +10,7 @@ const GRAHA_NAMES: Record<string, { code: string; name: string }> = {
   Moon:    { code: 'Mo', name: 'Chandra' },
   Mars:    { code: 'Ma', name: 'Maṅgala' },
   Mercury: { code: 'Me', name: 'Budha' },
-  Jupiter: { code: 'Jp', name: 'Guru' },
+  Jupiter: { code: 'Ju', name: 'Guru' },
   Venus:   { code: 'Ve', name: 'Śukra' },
   Saturn:  { code: 'Sa', name: 'Śani' },
   Rahu:    { code: 'Ra', name: 'Rāhu' },
