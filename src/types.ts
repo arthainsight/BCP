@@ -114,17 +114,17 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
 };
 
 export interface DashaSettings {
-  showBcp: boolean;
-  showVimshottari: boolean;
-  showMd: boolean;
-  showAd: boolean;
-  showPd: boolean;
+  dashas: {
+    bcp: boolean;
+    vimshottari: boolean;
+    vds: boolean;
+  };
 }
 
 export const DEFAULT_DASHA_SETTINGS: DashaSettings = {
-  showBcp: true,
-  showVimshottari: true,
-  showMd: true,
-  showAd: true,
-  showPd: true,
+  dashas: {
+    bcp: true,
+    vimshottari: true,
+    vds: false,
+  },
 };

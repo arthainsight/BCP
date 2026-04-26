@@ -159,16 +159,23 @@ export default function SettingsPanel({
 
       <CollapsibleSection label="dasha" open={dashaOpen} onToggle={() => setDashaOpen((v) => !v)}>
         <div className="space-y-2">
-          {[
-            { key: 'showBcp' as const, label: 'BCP Dasha' },
-            { key: 'showVimshottari' as const, label: 'Vimshottari Dasha' },
-          ].map(({ key, label }) => (
+          {([
+            { key: 'bcp'         as const, label: 'BCP Engine' },
+            { key: 'vimshottari' as const, label: 'Vimshottari Standard' },
+            { key: 'vds'         as const, label: 'VDS · Original Method' },
+          ]).map(({ key, label }) => (
             <div key={key} className="flex items-center justify-between gap-3">
               <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
-              <MiniToggle value={dashaSettings[key]} onToggle={() => onUpdateDashaSettings({ [key]: !dashaSettings[key] })} />
+              <MiniToggle
+                value={dashaSettings.dashas[key]}
+                onToggle={() =>
+                  onUpdateDashaSettings({
+                    dashas: { ...dashaSettings.dashas, [key]: !dashaSettings.dashas[key] },
+                  })
+                }
+              />
             </div>
           ))}
-
         </div>
       </CollapsibleSection>
 

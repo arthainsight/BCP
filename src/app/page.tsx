@@ -58,6 +58,33 @@ type CalculationOptions = {
   preserveCurrentPanel?: boolean;
 };
 
+// Handles both the new { dashas: {...} } format and the old
+// { showBcp, showVimshottari, dashaSystem } format from localStorage / saved charts.
+function migrateDashaSettings(raw: unknown): DashaSettings {
+  if (!raw || typeof raw !== 'object') return DEFAULT_DASHA_SETTINGS;
+  const obj = raw as Record<string, unknown>;
+
+  if (obj.dashas && typeof obj.dashas === 'object') {
+    const d = obj.dashas as Record<string, unknown>;
+    return {
+      dashas: {
+        bcp:         typeof d.bcp === 'boolean'         ? d.bcp         : true,
+        vimshottari: typeof d.vimshottari === 'boolean' ? d.vimshottari : true,
+        vds:         typeof d.vds === 'boolean'         ? d.vds         : false,
+      },
+    };
+  }
+
+  // Old format: showBcp / showVimshottari / dashaSystem
+  return {
+    dashas: {
+      bcp:         obj.showBcp !== false,
+      vimshottari: obj.showVimshottari !== false,
+      vds:         obj.dashaSystem === 'vds',
+    },
+  };
+}
+
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">
@@ -176,7 +203,7 @@ export default function Home() {
       const cs = localStorage.getItem('calculationSettings');
       if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
       const dash = localStorage.getItem('dashaSettings');
-      if (dash) setDashaSettings({ ...DEFAULT_DASHA_SETTINGS, ...JSON.parse(dash) });
+      if (dash) setDashaSettings(migrateDashaSettings(JSON.parse(dash)));
     } catch {}
     setSettingsRestored(true);
   }, []);
@@ -683,7 +710,7 @@ export default function Home() {
             )}
             {desktopTab === 'dasha' && (
               effectiveBcpResult && chartData
-                ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
+                ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
                 : <EmptyState message="Calculate a chart to see BCP dasha analysis" />
             )}
             {desktopTab === 'settings' && (
@@ -720,7 +747,7 @@ export default function Home() {
         {activeTab === 'dasha' && (
           <Panel>
             {effectiveBcpResult && chartData
-              ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
+              ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
               : <EmptyState message="Calculate a chart in Data to see BCP dasha analysis" />
             }
           </Panel>
