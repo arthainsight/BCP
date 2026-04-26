@@ -104,3 +104,19 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   ayanamsa: 'lahiri',
   nodeMode: 'mean',
 };
+
+export interface DashaSettings {
+  showBcp: boolean;
+  showVimshottari: boolean;
+  showMd: boolean;
+  showAd: boolean;
+  showPd: boolean;
+}
+
+export const DEFAULT_DASHA_SETTINGS: DashaSettings = {
+  showBcp: true,
+  showVimshottari: true,
+  showMd: true,
+  showAd: false,
+  showPd: false,
+};

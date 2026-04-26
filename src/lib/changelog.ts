@@ -1,5 +1,24 @@
 export const CHANGELOG = [
   {
+    version: 'v1.09',
+    changes: [
+      'Added Dasha settings section with toggles for BCP and Vimshottari visibility',
+      'Added Vimshottari level toggles: MD, AD (Antardasha), PD (Pratyantardasha)',
+      'AD and PD show for the currently active period (today\'s date)',
+      'Removed House Analysis block from Dasha page — BCP Engine only',
+      'Dasha settings persisted to localStorage',
+    ],
+  },
+  {
+    version: 'v1.08',
+    changes: [
+      'Added Vimshottari Dasha calculation from Moon nakshatra',
+      'Shows Vimshottari Mahadasha timeline alongside BCP dasha output',
+      'Dasha page: BCP on left, Vimshottari on right (stacked on mobile)',
+      'Vimshottari uses standard 120-year cycle and Moon sidereal longitude',
+    ],
+  },
+  {
     version: 'v1.07',
     changes: [
       'Added current chart/session name display in the top header',

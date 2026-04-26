@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChartDisplaySettings, CalculationSettings } from '@/types';
+import { ChartDisplaySettings, CalculationSettings, DashaSettings } from '@/types';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import ThemeToggle from './ThemeToggle';
 import UpdatesPanel from './UpdatesPanel';
@@ -11,6 +11,8 @@ interface Props {
   onToggleChartDisplay: (key: keyof ChartDisplaySettings) => void;
   calculationSettings: CalculationSettings;
   onUpdateCalculationSettings: (update: Partial<CalculationSettings>) => void;
+  dashaSettings: DashaSettings;
+  onUpdateDashaSettings: (update: Partial<DashaSettings>) => void;
 }
 
 const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
@@ -69,9 +71,11 @@ const SELECT =
 export default function SettingsPanel({
   chartDisplaySettings, onToggleChartDisplay,
   calculationSettings, onUpdateCalculationSettings,
+  dashaSettings, onUpdateDashaSettings,
 }: Props) {
   const [chartsOpen, setChartsOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
+  const [dashaOpen, setDashaOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
 
   return (
@@ -127,6 +131,39 @@ export default function SettingsPanel({
               <option value="true" disabled>True Node — coming soon</option>
             </select>
           </div>
+        </div>
+      </CollapsibleSection>
+
+      {/* Dasha — collapsible */}
+      <CollapsibleSection label="dasha" open={dashaOpen} onToggle={() => setDashaOpen((v) => !v)}>
+        <div className="space-y-2">
+          {[
+            { key: 'showBcp' as const, label: 'BCP Dasha' },
+            { key: 'showVimshottari' as const, label: 'Vimshottari Dasha' },
+          ].map(({ key, label }) => (
+            <div key={key} className="flex items-center justify-between">
+              <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
+              <MiniToggle value={dashaSettings[key]} onToggle={() => onUpdateDashaSettings({ [key]: !dashaSettings[key] })} />
+            </div>
+          ))}
+
+          {dashaSettings.showVimshottari && (
+            <div className="pl-3 border-l border-zinc-200 dark:border-zinc-700 mt-2 space-y-2">
+              <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 uppercase tracking-wider mb-1">
+                Vimshottari levels
+              </div>
+              {[
+                { key: 'showMd' as const, label: 'MD (Mahadasha)' },
+                { key: 'showAd' as const, label: 'AD (Antardasha)' },
+                { key: 'showPd' as const, label: 'PD (Pratyantardasha)' },
+              ].map(({ key, label }) => (
+                <div key={key} className="flex items-center justify-between">
+                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
+                  <MiniToggle value={dashaSettings[key]} onToggle={() => onUpdateDashaSettings({ [key]: !dashaSettings[key] })} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </CollapsibleSection>
 

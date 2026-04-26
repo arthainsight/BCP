@@ -1,7 +1,7 @@
 ﻿'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS } from '@/types';
+import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
@@ -92,6 +92,7 @@ export default function Home() {
   // Chart display settings
   const [chartDisplaySettings, setChartDisplaySettings] = useState<ChartDisplaySettings>(DEFAULT_CHART_DISPLAY);
   const [calculationSettings, setCalculationSettings] = useState<CalculationSettings>(DEFAULT_CALCULATION_SETTINGS);
+  const [dashaSettings, setDashaSettings] = useState<DashaSettings>(DEFAULT_DASHA_SETTINGS);
 
   // Manual BCP
   const [useManualBcpMode, setUseManualBcpMode] = useState(false);
@@ -143,13 +144,15 @@ export default function Home() {
     return map;
   }, [charaKarakas]);
 
-  // Restore persisted display/calculation settings on mount
+  // Restore persisted display/calculation/dasha settings on mount
   useEffect(() => {
     try {
       const ds = localStorage.getItem('chartDisplaySettings');
       if (ds) setChartDisplaySettings({ ...DEFAULT_CHART_DISPLAY, ...JSON.parse(ds) });
       const cs = localStorage.getItem('calculationSettings');
       if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
+      const dash = localStorage.getItem('dashaSettings');
+      if (dash) setDashaSettings({ ...DEFAULT_DASHA_SETTINGS, ...JSON.parse(dash) });
     } catch {}
   }, []);
 
@@ -168,6 +171,14 @@ export default function Home() {
     setCalculationSettings((prev) => {
       const next = { ...prev, ...update };
       try { localStorage.setItem('calculationSettings', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+
+  const updateDashaSettings = useCallback((update: Partial<DashaSettings>) => {
+    setDashaSettings((prev) => {
+      const next = { ...prev, ...update };
+      try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}
       return next;
     });
   }, []);
@@ -507,6 +518,8 @@ export default function Home() {
     onToggleChartDisplay: toggleChartDisplay,
     calculationSettings,
     onUpdateCalculationSettings: updateCalculationSettings,
+    dashaSettings,
+    onUpdateDashaSettings: updateDashaSettings,
   };
 
   return (
@@ -576,7 +589,7 @@ export default function Home() {
             )}
             {desktopTab === 'dasha' && (
               effectiveBcpResult && chartData
-                ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
+                ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
                 : <EmptyState message="Calculate a chart to see BCP dasha analysis" />
             )}
             {desktopTab === 'settings' && (
@@ -613,7 +626,7 @@ export default function Home() {
         {activeTab === 'dasha' && (
           <Panel>
             {effectiveBcpResult && chartData
-              ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} />
+              ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascSign={chartData.ascendant.sign} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
               : <EmptyState message="Calculate a chart in Data to see BCP dasha analysis" />
             }
           </Panel>
