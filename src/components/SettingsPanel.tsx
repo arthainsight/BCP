@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { ChartDisplaySettings, CalculationSettings, DashaSettings } from '@/types';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
-import ThemeToggle from './ThemeToggle';
 import UpdatesPanel from './UpdatesPanel';
 
 interface Props {
@@ -82,13 +81,7 @@ export default function SettingsPanel({
     <div className="space-y-5">
       <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; settings</div>
 
-      {/* Theme */}
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">theme</span>
-        <ThemeToggle />
-      </div>
-
-      {/* Charts — collapsible, compact 2-col grid */}
+      {/* Charts — collapsible */}
       <CollapsibleSection label="charts" open={chartsOpen} onToggle={() => setChartsOpen((v) => !v)}>
         <div className="grid grid-cols-2 gap-x-6 gap-y-2">
           {CHART_TOGGLES.map(({ key, label }) => (
@@ -100,7 +93,7 @@ export default function SettingsPanel({
         </div>
       </CollapsibleSection>
 
-      {/* Calculations — collapsible */}
+      {/* Calculations */}
       <CollapsibleSection label="calculations" open={calcOpen} onToggle={() => setCalcOpen((v) => !v)}>
         <div className="space-y-3">
           <div>
@@ -113,8 +106,6 @@ export default function SettingsPanel({
               onChange={(e) => onUpdateCalculationSettings({ ayanamsa: e.target.value })}
             >
               <option value="lahiri">Lahiri (Chitrapaksha)</option>
-              <option value="raman" disabled>Raman — coming soon</option>
-              <option value="kp" disabled>KP — coming soon</option>
             </select>
           </div>
 
@@ -128,13 +119,12 @@ export default function SettingsPanel({
               onChange={(e) => onUpdateCalculationSettings({ nodeMode: e.target.value })}
             >
               <option value="mean">Mean Node</option>
-              <option value="true" disabled>True Node — coming soon</option>
             </select>
           </div>
         </div>
       </CollapsibleSection>
 
-      {/* Dasha — collapsible */}
+      {/* Dasha */}
       <CollapsibleSection label="dasha" open={dashaOpen} onToggle={() => setDashaOpen((v) => !v)}>
         <div className="space-y-2">
           {[
@@ -167,17 +157,15 @@ export default function SettingsPanel({
         </div>
       </CollapsibleSection>
 
-      {/* Updates */}
       <UpdatesPanel />
 
-      {/* About — collapsible */}
+      {/* About */}
       <CollapsibleSection label="about" open={aboutOpen} onToggle={() => setAboutOpen((v) => !v)}>
         <div className="space-y-1.5 pt-1">
           <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300">
             {APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span>
           </div>
           <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">by Riku Forsell</div>
-          <div className="text-xs font-mono text-zinc-300 dark:text-zinc-700">discord — coming later</div>
         </div>
       </CollapsibleSection>
     </div>
