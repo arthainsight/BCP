@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v1.06',
+    changes: [
+      'Added top header file toolbar: NEW, LOAD, SAVE, SAVE AS, EXPORT, IMPORT',
+      'Removed lower PROFILE load/save buttons',
+      'EXPORT downloads all saved charts as bcp-charts-export.json',
+      'IMPORT merges charts from a JSON export file (no overwrites)',
+      'Saved charts use browser localStorage (bcp_saved_charts)',
+      'LOAD shows saved charts dropdown with delete per entry',
+      'SAVE updates active chart; SAVE AS creates a new named entry',
+      'NEW starts a fresh session with confirmation if data exists',
+    ],
+  },
+  {
     version: 'v1.05',
     changes: [
       'Nakshatra abbreviation on chart (Asw/Bha/Krt…)',

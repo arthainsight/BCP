@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
@@ -14,6 +14,7 @@ import GrahasPanel from '@/components/GrahasPanel';
 import DashaPanel from '@/components/DashaPanel';
 import ChartSection from '@/components/ChartSection';
 import { buildReportMarkdown } from '@/lib/exportReport';
+import FileActions, { ChartSnapshot } from '@/components/FileActions';
 
 function getTodayString(): string {
   const d = new Date();
@@ -38,16 +39,6 @@ function computeManualBcp(completedAge: number, month: number): BcpResult {
     monthInRunningYear: month,
     activeMonthHouse,
   };
-}
-
-interface BirthProfile {
-  name: string;
-  birthDatetime: string;
-  city: string;
-  latitude: number;
-  longitude: number;
-  timezone?: string;
-  timezoneOffset: number;
 }
 
 const DESKTOP_TABS = ['data', 'grahas', 'dasha', 'settings'] as const;
@@ -97,7 +88,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [transitLoading, setTransitLoading] = useState(false);
   const [error, setError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Chart display settings
   const [chartDisplaySettings, setChartDisplaySettings] = useState<ChartDisplaySettings>(DEFAULT_CHART_DISPLAY);
@@ -150,7 +140,7 @@ export default function Home() {
     return map;
   }, [charaKarakas]);
 
-  // Restore persisted display/calculation settings
+  // Restore persisted display/calculation settings on mount
   useEffect(() => {
     try {
       const ds = localStorage.getItem('chartDisplaySettings');
@@ -159,6 +149,7 @@ export default function Home() {
       if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
     } catch {}
   }, []);
+
 
   // --- Handlers ---
 
@@ -176,6 +167,27 @@ export default function Home() {
       try { localStorage.setItem('calculationSettings', JSON.stringify(next)); } catch {}
       return next;
     });
+  }, []);
+
+  const handleNewChart = useCallback(() => {
+    setBirthDatetime('');
+    setCity('');
+    setGeoResults([]);
+    setSelectedGeo(null);
+    setShowCoords(false);
+    setManualLat('');
+    setManualLng('');
+    setIanaTimezone('');
+    setTzOverride('');
+    setBcpResult(null);
+    setChartData(null);
+    setTransitDatetime('');
+    setTransitPlanets([]);
+    setError('');
+    setUseManualBcpMode(false);
+    setManualBcpAge('');
+    setManualBcpMonth('');
+    setTargetDate(getTodayString());
   }, []);
 
   const handleGeocode = useCallback(async () => {
@@ -344,69 +356,115 @@ export default function Home() {
     URL.revokeObjectURL(url);
   }, [birthDatetime, city, selectedGeo, ianaTimezone, effectiveTzOffset, manualLat, manualLng, chartData, charaKarakas, effectiveBcpResult, calculationSettings]);
 
-  const handleSaveProfile = useCallback(() => {
-    const lat = parseFloat(manualLat);
-    const lng = parseFloat(manualLng);
-    const profileName = selectedGeo ? selectedGeo.name : city || 'Unknown';
-    const profile: BirthProfile = {
-      name: profileName,
-      birthDatetime,
-      city: selectedGeo ? `${selectedGeo.name}, ${selectedGeo.country}` : city,
-      latitude: isNaN(lat) ? 0 : lat,
-      longitude: isNaN(lng) ? 0 : lng,
-      timezone: ianaTimezone,
-      timezoneOffset: effectiveTzOffset ?? 0,
-    };
-    const blob = new Blob([JSON.stringify(profile, null, 2)], { type: 'application/json' });
+  const handleExportCharts = useCallback(() => {
+    const raw = localStorage.getItem('bcp_saved_charts');
+    const charts = raw ? JSON.parse(raw) : [];
+    if (!charts.length) {
+      alert('No saved charts to export.');
+      return;
+    }
+    const payload = JSON.stringify({ exportedAt: new Date().toISOString(), charts }, null, 2);
+    const blob = new Blob([payload], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = profileName.replace(/\s+/g, '_') + '_birth_profile.json';
+    a.download = 'bcp-charts-export.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, [birthDatetime, city, selectedGeo, manualLat, manualLng, ianaTimezone, effectiveTzOffset]);
+  }, []);
 
-  const handleLoadProfile = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
+  const handleImportCharts = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = () => {
+      const file = input.files?.[0];
       if (!file) return;
-      e.target.value = '';
-      try {
-        const text = await file.text();
-        const profile: BirthProfile = JSON.parse(text);
-        setBirthDatetime(profile.birthDatetime);
-        setCity(profile.city);
-        setManualLat(String(profile.latitude));
-        setManualLng(String(profile.longitude));
-        const tz = profile.timezone ?? '';
-        setIanaTimezone(tz);
-        setTzOverride(tz ? '' : String(profile.timezoneOffset ?? 0));
-        setShowCoords(true);
-        setGeoResults([]);
-        setSelectedGeo(null);
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result as string);
+          if (!Array.isArray(parsed?.charts)) {
+            alert('Invalid export file: missing "charts" array.');
+            return;
+          }
+          const raw = localStorage.getItem('bcp_saved_charts');
+          const existing: { id: string }[] = raw ? JSON.parse(raw) : [];
+          const existingIds = new Set(existing.map((c) => c.id));
+          let imported = 0;
+          for (const chart of parsed.charts) {
+            if (!chart || typeof chart !== 'object') continue;
+            if (existingIds.has(chart.id)) {
+              chart.id =
+                typeof crypto !== 'undefined' && crypto.randomUUID
+                  ? crypto.randomUUID()
+                  : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+            }
+            existing.push(chart);
+            imported++;
+          }
+          localStorage.setItem('bcp_saved_charts', JSON.stringify(existing));
+          alert(`Imported ${imported} chart${imported !== 1 ? 's' : ''}.`);
+        } catch {
+          alert('Failed to read file. Make sure it is a valid export file.');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }, []);
 
-        const tzOffset = tz
-          ? (() => {
-              const d = parseBirthDatetimeForTz(profile.birthDatetime);
-              return d ? getUtcOffsetHours(tz, d) : (profile.timezoneOffset ?? 0);
-            })()
-          : (profile.timezoneOffset ?? 0);
+  const handleLoadChartSnapshot = useCallback(
+    async (snap: ChartSnapshot) => {
+      setBirthDatetime(snap.birthDatetime);
+      setCity(snap.city);
+      setManualLat(snap.manualLat);
+      setManualLng(snap.manualLng);
+      setIanaTimezone(snap.ianaTimezone);
+      setTzOverride(snap.tzOverride);
+      setTargetDate(snap.targetDate);
+      setShowCoords(snap.showCoords);
+      setGeoResults([]);
+      setSelectedGeo(null);
+      setBcpResult(null);
+      setChartData(null);
+      setTransitPlanets([]);
+      setError('');
 
-        await performCalculation(
-          profile.birthDatetime,
-          profile.latitude,
-          profile.longitude,
-          tzOffset,
-          targetDate
-        );
-      } catch {
-        setError('Failed to load profile. Make sure it is a valid JSON profile file.');
+      const lat = parseFloat(snap.manualLat);
+      const lng = parseFloat(snap.manualLng);
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      let tzOffset: number | null = null;
+      if (snap.tzOverride !== '') {
+        const n = parseFloat(snap.tzOverride);
+        if (!isNaN(n)) tzOffset = n;
+      } else if (snap.ianaTimezone) {
+        const d = parseBirthDatetimeForTz(snap.birthDatetime);
+        if (d) tzOffset = getUtcOffsetHours(snap.ianaTimezone, d);
       }
+      if (tzOffset === null) return;
+
+      await performCalculation(snap.birthDatetime, lat, lng, tzOffset, snap.targetDate);
     },
-    [targetDate, performCalculation]
+    [performCalculation]
   );
+
+  // Snapshot of current session for FileActions persistence
+  const chartSnapshot: ChartSnapshot = {
+    birthDatetime,
+    city: selectedGeo ? `${selectedGeo.name}, ${selectedGeo.country}` : city,
+    manualLat,
+    manualLng,
+    ianaTimezone,
+    tzOverride,
+    targetDate,
+    showCoords,
+  };
+
+  const hasChart = !!chartData;
 
   // Shared props objects
   const chartSectionProps = {
@@ -432,9 +490,6 @@ export default function Home() {
     onGeocode: handleGeocode,
     onSelectGeo: handleSelectGeo,
     onCalculate: handleCalculate,
-    onSaveProfile: handleSaveProfile,
-    fileInputRef,
-    onLoadProfile: handleLoadProfile,
     useManualBcpMode, onUseManualBcpModeChange: setUseManualBcpMode,
     manualBcpAge, onManualBcpAgeChange: setManualBcpAge,
     manualBcpMonth, onManualBcpMonthChange: setManualBcpMonth,
@@ -459,7 +514,17 @@ export default function Home() {
           </span>
           <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-3">
+          <FileActions
+            snapshot={chartSnapshot}
+            hasChart={hasChart}
+            onNew={handleNewChart}
+            onLoad={handleLoadChartSnapshot}
+            onExport={handleExportCharts}
+            onImport={handleImportCharts}
+          />
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* ── DESKTOP: 2-column grid ────────────────────────────────────── */}

@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { GeoResult, BcpResult } from '@/types';
 
 interface Props {
@@ -25,9 +24,6 @@ interface Props {
   onGeocode: () => void;
   onSelectGeo: (idx: number, results: GeoResult[]) => void;
   onCalculate: () => void;
-  onSaveProfile: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  onLoadProfile: (e: React.ChangeEvent<HTMLInputElement>) => void;
 
   useManualBcpMode: boolean;
   onUseManualBcpModeChange: (v: boolean) => void;
@@ -58,41 +54,16 @@ export default function DataPanel({
   manualLat, onManualLatChange,
   manualLng, onManualLngChange,
   ianaTimezone, autoTzOffset, tzOverride, onTzOverrideChange,
-  onGeocode, onSelectGeo, onCalculate, onSaveProfile,
-  fileInputRef, onLoadProfile,
+  onGeocode, onSelectGeo, onCalculate,
   useManualBcpMode, onUseManualBcpModeChange,
   manualBcpAge, onManualBcpAgeChange,
   manualBcpMonth, onManualBcpMonthChange,
   manualBcpResult,
   loading, error, canCalculate,
 }: Props) {
-  const effectiveTz = tzOverride !== '' ? parseFloat(tzOverride) : autoTzOffset;
-
   return (
     <div className="space-y-5">
       <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; data</div>
-
-      {/* Profile load/save */}
-      <div className="flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">profile</span>
-        <label className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono cursor-pointer transition-colors">
-          load
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json"
-            className="hidden"
-            onChange={onLoadProfile}
-          />
-        </label>
-        <button
-          onClick={onSaveProfile}
-          disabled={!birthDatetime || !manualLat || !manualLng || effectiveTz === null}
-          className="px-3 py-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono disabled:opacity-30 transition-colors"
-        >
-          save
-        </button>
-      </div>
 
       {/* Birth datetime */}
       <div>

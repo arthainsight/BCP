@@ -10,7 +10,8 @@
       "Bash(npx --yes node -e \"const p = require\\('swisseph-wasm'\\); console.log\\(Object.keys\\(p\\).slice\\(0,20\\)\\)\")",
       "Read(//tmp/**)",
       "Bash(node --input-type=module)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(python3 *)"
     ]
   }
 }
