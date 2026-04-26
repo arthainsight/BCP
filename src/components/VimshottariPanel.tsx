@@ -22,8 +22,8 @@ const LEVEL_LABEL: Record<Level, string> = {
   ad: 'AD',
   pd: 'PD',
   sd: 'SD',
-  prana: 'PRANA',
-  deha: 'DEHA',
+  prana: 'PR',
+  deha: 'DE',
 };
 
 function fmtDate(d: Date): string {
@@ -196,24 +196,33 @@ export default function VimshottariPanel({ planets, birthDatetime, showMd, showA
           MD
         </button>
         {selected.map((entry, index) => {
-          const next = LEVELS[index + 1];
-          if (!next) return null;
+          const selectedLevel = LEVELS[index];
+          const targetLevel = LEVELS[index + 1];
+          if (!selectedLevel || !targetLevel) return null;
           return (
             <span key={`${entryKey(entry)}-crumb`} className="inline-flex items-center gap-1">
               <span className="text-zinc-300 dark:text-zinc-700">›</span>
               <button
-                onClick={() => goToLevel(next)}
+                onClick={() => goToLevel(targetLevel)}
                 className={`px-2 py-1 rounded-md border transition-colors ${
-                  level === next
+                  level === targetLevel
                     ? 'border-emerald-300 dark:border-green-700 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300'
                     : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
                 }`}
               >
-                {ABBR[entry.lord] ?? entry.lord} {LEVEL_LABEL[next]}
+                {ABBR[entry.lord] ?? entry.lord} {LEVEL_LABEL[selectedLevel]}
               </button>
             </span>
           );
         })}
+        {level !== 'md' && (
+          <span className="inline-flex items-center gap-1">
+            <span className="text-zinc-300 dark:text-zinc-700">›</span>
+            <span className="px-2 py-1 rounded-md border border-emerald-300 dark:border-green-700 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300">
+              {LEVEL_LABEL[level]}
+            </span>
+          </span>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-2">
