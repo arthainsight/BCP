@@ -67,7 +67,10 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
   const isActiveSaved =
     activeId !== null && loadSavedCharts().some((c) => c.id === activeId);
 
-  // ── NEW ──
+  const popoverBase = compact
+    ? "fixed left-4 top-32 z-[100]"
+    : "absolute top-full right-0 mt-1 z-40";
+
   const handleNew = () => {
     if (hasChart || hasSnapshotData) {
       setConfirmNew(true);
@@ -89,7 +92,6 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
     onNew();
   };
 
-  // ── LOAD ──
   const toggleLoad = () => {
     if (!showLoad) {
       const list = loadSavedCharts();
@@ -123,7 +125,6 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
     }
   };
 
-  // ── SAVE ──
   const handleSave = () => {
     if (!activeId || !hasSnapshotData) return;
     updateSavedChart(activeId, snapshot);
@@ -131,7 +132,6 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
     setShowMenu(false);
   };
 
-  // ── SAVE AS ──
   const openSaveAs = () => {
     setSaveAsName("");
     setShowMenu(false);
@@ -174,8 +174,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
           {showMenu && (
             <>
-              <div className="fixed inset-0 z-30" onClick={() => setShowMenu(false)} />
-              <div className="absolute top-full right-0 mt-2 z-40 w-44 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-lg">
+              <div className="fixed inset-0 z-[90]" onClick={() => setShowMenu(false)} />
+              <div className="fixed left-4 top-32 z-[100] w-44 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xl">
                 <button onClick={handleNew} className={MENU_ITEM}>{confirmNew ? "confirm?" : "NEW"}</button>
                 <button onClick={toggleLoad} className={MENU_ITEM}>LOAD</button>
                 {!hideSave && (
@@ -203,9 +203,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
             {confirmNew ? "confirm?" : "NEW"}
           </button>
 
-          <button onClick={toggleLoad} className={BTN} title="Load saved chart">
-            LOAD
-          </button>
+          <button onClick={toggleLoad} className={BTN} title="Load saved chart">LOAD</button>
 
           {!hideSave && (
             <button
@@ -218,24 +216,16 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
             </button>
           )}
 
-          <button onClick={openSaveAs} disabled={!hasSnapshotData} className={BTN} title="Save current chart as a new entry">
-            SAVE AS
-          </button>
-
-          <button onClick={onExport} className={BTN} title="Export all saved charts to JSON file">
-            EXPORT
-          </button>
-
-          <button onClick={onImport} className={BTN} title="Import charts from JSON export file">
-            IMPORT
-          </button>
+          <button onClick={openSaveAs} disabled={!hasSnapshotData} className={BTN} title="Save current chart as a new entry">SAVE AS</button>
+          <button onClick={onExport} className={BTN} title="Export all saved charts to JSON file">EXPORT</button>
+          <button onClick={onImport} className={BTN} title="Import charts from JSON export file">IMPORT</button>
         </>
       )}
 
       {showLoad && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setShowLoad(false)} />
-          <div className="absolute top-full right-0 mt-1 z-40 w-72 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg overflow-hidden">
+          <div className="fixed inset-0 z-[90]" onClick={() => setShowLoad(false)} />
+          <div className={`${popoverBase} w-72 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl overflow-hidden`}>
             <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
               <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">saved charts</span>
               <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500">{savedList.length}</span>
@@ -272,8 +262,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
       {showSaveAs && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setShowSaveAs(false)} />
-          <div className="absolute top-full right-0 mt-1 z-40 w-64 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3">
+          <div className="fixed inset-0 z-[90]" onClick={() => setShowSaveAs(false)} />
+          <div className={`${popoverBase} w-64 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl p-3`}>
             <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">save chart as</div>
             <input
               type="text"
@@ -285,12 +275,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
               autoFocus
             />
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setShowSaveAs(false)} className="px-3 py-1.5 text-xs font-mono text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
-                Cancel
-              </button>
-              <button onClick={handleSaveAs} disabled={!saveAsName.trim()} className="px-3 py-1.5 text-xs font-mono rounded bg-emerald-600 hover:bg-emerald-700 dark:bg-green-700 dark:hover:bg-green-600 text-white disabled:opacity-30 transition-colors">
-                Save
-              </button>
+              <button onClick={() => setShowSaveAs(false)} className="px-3 py-1.5 text-xs font-mono text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">Cancel</button>
+              <button onClick={handleSaveAs} disabled={!saveAsName.trim()} className="px-3 py-1.5 text-xs font-mono rounded bg-emerald-600 hover:bg-emerald-700 dark:bg-green-700 dark:hover:bg-green-600 text-white disabled:opacity-30 transition-colors">Save</button>
             </div>
           </div>
         </>
@@ -298,17 +284,13 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
       {confirmNew && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setConfirmNew(false)} />
-          <div className="absolute top-full left-0 mt-1 z-40 w-64 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3">
+          <div className="fixed inset-0 z-[90]" onClick={() => setConfirmNew(false)} />
+          <div className={`${popoverBase} w-64 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-2xl p-3`}>
             <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300 mb-2">Discard current chart?</div>
             <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-3">Unsaved changes will be lost.</div>
             <div className="flex gap-2 justify-end">
-              <button onClick={() => setConfirmNew(false)} className="px-3 py-1.5 text-xs font-mono text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">
-                Cancel
-              </button>
-              <button onClick={confirmNewAction} className="px-3 py-1.5 text-xs font-mono rounded bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 text-zinc-700 dark:text-zinc-300 transition-colors">
-                Discard &amp; New
-              </button>
+              <button onClick={() => setConfirmNew(false)} className="px-3 py-1.5 text-xs font-mono text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">Cancel</button>
+              <button onClick={confirmNewAction} className="px-3 py-1.5 text-xs font-mono rounded bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 text-zinc-700 dark:text-zinc-300 transition-colors">Discard &amp; New</button>
             </div>
           </div>
         </>
