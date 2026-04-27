@@ -122,6 +122,7 @@ export interface DashaSettings {
     bcp: boolean;
     vimshottari: boolean;
     vds: boolean;
+    chara?: boolean;
   };
 }
 
@@ -130,5 +131,6 @@ export const DEFAULT_DASHA_SETTINGS: DashaSettings = {
     bcp: true,
     vimshottari: true,
     vds: false,
+    chara: false,
   },
 };
