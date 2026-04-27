@@ -55,10 +55,10 @@ export default function CharaPanel({ planets, ascendant, birthDatetime }: Props)
     if (!result) return [] as CharaDashaEntry[];
     const md = activeEntry(result.entries, now);
     if (!md) return [];
-    const adEntries = calculateCharaSubDashas(md, 'ad', result.config, md.sign);
+    const adEntries = calculateCharaSubDashas(md, 'ad', result.config);
     const ad = activeEntry(adEntries, now);
     if (!ad) return [md];
-    const pdEntries = calculateCharaSubDashas(ad, 'pd', result.config, md.sign);
+    const pdEntries = calculateCharaSubDashas(ad, 'pd', result.config);
     const pd = activeEntry(pdEntries, now);
     return pd ? [md, ad, pd] : [md, ad];
   }, [result, now]);
@@ -66,7 +66,7 @@ export default function CharaPanel({ planets, ascendant, birthDatetime }: Props)
   if (!result) {
     return (
       <div className="space-y-2">
-        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; chara dasha</div>
+        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; chara dasha beta</div>
         <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 italic">Missing data for Chara Dasha calculation.</div>
       </div>
     );
@@ -74,11 +74,10 @@ export default function CharaPanel({ planets, ascendant, birthDatetime }: Props)
 
   const currentLevelIndex = levelIndex(level);
   const parent = currentLevelIndex === 0 ? null : selected[currentLevelIndex - 1];
-  const mdParent = currentLevelIndex > 0 ? selected[0] : null;
   const entries = level === 'md'
     ? result.entries
     : parent
-      ? calculateCharaSubDashas(parent, level, result.config, mdParent?.sign ?? parent.sign)
+      ? calculateCharaSubDashas(parent, level, result.config)
       : [];
   const current = activeEntry(entries, now);
   const currentNextLevel = nextLevel(level);
@@ -109,7 +108,7 @@ export default function CharaPanel({ planets, ascendant, birthDatetime }: Props)
   return (
     <div className="space-y-3 min-w-0 overflow-hidden">
       <div className="flex items-center justify-between gap-2">
-        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; chara dasha</div>
+        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; chara dasha beta</div>
         <button onClick={openNow} className="px-2 py-1 rounded-md border border-cyan-300/70 dark:border-cyan-600/60 bg-cyan-50 dark:bg-cyan-900/20 text-[10px] font-mono text-cyan-700 dark:text-cyan-300">NOW</button>
       </div>
 
