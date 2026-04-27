@@ -1,8 +1,9 @@
-import { BcpResult, PlanetData, DashaSettings } from '@/types';
+import { BcpResult, PlanetData, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
 import BcpSummary from './BcpSummary';
 import VimshottariPanel from './VimshottariPanel';
 import VdsPanel from './VdsPanel';
 import CharaPanel from './CharaPanel';
+import CharaCleanPanel from './CharaCleanPanel';
 
 interface Props {
   bcp: BcpResult;
@@ -14,7 +15,8 @@ interface Props {
 
 export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, dashaSettings }: Props) {
   const { dashas } = dashaSettings;
-  const enabledCount = [dashas.bcp, dashas.vimshottari, dashas.vds, dashas.chara].filter(Boolean).length;
+  const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
+  const enabledCount = [dashas.bcp, dashas.vimshottari, dashas.vds, dashas.charaBeta, dashas.chara].filter(Boolean).length;
 
   if (enabledCount === 0) {
     return (
@@ -44,9 +46,14 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
           <VdsPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
         </div>
       )}
-      {dashas.chara && (
+      {dashas.charaBeta && (
         <div className="min-w-0">
           <CharaPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
+        </div>
+      )}
+      {dashas.chara && (
+        <div className="min-w-0">
+          <CharaCleanPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} settings={charaOptions} />
         </div>
       )}
     </div>
