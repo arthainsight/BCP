@@ -1,6 +1,7 @@
 'use client';
 
-import { BcpResult, ChartData, ChartDisplaySettings, PlanetData } from '@/types';
+import { useEffect, useState } from 'react';
+import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 
@@ -20,6 +21,24 @@ export default function ChartSection({
   bcp, chart, transitPlanets, chartDisplaySettings, karakaByPlanet,
   transitDatetime, onTransitDatetimeChange, onCalculateTransit, transitLoading,
 }: ChartSectionProps) {
+  const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
+
+  useEffect(() => {
+    setChartStyle(chartDisplaySettings.chartStyle ?? 'north');
+  }, [chartDisplaySettings.chartStyle]);
+
+  useEffect(() => {
+    const handleChartStyleChange = (event: Event) => {
+      const customEvent = event as CustomEvent<ChartStyle>;
+      if (customEvent.detail === 'north' || customEvent.detail === 'south') {
+        setChartStyle(customEvent.detail);
+      }
+    };
+
+    window.addEventListener('bcp:chart-style-change', handleChartStyleChange);
+    return () => window.removeEventListener('bcp:chart-style-change', handleChartStyleChange);
+  }, []);
+
   if (!bcp || !chart) {
     return (
       <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">
@@ -35,7 +54,7 @@ export default function ChartSection({
         <span className="text-emerald-700 dark:text-green-400">M: H{bcp.activeMonthHouse}</span>
       </div>
 
-      {chartDisplaySettings.chartStyle === 'south' ? (
+      {chartStyle === 'south' ? (
         <SouthIndianChart
           activeYearHouse={bcp.activeYearHouse}
           activeMonthHouse={bcp.activeMonthHouse}
