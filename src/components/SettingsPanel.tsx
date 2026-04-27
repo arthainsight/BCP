@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ChartDisplaySettings, CalculationSettings, DashaSettings, ChartStyle } from '@/types';
+import { ChartDisplaySettings, CalculationSettings, DashaSettings, ChartStyle, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import UpdatesPanel from './UpdatesPanel';
 
@@ -138,11 +138,11 @@ export default function SettingsPanel({ chartDisplaySettings, onToggleChartDispl
     persistDashaSettings({ ...dashaSettings, dashas: { ...dashaSettings.dashas, [key]: !dashaSettings.dashas[key] } });
   };
 
-  const updateCharaOption = <K extends keyof NonNullable<DashaSettings['charaOptions']>>(key: K, value: NonNullable<DashaSettings['charaOptions']>[K]) => {
-    persistDashaSettings({ ...dashaSettings, charaOptions: { ...dashaSettings.charaOptions, [key]: value } as NonNullable<DashaSettings['charaOptions']> });
-  };
+  const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
 
-  const charaOptions = dashaSettings.charaOptions;
+  const updateCharaOption = <K extends keyof typeof charaOptions>(key: K, value: (typeof charaOptions)[K]) => {
+    persistDashaSettings({ ...dashaSettings, charaOptions: { ...charaOptions, [key]: value } });
+  };
 
   return (
     <div className="space-y-5">
@@ -190,17 +190,17 @@ export default function SettingsPanel({ chartDisplaySettings, onToggleChartDispl
             </div>
           ))}
 
-          {dashaSettings.dashas.chara && charaOptions && (
+          {dashaSettings.dashas.chara && (
             <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-3 space-y-2">
               <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">chara dasha config</div>
-              <select className={SELECT} value={charaOptions.start} onChange={(e) => updateCharaOption('start', e.target.value as NonNullable<DashaSettings['charaOptions']>['start'])}><option value="lagna">Start: Lagna</option><option value="ak">Start: Atmakaraka</option></select>
-              <select className={SELECT} value={charaOptions.mahadashaDirection} onChange={(e) => updateCharaOption('mahadashaDirection', e.target.value as NonNullable<DashaSettings['charaOptions']>['mahadashaDirection'])}><option value="rashi-type">MD Direction: Rashi Type</option><option value="odd-even">MD Direction: Odd / Even</option></select>
-              <select className={SELECT} value={charaOptions.durationCount} onChange={(e) => updateCharaOption('durationCount', e.target.value as NonNullable<DashaSettings['charaOptions']>['durationCount'])}><option value="inclusive">Duration: Inclusive</option><option value="exclusive">Duration: Exclusive</option></select>
-              <select className={SELECT} value={charaOptions.antardashaStart} onChange={(e) => updateCharaOption('antardashaStart', e.target.value as NonNullable<DashaSettings['charaOptions']>['antardashaStart'])}><option value="next-dasha-rasi">AD Start: Next Dasha Rasi</option><option value="same-dasha-rasi">AD Start: Same Dasha Rasi</option></select>
-              <select className={SELECT} value={charaOptions.antardashaDirection} onChange={(e) => updateCharaOption('antardashaDirection', e.target.value as NonNullable<DashaSettings['charaOptions']>['antardashaDirection'])}><option value="dasha-rasi-9h">AD Direction: Dasha Rasi 9H</option><option value="dasha-rasi">AD Direction: Dasha Rasi</option></select>
-              <select className={SELECT} value={charaOptions.strongerLordRule} onChange={(e) => updateCharaOption('strongerLordRule', e.target.value as NonNullable<DashaSettings['charaOptions']>['strongerLordRule'])}><option value="graha">Stronger Lord: Graha</option><option value="rashi">Stronger Lord: Rashi</option></select>
-              <select className={SELECT} value={charaOptions.scorpioLord} onChange={(e) => updateCharaOption('scorpioLord', e.target.value as NonNullable<DashaSettings['charaOptions']>['scorpioLord'])}><option value="Ketu">Scorpio Lord: Ketu</option><option value="Mars">Scorpio Lord: Mars</option></select>
-              <select className={SELECT} value={charaOptions.aquariusLord} onChange={(e) => updateCharaOption('aquariusLord', e.target.value as NonNullable<DashaSettings['charaOptions']>['aquariusLord'])}><option value="Saturn">Aquarius Lord: Saturn</option><option value="Rahu">Aquarius Lord: Rahu</option></select>
+              <select className={SELECT} value={charaOptions.start} onChange={(e) => updateCharaOption('start', e.target.value as typeof charaOptions.start)}><option value="lagna">Start: Lagna</option><option value="ak">Start: Atmakaraka</option></select>
+              <select className={SELECT} value={charaOptions.mahadashaDirection} onChange={(e) => updateCharaOption('mahadashaDirection', e.target.value as typeof charaOptions.mahadashaDirection)}><option value="rashi-type">MD Direction: Rashi Type</option><option value="odd-even">MD Direction: Odd / Even</option></select>
+              <select className={SELECT} value={charaOptions.durationCount} onChange={(e) => updateCharaOption('durationCount', e.target.value as typeof charaOptions.durationCount)}><option value="inclusive">Duration: Inclusive</option><option value="exclusive">Duration: Exclusive</option></select>
+              <select className={SELECT} value={charaOptions.antardashaStart} onChange={(e) => updateCharaOption('antardashaStart', e.target.value as typeof charaOptions.antardashaStart)}><option value="next-dasha-rasi">AD Start: Next Dasha Rasi</option><option value="same-dasha-rasi">AD Start: Same Dasha Rasi</option></select>
+              <select className={SELECT} value={charaOptions.antardashaDirection} onChange={(e) => updateCharaOption('antardashaDirection', e.target.value as typeof charaOptions.antardashaDirection)}><option value="dasha-rasi-9h">AD Direction: Dasha Rasi 9H</option><option value="dasha-rasi">AD Direction: Dasha Rasi</option></select>
+              <select className={SELECT} value={charaOptions.strongerLordRule} onChange={(e) => updateCharaOption('strongerLordRule', e.target.value as typeof charaOptions.strongerLordRule)}><option value="graha">Stronger Lord: Graha</option><option value="rashi">Stronger Lord: Rashi</option></select>
+              <select className={SELECT} value={charaOptions.scorpioLord} onChange={(e) => updateCharaOption('scorpioLord', e.target.value as typeof charaOptions.scorpioLord)}><option value="Ketu">Scorpio Lord: Ketu</option><option value="Mars">Scorpio Lord: Mars</option></select>
+              <select className={SELECT} value={charaOptions.aquariusLord} onChange={(e) => updateCharaOption('aquariusLord', e.target.value as typeof charaOptions.aquariusLord)}><option value="Saturn">Aquarius Lord: Saturn</option><option value="Rahu">Aquarius Lord: Rahu</option></select>
               <div className="flex items-center justify-between gap-3 pt-1"><span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">Exalt / debil adjustment</span><MiniToggle value={charaOptions.exaltDebilAdjust} onToggle={() => updateCharaOption('exaltDebilAdjust', !charaOptions.exaltDebilAdjust)} /></div>
             </div>
           )}
