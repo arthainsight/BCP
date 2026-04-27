@@ -64,6 +64,12 @@ function directionFor(sign: number, startSign?: number): 1 | -1 {
   return sign % 2 === 1 ? 1 : -1;
 }
 
+function subDirectionFor(sign: number): 1 | -1 {
+  if (sign === 3 || sign === 6 || sign === 9 || sign === 12) return -1;
+  if (sign === 2 || sign === 5 || sign === 8 || sign === 11) return 1;
+  return sign % 2 === 1 ? 1 : -1;
+}
+
 function sequenceFrom(startSign: number): number[] {
   const direction = directionFor(startSign, startSign);
   const signs: number[] = [];
@@ -72,9 +78,8 @@ function sequenceFrom(startSign: number): number[] {
   return signs;
 }
 
-function subSequenceFrom(parentSign: number, config: CharaConfig, directionContextSign?: number): number[] {
-  const baseSign = directionContextSign ?? parentSign;
-  const direction = baseSign === 9 ? -1 : directionFor(config.antardashaDirection === 'dasha-rasi-9h' ? ninthFrom(baseSign) : baseSign);
+function subSequenceFrom(parentSign: number, config: CharaConfig): number[] {
+  const direction = subDirectionFor(parentSign);
   const signs: number[] = [];
   let cursor = config.antardashaStart === 'next-dasha-rasi' ? nextSign(parentSign, direction) : parentSign;
   for (let i = 0; i < 12; i++) { signs.push(cursor); cursor = nextSign(cursor, direction); }
@@ -131,8 +136,8 @@ export function calculateCharaDasha(planets: PlanetData[], ascendantSign: number
   return { entries, config, method };
 }
 
-export function calculateCharaSubDashas(parent: CharaDashaEntry, level: CharaLevel, config: CharaConfig = DEFAULT_CHARA_CONFIG, directionContextSign?: number): CharaDashaEntry[] {
-  const signs = subSequenceFrom(parent.sign, config, directionContextSign);
+export function calculateCharaSubDashas(parent: CharaDashaEntry, level: CharaLevel, config: CharaConfig = DEFAULT_CHARA_CONFIG): CharaDashaEntry[] {
+  const signs = subSequenceFrom(parent.sign, config);
   const durationYears = parent.durationYears / 12;
   const entries: CharaDashaEntry[] = [];
   let cursor = parent.startDate;
