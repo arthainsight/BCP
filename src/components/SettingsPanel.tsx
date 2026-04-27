@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChartDisplaySettings, CalculationSettings, DashaSettings, ChartStyle } from '@/types';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import UpdatesPanel from './UpdatesPanel';
@@ -61,23 +61,11 @@ function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void 
   );
 }
 
-function CollapsibleSection({
-  label,
-  open,
-  onToggle,
-  children,
-}: {
-  label: string;
-  open: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}) {
+function CollapsibleSection({ label, open, onToggle, children }: { label: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
     <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-2">
       <button type="button" onClick={onToggle} className="flex items-center gap-2 w-full text-left">
-        <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex-1">
-          &gt; {label}
-        </span>
+        <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex-1">&gt; {label}</span>
         <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{open ? '▼' : '▶'}</span>
       </button>
       {open && <div className="pt-1">{children}</div>}
@@ -85,8 +73,19 @@ function CollapsibleSection({
   );
 }
 
-const SELECT =
-  'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500';
+const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500';
+
+function getStoredChartStyle(fallback: ChartStyle): ChartStyle {
+  if (typeof window === 'undefined') return fallback;
+  try {
+    const raw = localStorage.getItem('chartDisplaySettings');
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw) as Partial<ChartDisplaySettings>;
+    return parsed.chartStyle === 'south' ? 'south' : 'north';
+  } catch {
+    return fallback;
+  }
+}
 
 export default function SettingsPanel({
   chartDisplaySettings,
@@ -101,7 +100,11 @@ export default function SettingsPanel({
   const [calcOpen, setCalcOpen] = useState(false);
   const [dashaOpen, setDashaOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [localChartStyle, setLocalChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
+  const [localChartStyle, setLocalChartStyle] = useState<ChartStyle>(() => getStoredChartStyle(chartDisplaySettings.chartStyle ?? 'north'));
+
+  useEffect(() => {
+    setLocalChartStyle(getStoredChartStyle(chartDisplaySettings.chartStyle ?? 'north'));
+  }, [chartDisplaySettings.chartStyle]);
 
   const updateCalculation = (update: Partial<CalculationSettings>) => {
     persistCalculationCookie(update, calculationSettings);
@@ -125,9 +128,7 @@ export default function SettingsPanel({
       <CollapsibleSection label="charts" open={chartsOpen} onToggle={() => setChartsOpen((v) => !v)}>
         <div className="space-y-4">
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">
-              chart style
-            </div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">chart style</div>
             <div className="grid grid-cols-2 gap-2">
               {([
                 { value: 'north' as const, label: 'North Indian' },
@@ -166,23 +167,14 @@ export default function SettingsPanel({
       <CollapsibleSection label="calculations" open={calcOpen} onToggle={() => setCalcOpen((v) => !v)}>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-              ayanamsa
-            </label>
+            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">ayanamsa</label>
             <select className={SELECT} value={calculationSettings.ayanamsa} onChange={(e) => updateCalculation({ ayanamsa: e.target.value })}>
-              {AYANAMSA_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
+              {AYANAMSA_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
-            <p className="mt-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-              Affects API calculation. Re-run chart after changing to refresh graha table and chart placements.
-            </p>
+            <p className="mt-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">Affects API calculation. Re-run chart after changing to refresh graha table and chart placements.</p>
           </div>
-
           <div>
-            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-              rahu / ketu
-            </label>
+            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">rahu / ketu</label>
             <select className={SELECT} value={calculationSettings.nodeMode} onChange={(e) => updateCalculation({ nodeMode: e.target.value })}>
               <option value="mean">Mean Node</option>
               <option value="true">True Node</option>
@@ -200,10 +192,7 @@ export default function SettingsPanel({
           ]).map(({ key, label }) => (
             <div key={key} className="flex items-center justify-between gap-3">
               <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
-              <MiniToggle
-                value={dashaSettings.dashas[key]}
-                onToggle={() => onUpdateDashaSettings({ dashas: { ...dashaSettings.dashas, [key]: !dashaSettings.dashas[key] } })}
-              />
+              <MiniToggle value={dashaSettings.dashas[key]} onToggle={() => onUpdateDashaSettings({ dashas: { ...dashaSettings.dashas, [key]: !dashaSettings.dashas[key] } })} />
             </div>
           ))}
         </div>
@@ -213,9 +202,7 @@ export default function SettingsPanel({
 
       <CollapsibleSection label="about" open={aboutOpen} onToggle={() => setAboutOpen((v) => !v)}>
         <div className="space-y-1.5 pt-1">
-          <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300">
-            {APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span>
-          </div>
+          <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span></div>
           <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">by Riku Forsell</div>
           <div className="text-xs font-mono text-zinc-300 dark:text-zinc-700">discord — coming later</div>
         </div>
