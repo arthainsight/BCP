@@ -8,6 +8,7 @@ import UpdatesPanel from './UpdatesPanel';
 interface Props {
   chartDisplaySettings: ChartDisplaySettings;
   onToggleChartDisplay: (key: keyof ChartDisplaySettings) => void;
+  onUpdateChartDisplay: (update: Partial<ChartDisplaySettings>) => void;
   calculationSettings: CalculationSettings;
   onUpdateCalculationSettings: (update: Partial<CalculationSettings>) => void;
   dashaSettings: DashaSettings;
@@ -91,6 +92,7 @@ const SELECT =
 export default function SettingsPanel({
   chartDisplaySettings,
   onToggleChartDisplay,
+  onUpdateChartDisplay,
   calculationSettings,
   onUpdateCalculationSettings,
   dashaSettings,
@@ -107,9 +109,7 @@ export default function SettingsPanel({
   };
 
   const setChartStyle = (chartStyle: ChartStyle) => {
-    const next = { ...chartDisplaySettings, chartStyle };
-    try { localStorage.setItem('chartDisplaySettings', JSON.stringify(next)); } catch {}
-    window.location.reload();
+    onUpdateChartDisplay({ chartStyle });
   };
 
   return (
