@@ -70,8 +70,9 @@ function sequenceFrom(startSign: number): number[] {
   return signs;
 }
 
-function subSequenceFrom(parentSign: number, config: CharaConfig): number[] {
-  const directionSign = config.antardashaDirection === 'dasha-rasi-9h' ? ninthFrom(parentSign) : parentSign;
+function subSequenceFrom(parentSign: number, config: CharaConfig, directionContextSign?: number): number[] {
+  const baseSign = directionContextSign ?? parentSign;
+  const directionSign = config.antardashaDirection === 'dasha-rasi-9h' ? ninthFrom(baseSign) : baseSign;
   const direction = directionFor(directionSign);
   const signs: number[] = [];
   let cursor = config.antardashaStart === 'next-dasha-rasi' ? nextSign(parentSign, direction) : parentSign;
@@ -121,8 +122,8 @@ export function calculateCharaDasha(planets: PlanetData[], ascendantSign: number
   return { entries, config, method: startSign === 4 ? 'Chara alpha reference mode: Cancer Lagna reverse sequence' : startSign === 5 ? 'Chara alpha reference mode: Leo Lagna forward sequence' : 'Chara alpha rules: Lagna start; sign direction; inclusive duration; AD start Next Dasha Rasi; AD direction Dasha Rasi 9H.' };
 }
 
-export function calculateCharaSubDashas(parent: CharaDashaEntry, level: CharaLevel, config: CharaConfig = DEFAULT_CHARA_CONFIG): CharaDashaEntry[] {
-  const signs = subSequenceFrom(parent.sign, config);
+export function calculateCharaSubDashas(parent: CharaDashaEntry, level: CharaLevel, config: CharaConfig = DEFAULT_CHARA_CONFIG, directionContextSign?: number): CharaDashaEntry[] {
+  const signs = subSequenceFrom(parent.sign, config, directionContextSign);
   const durationYears = parent.durationYears / 12;
   const entries: CharaDashaEntry[] = [];
   let cursor = parent.startDate;
