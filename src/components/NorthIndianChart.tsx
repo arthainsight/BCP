@@ -17,16 +17,15 @@ interface Props {
   showDegrees?: boolean;
   showCharaKaraka?: boolean;
   showNakshatra?: boolean;
+  showBcpHighlights?: boolean;
   karakaByPlanet?: Record<string, string>;
 }
 
-// Always-on short codes
 const PLANET_CODES: Record<string, string> = {
   Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me',
   Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
 };
 
-// 3-char nakshatra abbreviations (index 0–26)
 const NAK_ABBR = [
   'Asw', 'Bha', 'Krt', 'Roh', 'Mrg', 'Ard',
   'Pun', 'Pus', 'Asl', 'Mag', 'PFa', 'UFa',
@@ -46,7 +45,6 @@ const SIGN_ABBR: Record<number, string> = {
   9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
 };
 
-// Rose-500 — clearly distinct from natal labels
 const TRANSIT_COLOR = '#f43f5e';
 
 type HouseShape = {
@@ -71,46 +69,32 @@ const HOUSES: HouseShape[] = [
   { house: 12, points: '500,0 375,125 250,0',                planet: { x: 375, y: 70  }, sign: { x: 375, y: 95  } },
 ];
 
-
-function getHouseFill(
-  house: number,
-  activeYearHouse: number,
-  activeMonthHouse: number,
-  isDark: boolean,
-): string {
-  const both  = house === activeYearHouse && house === activeMonthHouse;
-  const year  = house === activeYearHouse;
-  const month = house === activeMonthHouse;
+function getHouseFill(house: number, activeYearHouse: number, activeMonthHouse: number, isDark: boolean, showBcpHighlights: boolean): string {
+  const both  = showBcpHighlights && house === activeYearHouse && house === activeMonthHouse;
+  const year  = showBcpHighlights && house === activeYearHouse;
+  const month = showBcpHighlights && house === activeMonthHouse;
 
   if (isDark) {
     if (both)  return 'rgba(168, 85, 247, 0.20)';
     if (year)  return 'rgba(34, 211, 238, 0.18)';
     if (month) return 'rgba(74, 222, 128, 0.16)';
     return '#18181b';
-  } else {
-    if (both)  return 'rgba(147, 51, 234, 0.14)';
-    if (year)  return 'rgba(0, 160, 220, 0.14)';
-    if (month) return 'rgba(22, 163, 74, 0.12)';
-    return '#ffffff';
   }
+  if (both)  return 'rgba(147, 51, 234, 0.14)';
+  if (year)  return 'rgba(0, 160, 220, 0.14)';
+  if (month) return 'rgba(22, 163, 74, 0.12)';
+  return '#ffffff';
 }
 
-// Natal planets in active BCP houses inherit that house's accent color.
-// All other natal planets use a neutral label color.
-function getPlanetFill(
-  house: number,
-  activeYearHouse: number,
-  activeMonthHouse: number,
-  isDark: boolean,
-): string {
-  const both  = house === activeYearHouse && house === activeMonthHouse;
-  const year  = house === activeYearHouse;
-  const month = house === activeMonthHouse;
+function getPlanetFill(house: number, activeYearHouse: number, activeMonthHouse: number, isDark: boolean, showBcpHighlights: boolean): string {
+  const both  = showBcpHighlights && house === activeYearHouse && house === activeMonthHouse;
+  const year  = showBcpHighlights && house === activeYearHouse;
+  const month = showBcpHighlights && house === activeMonthHouse;
 
-  if (both)  return isDark ? '#c084fc' : '#9333ea'; // purple-400 / purple-600
-  if (year)  return isDark ? '#22d3ee' : '#0891b2'; // cyan-400   / cyan-600
-  if (month) return isDark ? '#4ade80' : '#16a34a'; // green-400  / green-600
-  return isDark ? '#e4e4e7' : '#27272a';             // zinc-200   / zinc-800
+  if (both)  return isDark ? '#c084fc' : '#9333ea';
+  if (year)  return isDark ? '#22d3ee' : '#0891b2';
+  if (month) return isDark ? '#4ade80' : '#16a34a';
+  return isDark ? '#e4e4e7' : '#27272a';
 }
 
 function getSignForHouse(ascendantSign: number, house: number): number {
@@ -130,47 +114,34 @@ export default function NorthIndianChart({
   showDegrees = false,
   showCharaKaraka = false,
   showNakshatra = false,
+  showBcpHighlights = true,
   karakaByPlanet = {},
 }: Props) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  // Before mount, assume dark to avoid a light-flash on dark systems
   const isDark = !mounted || resolvedTheme === 'dark';
 
-  const strokeColor   = isDark ? '#71717a' : '#71717a'; // zinc-500 both modes — clearer contrast
-  const signFill      = isDark ? '#a1a1aa' : '#52525b'; // zinc-400 dark / zinc-600 light
-  const hNumFill      = isDark ? '#71717a' : '#71717a';
+  const strokeColor = isDark ? '#71717a' : '#71717a';
+  const signFill = isDark ? '#a1a1aa' : '#52525b';
+  const hNumFill = isDark ? '#71717a' : '#71717a';
 
   return (
     <div className="w-full max-w-[620px] mx-auto">
-      <svg
-        viewBox="-25 -25 550 550"
-        className="w-full h-auto overflow-visible"
-        role="img"
-        aria-label="North Indian Jyotish chart"
-      >
+      <svg viewBox="-25 -25 550 550" className="w-full h-auto overflow-visible" role="img" aria-label="North Indian Jyotish chart">
         {HOUSES.map((item) => {
           const sign = getSignForHouse(ascendantSign, item.house);
-
           type MergedPlanet = PlanetData & { isTransit: boolean };
 
           const natalInHouse: MergedPlanet[] = showNatalPlanets
             ? planets.filter((p) => Number(p.house) === item.house).map((p) => ({ ...p, isTransit: false }))
             : [];
-
           const transitInHouse: MergedPlanet[] = showTransitPlanets
             ? transitPlanets.filter((p) => Number(p.house) === item.house).map((p) => ({ ...p, isTransit: true }))
             : [];
-
-          // Natal first, transit after — single unified stack
           const allPlanets: MergedPlanet[] = [...natalInHouse, ...transitInHouse];
 
-          const dynamicLineHeight =
-            allPlanets.length > 5 ? 14 :
-            allPlanets.length > 3 ? 16 :
-            18;
-
+          const dynamicLineHeight = allPlanets.length > 5 ? 14 : allPlanets.length > 3 ? 16 : 18;
           const totalHeight = (allPlanets.length - 1) * dynamicLineHeight;
           const startY = item.planet.y - totalHeight / 2;
 
@@ -178,43 +149,22 @@ export default function NorthIndianChart({
             <g key={item.house}>
               <polygon
                 points={item.points}
-                fill={getHouseFill(item.house, activeYearHouse, activeMonthHouse, isDark)}
+                fill={getHouseFill(item.house, activeYearHouse, activeMonthHouse, isDark, showBcpHighlights)}
                 stroke={strokeColor}
                 strokeWidth="2"
               />
-
               {showSigns && (
-                <text
-                  x={item.sign.x}
-                  y={item.sign.y}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="13"
-                  fontWeight="600"
-                  fill={signFill}
-                >
+                <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize="13" fontWeight="600" fill={signFill}>
                   {SIGN_ABBR[sign]}
                 </text>
               )}
-
               {showHouseNumbers && (
-                <text
-                  x={item.sign.x}
-                  y={item.sign.y + 14}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="9"
-                  fontWeight="600"
-                  fill={hNumFill}
-                >
+                <text x={item.sign.x} y={item.sign.y + 14} textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="600" fill={hNumFill}>
                   H{item.house}
                 </text>
               )}
-
               {allPlanets.map((planet, index) => {
                 const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
-
-                // Build suffix parts for natal planets only
                 const parts: string[] = [code];
                 if (!planet.isTransit) {
                   if (showDegrees) parts.push(`${Math.floor(planet.degree)}°`);
@@ -224,10 +174,8 @@ export default function NorthIndianChart({
                   }
                   if (showNakshatra) parts.push(getNakAbbr(planet.longitude));
                 }
-
                 const label = parts.join(' ');
                 const fontSize = planet.isTransit ? '12' : (parts.length > 1 ? '13' : '16');
-
                 return (
                   <text
                     key={`${planet.isTransit ? 'tr' : 'na'}-${item.house}-${planet.name}-${index}`}
@@ -237,7 +185,7 @@ export default function NorthIndianChart({
                     dominantBaseline="middle"
                     fontSize={fontSize}
                     fontWeight={planet.isTransit ? '800' : '700'}
-                    fill={planet.isTransit ? TRANSIT_COLOR : getPlanetFill(item.house, activeYearHouse, activeMonthHouse, isDark)}
+                    fill={planet.isTransit ? TRANSIT_COLOR : getPlanetFill(item.house, activeYearHouse, activeMonthHouse, isDark, showBcpHighlights)}
                     opacity={planet.isTransit ? 0.9 : 1}
                   >
                     {label}
@@ -249,14 +197,14 @@ export default function NorthIndianChart({
         })}
       </svg>
 
-      <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono">
-        <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ Year</span>
-        <span className="text-emerald-700 dark:text-green-400 font-semibold">■ Month</span>
-        <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>
-        {showTransitPlanets && (
-          <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>
-        )}
-      </div>
+      {(showBcpHighlights || showTransitPlanets) && (
+        <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono">
+          {showBcpHighlights && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ Year</span>}
+          {showBcpHighlights && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ Month</span>}
+          {showBcpHighlights && <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>}
+          {showTransitPlanets && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
+        </div>
+      )}
     </div>
   );
 }
