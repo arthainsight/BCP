@@ -137,10 +137,10 @@ export interface DashaSettings {
     charaBeta?: boolean;
     chara?: boolean;
   };
-  charaOptions: CharaOptions;
+  charaOptions?: CharaOptions;
 }
 
-export const DEFAULT_DASHA_SETTINGS: DashaSettings = {
+export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
   dashas: {
     bcp: true,
     vimshottari: true,
