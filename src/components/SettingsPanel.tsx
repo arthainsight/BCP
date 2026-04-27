@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ChartDisplaySettings, CalculationSettings, DashaSettings, ChartStyle, DEFAULT_DASHA_SETTINGS } from '@/types';
+import { useState } from 'react';
+import { ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import UpdatesPanel from './UpdatesPanel';
 
@@ -15,6 +15,10 @@ interface Props {
   onUpdateDashaSettings: (update: Partial<DashaSettings>) => void;
 }
 
+type DashaKey = keyof DashaSettings['dashas'];
+
+const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300';
+
 const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showSigns', label: 'signs' },
   { key: 'showNatalPlanets', label: 'natal' },
@@ -24,58 +28,50 @@ const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showCharaKaraka', label: 'karaka' },
 ];
 
-const AYANAMSA_OPTIONS = [
-  { value: 'tropical', label: 'Tropical (Sayana)' },
-  { value: 'lahiri', label: 'Lahiri' },
-  { value: 'raman', label: 'Raman' },
-  { value: 'krishnamurti', label: 'Krishnamurti / KP' },
-];
-
-type DashaKey = keyof DashaSettings['dashas'];
-
 const DASHA_GROUPS: { title: string; items: { key: DashaKey; label: string; note?: string }[] }[] = [
-  { title: 'Core', items: [
-    { key: 'bcp', label: 'Bhrigu Chakra Paddhati' },
-    { key: 'vimshottari', label: 'Vimsottari' },
-    { key: 'vds', label: 'Vimsottari Original' },
-  ]},
-  { title: 'Jaimini / Advanced', items: [
-    { key: 'chara', label: 'Chara Dasha' },
-    { key: 'charaBeta', label: 'Chara Dasha (beta)' },
-    { key: 'kalaChakra', label: 'Kala Chakra Dasha', note: 'Coming soon' },
-    { key: 'drig', label: 'Drig Dasha', note: 'Coming soon' },
-    { key: 'mandook', label: 'Mandook Dasha', note: 'Coming soon' },
-    { key: 'sthira', label: 'Sthira Dasha', note: 'Coming soon' },
-    { key: 'narayana', label: 'Narayana Dasha', note: 'Coming soon' },
-    { key: 'shoola', label: 'Shoola Dasha', note: 'Coming soon' },
-    { key: 'trikona', label: 'Trikona Dasha', note: 'Coming soon' },
-  ]},
-  { title: 'Rare / Experimental', items: [
-    { key: 'muktashtaka', label: 'Muktashtaka Dasha', note: 'Coming soon' },
-    { key: 'gangadhar', label: 'Gangadhar Dasha', note: 'Coming soon' },
-    { key: 'tara', label: 'Tara Dasha', note: 'Coming soon' },
-    { key: 'yogaVimshottari', label: 'Yoga Vimsottari', note: 'Coming soon' },
-    { key: 'ashtottari', label: 'Ashtottari Dasha', note: 'Coming soon' },
-  ]},
+  {
+    title: 'Core',
+    items: [
+      { key: 'bcp', label: 'Bhrigu Chakra Paddhati' },
+      { key: 'vimshottari', label: 'Vimsottari' },
+      { key: 'vds', label: 'Vimsottari Original' },
+    ],
+  },
+  {
+    title: 'Jaimini / Advanced',
+    items: [
+      { key: 'chara', label: 'Chara Dasha' },
+      { key: 'charaBeta', label: 'Chara Dasha (beta)' },
+      { key: 'kalaChakra', label: 'Kala Chakra Dasha', note: 'Coming soon' },
+      { key: 'drig', label: 'Drig Dasha', note: 'Coming soon' },
+      { key: 'mandook', label: 'Mandook Dasha', note: 'Coming soon' },
+      { key: 'sthira', label: 'Sthira Dasha', note: 'Coming soon' },
+      { key: 'narayana', label: 'Narayana Dasha', note: 'Coming soon' },
+      { key: 'shoola', label: 'Shoola Dasha', note: 'Coming soon' },
+      { key: 'trikona', label: 'Trikona Dasha', note: 'Coming soon' },
+    ],
+  },
+  {
+    title: 'Rare / Experimental',
+    items: [
+      { key: 'muktashtaka', label: 'Muktashtaka Dasha', note: 'Coming soon' },
+      { key: 'gangadhar', label: 'Gangadhar Dasha', note: 'Coming soon' },
+      { key: 'tara', label: 'Tara Dasha', note: 'Coming soon' },
+      { key: 'yogaVimshottari', label: 'Yoga Vimsottari', note: 'Coming soon' },
+      { key: 'ashtottari', label: 'Ashtottari Dasha', note: 'Coming soon' },
+    ],
+  },
 ];
-
-function persistCalculationCookie(update: Partial<CalculationSettings>, current: CalculationSettings) {
-  if (typeof document === 'undefined') return;
-  const next = { ...current, ...update };
-  const maxAge = 60 * 60 * 24 * 365;
-  document.cookie = `bcp_ayanamsa=${encodeURIComponent(next.ayanamsa)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-  document.cookie = `bcp_nodeMode=${encodeURIComponent(next.nodeMode)}; path=/; max-age=${maxAge}; SameSite=Lax`;
-}
 
 function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void }) {
   return (
-    <button type="button" onClick={onToggle} className={`relative inline-flex h-4 w-7 flex-shrink-0 rounded-full border transition-colors focus:outline-none ${value ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600' : 'bg-zinc-200 dark:bg-zinc-700 border-zinc-300 dark:border-zinc-600'}`} role="switch" aria-checked={value}>
+    <button type="button" onClick={onToggle} className={`relative inline-flex h-4 w-7 flex-shrink-0 rounded-full border transition-colors ${value ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600' : 'bg-zinc-200 dark:bg-zinc-700 border-zinc-300 dark:border-zinc-600'}`} role="switch" aria-checked={value}>
       <span className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform mt-[1px] ${value ? 'translate-x-3' : 'translate-x-0.5'}`} />
     </button>
   );
 }
 
-function CollapsibleSection({ label, open, onToggle, children }: { label: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
+function Section({ label, open, onToggle, children }: { label: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
     <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-2">
       <button type="button" onClick={onToggle} className="flex items-center gap-2 w-full text-left">
@@ -87,67 +83,35 @@ function CollapsibleSection({ label, open, onToggle, children }: { label: string
   );
 }
 
-const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500';
-
-function getStoredChartStyle(fallback: ChartStyle): ChartStyle {
-  if (typeof window === 'undefined') return fallback;
-  try {
-    const raw = localStorage.getItem('chartDisplaySettings');
-    if (!raw) return fallback;
-    const parsed = JSON.parse(raw) as Partial<ChartDisplaySettings>;
-    return parsed.chartStyle === 'south' ? 'south' : 'north';
-  } catch { return fallback; }
-}
-
 export default function SettingsPanel({ chartDisplaySettings, onToggleChartDisplay, onUpdateChartDisplay, calculationSettings, onUpdateCalculationSettings, dashaSettings, onUpdateDashaSettings }: Props) {
   const [chartsOpen, setChartsOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
-  const [dashaOpen, setDashaOpen] = useState(false);
+  const [dashaOpen, setDashaOpen] = useState(true);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [localChartStyle, setLocalChartStyle] = useState<ChartStyle>(() => getStoredChartStyle(chartDisplaySettings.chartStyle ?? 'north'));
-
-  useEffect(() => { setLocalChartStyle(getStoredChartStyle(chartDisplaySettings.chartStyle ?? 'north')); }, [chartDisplaySettings.chartStyle]);
-
-  const updateCalculation = (update: Partial<CalculationSettings>) => {
-    persistCalculationCookie(update, calculationSettings);
-    onUpdateCalculationSettings(update);
-  };
-
-  const setChartStyle = (chartStyle: ChartStyle) => {
-    setLocalChartStyle(chartStyle);
-    try { localStorage.setItem('chartDisplaySettings', JSON.stringify({ ...chartDisplaySettings, chartStyle })); } catch {}
-    onUpdateChartDisplay?.({ chartStyle });
-    window.dispatchEvent(new CustomEvent('bcp:chart-style-change', { detail: chartStyle }));
-  };
-
-  const persistDashaSettings = (next: DashaSettings) => {
-    onUpdateDashaSettings(next);
-    try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}
-  };
 
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
-  const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
 
   const toggleDasha = (key: DashaKey) => {
-    persistDashaSettings({ ...dashaSettings, dashas: { ...normalizedDashas, [key]: !normalizedDashas[key] } });
-  };
-
-  const updateCharaOption = (key: keyof typeof charaOptions, value: string | boolean) => {
-    persistDashaSettings({ ...dashaSettings, charaOptions: { ...charaOptions, [key]: value } });
+    const next: DashaSettings = {
+      ...dashaSettings,
+      dashas: { ...normalizedDashas, [key]: !normalizedDashas[key] },
+      charaOptions: dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions,
+    };
+    onUpdateDashaSettings(next);
+    try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}
   };
 
   return (
     <div className="space-y-5">
       <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; settings</div>
 
-      <CollapsibleSection label="charts" open={chartsOpen} onToggle={() => setChartsOpen((v) => !v)}>
+      <Section label="charts" open={chartsOpen} onToggle={() => setChartsOpen((v) => !v)}>
         <div className="space-y-4">
           <div>
             <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">chart style</div>
             <div className="grid grid-cols-2 gap-2">
-              {([{ value: 'north' as const, label: 'North Indian' }, { value: 'south' as const, label: 'South Indian' }]).map((option) => (
-                <button key={option.value} type="button" onClick={() => setChartStyle(option.value)} className={`px-3 py-2 rounded-md border text-xs font-mono transition-colors ${localChartStyle === option.value ? 'border-emerald-400 dark:border-green-600 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}>{option.label}</button>
-              ))}
+              <button type="button" onClick={() => onUpdateChartDisplay?.({ chartStyle: 'north' })} className="px-3 py-2 rounded-md border text-xs font-mono border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">North Indian</button>
+              <button type="button" onClick={() => onUpdateChartDisplay?.({ chartStyle: 'south' })} className="px-3 py-2 rounded-md border text-xs font-mono border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">South Indian</button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2">
@@ -156,22 +120,36 @@ export default function SettingsPanel({ chartDisplaySettings, onToggleChartDispl
             ))}
           </div>
         </div>
-      </CollapsibleSection>
+      </Section>
 
-      <CollapsibleSection label="calculations" open={calcOpen} onToggle={() => setCalcOpen((v) => !v)}>
+      <Section label="calculations" open={calcOpen} onToggle={() => setCalcOpen((v) => !v)}>
         <div className="space-y-3">
-          <div><label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">ayanamsa</label><select className={SELECT} value={calculationSettings.ayanamsa} onChange={(e) => updateCalculation({ ayanamsa: e.target.value })}>{AYANAMSA_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
-          <div><label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">rahu / ketu</label><select className={SELECT} value={calculationSettings.nodeMode} onChange={(e) => updateCalculation({ nodeMode: e.target.value })}><option value="mean">Mean Node</option><option value="true">True Node</option></select></div>
+          <div>
+            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">ayanamsa</label>
+            <select className={SELECT} value={calculationSettings.ayanamsa} onChange={(e) => onUpdateCalculationSettings({ ayanamsa: e.target.value })}>
+              <option value="tropical">Tropical (Sayana)</option>
+              <option value="lahiri">Lahiri</option>
+              <option value="raman">Raman</option>
+              <option value="krishnamurti">Krishnamurti / KP</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">rahu / ketu</label>
+            <select className={SELECT} value={calculationSettings.nodeMode} onChange={(e) => onUpdateCalculationSettings({ nodeMode: e.target.value })}>
+              <option value="mean">Mean Node</option>
+              <option value="true">True Node</option>
+            </select>
+          </div>
         </div>
-      </CollapsibleSection>
+      </Section>
 
-      <CollapsibleSection label="dasha" open={dashaOpen} onToggle={() => setDashaOpen((v) => !v)}>
+      <Section label="dasha" open={dashaOpen} onToggle={() => setDashaOpen((v) => !v)}>
         <div className="space-y-4">
           {DASHA_GROUPS.map((group) => (
             <div key={group.title} className="space-y-2">
               <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{group.title}</div>
               {group.items.map(({ key, label, note }) => (
-                <div key={key} className="flex items-center justify-between gap-3">
+                <div key={key} className="flex items-center justify-between gap-3 rounded-md border border-zinc-100 dark:border-zinc-800 px-2 py-2">
                   <div className="min-w-0">
                     <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{label}</div>
                     {note && <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{note}</div>}
@@ -181,26 +159,13 @@ export default function SettingsPanel({ chartDisplaySettings, onToggleChartDispl
               ))}
             </div>
           ))}
-
-          {normalizedDashas.chara && (
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-3 space-y-2">
-              <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">chara dasha config</div>
-              <select className={SELECT} value={charaOptions.start} onChange={(e) => updateCharaOption('start', e.target.value)}><option value="lagna">Start: Lagna</option><option value="ak">Start: Atmakaraka</option></select>
-              <select className={SELECT} value={charaOptions.mahadashaDirection} onChange={(e) => updateCharaOption('mahadashaDirection', e.target.value)}><option value="rashi-type">MD Direction: Rashi Type</option><option value="odd-even">MD Direction: Odd / Even</option></select>
-              <select className={SELECT} value={charaOptions.durationCount} onChange={(e) => updateCharaOption('durationCount', e.target.value)}><option value="inclusive">Duration: Inclusive</option><option value="exclusive">Duration: Exclusive</option></select>
-              <select className={SELECT} value={charaOptions.antardashaStart} onChange={(e) => updateCharaOption('antardashaStart', e.target.value)}><option value="next-dasha-rasi">AD Start: Next Dasha Rasi</option><option value="same-dasha-rasi">AD Start: Same Dasha Rasi</option></select>
-              <select className={SELECT} value={charaOptions.antardashaDirection} onChange={(e) => updateCharaOption('antardashaDirection', e.target.value)}><option value="dasha-rasi-9h">AD Direction: Dasha Rasi 9H</option><option value="dasha-rasi">AD Direction: Dasha Rasi</option></select>
-              <select className={SELECT} value={charaOptions.strongerLordRule} onChange={(e) => updateCharaOption('strongerLordRule', e.target.value)}><option value="graha">Stronger Lord: Graha</option><option value="rashi">Stronger Lord: Rashi</option></select>
-              <select className={SELECT} value={charaOptions.scorpioLord} onChange={(e) => updateCharaOption('scorpioLord', e.target.value)}><option value="Ketu">Scorpio Lord: Ketu</option><option value="Mars">Scorpio Lord: Mars</option></select>
-              <select className={SELECT} value={charaOptions.aquariusLord} onChange={(e) => updateCharaOption('aquariusLord', e.target.value)}><option value="Saturn">Aquarius Lord: Saturn</option><option value="Rahu">Aquarius Lord: Rahu</option></select>
-              <div className="flex items-center justify-between gap-3 pt-1"><span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">Exalt / debil adjustment</span><MiniToggle value={charaOptions.exaltDebilAdjust} onToggle={() => updateCharaOption('exaltDebilAdjust', !charaOptions.exaltDebilAdjust)} /></div>
-            </div>
-          )}
         </div>
-      </CollapsibleSection>
+      </Section>
 
       <UpdatesPanel />
-      <CollapsibleSection label="about" open={aboutOpen} onToggle={() => setAboutOpen((v) => !v)}><div className="space-y-1.5 pt-1"><div className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span></div><div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">by Riku Forsell</div><div className="text-xs font-mono text-zinc-300 dark:text-zinc-700">discord — coming later</div></div></CollapsibleSection>
+      <Section label="about" open={aboutOpen} onToggle={() => setAboutOpen((v) => !v)}>
+        <div className="space-y-1.5 pt-1"><div className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span></div><div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">by Riku Forsell</div><div className="text-xs font-mono text-zinc-300 dark:text-zinc-700">discord — coming later</div></div>
+      </Section>
     </div>
   );
 }
