@@ -17,11 +17,23 @@ export interface ChartSectionProps {
   transitLoading: boolean;
 }
 
+function isBcpEnabled(): boolean {
+  try {
+    const raw = localStorage.getItem('dashaSettings');
+    if (!raw) return true;
+    const parsed = JSON.parse(raw);
+    return parsed?.dashas?.bcp !== false;
+  } catch {
+    return true;
+  }
+}
+
 export default function ChartSection({
   bcp, chart, transitPlanets, chartDisplaySettings, karakaByPlanet,
   transitDatetime, onTransitDatetimeChange, onCalculateTransit, transitLoading,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
+  const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
 
   useEffect(() => {
     setChartStyle(chartDisplaySettings.chartStyle ?? 'north');
@@ -35,8 +47,17 @@ export default function ChartSection({
       }
     };
 
+    const handleBcpToggle = () => {
+      setShowBcpHighlights(isBcpEnabled());
+    };
+
     window.addEventListener('bcp:chart-style-change', handleChartStyleChange);
-    return () => window.removeEventListener('bcp:chart-style-change', handleChartStyleChange);
+    window.addEventListener('bcp:dasha-bcp-toggle', handleBcpToggle);
+
+    return () => {
+      window.removeEventListener('bcp:chart-style-change', handleChartStyleChange);
+      window.removeEventListener('bcp:dasha-bcp-toggle', handleBcpToggle);
+    };
   }, []);
 
   if (!bcp || !chart) {
@@ -47,17 +68,22 @@ export default function ChartSection({
     );
   }
 
+  const yearHouse = showBcpHighlights ? bcp.activeYearHouse : 0;
+  const monthHouse = showBcpHighlights ? bcp.activeMonthHouse : 0;
+
   return (
     <div className="space-y-3">
-      <div className="flex gap-4 text-xs font-mono px-1">
-        <span className="text-cyan-600 dark:text-cyan-400">Y: H{bcp.activeYearHouse}</span>
-        <span className="text-emerald-700 dark:text-green-400">M: H{bcp.activeMonthHouse}</span>
-      </div>
+      {showBcpHighlights && (
+        <div className="flex gap-4 text-xs font-mono px-1">
+          <span className="text-cyan-600 dark:text-cyan-400">Y: H{bcp.activeYearHouse}</span>
+          <span className="text-emerald-700 dark:text-green-400">M: H{bcp.activeMonthHouse}</span>
+        </div>
+      )}
 
       {chartStyle === 'south' ? (
         <SouthIndianChart
-          activeYearHouse={bcp.activeYearHouse}
-          activeMonthHouse={bcp.activeMonthHouse}
+          activeYearHouse={yearHouse}
+          activeMonthHouse={monthHouse}
           ascendantSign={chart.ascendant.sign}
           planets={chart.planets}
           transitPlanets={transitPlanets}
@@ -71,8 +97,8 @@ export default function ChartSection({
         />
       ) : (
         <NorthIndianChart
-          activeYearHouse={bcp.activeYearHouse}
-          activeMonthHouse={bcp.activeMonthHouse}
+          activeYearHouse={yearHouse}
+          activeMonthHouse={monthHouse}
           ascendantSign={chart.ascendant.sign}
           planets={chart.planets}
           transitPlanets={transitPlanets}
@@ -82,6 +108,7 @@ export default function ChartSection({
           showDegrees={chartDisplaySettings.showDegrees}
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
+          showBcpHighlights={showBcpHighlights}
           karakaByPlanet={karakaByPlanet}
         />
       )}
