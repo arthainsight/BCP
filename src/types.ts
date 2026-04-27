@@ -117,6 +117,18 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   nodeMode: 'mean',
 };
 
+export interface CharaOptions {
+  start: 'lagna' | 'ak';
+  mahadashaDirection: 'rashi-type' | 'odd-even';
+  antardashaStart: 'next-dasha-rasi' | 'same-dasha-rasi';
+  antardashaDirection: 'dasha-rasi-9h' | 'dasha-rasi';
+  strongerLordRule: 'graha' | 'rashi';
+  durationCount: 'inclusive' | 'exclusive';
+  exaltDebilAdjust: boolean;
+  scorpioLord: 'Ketu' | 'Mars';
+  aquariusLord: 'Saturn' | 'Rahu';
+}
+
 export interface DashaSettings {
   dashas: {
     bcp: boolean;
@@ -125,6 +137,7 @@ export interface DashaSettings {
     charaBeta?: boolean;
     chara?: boolean;
   };
+  charaOptions: CharaOptions;
 }
 
 export const DEFAULT_DASHA_SETTINGS: DashaSettings = {
@@ -134,5 +147,16 @@ export const DEFAULT_DASHA_SETTINGS: DashaSettings = {
     vds: false,
     charaBeta: false,
     chara: false,
+  },
+  charaOptions: {
+    start: 'lagna',
+    mahadashaDirection: 'rashi-type',
+    antardashaStart: 'next-dasha-rasi',
+    antardashaDirection: 'dasha-rasi-9h',
+    strongerLordRule: 'graha',
+    durationCount: 'inclusive',
+    exaltDebilAdjust: true,
+    scorpioLord: 'Ketu',
+    aquariusLord: 'Saturn',
   },
 };
