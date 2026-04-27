@@ -43,13 +43,19 @@ export default function SouthIndianChart({ activeYearHouse, activeMonthHouse, as
 
   return (
     <div className="w-full max-w-[520px] mx-auto">
-      <div className="grid grid-cols-4 gap-1 aspect-square">
+      <div
+        className="grid gap-1 aspect-square"
+        style={{
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gridTemplateRows: 'repeat(4, minmax(0, 1fr))',
+        }}
+      >
         {GRID.map((sign, idx) => {
           if (!sign) {
             return (
               <div
                 key={`empty-${idx}`}
-                className="aspect-square border border-transparent"
+                className="w-full h-full min-w-0 min-h-0 border border-transparent"
                 aria-hidden="true"
               />
             );
@@ -61,7 +67,7 @@ export default function SouthIndianChart({ activeYearHouse, activeMonthHouse, as
           return (
             <div
               key={sign}
-              className={`aspect-square min-w-0 overflow-hidden rounded-md border p-1.5 font-mono ${getCellClass(house, activeYearHouse, activeMonthHouse)}`}
+              className={`w-full h-full min-w-0 min-h-0 overflow-hidden rounded-md border p-1.5 font-mono ${getCellClass(house, activeYearHouse, activeMonthHouse)}`}
             >
               <div className="flex items-start justify-between gap-1 text-[10px] leading-none text-zinc-500 dark:text-zinc-400">
                 <span>{SIGN_NAMES[sign]}</span>
