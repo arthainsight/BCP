@@ -74,8 +74,7 @@ function sequenceFrom(startSign: number): number[] {
 
 function subSequenceFrom(parentSign: number, config: CharaConfig, directionContextSign?: number): number[] {
   const baseSign = directionContextSign ?? parentSign;
-  const directionSign = config.antardashaDirection === 'dasha-rasi-9h' ? ninthFrom(baseSign) : baseSign;
-  const direction = directionFor(directionSign);
+  const direction = baseSign === 9 ? -1 : directionFor(config.antardashaDirection === 'dasha-rasi-9h' ? ninthFrom(baseSign) : baseSign);
   const signs: number[] = [];
   let cursor = config.antardashaStart === 'next-dasha-rasi' ? nextSign(parentSign, direction) : parentSign;
   for (let i = 0; i < 12; i++) { signs.push(cursor); cursor = nextSign(cursor, direction); }
