@@ -188,9 +188,9 @@ export default function SettingsPanel({
       <CollapsibleSection label="dasha" open={dashaOpen} onToggle={() => setDashaOpen((v) => !v)}>
         <div className="space-y-2">
           {([
-            { key: 'bcp' as const, label: 'BCP Engine' },
-            { key: 'vimshottari' as const, label: 'Vimshottari Standard' },
-            { key: 'vds' as const, label: 'VDS · Original Method' },
+            { key: 'bcp' as const, label: 'Bhrigu Chakra Paddhati' },
+            { key: 'vimshottari' as const, label: 'Vimsottari' },
+            { key: 'vds' as const, label: 'Vimsottari Original' },
           ]).map(({ key, label }) => (
             <div key={key} className="flex items-center justify-between gap-3">
               <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
