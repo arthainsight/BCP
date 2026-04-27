@@ -122,9 +122,6 @@ export default function SettingsPanel({
     const nextDashas = { ...dashaSettings.dashas, [key]: nextValue };
     onUpdateDashaSettings({ dashas: nextDashas });
     try { localStorage.setItem('dashaSettings', JSON.stringify({ dashas: nextDashas })); } catch {}
-    if (key === 'bcp') {
-      window.dispatchEvent(new CustomEvent('bcp:dasha-bcp-toggle', { detail: nextValue }));
-    }
   };
 
   return (
@@ -173,7 +170,6 @@ export default function SettingsPanel({
             <select className={SELECT} value={calculationSettings.ayanamsa} onChange={(e) => updateCalculation({ ayanamsa: e.target.value })}>
               {AYANAMSA_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
-            <p className="mt-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">Affects API calculation. Re-run chart after changing to refresh graha table and chart placements.</p>
           </div>
           <div>
             <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">rahu / ketu</label>
@@ -191,6 +187,7 @@ export default function SettingsPanel({
             { key: 'bcp' as const, label: 'Bhrigu Chakra Paddhati' },
             { key: 'vimshottari' as const, label: 'Vimsottari' },
             { key: 'vds' as const, label: 'Vimsottari Original' },
+            { key: 'charaBeta' as const, label: 'Chara Dasha (beta)' },
             { key: 'chara' as const, label: 'Chara Dasha' },
           ]).map(({ key, label }) => (
             <div key={key} className="flex items-center justify-between gap-3">
@@ -207,7 +204,6 @@ export default function SettingsPanel({
         <div className="space-y-1.5 pt-1">
           <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span></div>
           <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">by Riku Forsell</div>
-          <div className="text-xs font-mono text-zinc-300 dark:text-zinc-700">discord — coming later</div>
         </div>
       </CollapsibleSection>
     </div>
