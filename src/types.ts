@@ -1,4 +1,4 @@
-﻿export interface GeoResult {
+export interface GeoResult {
   name: string;
   country: string;
   latitude: number;
@@ -136,6 +136,18 @@ export interface DashaSettings {
     vds: boolean;
     charaBeta?: boolean;
     chara?: boolean;
+    kalaChakra?: boolean;
+    drig?: boolean;
+    mandook?: boolean;
+    sthira?: boolean;
+    narayana?: boolean;
+    shoola?: boolean;
+    trikona?: boolean;
+    muktashtaka?: boolean;
+    gangadhar?: boolean;
+    tara?: boolean;
+    yogaVimshottari?: boolean;
+    ashtottari?: boolean;
   };
   charaOptions?: CharaOptions;
 }
@@ -147,6 +159,18 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     vds: false,
     charaBeta: false,
     chara: false,
+    kalaChakra: false,
+    drig: false,
+    mandook: false,
+    sthira: false,
+    narayana: false,
+    shoola: false,
+    trikona: false,
+    muktashtaka: false,
+    gangadhar: false,
+    tara: false,
+    yogaVimshottari: false,
+    ashtottari: false,
   },
   charaOptions: {
     start: 'lagna',
