@@ -55,10 +55,10 @@ export default function CharaPanel({ planets, ascendant, birthDatetime }: Props)
     if (!result) return [] as CharaDashaEntry[];
     const md = activeEntry(result.entries, now);
     if (!md) return [];
-    const adEntries = calculateCharaSubDashas(md, 'ad', result.config);
+    const adEntries = calculateCharaSubDashas(md, 'ad', result.config, md.sign);
     const ad = activeEntry(adEntries, now);
     if (!ad) return [md];
-    const pdEntries = calculateCharaSubDashas(ad, 'pd', result.config);
+    const pdEntries = calculateCharaSubDashas(ad, 'pd', result.config, md.sign);
     const pd = activeEntry(pdEntries, now);
     return pd ? [md, ad, pd] : [md, ad];
   }, [result, now]);
@@ -74,10 +74,11 @@ export default function CharaPanel({ planets, ascendant, birthDatetime }: Props)
 
   const currentLevelIndex = levelIndex(level);
   const parent = currentLevelIndex === 0 ? null : selected[currentLevelIndex - 1];
+  const mdParent = currentLevelIndex > 0 ? selected[0] : null;
   const entries = level === 'md'
     ? result.entries
     : parent
-      ? calculateCharaSubDashas(parent, level, result.config)
+      ? calculateCharaSubDashas(parent, level, result.config, mdParent?.sign ?? parent.sign)
       : [];
   const current = activeEntry(entries, now);
   const currentNextLevel = nextLevel(level);
