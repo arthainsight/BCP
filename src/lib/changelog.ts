@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.16',
+    changes: [
+      'Restored full Settings panel structure (Charts, Calculations, Dasha, Updates, About)',
+      'Added live North ↔ South chart switching without page reload',
+      'Fixed Settings UI regression where sections were missing',
+      'Chart style selection now persists correctly and updates instantly',
+    ],
+  },
+  {
     version: 'v1.15',
     changes: [
       'Increased planet label font size for better readability on desktop and mobile',
@@ -21,32 +30,5 @@ export const CHANGELOG = [
       'Made BCP Year / Month / Both house highlights the primary chart visual signal',
       'Updated chart styling for a calmer, more consistent interface across desktop and mobile',
     ],
-  },
-  {
-    version: 'v1.13',
-    changes: [
-      'Mobile Grahas view now uses stacked cards instead of horizontal table scrolling',
-      'Nakṣatra Pada is now visible in the mobile Grahas view',
-      'Desktop Grahas table remains unchanged',
-    ],
-  },
-  {
-    version: 'v1.12',
-    changes: [
-      'Removed Sanskrit toggle from Settings → Chart',
-      'Removed Theme control from Settings',
-      'All Settings sections collapsed by default',
-      'Removed MD/AD/PD controls from Settings and simplified Vimshottari UI',
-      'Added special Lagnas to graha table: HL, BL, GL, SL, PP, ViL',
-    ],
-  },
-  {
-    version: 'v1.11',
-    changes: [
-      'Added Tropical (Sayana) zodiac option',
-      'Added multiple sidereal ayanamsas: Lahiri, Raman, Krishnamurti',
-      'Added True Node support for Rahu/Ketu',
-      'Ayanamsa and node selection now affect actual chart calculation',
-    ],
-  },
+  }
 ];
