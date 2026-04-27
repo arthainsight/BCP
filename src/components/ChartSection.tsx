@@ -60,6 +60,14 @@ export default function ChartSection({
           activeMonthHouse={bcp.activeMonthHouse}
           ascendantSign={chart.ascendant.sign}
           planets={chart.planets}
+          transitPlanets={transitPlanets}
+          showSigns={chartDisplaySettings.showSigns}
+          showNatalPlanets={chartDisplaySettings.showNatalPlanets}
+          showTransitPlanets={chartDisplaySettings.showTransitPlanets}
+          showDegrees={chartDisplaySettings.showDegrees}
+          showCharaKaraka={chartDisplaySettings.showCharaKaraka}
+          showNakshatra={chartDisplaySettings.showNakshatra}
+          karakaByPlanet={karakaByPlanet}
         />
       ) : (
         <NorthIndianChart
