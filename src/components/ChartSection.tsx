@@ -28,23 +28,36 @@ export default function ChartSection({
     );
   }
 
-  const commonProps = {
-    activeYearHouse: bcp.activeYearHouse,
-    activeMonthHouse: bcp.activeMonthHouse,
-    ascendantSign: chart.ascendant.sign,
-    planets: chart.planets,
-  };
-
   return (
     <div className="space-y-3">
       <div className="flex gap-4 text-xs font-mono px-1">
-        <span className="text-cyan-600">Y: H{bcp.activeYearHouse}</span>
-        <span className="text-green-600">M: H{bcp.activeMonthHouse}</span>
+        <span className="text-cyan-600 dark:text-cyan-400">Y: H{bcp.activeYearHouse}</span>
+        <span className="text-emerald-700 dark:text-green-400">M: H{bcp.activeMonthHouse}</span>
       </div>
 
-      {chartDisplaySettings.chartStyle === 'south'
-        ? <SouthIndianChart {...commonProps} />
-        : <NorthIndianChart {...commonProps} transitPlanets={transitPlanets} showSigns={chartDisplaySettings.showSigns} />}
+      {chartDisplaySettings.chartStyle === 'south' ? (
+        <SouthIndianChart
+          activeYearHouse={bcp.activeYearHouse}
+          activeMonthHouse={bcp.activeMonthHouse}
+          ascendantSign={chart.ascendant.sign}
+          planets={chart.planets}
+        />
+      ) : (
+        <NorthIndianChart
+          activeYearHouse={bcp.activeYearHouse}
+          activeMonthHouse={bcp.activeMonthHouse}
+          ascendantSign={chart.ascendant.sign}
+          planets={chart.planets}
+          transitPlanets={transitPlanets}
+          showSigns={chartDisplaySettings.showSigns}
+          showNatalPlanets={chartDisplaySettings.showNatalPlanets}
+          showTransitPlanets={chartDisplaySettings.showTransitPlanets}
+          showDegrees={chartDisplaySettings.showDegrees}
+          showCharaKaraka={chartDisplaySettings.showCharaKaraka}
+          showNakshatra={chartDisplaySettings.showNakshatra}
+          karakaByPlanet={karakaByPlanet}
+        />
+      )}
     </div>
   );
 }
