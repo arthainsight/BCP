@@ -73,7 +73,7 @@ export default function VdsPanel({ planets, ascendant, birthDatetime }: Props) {
 
   const result = useMemo(() => {
     const moon = planets.find((p) => p.name === 'Moon');
-    const sun  = planets.find((p) => p.name === 'Sun');
+    const sun = planets.find((p) => p.name === 'Sun');
     if (!moon || !sun || moon.longitude == null || sun.longitude == null) return null;
     const bd = parseDateTime(birthDatetime);
     if (!bd) return null;
@@ -82,12 +82,12 @@ export default function VdsPanel({ planets, ascendant, birthDatetime }: Props) {
     for (const p of planets) planetLongitudes[p.name] = p.longitude;
 
     return calculateVds({
-      moonLongitude:  moon.longitude,
-      sunLongitude:   sun.longitude,
+      moonLongitude: moon.longitude,
+      sunLongitude: sun.longitude,
       lagnaLongitude: ascendant.longitude,
-      lagnaSign:      ascendant.sign,
-      lagnaDegree:    ascendant.degree,
-      birthDate:      bd,
+      lagnaSign: ascendant.sign,
+      lagnaDegree: ascendant.degree,
+      birthDate: bd,
       planetLongitudes,
     });
   }, [planets, ascendant, birthDatetime]);
@@ -98,34 +98,37 @@ export default function VdsPanel({ planets, ascendant, birthDatetime }: Props) {
     if (!result) return [] as MahadashaEntry[];
     const path: MahadashaEntry[] = [];
     let entries = result.entries;
+
     for (let i = 0; i < LEVELS.length; i++) {
       const current = activeEntry(entries, now);
       if (!current) break;
       path.push(current);
       entries = calculateSubDashas(current);
     }
+
     return path;
   }, [result, now]);
 
   if (!result) {
     return (
       <div className="space-y-2">
-        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; vds</div>
+        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; vimsottari original</div>
         <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 italic">
-          Moon, Sun, or birth datetime data missing.
+          Moon, Sun, Lagna, or birth datetime data missing.
         </div>
       </div>
     );
   }
 
   const currentLevelIdx = levelIndex(level);
-  const parent           = currentLevelIdx === 0 ? null : selected[currentLevelIdx - 1];
-  const entries          = level === 'md' ? result.entries : parent ? calculateSubDashas(parent) : [];
-  const currentActive    = activeEntry(entries, now);
+  const parent = currentLevelIdx === 0 ? null : selected[currentLevelIdx - 1];
+  const entries = level === 'md' ? result.entries : parent ? calculateSubDashas(parent) : [];
+  const currentActive = activeEntry(entries, now);
   const currentNextLevel = nextLevel(level);
-  const selectedHere     = selected[currentLevelIdx] ?? null;
-  const deep             = showTimeForLevel(level);
-  const canDrill         = !!currentNextLevel;
+  const selectedHere = selected[currentLevelIdx] ?? null;
+  const deep = showTimeForLevel(level);
+  const canDrill = !!currentNextLevel;
+  const cycleLabel = result.cycle === 'krittikadi' ? 'Krittikadi' : 'Ardradi';
 
   const goToLevel = (target: Level) => {
     setSelected((prev) => prev.slice(0, levelIndex(target)));
@@ -155,6 +158,7 @@ export default function VdsPanel({ planets, ascendant, birthDatetime }: Props) {
       setLevel(currentNextLevel);
       return;
     }
+
     setSelected((prev) => {
       const next = prev.slice(0, currentLevelIdx);
       next[currentLevelIdx] = entry;
@@ -162,54 +166,142 @@ export default function VdsPanel({ planets, ascendant, birthDatetime }: Props) {
     });
   };
 
-  const cycleLabel = result.cycle === 'krittikadi' ? 'Krittikadi' : 'Ardradi';
-
   return (
     <div className="space-y-3 min-w-0 overflow-hidden">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
-          &gt; vds
+          &gt; vimsottari original
         </div>
-        <button onClick={openNow} className="px-2 py-1 rounded-md border border-cyan-300/70 dark:border-cyan-600/60 bg-cyan-50 dark:bg-cyan-900/20 text-[10px] font-mono text-cyan-700 dark:text-cyan-300">NOW</button>
+        <button
+          onClick={openNow}
+          className="px-2 py-1 rounded-md border border-cyan-300/70 dark:border-cyan-600/60 bg-cyan-50 dark:bg-cyan-900/20 text-[10px] font-mono text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors"
+        >
+          NOW
+        </button>
       </div>
 
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-2">
-        <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 mb-1.5">vds parameters</div>
+      <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-2 min-w-0">
+        <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-500 mb-1.5">
+          original method parameters
+        </div>
         <div className="grid grid-cols-3 gap-x-3 text-[10px] font-mono">
           <div>
-            <div className="text-zinc-400">cycle</div>
-            <div className="font-semibold">{cycleLabel}</div>
+            <div className="text-zinc-400 dark:text-zinc-600">cycle</div>
+            <div className="font-semibold text-zinc-700 dark:text-zinc-200 truncate">{cycleLabel}</div>
           </div>
           <div>
-            <div className="text-zinc-400">DTP</div>
-            <div className="text-cyan-700 font-semibold">{ABBR[result.dtp]}</div>
+            <div className="text-zinc-400 dark:text-zinc-600">DTP</div>
+            <div className="text-cyan-700 dark:text-cyan-300 font-semibold">{ABBR[result.dtp] ?? result.dtp}</div>
           </div>
           <div>
-            <div className="text-zinc-400">DOP</div>
-            <div className="text-green-600 font-semibold">{ABBR[result.dop]}</div>
+            <div className="text-zinc-400 dark:text-zinc-600">DOP</div>
+            <div className="text-emerald-700 dark:text-green-300 font-semibold">{ABBR[result.dop] ?? result.dop}</div>
           </div>
         </div>
       </div>
 
-      {/* DEBUG BLOCK */}
-      {result.debug && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[10px] font-mono">
-          <div>paksha: {result.debug.paksha}</div>
-          <div>hora: {result.debug.hora}</div>
-          <div>lagna: {result.debug.lagnaNak} ({result.debug.lagnaNakshatra})</div>
-          <div>moon: {result.debug.moonNak} ({result.debug.moonNakshatra})</div>
-          <div>count: {result.debug.inclusiveCount}</div>
-          <div>target: {result.debug.targetNak} ({result.debug.targetNakshatra})</div>
-          <div>dtp: {result.debug.dtp}</div>
-          <div>dtp nak: {result.debug.dtpPlanetNakshatra}</div>
-          <div>dop: {result.debug.dop}</div>
-          <div>dop nak: {result.debug.dopNakshatra}</div>
-          <div>dop deg: {result.debug.dopDegreeInNakshatra.toFixed(2)}</div>
-          <div>elapsed: {result.debug.elapsedYears.toFixed(2)}</div>
-          <div>balance: {result.debug.balanceYears.toFixed(2)}</div>
+      <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-2 min-w-0">
+        <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-500 mb-1">
+          active now
         </div>
-      )}
+        <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono text-cyan-700 dark:text-cyan-300 leading-5">
+          {activePath.length > 0 ? (
+            activePath.map((entry, index) => (
+              <span key={`${entryKey(entry)}-${index}`} className="inline-flex items-center gap-1">
+                <span>{ABBR[entry.lord] ?? entry.lord} {LEVEL_LABEL[LEVELS[index]]}</span>
+                {index < activePath.length - 1 && <span className="text-zinc-400 dark:text-zinc-600">›</span>}
+              </span>
+            ))
+          ) : (
+            <span className="text-zinc-400 dark:text-zinc-600 italic">No current period in generated timeline.</span>
+          )}
+        </div>
+      </div>
 
+      <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono min-h-[24px] min-w-0">
+        {selected.map((entry, index) => {
+          const selectedLevel = LEVELS[index];
+          const targetLevel = LEVELS[index + 1];
+          if (!selectedLevel || !targetLevel) return null;
+          return (
+            <span key={`${entryKey(entry)}-crumb`} className="inline-flex items-center gap-1">
+              {index > 0 && <span className="text-zinc-300 dark:text-zinc-700">›</span>}
+              <button
+                onClick={() => goToLevel(targetLevel)}
+                className={`px-2 py-1 rounded-md border transition-colors ${
+                  level === targetLevel
+                    ? 'border-emerald-300 dark:border-green-700 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300'
+                    : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                }`}
+              >
+                {ABBR[entry.lord] ?? entry.lord} {LEVEL_LABEL[selectedLevel]}
+              </button>
+            </span>
+          );
+        })}
+        <span className="inline-flex items-center gap-1">
+          {selected.length > 0 && <span className="text-zinc-300 dark:text-zinc-700">›</span>}
+          <button
+            onClick={() => goToLevel(level)}
+            className="px-2 py-1 rounded-md border border-emerald-300 dark:border-green-700 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300"
+          >
+            {LEVEL_LABEL[level]}
+          </button>
+        </span>
+      </div>
+
+      <div className="flex items-center justify-between gap-2">
+        <button
+          onClick={goBack}
+          disabled={level === 'md'}
+          className="px-2 py-1 rounded-md text-[10px] font-mono border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+        >
+          ← back
+        </button>
+        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
+          {LEVEL_LABEL[level]} · {entries.length} periods
+        </div>
+      </div>
+
+      <div className="space-y-1 min-w-0">
+        {entries.map((entry) => {
+          const key = entryKey(entry);
+          const active = currentActive ? entryKey(currentActive) === key : false;
+          const selectedAtLevel = selectedHere ? entryKey(selectedHere) === key : false;
+          const abbr = ABBR[entry.lord] ?? entry.lord.slice(0, 2);
+
+          return (
+            <button
+              key={key}
+              onClick={() => handleRowClick(entry)}
+              className={`w-full min-w-0 text-left flex items-center gap-2 px-2 py-2 rounded-lg border transition-colors group ${
+                active
+                  ? 'border-cyan-300 dark:border-cyan-700 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300'
+                  : selectedAtLevel
+                  ? 'border-emerald-300 dark:border-green-700 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300'
+                  : 'border-transparent text-zinc-600 dark:text-zinc-400 hover:border-zinc-200 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
+              }`}
+            >
+              <span className="font-mono text-xs font-bold w-7 flex-shrink-0">
+                {abbr}
+              </span>
+
+              {deep ? (
+                <span className="min-w-0 flex-1 font-mono text-[10px] md:text-[11px] text-zinc-500 dark:text-zinc-500 tabular-nums leading-4">
+                  <span className="block truncate">{fmtDateTime(entry.startDate)}</span>
+                  <span className="block truncate text-zinc-400 dark:text-zinc-600">→ {fmtDateTime(entry.endDate)}</span>
+                </span>
+              ) : (
+                <span className="min-w-0 flex-1 font-mono text-[11px] md:text-xs text-zinc-500 dark:text-zinc-500 tabular-nums truncate">
+                  {fmtRange(entry.startDate, entry.endDate, level)}
+                </span>
+              )}
+
+              {active && <span className="text-[8px] text-cyan-500 dark:text-cyan-400 flex-shrink-0">●</span>}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
