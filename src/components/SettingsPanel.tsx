@@ -52,11 +52,7 @@ function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void 
       role="switch"
       aria-checked={value}
     >
-      <span
-        className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform mt-[1px] ${
-          value ? 'translate-x-3' : 'translate-x-0.5'
-        }`}
-      />
+      <span className={`inline-block h-3 w-3 rounded-full bg-white shadow transition-transform mt-[1px] ${value ? 'translate-x-3' : 'translate-x-0.5'}`} />
     </button>
   );
 }
@@ -121,6 +117,16 @@ export default function SettingsPanel({
     window.dispatchEvent(new CustomEvent('bcp:chart-style-change', { detail: chartStyle }));
   };
 
+  const toggleDasha = (key: keyof DashaSettings['dashas']) => {
+    const nextValue = !dashaSettings.dashas[key];
+    const nextDashas = { ...dashaSettings.dashas, [key]: nextValue };
+    onUpdateDashaSettings({ dashas: nextDashas });
+    try { localStorage.setItem('dashaSettings', JSON.stringify({ dashas: nextDashas })); } catch {}
+    if (key === 'bcp') {
+      window.dispatchEvent(new CustomEvent('bcp:dasha-bcp-toggle', { detail: nextValue }));
+    }
+  };
+
   return (
     <div className="space-y-5">
       <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; settings</div>
@@ -140,11 +146,7 @@ export default function SettingsPanel({
                     key={option.value}
                     type="button"
                     onClick={() => setChartStyle(option.value)}
-                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-colors ${
-                      active
-                        ? 'border-emerald-400 dark:border-green-600 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300'
-                        : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'
-                    }`}
+                    className={`px-3 py-2 rounded-md border text-xs font-mono transition-colors ${active ? 'border-emerald-400 dark:border-green-600 bg-emerald-50 dark:bg-green-900/20 text-emerald-700 dark:text-green-300' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
                   >
                     {option.label}
                   </button>
@@ -192,7 +194,7 @@ export default function SettingsPanel({
           ]).map(({ key, label }) => (
             <div key={key} className="flex items-center justify-between gap-3">
               <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
-              <MiniToggle value={dashaSettings.dashas[key]} onToggle={() => onUpdateDashaSettings({ dashas: { ...dashaSettings.dashas, [key]: !dashaSettings.dashas[key] } })} />
+              <MiniToggle value={dashaSettings.dashas[key]} onToggle={() => toggleDasha(key)} />
             </div>
           ))}
         </div>
