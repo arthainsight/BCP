@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.17',
+    changes: [
+      'Added Chara Dasha (beta)',
+      'Chara Dasha can now be enabled from Settings → Dasha',
+      'Added MD → AD → PD drill-down navigation for Chara Dasha',
+      'Marked Chara Dasha as beta because calculation variants still need validation across multiple charts',
+    ],
+  },
+  {
     version: 'v1.16',
     changes: [
       'Restored full Settings panel structure (Charts, Calculations, Dasha, Updates, About)',
