@@ -2,7 +2,7 @@
   name: string;
   country: string;
   latitude: number;
-  longitude: number;
+  longitude: string;
   timezone: string;
 }
 
@@ -83,7 +83,10 @@ export interface CharaKaraka {
   degree: number;
 }
 
+export type ChartStyle = 'north' | 'south';
+
 export interface ChartDisplaySettings {
+  chartStyle: ChartStyle;
   showSigns: boolean;
   showNatalPlanets: boolean;
   showTransitPlanets: boolean;
@@ -94,6 +97,7 @@ export interface ChartDisplaySettings {
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
+  chartStyle: 'north',
   showSigns: true,
   showNatalPlanets: true,
   showTransitPlanets: false,
