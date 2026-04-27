@@ -34,38 +34,29 @@ const AYANAMSA_OPTIONS = [
 type DashaKey = keyof DashaSettings['dashas'];
 
 const DASHA_GROUPS: { title: string; items: { key: DashaKey; label: string; note?: string }[] }[] = [
-  {
-    title: 'Core',
-    items: [
-      { key: 'bcp', label: 'Bhrigu Chakra Paddhati' },
-      { key: 'vimshottari', label: 'Vimsottari' },
-      { key: 'vds', label: 'Vimsottari Original' },
-    ],
-  },
-  {
-    title: 'Jaimini / Advanced',
-    items: [
-      { key: 'chara', label: 'Chara Dasha' },
-      { key: 'charaBeta', label: 'Chara Dasha (beta)' },
-      { key: 'kalaChakra', label: 'Kala Chakra Dasha', note: 'Coming soon' },
-      { key: 'drig', label: 'Drig Dasha', note: 'Coming soon' },
-      { key: 'mandook', label: 'Mandook Dasha', note: 'Coming soon' },
-      { key: 'sthira', label: 'Sthira Dasha', note: 'Coming soon' },
-      { key: 'narayana', label: 'Narayana Dasha', note: 'Coming soon' },
-      { key: 'shoola', label: 'Shoola Dasha', note: 'Coming soon' },
-      { key: 'trikona', label: 'Trikona Dasha', note: 'Coming soon' },
-    ],
-  },
-  {
-    title: 'Rare / Experimental',
-    items: [
-      { key: 'muktashtaka', label: 'Muktashtaka Dasha', note: 'Coming soon' },
-      { key: 'gangadhar', label: 'Gangadhar Dasha', note: 'Coming soon' },
-      { key: 'tara', label: 'Tara Dasha', note: 'Coming soon' },
-      { key: 'yogaVimshottari', label: 'Yoga Vimsottari', note: 'Coming soon' },
-      { key: 'ashtottari', label: 'Ashtottari Dasha', note: 'Coming soon' },
-    ],
-  },
+  { title: 'Core', items: [
+    { key: 'bcp', label: 'Bhrigu Chakra Paddhati' },
+    { key: 'vimshottari', label: 'Vimsottari' },
+    { key: 'vds', label: 'Vimsottari Original' },
+  ]},
+  { title: 'Jaimini / Advanced', items: [
+    { key: 'chara', label: 'Chara Dasha' },
+    { key: 'charaBeta', label: 'Chara Dasha (beta)' },
+    { key: 'kalaChakra', label: 'Kala Chakra Dasha', note: 'Coming soon' },
+    { key: 'drig', label: 'Drig Dasha', note: 'Coming soon' },
+    { key: 'mandook', label: 'Mandook Dasha', note: 'Coming soon' },
+    { key: 'sthira', label: 'Sthira Dasha', note: 'Coming soon' },
+    { key: 'narayana', label: 'Narayana Dasha', note: 'Coming soon' },
+    { key: 'shoola', label: 'Shoola Dasha', note: 'Coming soon' },
+    { key: 'trikona', label: 'Trikona Dasha', note: 'Coming soon' },
+  ]},
+  { title: 'Rare / Experimental', items: [
+    { key: 'muktashtaka', label: 'Muktashtaka Dasha', note: 'Coming soon' },
+    { key: 'gangadhar', label: 'Gangadhar Dasha', note: 'Coming soon' },
+    { key: 'tara', label: 'Tara Dasha', note: 'Coming soon' },
+    { key: 'yogaVimshottari', label: 'Yoga Vimsottari', note: 'Coming soon' },
+    { key: 'ashtottari', label: 'Ashtottari Dasha', note: 'Coming soon' },
+  ]},
 ];
 
 function persistCalculationCookie(update: Partial<CalculationSettings>, current: CalculationSettings) {
@@ -134,13 +125,14 @@ export default function SettingsPanel({ chartDisplaySettings, onToggleChartDispl
     try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}
   };
 
-  const toggleDasha = (key: DashaKey) => {
-    persistDashaSettings({ ...dashaSettings, dashas: { ...dashaSettings.dashas, [key]: !dashaSettings.dashas[key] } });
-  };
-
+  const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
   const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
 
-  const updateCharaOption = <K extends keyof typeof charaOptions>(key: K, value: (typeof charaOptions)[K]) => {
+  const toggleDasha = (key: DashaKey) => {
+    persistDashaSettings({ ...dashaSettings, dashas: { ...normalizedDashas, [key]: !normalizedDashas[key] } });
+  };
+
+  const updateCharaOption = (key: keyof typeof charaOptions, value: string | boolean) => {
     persistDashaSettings({ ...dashaSettings, charaOptions: { ...charaOptions, [key]: value } });
   };
 
@@ -184,23 +176,23 @@ export default function SettingsPanel({ chartDisplaySettings, onToggleChartDispl
                     <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{label}</div>
                     {note && <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{note}</div>}
                   </div>
-                  <MiniToggle value={Boolean(dashaSettings.dashas[key])} onToggle={() => toggleDasha(key)} />
+                  <MiniToggle value={Boolean(normalizedDashas[key])} onToggle={() => toggleDasha(key)} />
                 </div>
               ))}
             </div>
           ))}
 
-          {dashaSettings.dashas.chara && (
+          {normalizedDashas.chara && (
             <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-3 space-y-2">
               <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">chara dasha config</div>
-              <select className={SELECT} value={charaOptions.start} onChange={(e) => updateCharaOption('start', e.target.value as typeof charaOptions.start)}><option value="lagna">Start: Lagna</option><option value="ak">Start: Atmakaraka</option></select>
-              <select className={SELECT} value={charaOptions.mahadashaDirection} onChange={(e) => updateCharaOption('mahadashaDirection', e.target.value as typeof charaOptions.mahadashaDirection)}><option value="rashi-type">MD Direction: Rashi Type</option><option value="odd-even">MD Direction: Odd / Even</option></select>
-              <select className={SELECT} value={charaOptions.durationCount} onChange={(e) => updateCharaOption('durationCount', e.target.value as typeof charaOptions.durationCount)}><option value="inclusive">Duration: Inclusive</option><option value="exclusive">Duration: Exclusive</option></select>
-              <select className={SELECT} value={charaOptions.antardashaStart} onChange={(e) => updateCharaOption('antardashaStart', e.target.value as typeof charaOptions.antardashaStart)}><option value="next-dasha-rasi">AD Start: Next Dasha Rasi</option><option value="same-dasha-rasi">AD Start: Same Dasha Rasi</option></select>
-              <select className={SELECT} value={charaOptions.antardashaDirection} onChange={(e) => updateCharaOption('antardashaDirection', e.target.value as typeof charaOptions.antardashaDirection)}><option value="dasha-rasi-9h">AD Direction: Dasha Rasi 9H</option><option value="dasha-rasi">AD Direction: Dasha Rasi</option></select>
-              <select className={SELECT} value={charaOptions.strongerLordRule} onChange={(e) => updateCharaOption('strongerLordRule', e.target.value as typeof charaOptions.strongerLordRule)}><option value="graha">Stronger Lord: Graha</option><option value="rashi">Stronger Lord: Rashi</option></select>
-              <select className={SELECT} value={charaOptions.scorpioLord} onChange={(e) => updateCharaOption('scorpioLord', e.target.value as typeof charaOptions.scorpioLord)}><option value="Ketu">Scorpio Lord: Ketu</option><option value="Mars">Scorpio Lord: Mars</option></select>
-              <select className={SELECT} value={charaOptions.aquariusLord} onChange={(e) => updateCharaOption('aquariusLord', e.target.value as typeof charaOptions.aquariusLord)}><option value="Saturn">Aquarius Lord: Saturn</option><option value="Rahu">Aquarius Lord: Rahu</option></select>
+              <select className={SELECT} value={charaOptions.start} onChange={(e) => updateCharaOption('start', e.target.value)}><option value="lagna">Start: Lagna</option><option value="ak">Start: Atmakaraka</option></select>
+              <select className={SELECT} value={charaOptions.mahadashaDirection} onChange={(e) => updateCharaOption('mahadashaDirection', e.target.value)}><option value="rashi-type">MD Direction: Rashi Type</option><option value="odd-even">MD Direction: Odd / Even</option></select>
+              <select className={SELECT} value={charaOptions.durationCount} onChange={(e) => updateCharaOption('durationCount', e.target.value)}><option value="inclusive">Duration: Inclusive</option><option value="exclusive">Duration: Exclusive</option></select>
+              <select className={SELECT} value={charaOptions.antardashaStart} onChange={(e) => updateCharaOption('antardashaStart', e.target.value)}><option value="next-dasha-rasi">AD Start: Next Dasha Rasi</option><option value="same-dasha-rasi">AD Start: Same Dasha Rasi</option></select>
+              <select className={SELECT} value={charaOptions.antardashaDirection} onChange={(e) => updateCharaOption('antardashaDirection', e.target.value)}><option value="dasha-rasi-9h">AD Direction: Dasha Rasi 9H</option><option value="dasha-rasi">AD Direction: Dasha Rasi</option></select>
+              <select className={SELECT} value={charaOptions.strongerLordRule} onChange={(e) => updateCharaOption('strongerLordRule', e.target.value)}><option value="graha">Stronger Lord: Graha</option><option value="rashi">Stronger Lord: Rashi</option></select>
+              <select className={SELECT} value={charaOptions.scorpioLord} onChange={(e) => updateCharaOption('scorpioLord', e.target.value)}><option value="Ketu">Scorpio Lord: Ketu</option><option value="Mars">Scorpio Lord: Mars</option></select>
+              <select className={SELECT} value={charaOptions.aquariusLord} onChange={(e) => updateCharaOption('aquariusLord', e.target.value)}><option value="Saturn">Aquarius Lord: Saturn</option><option value="Rahu">Aquarius Lord: Rahu</option></select>
               <div className="flex items-center justify-between gap-3 pt-1"><span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">Exalt / debil adjustment</span><MiniToggle value={charaOptions.exaltDebilAdjust} onToggle={() => updateCharaOption('exaltDebilAdjust', !charaOptions.exaltDebilAdjust)} /></div>
             </div>
           )}
