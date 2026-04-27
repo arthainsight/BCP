@@ -44,13 +44,13 @@ const SIGN_ABBR: Record<number, string> = { 1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 
 const SIGN_LORDS: Record<number, string[]> = { 1: ['Mars'], 2: ['Venus'], 3: ['Mercury'], 4: ['Moon'], 5: ['Sun'], 6: ['Mercury'], 7: ['Venus'], 8: ['Ketu', 'Mars'], 9: ['Jupiter'], 10: ['Saturn'], 11: ['Saturn', 'Rahu'], 12: ['Jupiter'] };
 const EXALT: Record<string, number> = { Sun: 1, Moon: 2, Mars: 10, Mercury: 6, Jupiter: 4, Venus: 12, Saturn: 7, Rahu: 3, Ketu: 9 };
 const DEBIL: Record<string, number> = { Sun: 7, Moon: 8, Mars: 4, Mercury: 12, Jupiter: 10, Venus: 6, Saturn: 1, Rahu: 9, Ketu: 3 };
+const MOVABLE_SIGNS = new Set([1, 4, 7, 10]);
 
 export function charaSignName(sign: number): string { return SIGN_NAMES[sign] ?? `Sign ${sign}`; }
 export function charaSignAbbr(sign: number): string { return SIGN_ABBR[sign] ?? String(sign); }
 
 function normalizeSign(sign: number): number { return ((sign - 1 + 240) % 12) + 1; }
-function isOddSign(sign: number): boolean { return sign % 2 === 1; }
-function directionFor(sign: number): 1 | -1 { return isOddSign(sign) ? 1 : -1; }
+function directionFor(sign: number): 1 | -1 { return MOVABLE_SIGNS.has(sign) ? 1 : -1; }
 function nextSign(sign: number, direction: 1 | -1): number { return normalizeSign(sign + direction); }
 function ninthFrom(sign: number): number { return normalizeSign(sign + 8); }
 function addYears(date: Date, years: number): Date { return new Date(date.getTime() + years * 365.25 * 24 * 60 * 60 * 1000); }
@@ -73,8 +73,8 @@ function subSequenceFrom(parentSign: number, config: CharaConfig): number[] {
   return signs;
 }
 
-function countExclusive(fromSign: number, toSign: number, direction: 1 | -1): number {
-  let count = 0;
+function countInclusive(fromSign: number, toSign: number, direction: 1 | -1): number {
+  let count = 1;
   let cursor = fromSign;
   while (cursor !== toSign && count < 12) { cursor = nextSign(cursor, direction); count++; }
   return count;
@@ -92,7 +92,7 @@ function signDurationYears(sign: number, planets: PlanetData[], config: CharaCon
   const lordSign = planetSign(planets, lord);
   if (!lordSign) return null;
   const direction = directionFor(sign);
-  let years = lordSign === sign ? 12 : countExclusive(sign, lordSign, direction);
+  let years = lordSign === sign ? 12 : countInclusive(sign, lordSign, direction);
   if (lordSign === EXALT[lord]) years += 1;
   if (lordSign === DEBIL[lord]) years -= 1;
   return Math.max(1, years);
@@ -110,7 +110,7 @@ export function calculateCharaDasha(planets: PlanetData[], ascendantSign: number
     entries.push({ sign, signName: charaSignName(sign), startDate: cursor, endDate, durationYears, level: 'md' });
     cursor = endDate;
   }
-  return { entries, config, method: 'Chara alpha rules: Antardasha start Next Dasha Rasi; direction Dasha Rasi 9H; stronger lord Graha; Sc=Ketu; Aq=Saturn; Mahadasha cycle Equal.' };
+  return { entries, config, method: 'Chara alpha rules: movable signs forward; fixed and dual signs reverse; inclusive duration to configured lord; Antardasha start Next Dasha Rasi; direction Dasha Rasi 9H; Sc=Ketu; Aq=Saturn.' };
 }
 
 export function calculateCharaSubDashas(parent: CharaDashaEntry, level: CharaLevel, config: CharaConfig = DEFAULT_CHARA_CONFIG): CharaDashaEntry[] {
