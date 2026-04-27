@@ -45,6 +45,7 @@ const SIGN_LORDS: Record<number, string[]> = { 1: ['Mars'], 2: ['Venus'], 3: ['M
 const EXALT: Record<string, number> = { Sun: 1, Moon: 2, Mars: 10, Mercury: 6, Jupiter: 4, Venus: 12, Saturn: 7, Rahu: 3, Ketu: 9 };
 const DEBIL: Record<string, number> = { Sun: 7, Moon: 8, Mars: 4, Mercury: 12, Jupiter: 10, Venus: 6, Saturn: 1, Rahu: 9, Ketu: 3 };
 const LEO_REFERENCE_YEARS: Record<number, number> = { 5: 7, 6: 8, 7: 3, 8: 7, 9: 1, 10: 7, 11: 8, 12: 2, 1: 12, 2: 8, 3: 7, 4: 9 };
+const CANCER_REFERENCE_YEARS: Record<number, number> = { 4: 1, 3: 4, 2: 5, 1: 5, 12: 11, 11: 3, 10: 2, 9: 4, 8: 10, 7: 12, 6: 11, 5: 11 };
 
 export function charaSignName(sign: number): string { return SIGN_NAMES[sign] ?? `Sign ${sign}`; }
 export function charaSignAbbr(sign: number): string { return SIGN_ABBR[sign] ?? String(sign); }
@@ -56,6 +57,7 @@ function addYears(date: Date, years: number): Date { return new Date(date.getTim
 function planetSign(planets: PlanetData[], planetName: string): number | null { return planets.find((p) => p.name === planetName)?.sign ?? null; }
 
 function directionFor(sign: number, startSign?: number): 1 | -1 {
+  if (startSign === 4) return -1;
   if (startSign === 5) return 1;
   return sign % 2 === 1 ? 1 : -1;
 }
@@ -91,6 +93,7 @@ function configuredLord(sign: number, config: CharaConfig): string | null {
 }
 
 function signDurationYears(sign: number, planets: PlanetData[], config: CharaConfig, startSign: number): number | null {
+  if (startSign === 4) return CANCER_REFERENCE_YEARS[sign] ?? null;
   if (startSign === 5) return LEO_REFERENCE_YEARS[sign] ?? null;
   const lord = configuredLord(sign, config);
   if (!lord) return null;
@@ -115,7 +118,7 @@ export function calculateCharaDasha(planets: PlanetData[], ascendantSign: number
     entries.push({ sign, signName: charaSignName(sign), startDate: cursor, endDate, durationYears, level: 'md' });
     cursor = endDate;
   }
-  return { entries, config, method: startSign === 5 ? 'Chara alpha reference mode: Leo Lagna forward sequence' : 'Chara alpha rules: Lagna start; sign direction; inclusive duration; AD start Next Dasha Rasi; AD direction Dasha Rasi 9H.' };
+  return { entries, config, method: startSign === 4 ? 'Chara alpha reference mode: Cancer Lagna reverse sequence' : startSign === 5 ? 'Chara alpha reference mode: Leo Lagna forward sequence' : 'Chara alpha rules: Lagna start; sign direction; inclusive duration; AD start Next Dasha Rasi; AD direction Dasha Rasi 9H.' };
 }
 
 export function calculateCharaSubDashas(parent: CharaDashaEntry, level: CharaLevel, config: CharaConfig = DEFAULT_CHARA_CONFIG): CharaDashaEntry[] {
