@@ -191,10 +191,11 @@ export default function SettingsPanel({
             { key: 'bcp' as const, label: 'Bhrigu Chakra Paddhati' },
             { key: 'vimshottari' as const, label: 'Vimsottari' },
             { key: 'vds' as const, label: 'Vimsottari Original' },
+            { key: 'chara' as const, label: 'Chara Dasha' },
           ]).map(({ key, label }) => (
             <div key={key} className="flex items-center justify-between gap-3">
               <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
-              <MiniToggle value={dashaSettings.dashas[key]} onToggle={() => toggleDasha(key)} />
+              <MiniToggle value={Boolean(dashaSettings.dashas[key])} onToggle={() => toggleDasha(key)} />
             </div>
           ))}
         </div>
