@@ -2,7 +2,7 @@
   name: string;
   country: string;
   latitude: number;
-  longitude: string;
+  longitude: number;
   timezone: string;
 }
 
