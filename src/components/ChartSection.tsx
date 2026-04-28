@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
+import VargaMatrix from '@/pages/VargaMatrix';
 
 export interface ChartSectionProps {
   bcp: BcpResult | null;
@@ -34,6 +35,7 @@ export default function ChartSection({
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
+  const [view, setView] = useState<'chart' | 'varga'>('chart');
 
   useEffect(() => {
     setChartStyle(chartDisplaySettings.chartStyle ?? 'north');
@@ -44,6 +46,7 @@ export default function ChartSection({
       const customEvent = event as CustomEvent<ChartStyle>;
       if (customEvent.detail === 'north' || customEvent.detail === 'south') {
         setChartStyle(customEvent.detail);
+        setView('chart');
       }
     };
 
@@ -51,12 +54,18 @@ export default function ChartSection({
       setShowBcpHighlights(isBcpEnabled());
     };
 
+    const handleShowVarga = () => {
+      setView('varga');
+    };
+
     window.addEventListener('bcp:chart-style-change', handleChartStyleChange);
     window.addEventListener('bcp:dasha-bcp-toggle', handleBcpToggle);
+    window.addEventListener('bcp:show-varga-matrix', handleShowVarga);
 
     return () => {
       window.removeEventListener('bcp:chart-style-change', handleChartStyleChange);
       window.removeEventListener('bcp:dasha-bcp-toggle', handleBcpToggle);
+      window.removeEventListener('bcp:show-varga-matrix', handleShowVarga);
     };
   }, []);
 
@@ -73,14 +82,35 @@ export default function ChartSection({
 
   return (
     <div className="space-y-3">
-      {showBcpHighlights && (
-        <div className="flex gap-4 text-xs font-mono px-1">
-          <span className="text-cyan-600 dark:text-cyan-400">Y: H{bcp.activeYearHouse}</span>
-          <span className="text-emerald-700 dark:text-green-400">M: H{bcp.activeMonthHouse}</span>
-        </div>
-      )}
+      <div className="flex items-center justify-between gap-2">
+        {showBcpHighlights && view === 'chart' ? (
+          <div className="flex gap-4 text-xs font-mono px-1">
+            <span className="text-cyan-600 dark:text-cyan-400">Y: H{bcp.activeYearHouse}</span>
+            <span className="text-emerald-700 dark:text-green-400">M: H{bcp.activeMonthHouse}</span>
+          </div>
+        ) : <div />}
 
-      {chartStyle === 'south' ? (
+        <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
+          <button
+            type="button"
+            onClick={() => setView('chart')}
+            className={`px-2 py-1 text-[10px] font-mono rounded-md ${view === 'chart' ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            Chart
+          </button>
+          <button
+            type="button"
+            onClick={() => setView('varga')}
+            className={`px-2 py-1 text-[10px] font-mono rounded-md ${view === 'varga' ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`}
+          >
+            Varga Matrix
+          </button>
+        </div>
+      </div>
+
+      {view === 'varga' ? (
+        <VargaMatrix chart={chart} />
+      ) : chartStyle === 'south' ? (
         <SouthIndianChart
           activeYearHouse={yearHouse}
           activeMonthHouse={monthHouse}
