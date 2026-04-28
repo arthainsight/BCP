@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.21',
+    changes: [
+      'Expanded Varga Matrix with extended divisional charts (D2, D4, D7, D12, D16, D20, D24, D27, D30, D40, D45)',
+      'Improved Varga Matrix UI with horizontal scroll and sticky body column',
+      'Extended Varga Dominance Score to include all available divisions',
+      'General stability improvements for divisional calculation layer',
+    ],
+  },
+  {
     version: 'v1.20',
     changes: [
       'Added Varga Matrix (D1, D3, D9, D10, D60)',
