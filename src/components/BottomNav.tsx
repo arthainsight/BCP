@@ -1,6 +1,6 @@
 'use client';
 
-export type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'settings';
+export type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'varga' | 'settings';
 
 interface Tab {
   id: TabId;
@@ -12,6 +12,7 @@ const TABS: Tab[] = [
   { id: 'data',     label: 'Data' },
   { id: 'grahas',   label: 'Grahas' },
   { id: 'dasha',    label: 'Dasha' },
+  { id: 'varga',    label: 'Varga' },
   { id: 'settings', label: 'Settings' },
 ];
 
