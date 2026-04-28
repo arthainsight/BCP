@@ -134,20 +134,40 @@ export interface DashaSettings {
     bcp: boolean;
     vimshottari: boolean;
     vds: boolean;
-    charaBeta?: boolean;
+    tara?: boolean;
+    yogini?: boolean;
     chara?: boolean;
-    kalaChakra?: boolean;
-    drig?: boolean;
-    mandook?: boolean;
-    sthira?: boolean;
+    charaBeta?: boolean;
     narayana?: boolean;
-    shoola?: boolean;
+    kaalChakra?: boolean;
+    kalaChakra?: boolean;
+    ashtottari?: boolean;
+    shodashottari?: boolean;
+    dwadashottari?: boolean;
+    panchottari?: boolean;
+    shatabdika?: boolean;
+    chaturashitiSama?: boolean;
+    dwisaptatiSama?: boolean;
+    shashtihayani?: boolean;
+    shattrimshaSama?: boolean;
+    sudarshanaChakra?: boolean;
+    moola?: boolean;
+    naisargika?: boolean;
+    pinda?: boolean;
+    mandooka?: boolean;
+    manduka?: boolean;
+    sthira?: boolean;
+    brahma?: boolean;
+    drig?: boolean;
     trikona?: boolean;
+    kendradi?: boolean;
+    karaka?: boolean;
+    lagnaKendradiRashi?: boolean;
+    atmakarakaKendradiRashi?: boolean;
+    shoola?: boolean;
     muktashtaka?: boolean;
     gangadhar?: boolean;
-    tara?: boolean;
     yogaVimshottari?: boolean;
-    ashtottari?: boolean;
   };
   charaOptions?: CharaOptions;
 }
@@ -157,20 +177,40 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     bcp: true,
     vimshottari: true,
     vds: false,
-    charaBeta: false,
+    tara: false,
+    yogini: false,
     chara: false,
-    kalaChakra: false,
-    drig: false,
-    mandook: false,
-    sthira: false,
+    charaBeta: false,
     narayana: false,
-    shoola: false,
+    kaalChakra: false,
+    kalaChakra: false,
+    ashtottari: false,
+    shodashottari: false,
+    dwadashottari: false,
+    panchottari: false,
+    shatabdika: false,
+    chaturashitiSama: false,
+    dwisaptatiSama: false,
+    shashtihayani: false,
+    shattrimshaSama: false,
+    sudarshanaChakra: false,
+    moola: false,
+    naisargika: false,
+    pinda: false,
+    mandooka: false,
+    manduka: false,
+    sthira: false,
+    brahma: false,
+    drig: false,
     trikona: false,
+    kendradi: false,
+    karaka: false,
+    lagnaKendradiRashi: false,
+    atmakarakaKendradiRashi: false,
+    shoola: false,
     muktashtaka: false,
     gangadhar: false,
-    tara: false,
     yogaVimshottari: false,
-    ashtottari: false,
   },
   charaOptions: {
     start: 'lagna',
