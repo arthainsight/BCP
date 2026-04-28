@@ -80,6 +80,9 @@ export default function SettingsPanel(props: Props) {
     };
     onUpdateDashaSettings(next);
     try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}
+    if (key === 'bcp' && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('bcp:dasha-bcp-toggle', { detail: next.dashas.bcp }));
+    }
   };
 
   return (
