@@ -94,6 +94,8 @@ export interface ChartDisplaySettings {
   showNakshatra: boolean;
   showCharaKaraka: boolean;
   showSanskrit: boolean;
+  showOuterPlanets: boolean;
+  showSpecialLagnas: boolean;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -105,6 +107,8 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showNakshatra: true,
   showCharaKaraka: false,
   showSanskrit: false,
+  showOuterPlanets: false,
+  showSpecialLagnas: true,
 };
 
 export interface CalculationSettings {
