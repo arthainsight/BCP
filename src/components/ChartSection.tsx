@@ -93,6 +93,7 @@ export default function ChartSection({
           showDegrees={chartDisplaySettings.showDegrees}
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
+          showOuterPlanets={chartDisplaySettings.showOuterPlanets}
           karakaByPlanet={karakaByPlanet}
         />
       ) : (
@@ -108,6 +109,7 @@ export default function ChartSection({
           showDegrees={chartDisplaySettings.showDegrees}
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
+          showOuterPlanets={chartDisplaySettings.showOuterPlanets}
           showBcpHighlights={showBcpHighlights}
           karakaByPlanet={karakaByPlanet}
         />
