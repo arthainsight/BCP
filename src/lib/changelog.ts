@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.18',
+    changes: [
+      'Introduced central Dasha Registry (single source of truth for all dashas)',
+      'All dashas are now defined in one place (registry layer)',
+      'Refactored Settings → Dasha to support status-based UI (implemented / beta / coming soon)',
+      'Improved scalability for adding future dasha systems',
+    ],
+  },
+  {
     version: 'v1.17',
     changes: [
       'Added Chara Dasha (beta)',
