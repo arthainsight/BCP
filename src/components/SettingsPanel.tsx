@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
+import { DASHA_GROUPS, DashaKey } from '@/lib/dashaRegistry';
 import UpdatesPanel from './UpdatesPanel';
 
 interface Props {
@@ -15,10 +16,6 @@ interface Props {
   onUpdateDashaSettings: (update: Partial<DashaSettings>) => void;
 }
 
-type DashaKey = keyof DashaSettings['dashas'];
-type DashaStatus = 'implemented' | 'beta' | 'placeholder';
-type DashaItem = { key: DashaKey; label: string; status: DashaStatus };
-
 const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300';
 
 const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
@@ -28,57 +25,6 @@ const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showDegrees', label: 'degrees' },
   { key: 'showNakshatra', label: 'nakshatra' },
   { key: 'showCharaKaraka', label: 'karaka' },
-];
-
-const DASHA_GROUPS: { title: string; items: DashaItem[] }[] = [
-  {
-    title: 'Core',
-    items: [
-      { key: 'bcp', label: 'Bhrigu Chakra Paddhati', status: 'implemented' },
-      { key: 'vimshottari', label: 'Vimsottari', status: 'implemented' },
-      { key: 'vds', label: 'Vimsottari Original', status: 'implemented' },
-    ],
-  },
-  {
-    title: 'Experimental',
-    items: [
-      { key: 'chara', label: 'Chara Dasha', status: 'beta' },
-    ],
-  },
-  {
-    title: 'Other systems',
-    items: [
-      { key: 'tara', label: 'Tara Dasha', status: 'placeholder' },
-      { key: 'yogini', label: 'Yogini Dasha', status: 'placeholder' },
-      { key: 'ashtottari', label: 'Ashtottari Dasha', status: 'placeholder' },
-      { key: 'shodashottari', label: 'Shodashottari Dasha', status: 'placeholder' },
-      { key: 'dwadashottari', label: 'Dwadashottari Dasha', status: 'placeholder' },
-      { key: 'panchottari', label: 'Panchottari Dasha', status: 'placeholder' },
-      { key: 'shatabdika', label: 'Shatabdika Dasha', status: 'placeholder' },
-      { key: 'chaturashitiSama', label: 'Chaturashiti Sama Dasha', status: 'placeholder' },
-      { key: 'dwisaptatiSama', label: 'Dwisaptati Sama Dasha', status: 'placeholder' },
-      { key: 'shashtihayani', label: 'Shashtihayani Dasha', status: 'placeholder' },
-      { key: 'shattrimshaSama', label: 'Shattrimsha Sama Dasha', status: 'placeholder' },
-      { key: 'charaBeta', label: 'Chara Dasha old beta', status: 'placeholder' },
-      { key: 'narayana', label: 'Narayana Dasha', status: 'placeholder' },
-      { key: 'kaalChakra', label: 'Kaal Chakra Dasha', status: 'placeholder' },
-      { key: 'kalaChakra', label: 'Kalachakra Dasha', status: 'placeholder' },
-      { key: 'sudarshanaChakra', label: 'Sudarshana Chakra Dasha', status: 'placeholder' },
-      { key: 'moola', label: 'Moola Dasha', status: 'placeholder' },
-      { key: 'naisargika', label: 'Naisargika Dasha', status: 'placeholder' },
-      { key: 'pinda', label: 'Pinda Dasha', status: 'placeholder' },
-      { key: 'mandooka', label: 'Mandooka Dasha', status: 'placeholder' },
-      { key: 'manduka', label: 'Manduka Dasha', status: 'placeholder' },
-      { key: 'sthira', label: 'Sthira Dasha', status: 'placeholder' },
-      { key: 'brahma', label: 'Brahma Dasha', status: 'placeholder' },
-      { key: 'drig', label: 'Drig Dasha', status: 'placeholder' },
-      { key: 'trikona', label: 'Trikona Dasha', status: 'placeholder' },
-      { key: 'kendradi', label: 'Kendradi Dasha', status: 'placeholder' },
-      { key: 'karaka', label: 'Karaka Dasha', status: 'placeholder' },
-      { key: 'lagnaKendradiRashi', label: 'Lagna Kendradi Rashi Dasha', status: 'placeholder' },
-      { key: 'atmakarakaKendradiRashi', label: 'Atmakaraka Kendradi Rashi Dasha', status: 'placeholder' },
-    ],
-  },
 ];
 
 function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void }) {
