@@ -1,6 +1,7 @@
 import { ChartData, DebugInfo, PlanetData, SpecialLagna } from "@/types";
 import {
   SE_SUN, SE_MOON, SE_MARS, SE_MERCURY, SE_JUPITER, SE_VENUS, SE_SATURN,
+  SE_URANUS, SE_NEPTUNE, SE_PLUTO,
   SE_MEAN_NODE, SE_TRUE_NODE,
   sweJulday, sweGetAyanamsa, sweCalcUt, sweGetAscendant,
 } from "./ephemerisAdapter";
@@ -13,6 +14,9 @@ const PLANET_NAMES: Record<number, string> = {
   [SE_JUPITER]: "Jupiter",
   [SE_VENUS]: "Venus",
   [SE_SATURN]: "Saturn",
+  [SE_URANUS]: "Uranus",
+  [SE_NEPTUNE]: "Neptune",
+  [SE_PLUTO]: "Pluto",
 };
 
 function normalize(value: number): number {
@@ -59,7 +63,11 @@ export async function calculateChart(
   const ayanamsa = await sweGetAyanamsa(jd, ayanamsaMode);
   const useTropical = ayanamsaMode === 'tropical';
 
-  const planetIds = [SE_SUN, SE_MOON, SE_MARS, SE_MERCURY, SE_JUPITER, SE_VENUS, SE_SATURN];
+  const planetIds = [
+    SE_SUN, SE_MOON, SE_MARS, SE_MERCURY, SE_JUPITER, SE_VENUS, SE_SATURN,
+    SE_URANUS, SE_NEPTUNE, SE_PLUTO
+  ];
+
   const planets: PlanetData[] = [];
 
   for (const planetId of planetIds) {
@@ -80,22 +88,10 @@ export async function calculateChart(
   const nodeId = nodeMode === 'true' ? SE_TRUE_NODE : SE_MEAN_NODE;
   const rahuTropical = await sweCalcUt(jd, nodeId);
   const rahuLon = useTropical ? normalize(rahuTropical) : normalize(rahuTropical - ayanamsa);
-  planets.push({
-    name: "Rahu",
-    longitude: rahuLon,
-    sign: Math.floor(rahuLon / 30) + 1,
-    degree: rahuLon % 30,
-    house: 0,
-  });
+  planets.push({ name: "Rahu", longitude: rahuLon, sign: Math.floor(rahuLon / 30) + 1, degree: rahuLon % 30, house: 0 });
 
   const ketuLon = normalize(rahuLon + 180);
-  planets.push({
-    name: "Ketu",
-    longitude: ketuLon,
-    sign: Math.floor(ketuLon / 30) + 1,
-    degree: ketuLon % 30,
-    house: 0,
-  });
+  planets.push({ name: "Ketu", longitude: ketuLon, sign: Math.floor(ketuLon / 30) + 1, degree: ketuLon % 30, house: 0 });
 
   const ascTropical = await sweGetAscendant(jd, lat, lng);
   const ascLon = useTropical ? normalize(ascTropical) : normalize(ascTropical - ayanamsa);
@@ -148,69 +144,4 @@ export async function calculateChart(
     specialLagnas,
     debug,
   };
-}
-
-export async function calculateTransits(
-  year: number,
-  month: number,
-  day: number,
-  hour: number,
-  minute: number,
-  second: number,
-  timezoneOffset: number,
-  natalAscSignIndex: number,
-  ayanamsaSetting: string = 'lahiri',
-  nodeModeSetting: string = 'mean'
-): Promise<PlanetData[]> {
-  const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
-  const nodeMode = resolveNodeMode(nodeModeSetting);
-
-  const localEpoch = Date.UTC(year, month - 1, day, hour, minute, second, 0);
-  const utcEpoch = localEpoch - timezoneOffset * 3600000;
-  const utcDate = new Date(utcEpoch);
-  const utcTotalHours = utcDate.getUTCHours() + utcDate.getUTCMinutes() / 60 + utcDate.getUTCSeconds() / 3600;
-  const jd = await sweJulday(utcDate.getUTCFullYear(), utcDate.getUTCMonth() + 1, utcDate.getUTCDate(), utcTotalHours);
-  const ayanamsa = await sweGetAyanamsa(jd, ayanamsaMode);
-  const useTropical = ayanamsaMode === 'tropical';
-
-  const planetIds = [SE_SUN, SE_MOON, SE_MARS, SE_MERCURY, SE_JUPITER, SE_VENUS, SE_SATURN];
-  const planets: PlanetData[] = [];
-
-  for (const planetId of planetIds) {
-    const tropicalLon = await sweCalcUt(jd, planetId);
-    const lon = useTropical ? normalize(tropicalLon) : normalize(tropicalLon - ayanamsa);
-    const signIndex = Math.floor(lon / 30);
-
-    planets.push({
-      name: PLANET_NAMES[planetId],
-      longitude: lon,
-      sign: signIndex + 1,
-      degree: lon % 30,
-      house: ((signIndex - natalAscSignIndex + 12) % 12) + 1,
-    });
-  }
-
-  const nodeId = nodeMode === 'true' ? SE_TRUE_NODE : SE_MEAN_NODE;
-  const rahuTropical = await sweCalcUt(jd, nodeId);
-  const rahuLon = useTropical ? normalize(rahuTropical) : normalize(rahuTropical - ayanamsa);
-  const rahuSignIndex = Math.floor(rahuLon / 30);
-  planets.push({
-    name: "Rahu",
-    longitude: rahuLon,
-    sign: rahuSignIndex + 1,
-    degree: rahuLon % 30,
-    house: ((rahuSignIndex - natalAscSignIndex + 12) % 12) + 1,
-  });
-
-  const ketuLon = normalize(rahuLon + 180);
-  const ketuSignIndex = Math.floor(ketuLon / 30);
-  planets.push({
-    name: "Ketu",
-    longitude: ketuLon,
-    sign: ketuSignIndex + 1,
-    degree: ketuLon % 30,
-    house: ((ketuSignIndex - natalAscSignIndex + 12) % 12) + 1,
-  });
-
-  return planets;
 }
