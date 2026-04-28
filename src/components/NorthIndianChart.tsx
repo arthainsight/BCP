@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
-import { PlanetData } from '@/types';
+import { PlanetData, SpecialLagna } from '@/types';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
+const SPECIAL_LAGNA_COLOR = '#a855f7';
 
 interface Props {
   activeYearHouse: number;
   activeMonthHouse: number;
   ascendantSign: number;
   planets: PlanetData[];
+  specialLagnas?: SpecialLagna[];
   transitPlanets?: PlanetData[];
   showNatalPlanets?: boolean;
   showTransitPlanets?: boolean;
@@ -21,6 +23,7 @@ interface Props {
   showNakshatra?: boolean;
   showBcpHighlights?: boolean;
   showOuterPlanets?: boolean;
+  showSpecialLagnas?: boolean;
   karakaByPlanet?: Record<string, string>;
 }
 
@@ -105,6 +108,10 @@ function getSignForHouse(ascendantSign: number, house: number): number {
   return ((ascendantSign + house - 2) % 12) + 1;
 }
 
+function getHouseFromSign(sign: number, ascendantSign: number): number {
+  return ((sign - ascendantSign + 12) % 12) + 1;
+}
+
 function filterOuterPlanets(planets: PlanetData[], showOuterPlanets: boolean): PlanetData[] {
   return showOuterPlanets ? planets : planets.filter((p) => !OUTER_PLANETS.includes(p.name));
 }
@@ -114,6 +121,7 @@ export default function NorthIndianChart({
   activeMonthHouse,
   ascendantSign,
   planets,
+  specialLagnas = [],
   transitPlanets = [],
   showNatalPlanets = true,
   showTransitPlanets = false,
@@ -124,6 +132,7 @@ export default function NorthIndianChart({
   showNakshatra = false,
   showBcpHighlights = true,
   showOuterPlanets = false,
+  showSpecialLagnas = false,
   karakaByPlanet = {},
 }: Props) {
   const { resolvedTheme } = useTheme();
@@ -151,10 +160,14 @@ export default function NorthIndianChart({
           const transitInHouse: MergedPlanet[] = showTransitPlanets
             ? visibleTransitPlanets.filter((p) => Number(p.house) === item.house).map((p) => ({ ...p, isTransit: true }))
             : [];
+          const specialInHouse = showSpecialLagnas
+            ? specialLagnas.filter((sl) => getHouseFromSign(sl.sign, ascendantSign) === item.house)
+            : [];
           const allPlanets: MergedPlanet[] = [...natalInHouse, ...transitInHouse];
 
-          const dynamicLineHeight = allPlanets.length > 5 ? 14 : allPlanets.length > 3 ? 16 : 18;
-          const totalHeight = (allPlanets.length - 1) * dynamicLineHeight;
+          const totalItems = allPlanets.length + specialInHouse.length;
+          const dynamicLineHeight = totalItems > 6 ? 13 : totalItems > 4 ? 15 : 18;
+          const totalHeight = (Math.max(totalItems, 1) - 1) * dynamicLineHeight;
           const startY = item.planet.y - totalHeight / 2;
 
           return (
@@ -204,17 +217,33 @@ export default function NorthIndianChart({
                   </text>
                 );
               })}
+              {specialInHouse.map((sl, index) => (
+                <text
+                  key={`sl-${item.house}-${sl.name}-${index}`}
+                  x={item.planet.x}
+                  y={startY + (allPlanets.length + index) * dynamicLineHeight}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="11"
+                  fontWeight="700"
+                  fill={SPECIAL_LAGNA_COLOR}
+                  opacity={0.85}
+                >
+                  {sl.name}
+                </text>
+              ))}
             </g>
           );
         })}
       </svg>
 
-      {(showBcpHighlights || showTransitPlanets) && (
-        <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono">
+      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas) && (
+        <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono flex-wrap">
           {showBcpHighlights && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ Year</span>}
           {showBcpHighlights && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ Month</span>}
           {showBcpHighlights && <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>}
           {showTransitPlanets && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
+          {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
         </div>
       )}
     </div>
