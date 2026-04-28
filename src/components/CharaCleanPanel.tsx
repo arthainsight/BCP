@@ -1,6 +1,6 @@
 'use client';
 
-import { PlanetData, DashaSettings } from '@/types';
+import { PlanetData, CharaOptions } from '@/types';
 import { calculateCleanCharaMD } from '@/lib/charaClean';
 import { parseDateTime } from '@/lib/bcp';
 
@@ -8,7 +8,7 @@ interface Props {
   planets: PlanetData[];
   ascendant: { longitude: number; sign: number; degree: number };
   birthDatetime: string;
-  settings: DashaSettings['charaOptions'];
+  settings: CharaOptions;
 }
 
 export default function CharaCleanPanel({ planets, ascendant, birthDatetime, settings }: Props) {
