@@ -1,8 +1,8 @@
 import { BcpResult, PlanetData, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
+import { RENDERABLE_DASHA_KEYS, DashaKey } from '@/lib/dashaRegistry';
 import BcpSummary from './BcpSummary';
 import VimshottariPanel from './VimshottariPanel';
 import VdsPanel from './VdsPanel';
-import CharaPanel from './CharaPanel';
 import CharaCleanPanel from './CharaCleanPanel';
 
 interface Props {
@@ -14,11 +14,11 @@ interface Props {
 }
 
 export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, dashaSettings }: Props) {
-  const { dashas } = dashaSettings;
+  const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
   const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
-  const enabledCount = [dashas.bcp, dashas.vimshottari, dashas.vds, dashas.charaBeta, dashas.chara].filter(Boolean).length;
+  const activeRenderableDashas = RENDERABLE_DASHA_KEYS.filter((key) => Boolean(normalizedDashas[key]));
 
-  if (enabledCount === 0) {
+  if (activeRenderableDashas.length === 0) {
     return (
       <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 italic py-4">
         All Dasha panels are disabled. Enable them in Settings → Dasha.
@@ -26,36 +26,35 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
     );
   }
 
+  const renderDasha = (key: DashaKey) => {
+    switch (key) {
+      case 'bcp':
+        return <BcpSummary bcp={bcp} planets={planets} ascSign={ascendant.sign} />;
+      case 'vimshottari':
+        return <VimshottariPanel planets={planets} birthDatetime={birthDatetime} />;
+      case 'vds':
+        return <VdsPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />;
+      case 'chara':
+        return <CharaCleanPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} settings={charaOptions} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div
       className="grid gap-6"
       style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}
     >
-      {dashas.bcp && (
-        <div className="min-w-0">
-          <BcpSummary bcp={bcp} planets={planets} ascSign={ascendant.sign} />
-        </div>
-      )}
-      {dashas.vimshottari && (
-        <div className="min-w-0">
-          <VimshottariPanel planets={planets} birthDatetime={birthDatetime} />
-        </div>
-      )}
-      {dashas.vds && (
-        <div className="min-w-0">
-          <VdsPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
-        </div>
-      )}
-      {dashas.charaBeta && (
-        <div className="min-w-0">
-          <CharaPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
-        </div>
-      )}
-      {dashas.chara && (
-        <div className="min-w-0">
-          <CharaCleanPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} settings={charaOptions} />
-        </div>
-      )}
+      {activeRenderableDashas.map((key) => {
+        const panel = renderDasha(key);
+        if (!panel) return null;
+        return (
+          <div key={key} className="min-w-0">
+            {panel}
+          </div>
+        );
+      })}
     </div>
   );
 }
