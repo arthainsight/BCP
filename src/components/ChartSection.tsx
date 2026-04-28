@@ -86,6 +86,7 @@ export default function ChartSection({
           activeMonthHouse={monthHouse}
           ascendantSign={chart.ascendant.sign}
           planets={chart.planets}
+          specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
@@ -94,6 +95,7 @@ export default function ChartSection({
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
           showOuterPlanets={chartDisplaySettings.showOuterPlanets}
+          showSpecialLagnas={chartDisplaySettings.showSpecialLagnas}
           karakaByPlanet={karakaByPlanet}
         />
       ) : (
@@ -102,6 +104,7 @@ export default function ChartSection({
           activeMonthHouse={monthHouse}
           ascendantSign={chart.ascendant.sign}
           planets={chart.planets}
+          specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
@@ -110,6 +113,7 @@ export default function ChartSection({
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
           showOuterPlanets={chartDisplaySettings.showOuterPlanets}
+          showSpecialLagnas={chartDisplaySettings.showSpecialLagnas}
           showBcpHighlights={showBcpHighlights}
           karakaByPlanet={karakaByPlanet}
         />
