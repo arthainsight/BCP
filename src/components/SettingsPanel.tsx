@@ -16,7 +16,8 @@ interface Props {
 }
 
 type DashaKey = keyof DashaSettings['dashas'];
-type DashaItem = { key: DashaKey; label: string; note?: string };
+type DashaStatus = 'implemented' | 'beta' | 'placeholder';
+type DashaItem = { key: DashaKey; label: string; status: DashaStatus };
 
 const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300';
 
@@ -29,59 +30,53 @@ const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showCharaKaraka', label: 'karaka' },
 ];
 
-const SOON = 'Coming soon';
-
 const DASHA_GROUPS: { title: string; items: DashaItem[] }[] = [
   {
     title: 'Core',
     items: [
-      { key: 'bcp', label: 'Bhrigu Chakra Paddhati' },
-      { key: 'vimshottari', label: 'Vimsottari' },
-      { key: 'vds', label: 'Vimsottari Original' },
+      { key: 'bcp', label: 'Bhrigu Chakra Paddhati', status: 'implemented' },
+      { key: 'vimshottari', label: 'Vimsottari', status: 'implemented' },
+      { key: 'vds', label: 'Vimsottari Original', status: 'implemented' },
     ],
   },
   {
-    title: 'Jaimini / Rashi',
+    title: 'Experimental',
     items: [
-      { key: 'chara', label: 'Chara Dasha', note: SOON },
-      { key: 'narayana', label: 'Narayana Dasha', note: SOON },
-      { key: 'drig', label: 'Drig Dasha', note: SOON },
-      { key: 'mandooka', label: 'Mandooka Dasha', note: SOON },
-      { key: 'manduka', label: 'Manduka Dasha', note: SOON },
-      { key: 'sthira', label: 'Sthira Dasha', note: SOON },
-      { key: 'brahma', label: 'Brahma Dasha', note: SOON },
-      { key: 'trikona', label: 'Trikona Dasha', note: SOON },
-      { key: 'kendradi', label: 'Kendradi Dasha', note: SOON },
-      { key: 'karaka', label: 'Karaka Dasha', note: SOON },
-      { key: 'lagnaKendradiRashi', label: 'Lagna Kendradi Rashi Dasha', note: SOON },
-      { key: 'atmakarakaKendradiRashi', label: 'Atmakaraka Kendradi Rashi Dasha', note: SOON },
+      { key: 'chara', label: 'Chara Dasha', status: 'beta' },
     ],
   },
   {
-    title: 'Nakshatra / Conditional',
+    title: 'Other systems',
     items: [
-      { key: 'tara', label: 'Tara Dasha', note: SOON },
-      { key: 'yogini', label: 'Yogini Dasha', note: SOON },
-      { key: 'ashtottari', label: 'Ashtottari Dasha', note: SOON },
-      { key: 'shodashottari', label: 'Shodashottari Dasha', note: SOON },
-      { key: 'dwadashottari', label: 'Dwadashottari Dasha', note: SOON },
-      { key: 'panchottari', label: 'Panchottari Dasha', note: SOON },
-      { key: 'shatabdika', label: 'Shatabdika Dasha', note: SOON },
-      { key: 'chaturashitiSama', label: 'Chaturashiti Sama Dasha', note: SOON },
-      { key: 'dwisaptatiSama', label: 'Dwisaptati Sama Dasha', note: SOON },
-      { key: 'shashtihayani', label: 'Shashtihayani Dasha', note: SOON },
-      { key: 'shattrimshaSama', label: 'Shattrimsha Sama Dasha', note: SOON },
-    ],
-  },
-  {
-    title: 'Special / Experimental',
-    items: [
-      { key: 'kaalChakra', label: 'Kaal Chakra Dasha', note: SOON },
-      { key: 'kalaChakra', label: 'Kalachakra Dasha', note: SOON },
-      { key: 'sudarshanaChakra', label: 'Sudarshana Chakra Dasha', note: SOON },
-      { key: 'moola', label: 'Moola Dasha', note: SOON },
-      { key: 'naisargika', label: 'Naisargika Dasha', note: SOON },
-      { key: 'pinda', label: 'Pinda Dasha', note: SOON },
+      { key: 'tara', label: 'Tara Dasha', status: 'placeholder' },
+      { key: 'yogini', label: 'Yogini Dasha', status: 'placeholder' },
+      { key: 'ashtottari', label: 'Ashtottari Dasha', status: 'placeholder' },
+      { key: 'shodashottari', label: 'Shodashottari Dasha', status: 'placeholder' },
+      { key: 'dwadashottari', label: 'Dwadashottari Dasha', status: 'placeholder' },
+      { key: 'panchottari', label: 'Panchottari Dasha', status: 'placeholder' },
+      { key: 'shatabdika', label: 'Shatabdika Dasha', status: 'placeholder' },
+      { key: 'chaturashitiSama', label: 'Chaturashiti Sama Dasha', status: 'placeholder' },
+      { key: 'dwisaptatiSama', label: 'Dwisaptati Sama Dasha', status: 'placeholder' },
+      { key: 'shashtihayani', label: 'Shashtihayani Dasha', status: 'placeholder' },
+      { key: 'shattrimshaSama', label: 'Shattrimsha Sama Dasha', status: 'placeholder' },
+      { key: 'charaBeta', label: 'Chara Dasha old beta', status: 'placeholder' },
+      { key: 'narayana', label: 'Narayana Dasha', status: 'placeholder' },
+      { key: 'kaalChakra', label: 'Kaal Chakra Dasha', status: 'placeholder' },
+      { key: 'kalaChakra', label: 'Kalachakra Dasha', status: 'placeholder' },
+      { key: 'sudarshanaChakra', label: 'Sudarshana Chakra Dasha', status: 'placeholder' },
+      { key: 'moola', label: 'Moola Dasha', status: 'placeholder' },
+      { key: 'naisargika', label: 'Naisargika Dasha', status: 'placeholder' },
+      { key: 'pinda', label: 'Pinda Dasha', status: 'placeholder' },
+      { key: 'mandooka', label: 'Mandooka Dasha', status: 'placeholder' },
+      { key: 'manduka', label: 'Manduka Dasha', status: 'placeholder' },
+      { key: 'sthira', label: 'Sthira Dasha', status: 'placeholder' },
+      { key: 'brahma', label: 'Brahma Dasha', status: 'placeholder' },
+      { key: 'drig', label: 'Drig Dasha', status: 'placeholder' },
+      { key: 'trikona', label: 'Trikona Dasha', status: 'placeholder' },
+      { key: 'kendradi', label: 'Kendradi Dasha', status: 'placeholder' },
+      { key: 'karaka', label: 'Karaka Dasha', status: 'placeholder' },
+      { key: 'lagnaKendradiRashi', label: 'Lagna Kendradi Rashi Dasha', status: 'placeholder' },
+      { key: 'atmakarakaKendradiRashi', label: 'Atmakaraka Kendradi Rashi Dasha', status: 'placeholder' },
     ],
   },
 ];
@@ -171,18 +166,30 @@ export default function SettingsPanel(props: Props) {
 
       <Section label="dasha" open={dashaOpen} onToggle={() => setDashaOpen(v => !v)}>
         <div className="space-y-4">
+          <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
+            Only implemented and beta dashas can be enabled. Other systems are listed for future support.
+          </div>
           {DASHA_GROUPS.map(group => (
             <div key={group.title} className="space-y-2">
               <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{group.title}</div>
-              {group.items.map(({ key, label, note }) => (
-                <div key={key} className="flex items-center justify-between gap-3 rounded-md border border-zinc-100 dark:border-zinc-800 px-2 py-2">
-                  <div className="min-w-0">
-                    <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{label}</div>
-                    {note && <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{note}</div>}
+              {group.items.map(({ key, label, status }) => {
+                const isPlaceholder = status === 'placeholder';
+                return (
+                  <div key={key} className={`flex items-center justify-between gap-3 rounded-md border px-2 py-2 ${isPlaceholder ? 'border-zinc-100 dark:border-zinc-800 opacity-60' : 'border-zinc-100 dark:border-zinc-800'}`}>
+                    <div className="min-w-0">
+                      <div className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">
+                        {label}{status === 'beta' ? ' (beta)' : ''}
+                      </div>
+                      {isPlaceholder && <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">Coming soon</div>}
+                    </div>
+                    {isPlaceholder ? (
+                      <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 whitespace-nowrap">Coming soon</span>
+                    ) : (
+                      <MiniToggle value={Boolean(normalizedDashas[key])} onToggle={() => toggleDasha(key)} />
+                    )}
                   </div>
-                  <MiniToggle value={Boolean(normalizedDashas[key])} onToggle={() => toggleDasha(key)} />
-                </div>
-              ))}
+                );
+              })}
             </div>
           ))}
         </div>
