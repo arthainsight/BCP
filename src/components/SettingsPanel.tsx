@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_GROUPS, DashaKey } from '@/lib/dashaRegistry';
@@ -55,9 +55,15 @@ export default function SettingsPanel(props: Props) {
   const [calcOpen, setCalcOpen] = useState(false);
   const [dashaOpen, setDashaOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [selectedChartStyle, setSelectedChartStyle] = useState<'north' | 'south'>(chartDisplaySettings.chartStyle ?? 'north');
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
 
+  useEffect(() => {
+    setSelectedChartStyle(chartDisplaySettings.chartStyle ?? 'north');
+  }, [chartDisplaySettings.chartStyle]);
+
   const updateChartStyle = (chartStyle: 'north' | 'south') => {
+    setSelectedChartStyle(chartStyle);
     const next = { ...chartDisplaySettings, chartStyle };
     onUpdateChartDisplay?.({ chartStyle });
     try { localStorage.setItem('chartDisplaySettings', JSON.stringify(next)); } catch {}
@@ -85,8 +91,8 @@ export default function SettingsPanel(props: Props) {
           <div>
             <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">chart style</div>
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => updateChartStyle('north')} className={`px-3 py-2 rounded-md border text-xs font-mono ${chartDisplaySettings.chartStyle === 'north' ? 'border-emerald-500 text-emerald-700 dark:text-green-400' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>North Indian</button>
-              <button type="button" onClick={() => updateChartStyle('south')} className={`px-3 py-2 rounded-md border text-xs font-mono ${chartDisplaySettings.chartStyle === 'south' ? 'border-emerald-500 text-emerald-700 dark:text-green-400' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>South Indian</button>
+              <button type="button" onClick={() => updateChartStyle('north')} className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'north' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>North Indian</button>
+              <button type="button" onClick={() => updateChartStyle('south')} className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'south' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>South Indian</button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2">
