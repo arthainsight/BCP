@@ -15,6 +15,9 @@ const GRAHA_NAMES: Record<string, { code: string; name: string }> = {
   Saturn:  { code: 'Sa', name: 'Śani' },
   Rahu:    { code: 'Ra', name: 'Rāhu' },
   Ketu:    { code: 'Ke', name: 'Ketu' },
+  Uranus:  { code: 'Ur', name: 'Uranus' },
+  Neptune: { code: 'Ne', name: 'Neptune' },
+  Pluto:   { code: 'Pl', name: 'Pluto' },
 };
 
 const NAKSHATRAS = [
