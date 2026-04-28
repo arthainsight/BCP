@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { PlanetData } from '@/types';
 
+const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
+
 interface Props {
   activeYearHouse: number;
   activeMonthHouse: number;
@@ -18,12 +20,14 @@ interface Props {
   showCharaKaraka?: boolean;
   showNakshatra?: boolean;
   showBcpHighlights?: boolean;
+  showOuterPlanets?: boolean;
   karakaByPlanet?: Record<string, string>;
 }
 
 const PLANET_CODES: Record<string, string> = {
   Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me',
   Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
+  Uranus: 'Ur', Neptune: 'Ne', Pluto: 'Pl',
 };
 
 const NAK_ABBR = [
@@ -101,6 +105,10 @@ function getSignForHouse(ascendantSign: number, house: number): number {
   return ((ascendantSign + house - 2) % 12) + 1;
 }
 
+function filterOuterPlanets(planets: PlanetData[], showOuterPlanets: boolean): PlanetData[] {
+  return showOuterPlanets ? planets : planets.filter((p) => !OUTER_PLANETS.includes(p.name));
+}
+
 export default function NorthIndianChart({
   activeYearHouse,
   activeMonthHouse,
@@ -115,12 +123,16 @@ export default function NorthIndianChart({
   showCharaKaraka = false,
   showNakshatra = false,
   showBcpHighlights = true,
+  showOuterPlanets = false,
   karakaByPlanet = {},
 }: Props) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const isDark = !mounted || resolvedTheme === 'dark';
+
+  const visiblePlanets = filterOuterPlanets(planets, showOuterPlanets);
+  const visibleTransitPlanets = filterOuterPlanets(transitPlanets, showOuterPlanets);
 
   const strokeColor = isDark ? '#71717a' : '#71717a';
   const signFill = isDark ? '#a1a1aa' : '#52525b';
@@ -134,10 +146,10 @@ export default function NorthIndianChart({
           type MergedPlanet = PlanetData & { isTransit: boolean };
 
           const natalInHouse: MergedPlanet[] = showNatalPlanets
-            ? planets.filter((p) => Number(p.house) === item.house).map((p) => ({ ...p, isTransit: false }))
+            ? visiblePlanets.filter((p) => Number(p.house) === item.house).map((p) => ({ ...p, isTransit: false }))
             : [];
           const transitInHouse: MergedPlanet[] = showTransitPlanets
-            ? transitPlanets.filter((p) => Number(p.house) === item.house).map((p) => ({ ...p, isTransit: true }))
+            ? visibleTransitPlanets.filter((p) => Number(p.house) === item.house).map((p) => ({ ...p, isTransit: true }))
             : [];
           const allPlanets: MergedPlanet[] = [...natalInHouse, ...transitInHouse];
 
