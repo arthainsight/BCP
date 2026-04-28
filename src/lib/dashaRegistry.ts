@@ -2,20 +2,22 @@ import { DashaSettings } from '@/types';
 
 export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta' | 'placeholder';
+export type DashaRendererKey = 'bcp' | 'vimshottari' | 'vds' | 'chara';
 
 export type DashaRegistryItem = {
   key: DashaKey;
   label: string;
   group: string;
   status: DashaStatus;
+  renderer?: DashaRendererKey;
 };
 
 export const DASHA_REGISTRY: DashaRegistryItem[] = [
-  { key: 'bcp', label: 'Bhrigu Chakra Paddhati', group: 'Core', status: 'implemented' },
-  { key: 'vimshottari', label: 'Vimsottari', group: 'Core', status: 'implemented' },
-  { key: 'vds', label: 'Vimsottari Original', group: 'Core', status: 'implemented' },
+  { key: 'bcp', label: 'Bhrigu Chakra Paddhati', group: 'Core', status: 'implemented', renderer: 'bcp' },
+  { key: 'vimshottari', label: 'Vimsottari', group: 'Core', status: 'implemented', renderer: 'vimshottari' },
+  { key: 'vds', label: 'Vimsottari Original', group: 'Core', status: 'implemented', renderer: 'vds' },
 
-  { key: 'chara', label: 'Chara Dasha', group: 'Experimental', status: 'beta' },
+  { key: 'chara', label: 'Chara Dasha', group: 'Experimental', status: 'beta', renderer: 'chara' },
 
   { key: 'tara', label: 'Tara Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'yogini', label: 'Yogini Dasha', group: 'Other systems', status: 'placeholder' },
@@ -58,6 +60,5 @@ export const DASHA_GROUPS = DASHA_REGISTRY.reduce<{ title: string; items: DashaR
   return groups;
 }, []);
 
-export const RENDERABLE_DASHA_KEYS = DASHA_REGISTRY
-  .filter((item) => item.status === 'implemented' || item.status === 'beta')
-  .map((item) => item.key);
+export const RENDERABLE_DASHAS = DASHA_REGISTRY.filter((item) => Boolean(item.renderer));
+export const RENDERABLE_DASHA_KEYS = RENDERABLE_DASHAS.map((item) => item.key);
