@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.20',
+    changes: [
+      'Added Varga Matrix (D1, D3, D9, D10, D60)',
+      'Implemented correct Navamsa (D9) calculation logic',
+      'Added Varga Dominance Score (own sign / exalted / friend sign)',
+      'Ranking system for planetary strength across divisional charts',
+      'Integrated Varga Matrix into chart view (desktop + mobile)',
+    ],
+  },
+  {
     version: 'v1.19',
     changes: [
       'Removed switch-case from DashaPanel and introduced renderer map',
