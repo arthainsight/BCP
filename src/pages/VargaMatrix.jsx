@@ -1,7 +1,7 @@
 'use client';
 
 const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
-const DEFAULT_DIVISIONS = [1, 3, 9, 10, 60];
+const DEFAULT_DIVISIONS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 const ROW_ORDER = ['Lagna', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 const SCORE_PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 const MOVABLE_SIGNS = new Set([0, 3, 6, 9]);
@@ -148,12 +148,17 @@ function mapPlanetLongitudes(chart) {
   return result;
 }
 
+function formatDivisionList(divisions) {
+  return divisions.map((division) => `D${division}`).join(', ');
+}
+
 export default function VargaMatrix({ chart }) {
   const divisions = DEFAULT_DIVISIONS;
   const planets = mapPlanetLongitudes(chart);
   const lagna = typeof chart?.ascendant?.longitude === 'number' ? chart.ascendant.longitude : undefined;
   const matrix = buildVargaMatrix(planets, lagna, divisions);
   const dominance = buildDominanceScore(planets, divisions);
+  const divisionList = formatDivisionList(divisions);
 
   if (!chart) {
     return (
@@ -168,15 +173,15 @@ export default function VargaMatrix({ chart }) {
       <div>
         <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; varga.matrix</div>
         <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
-          D1, D3, D9, D10 and D60 from existing sidereal longitudes
+          {divisionList} from existing sidereal longitudes
         </div>
       </div>
 
       <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
-        <table className="w-full min-w-[520px] border-collapse text-xs font-mono">
+        <table className="w-full min-w-[980px] border-collapse text-xs font-mono">
           <thead>
             <tr className="bg-zinc-100 dark:bg-zinc-800">
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Body</th>
+              <th className="sticky left-0 z-10 bg-zinc-100 dark:bg-zinc-800 text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Body</th>
               {divisions.map((division) => (
                 <th key={division} className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">
                   D{division}
@@ -187,7 +192,7 @@ export default function VargaMatrix({ chart }) {
           <tbody>
             {ROW_ORDER.map((name) => (
               <tr key={name} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">{name}</td>
+                <td className="sticky left-0 z-10 bg-white dark:bg-zinc-900 p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">{name}</td>
                 {divisions.map((division) => (
                   <td key={division} className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">
                     {matrix[name][`D${division}`]}
@@ -203,7 +208,7 @@ export default function VargaMatrix({ chart }) {
         <div>
           <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; varga.dominance.score</div>
           <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
-            Score across D1/D3/D9/D10/D60: exalted ×4, own sign ×3, friend sign ×1. Rahu/Ketu excluded from score.
+            Score across {divisionList}: exalted ×4, own sign ×3, friend sign ×1. Rahu/Ketu excluded from score.
           </div>
         </div>
 
