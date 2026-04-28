@@ -50,7 +50,12 @@ export default function ChartSection({
       }
     };
 
-    const handleBcpToggle = () => {
+    const handleBcpToggle = (event: Event) => {
+      const customEvent = event as CustomEvent<boolean>;
+      if (typeof customEvent.detail === 'boolean') {
+        setShowBcpHighlights(customEvent.detail);
+        return;
+      }
       setShowBcpHighlights(isBcpEnabled());
     };
 
