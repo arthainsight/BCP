@@ -25,6 +25,8 @@ const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showDegrees', label: 'degrees' },
   { key: 'showNakshatra', label: 'nakshatra' },
   { key: 'showCharaKaraka', label: 'karaka' },
+  { key: 'showOuterPlanets', label: 'outer planets' },
+  { key: 'showSpecialLagnas', label: 'HL / BL / GL' },
 ];
 
 function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void }) {
