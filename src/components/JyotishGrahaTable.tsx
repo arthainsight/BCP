@@ -1,5 +1,7 @@
 import { ChartData, PlanetData, SpecialLagna } from '@/types';
 
+const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
+
 const SIGN_ABBR: Record<number, string> = {
   1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
   7: 'Li', 8: 'Sc', 9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
@@ -62,10 +64,10 @@ function getNakshatra(longitude: number) {
   const nakSize = 13 + 1 / 3;
   const padaSize = 3 + 1 / 3;
   const nakIndex = Math.floor(longitude / nakSize);
-  const nak = NAKSHATRAS[nakIndex];
+  const nak = NAKSHATRAS[Math.min(nakIndex, 26)];
   const remainder = longitude % nakSize;
   const pada = Math.floor(remainder / padaSize) + 1;
-  return { name: nak.name, number: nakIndex + 1, lord: nak.lord, pada };
+  return { name: nak.name, number: Math.min(nakIndex, 26) + 1, lord: nak.lord, pada };
 }
 
 function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>) {
@@ -84,9 +86,16 @@ function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, strin
 interface Props {
   chart: ChartData;
   karakaByPlanet?: Record<string, string>;
+  showOuterPlanets?: boolean;
+  showSpecialLagnas?: boolean;
 }
 
-export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props) {
+export default function JyotishGrahaTable({
+  chart,
+  karakaByPlanet = {},
+  showOuterPlanets = false,
+  showSpecialLagnas = true,
+}: Props) {
   const ascNak = getNakshatra(chart.ascendant.longitude);
 
   const buildSpecialLagnaRow = (sl: SpecialLagna) => {
@@ -102,6 +111,10 @@ export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props)
     };
   };
 
+  const filteredPlanets = showOuterPlanets
+    ? chart.planets
+    : chart.planets.filter((p) => !OUTER_PLANETS.includes(p.name));
+
   const rows = [
     {
       code: 'As',
@@ -112,13 +125,12 @@ export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props)
       pada: ascNak.pada,
       isSpecial: false,
     },
-    ...chart.planets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet), isSpecial: false })),
-    ...(chart.specialLagnas ?? []).map(buildSpecialLagnaRow),
+    ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet), isSpecial: false })),
+    ...(showSpecialLagnas ? (chart.specialLagnas ?? []).map(buildSpecialLagnaRow) : []),
   ];
 
   return (
     <>
-      {/* Desktop/tablet table — hidden below 640 px */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-xs border-collapse font-mono">
           <thead>
@@ -149,14 +161,12 @@ export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props)
         </table>
       </div>
 
-      {/* Mobile cards — visible only below 640 px */}
       <div className="sm:hidden flex flex-col gap-2 w-full max-w-full">
         {rows.map((row) => (
           <div
             key={row.code}
             className="rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 p-2 font-mono text-xs flex flex-col gap-1 w-full max-w-full"
           >
-            {/* Row 1: Code · Name · Karaka */}
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className={`font-bold ${row.isSpecial ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-700 dark:text-green-400'}`}>
                 {row.code}
@@ -168,11 +178,9 @@ export default function JyotishGrahaTable({ chart, karakaByPlanet = {} }: Props)
                 <span className="text-amber-600 dark:text-amber-400 font-semibold ml-auto">{row.karaka}</span>
               )}
             </div>
-            {/* Row 2: Position */}
             <div className="text-zinc-700 dark:text-zinc-300">
               {row.position}
             </div>
-            {/* Row 3: Nakshatra · Pada */}
             <div className="text-cyan-700 dark:text-cyan-300" style={{ overflowWrap: 'anywhere' }}>
               {row.nakshatra} · {row.pada}
             </div>
