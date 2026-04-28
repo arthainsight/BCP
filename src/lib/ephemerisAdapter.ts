@@ -34,6 +34,9 @@ export const SE_VENUS     = 3;
 export const SE_MARS      = 4;
 export const SE_JUPITER   = 5;
 export const SE_SATURN    = 6;
+export const SE_URANUS    = 7;
+export const SE_NEPTUNE   = 8;
+export const SE_PLUTO     = 9;
 export const SE_MEAN_NODE = 10;
 export const SE_TRUE_NODE = 11;
 
