@@ -26,7 +26,7 @@ const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showNakshatra', label: 'nakshatra' },
   { key: 'showCharaKaraka', label: 'karaka' },
   { key: 'showOuterPlanets', label: 'outer planets' },
-  { key: 'showSpecialLagnas', label: 'HL / BL / GL' },
+  { key: 'showSpecialLagnas', label: 'special lagnas' },
 ];
 
 function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void }) {
@@ -57,6 +57,15 @@ export default function SettingsPanel(props: Props) {
   const [aboutOpen, setAboutOpen] = useState(false);
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
 
+  const updateChartStyle = (chartStyle: 'north' | 'south') => {
+    const next = { ...chartDisplaySettings, chartStyle };
+    onUpdateChartDisplay?.({ chartStyle });
+    try { localStorage.setItem('chartDisplaySettings', JSON.stringify(next)); } catch {}
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('bcp:chart-style-change', { detail: chartStyle }));
+    }
+  };
+
   const toggleDasha = (key: DashaKey) => {
     const next: DashaSettings = {
       ...dashaSettings,
@@ -76,8 +85,8 @@ export default function SettingsPanel(props: Props) {
           <div>
             <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">chart style</div>
             <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => onUpdateChartDisplay?.({ chartStyle: 'north' })} className="px-3 py-2 rounded-md border text-xs font-mono border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">North Indian</button>
-              <button type="button" onClick={() => onUpdateChartDisplay?.({ chartStyle: 'south' })} className="px-3 py-2 rounded-md border text-xs font-mono border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">South Indian</button>
+              <button type="button" onClick={() => updateChartStyle('north')} className={`px-3 py-2 rounded-md border text-xs font-mono ${chartDisplaySettings.chartStyle === 'north' ? 'border-emerald-500 text-emerald-700 dark:text-green-400' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>North Indian</button>
+              <button type="button" onClick={() => updateChartStyle('south')} className={`px-3 py-2 rounded-md border text-xs font-mono ${chartDisplaySettings.chartStyle === 'south' ? 'border-emerald-500 text-emerald-700 dark:text-green-400' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>South Indian</button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2">
