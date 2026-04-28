@@ -53,7 +53,7 @@ export default function SettingsPanel(props: Props) {
   const { chartDisplaySettings, onToggleChartDisplay, onUpdateChartDisplay, calculationSettings, onUpdateCalculationSettings, dashaSettings, onUpdateDashaSettings } = props;
   const [chartsOpen, setChartsOpen] = useState(false);
   const [calcOpen, setCalcOpen] = useState(false);
-  const [dashaOpen, setDashaOpen] = useState(true);
+  const [dashaOpen, setDashaOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
 
