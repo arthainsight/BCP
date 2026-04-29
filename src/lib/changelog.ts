@@ -1,5 +1,13 @@
 export const CHANGELOG = [
   {
+    version: 'v1.24',
+    changes: [
+      'Fixed duplicate panel rendering: desktop and mobile layouts are now mutually exclusive at the lg breakpoint',
+      'Split shared header into separate desktop and mobile headers, both hidden at the opposite breakpoint',
+      'BottomNav wrapped in lg:hidden to prevent it rendering on desktop',
+    ],
+  },
+  {
     version: 'v1.23',
     changes: [
       'Added Panchang panel: Vara, Tithi, Nakshatra (with Pada), Karana, Yoga, Hora',

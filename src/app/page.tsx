@@ -613,21 +613,50 @@ export default function Home() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-        {/* Desktop: single row */}
-        <div className="hidden lg:flex items-center justify-between px-4 py-3">
+      {/* Desktop header */}
+      <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 hidden lg:flex items-center justify-between px-4 py-3">
+        <div className="flex items-center gap-2">
+          <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
+          <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+            <span className="text-zinc-300 dark:text-zinc-600">chart:</span>{' '}
+            <span className={activeChartName ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-300 dark:text-zinc-600 italic'}>
+              {displayChartName}
+            </span>
+          </span>
+          <FileActions
+            snapshot={chartSnapshot}
+            hasChart={hasChart}
+            onNew={handleNewChart}
+            onLoad={handleLoadChartSnapshot}
+            onExport={handleExportCharts}
+            onImport={handleImportCharts}
+            onActiveNameChange={setActiveChartName}
+          />
+          <ThemeToggle />
+        </div>
+      </header>
+
+      {/* Mobile header */}
+      <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 lg:hidden">
+        {/* Row 1: app name + theme icon */}
+        <div className="flex items-center justify-between px-4 pt-2.5 pb-1">
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
             <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
-              <span className="text-zinc-300 dark:text-zinc-600">chart:</span>{' '}
-              <span className={activeChartName ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-300 dark:text-zinc-600 italic'}>
+          <ThemeToggle icon />
+        </div>
+        {/* Row 2: chart title + actions */}
+        <div className="pb-2.5 px-4">
+          <div className="inline-flex max-w-full min-w-0 items-center gap-1 whitespace-nowrap">
+            {displayChartName !== 'None' && (
+              <span className="min-w-0 max-w-[calc(100vw-110px)] truncate text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mr-0.5">
                 {displayChartName}
               </span>
-            </span>
+            )}
             <FileActions
               snapshot={chartSnapshot}
               hasChart={hasChart}
@@ -636,46 +665,14 @@ export default function Home() {
               onExport={handleExportCharts}
               onImport={handleImportCharts}
               onActiveNameChange={setActiveChartName}
+              compact
             />
-            <ThemeToggle />
-          </div>
-        </div>
-
-        {/* Mobile: two rows */}
-        <div className="lg:hidden">
-          {/* Row 1: app name + theme icon */}
-          <div className="flex items-center justify-between px-4 pt-2.5 pb-1">
-            <div className="flex items-center gap-2">
-              <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
-              <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
-            </div>
-            <ThemeToggle icon />
-          </div>
-          {/* Row 2: chart title + actions */}
-          <div className="pb-2.5 px-4">
-            <div className="inline-flex max-w-full min-w-0 items-center gap-1 whitespace-nowrap">
-              {displayChartName !== 'None' && (
-                <span className="min-w-0 max-w-[calc(100vw-110px)] truncate text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mr-0.5">
-                  {displayChartName}
-                </span>
-              )}
-              <FileActions
-                snapshot={chartSnapshot}
-                hasChart={hasChart}
-                onNew={handleNewChart}
-                onLoad={handleLoadChartSnapshot}
-                onExport={handleExportCharts}
-                onImport={handleImportCharts}
-                onActiveNameChange={setActiveChartName}
-                compact
-              />
-            </div>
           </div>
         </div>
       </header>
 
       {/* ── DESKTOP: 2-column grid ────────────────────────────────────── */}
-      <div className="hidden lg:grid lg:grid-cols-2 gap-4 p-4 max-w-6xl mx-auto">
+      <div className="hidden lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] gap-4 items-start p-4">
         {/* Left: Chart + optional Panchang */}
         <div className="space-y-3">
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
@@ -734,7 +731,7 @@ export default function Home() {
       </div>
 
       {/* ── MOBILE: single panel + bottom nav ────────────────────────── */}
-      <div className="lg:hidden pb-20 p-4">
+      <div className="lg:hidden pb-20">
         {activeTab === 'chart' && (
           <div className="space-y-3">
             <Panel>
@@ -786,7 +783,9 @@ export default function Home() {
       </div>
 
       {/* Mobile bottom nav */}
-      <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+      <div className="lg:hidden">
+        <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+      </div>
 
       {/* Footer (desktop only) */}
       <footer className="hidden lg:block text-center text-xs font-mono text-zinc-400 dark:text-zinc-700 py-6">
