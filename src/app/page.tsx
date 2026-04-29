@@ -13,6 +13,7 @@ import SettingsPanel from '@/components/SettingsPanel';
 import GrahasPanel from '@/components/GrahasPanel';
 import DashaPanel from '@/components/DashaPanel';
 import ChartSection from '@/components/ChartSection';
+import PanchangPanel from '@/components/PanchangPanel';
 import { buildReportMarkdown } from '@/lib/exportReport';
 import FileActions, { ChartSnapshot } from '@/components/FileActions';
 
@@ -675,10 +676,22 @@ export default function Home() {
 
       {/* ── DESKTOP: 2-column grid ────────────────────────────────────── */}
       <div className="hidden md:grid md:grid-cols-2 gap-4 p-4 max-w-6xl mx-auto">
-        {/* Left: Chart (always visible) */}
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-          <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
-          <ChartSection {...chartSectionProps} />
+        {/* Left: Chart + optional Panchang */}
+        <div className="space-y-3">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
+            <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
+            <ChartSection {...chartSectionProps} />
+          </div>
+          {chartDisplaySettings.showPanchang && chartData && (
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
+              <PanchangPanel
+                chart={chartData}
+                birthDatetime={birthDatetime}
+                utcOffsetHours={effectiveTzOffset ?? 0}
+                ayanamsaName={calculationSettings.ayanamsa}
+              />
+            </div>
+          )}
         </div>
 
         {/* Right: tabbed panels */}
@@ -723,10 +736,22 @@ export default function Home() {
       {/* ── MOBILE: single panel + bottom nav ────────────────────────── */}
       <div className="md:hidden pb-20 p-4">
         {activeTab === 'chart' && (
-          <Panel>
-            <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
-            <ChartSection {...chartSectionProps} />
-          </Panel>
+          <div className="space-y-3">
+            <Panel>
+              <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
+              <ChartSection {...chartSectionProps} />
+            </Panel>
+            {chartDisplaySettings.showPanchang && chartData && (
+              <Panel>
+                <PanchangPanel
+                  chart={chartData}
+                  birthDatetime={birthDatetime}
+                  utcOffsetHours={effectiveTzOffset ?? 0}
+                  ayanamsaName={calculationSettings.ayanamsa}
+                />
+              </Panel>
+            )}
+          </div>
         )}
 
         {activeTab === 'data' && (

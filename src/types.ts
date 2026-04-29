@@ -96,6 +96,7 @@ export interface ChartDisplaySettings {
   showSanskrit: boolean;
   showOuterPlanets: boolean;
   showSpecialLagnas: boolean;
+  showPanchang: boolean;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -109,6 +110,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showSanskrit: false,
   showOuterPlanets: false,
   showSpecialLagnas: true,
+  showPanchang: false,
 };
 
 export interface CalculationSettings {

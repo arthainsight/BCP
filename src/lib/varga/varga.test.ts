@@ -63,7 +63,7 @@ function runMatrixTests(): { pass: number; fail: number } {
   console.log('\n--- Full varga matrix (23° Taurus) ---');
   const row = calculateVargaMatrix(LON);
   for (const [key, expected] of Object.entries(MATRIX_EXPECTED)) {
-    const actual = SIGN_ABBR[(row as Record<string, number>)[key]];
+    const actual = SIGN_ABBR[(row as unknown as Record<string, number>)[key]];
     const ok = actual === expected;
     console.log(`${ok ? '✓' : '✗'} ${key}: expected ${expected}, got ${actual}`);
     ok ? pass++ : fail++;

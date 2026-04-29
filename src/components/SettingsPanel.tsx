@@ -27,6 +27,7 @@ const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showCharaKaraka', label: 'karaka' },
   { key: 'showOuterPlanets', label: 'outer planets' },
   { key: 'showSpecialLagnas', label: 'special lagnas' },
+  { key: 'showPanchang', label: 'panchang' },
 ];
 
 function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void }) {

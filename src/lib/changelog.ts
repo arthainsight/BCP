@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.23',
+    changes: [
+      'Added Panchang panel: Vara, Tithi, Nakshatra (with Pada), Karana, Yoga, Hora',
+      'Sunrise / sunset / solar noon computed from coordinates (NOAA algorithm, no extra dependency)',
+      'Ayanamsa displayed in DMS with mode name; Masa shown as approximate from solar sign',
+      'Toggle via Settings → Charts → panchang (default off)',
+    ],
+  },
+  {
     version: 'v1.22',
     changes: [
       'Fixed D9/Navamsa start-sign logic in the Varga Matrix (movable: same sign, fixed: 9th from sign, dual: 5th from sign)',
