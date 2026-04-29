@@ -60,22 +60,32 @@ function formatDms(deg: number): string {
   return `${d}°${m}'${s}''`;
 }
 
+function normalizeLongitude(longitude: number): number {
+  return ((longitude % 360) + 360) % 360;
+}
+
 function getNakshatra(longitude: number) {
+  const normalized = normalizeLongitude(longitude);
   const nakSize = 13 + 1 / 3;
   const padaSize = 3 + 1 / 3;
-  const nakIndex = Math.floor(longitude / nakSize);
+  const nakIndex = Math.floor(normalized / nakSize);
   const nak = NAKSHATRAS[Math.min(nakIndex, 26)];
-  const remainder = longitude % nakSize;
+  const remainder = normalized % nakSize;
   const pada = Math.floor(remainder / padaSize) + 1;
-  return { name: nak.name, number: Math.min(nakIndex, 26) + 1, lord: nak.lord, pada };
+  const pada108 = Math.floor(normalized / padaSize) + 1;
+  return { name: nak.name, number: Math.min(nakIndex, 26) + 1, lord: nak.lord, pada, pada108 };
 }
 
 function getD108(longitude: number) {
-  const sign = Math.floor(longitude / 30) + 1;
-  const degInSign = longitude % 30;
+  const normalized = normalizeLongitude(longitude);
+  const natalSign = Math.floor(normalized / 30) + 1;
+  const degInSign = normalized % 30;
   const partSize = 30 / 108;
   const part = Math.floor(degInSign / partSize) + 1;
-  const d108Sign = ((sign + part - 2) % 12) + 1;
+
+  // Experimental Ashtottaramsa mapping. The part is the 1-108 amsa within the natal rashi.
+  // The sign mapping is intentionally separated from Pada108 because these are different 108 grids.
+  const d108Sign = ((natalSign + part - 2) % 12) + 1;
   return { sign: d108Sign, part };
 }
 
@@ -90,6 +100,7 @@ function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, strin
     position: `${SIGN_ABBR[planet.sign]} ${formatDms(planet.degree)}`,
     nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
     pada: nak.pada,
+    pada108: nak.pada108,
     d108: `${SIGN_ABBR[d108.sign]} (${d108.part})`,
   };
 }
@@ -99,6 +110,9 @@ interface Props {
   karakaByPlanet?: Record<string, string>;
   showOuterPlanets?: boolean;
   showSpecialLagnas?: boolean;
+  showNakshatra?: boolean;
+  showNakshatraPada?: boolean;
+  showD108?: boolean;
 }
 
 export default function JyotishGrahaTable({
@@ -106,6 +120,9 @@ export default function JyotishGrahaTable({
   karakaByPlanet = {},
   showOuterPlanets = false,
   showSpecialLagnas = true,
+  showNakshatra = true,
+  showNakshatraPada = true,
+  showD108 = false,
 }: Props) {
   const ascNak = getNakshatra(chart.ascendant.longitude);
   const ascD108 = getD108(chart.ascendant.longitude);
@@ -120,6 +137,7 @@ export default function JyotishGrahaTable({
       position: `${SIGN_ABBR[sl.sign]} ${formatDms(sl.degree)}`,
       nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
       pada: nak.pada,
+      pada108: nak.pada108,
       d108: `${SIGN_ABBR[d108.sign]} (${d108.part})`,
       isSpecial: true,
     };
@@ -137,6 +155,7 @@ export default function JyotishGrahaTable({
       position: `${SIGN_ABBR[chart.ascendant.sign]} ${formatDms(chart.ascendant.degree)}`,
       nakshatra: `${ascNak.name}(${ascNak.number}) ${ascNak.lord}`,
       pada: ascNak.pada,
+      pada108: ascNak.pada108,
       d108: `${SIGN_ABBR[ascD108.sign]} (${ascD108.part})`,
       isSpecial: false,
     },
@@ -149,23 +168,25 @@ export default function JyotishGrahaTable({
       <table className="w-full text-xs border-collapse font-mono">
         <thead>
           <tr className="bg-zinc-100 dark:bg-zinc-800">
-            <th className="p-2">Code</th>
-            <th className="p-2">Graha</th>
-            <th className="p-2">Pos</th>
-            <th className="p-2">Nakṣatra</th>
-            <th className="p-2">Pada</th>
-            <th className="p-2">D108</th>
+            <th className="p-2 text-left">Code</th>
+            <th className="p-2 text-left">Graha</th>
+            <th className="p-2 text-left">Pos</th>
+            {showNakshatra && <th className="p-2 text-left">Nakṣatra</th>}
+            {showNakshatraPada && <th className="p-2 text-left">Pada</th>}
+            {showNakshatraPada && <th className="p-2 text-left">Pada108</th>}
+            {showD108 && <th className="p-2 text-left">D108</th>}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={row.code}>
-              <td className="p-2">{row.code}</td>
-              <td className="p-2">{row.name}</td>
-              <td className="p-2">{row.position}</td>
-              <td className="p-2">{row.nakshatra}</td>
-              <td className="p-2">{row.pada}</td>
-              <td className="p-2">{row.d108}</td>
+            <tr key={row.code} className="border-b border-zinc-100 dark:border-zinc-800">
+              <td className={`p-2 font-bold ${row.isSpecial ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-700 dark:text-green-400'}`}>{row.code}</td>
+              <td className="p-2 text-zinc-800 dark:text-zinc-100">{row.name}</td>
+              <td className="p-2 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">{row.position}</td>
+              {showNakshatra && <td className="p-2 text-cyan-700 dark:text-cyan-300 whitespace-nowrap">{row.nakshatra}</td>}
+              {showNakshatraPada && <td className="p-2 text-zinc-600 dark:text-zinc-300">{row.pada}</td>}
+              {showNakshatraPada && <td className="p-2 text-zinc-600 dark:text-zinc-300">{row.pada108}</td>}
+              {showD108 && <td className="p-2 text-purple-700 dark:text-purple-300 whitespace-nowrap">{row.d108}</td>}
             </tr>
           ))}
         </tbody>
