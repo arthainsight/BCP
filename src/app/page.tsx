@@ -616,7 +616,7 @@ export default function Home() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
         {/* Desktop: single row */}
-        <div className="hidden md:flex items-center justify-between px-4 py-3">
+        <div className="hidden lg:flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
             <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
@@ -642,7 +642,7 @@ export default function Home() {
         </div>
 
         {/* Mobile: two rows */}
-        <div className="md:hidden">
+        <div className="lg:hidden">
           {/* Row 1: app name + theme icon */}
           <div className="flex items-center justify-between px-4 pt-2.5 pb-1">
             <div className="flex items-center gap-2">
@@ -675,7 +675,7 @@ export default function Home() {
       </header>
 
       {/* ── DESKTOP: 2-column grid ────────────────────────────────────── */}
-      <div className="hidden md:grid md:grid-cols-2 gap-4 p-4 max-w-6xl mx-auto">
+      <div className="hidden lg:grid lg:grid-cols-2 gap-4 p-4 max-w-6xl mx-auto">
         {/* Left: Chart + optional Panchang */}
         <div className="space-y-3">
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
@@ -734,7 +734,7 @@ export default function Home() {
       </div>
 
       {/* ── MOBILE: single panel + bottom nav ────────────────────────── */}
-      <div className="md:hidden pb-20 p-4">
+      <div className="lg:hidden pb-20 p-4">
         {activeTab === 'chart' && (
           <div className="space-y-3">
             <Panel>
@@ -789,7 +789,7 @@ export default function Home() {
       <BottomNav activeTab={activeTab} onChange={setActiveTab} />
 
       {/* Footer (desktop only) */}
-      <footer className="hidden md:block text-center text-xs font-mono text-zinc-400 dark:text-zinc-700 py-6">
+      <footer className="hidden lg:block text-center text-xs font-mono text-zinc-400 dark:text-zinc-700 py-6">
         {APP_NAME} {APP_VERSION} — selected ayanamsa · whole-sign houses · chara karakas
       </footer>
     </div>
