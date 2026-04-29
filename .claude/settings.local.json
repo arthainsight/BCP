@@ -11,7 +11,10 @@
       "Read(//tmp/**)",
       "Bash(node --input-type=module)",
       "Bash(xargs grep *)",
-      "Bash(python3 *)"
+      "Bash(python3 *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git config *)"
     ]
   }
 }
