@@ -92,6 +92,8 @@ export interface ChartDisplaySettings {
   showTransitPlanets: boolean;
   showDegrees: boolean;
   showNakshatra: boolean;
+  showNakshatraPada: boolean;
+  showD108: boolean;
   showCharaKaraka: boolean;
   showSanskrit: boolean;
   showOuterPlanets: boolean;
@@ -106,6 +108,8 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showTransitPlanets: false,
   showDegrees: false,
   showNakshatra: true,
+  showNakshatraPada: true,
+  showD108: false,
   showCharaKaraka: false,
   showSanskrit: false,
   showOuterPlanets: false,
