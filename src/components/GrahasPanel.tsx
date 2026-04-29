@@ -29,6 +29,9 @@ export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySetting
         karakaByPlanet={karakaByPlanet}
         showOuterPlanets={settings.showOuterPlanets}
         showSpecialLagnas={settings.showSpecialLagnas}
+        showNakshatra={settings.showNakshatra}
+        showNakshatraPada={settings.showNakshatraPada}
+        showD108={settings.showD108}
       />
     </div>
   );
