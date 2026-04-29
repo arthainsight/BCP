@@ -70,9 +70,19 @@ function getNakshatra(longitude: number) {
   return { name: nak.name, number: Math.min(nakIndex, 26) + 1, lord: nak.lord, pada };
 }
 
+function getD108(longitude: number) {
+  const sign = Math.floor(longitude / 30) + 1;
+  const degInSign = longitude % 30;
+  const partSize = 30 / 108;
+  const part = Math.floor(degInSign / partSize) + 1;
+  const d108Sign = ((sign + part - 2) % 12) + 1;
+  return { sign: d108Sign, part };
+}
+
 function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>) {
   const graha = GRAHA_NAMES[planet.name] ?? { code: planet.name.slice(0, 2), name: planet.name };
   const nak = getNakshatra(planet.longitude);
+  const d108 = getD108(planet.longitude);
   return {
     code: graha.code,
     name: graha.name,
@@ -80,6 +90,7 @@ function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, strin
     position: `${SIGN_ABBR[planet.sign]} ${formatDms(planet.degree)}`,
     nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
     pada: nak.pada,
+    d108: `${SIGN_ABBR[d108.sign]} (${d108.part})`,
   };
 }
 
@@ -97,9 +108,11 @@ export default function JyotishGrahaTable({
   showSpecialLagnas = true,
 }: Props) {
   const ascNak = getNakshatra(chart.ascendant.longitude);
+  const ascD108 = getD108(chart.ascendant.longitude);
 
   const buildSpecialLagnaRow = (sl: SpecialLagna) => {
     const nak = getNakshatra(sl.longitude);
+    const d108 = getD108(sl.longitude);
     return {
       code: sl.name,
       name: sl.name,
@@ -107,6 +120,7 @@ export default function JyotishGrahaTable({
       position: `${SIGN_ABBR[sl.sign]} ${formatDms(sl.degree)}`,
       nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
       pada: nak.pada,
+      d108: `${SIGN_ABBR[d108.sign]} (${d108.part})`,
       isSpecial: true,
     };
   };
@@ -123,6 +137,7 @@ export default function JyotishGrahaTable({
       position: `${SIGN_ABBR[chart.ascendant.sign]} ${formatDms(chart.ascendant.degree)}`,
       nakshatra: `${ascNak.name}(${ascNak.number}) ${ascNak.lord}`,
       pada: ascNak.pada,
+      d108: `${SIGN_ABBR[ascD108.sign]} (${ascD108.part})`,
       isSpecial: false,
     },
     ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet), isSpecial: false })),
@@ -130,63 +145,31 @@ export default function JyotishGrahaTable({
   ];
 
   return (
-    <>
-      <div className="hidden sm:block overflow-x-auto">
-        <table className="w-full text-xs border-collapse font-mono">
-          <thead>
-            <tr className="bg-zinc-100 dark:bg-zinc-800">
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Code</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Graha</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Karaka</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Position</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Nakṣatra</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Pada</th>
+    <div className="overflow-x-auto">
+      <table className="w-full text-xs border-collapse font-mono">
+        <thead>
+          <tr className="bg-zinc-100 dark:bg-zinc-800">
+            <th className="p-2">Code</th>
+            <th className="p-2">Graha</th>
+            <th className="p-2">Pos</th>
+            <th className="p-2">Nakṣatra</th>
+            <th className="p-2">Pada</th>
+            <th className="p-2">D108</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.code}>
+              <td className="p-2">{row.code}</td>
+              <td className="p-2">{row.name}</td>
+              <td className="p-2">{row.position}</td>
+              <td className="p-2">{row.nakshatra}</td>
+              <td className="p-2">{row.pada}</td>
+              <td className="p-2">{row.d108}</td>
             </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => {
-              const prevIsSpecial = i > 0 && !rows[i - 1].isSpecial && row.isSpecial;
-              return (
-                <tr key={row.code} className={`border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 ${prevIsSpecial ? 'border-t-2 border-t-zinc-200 dark:border-t-zinc-700' : ''}`}>
-                  <td className={`p-2 border border-zinc-100 dark:border-zinc-800 font-bold ${row.isSpecial ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-700 dark:text-green-400'}`}>{row.code}</td>
-                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-800 dark:text-zinc-100">{row.isSpecial ? '' : row.name}</td>
-                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-amber-600 dark:text-amber-400 font-semibold">{row.karaka}</td>
-                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.position}</td>
-                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-cyan-700 dark:text-cyan-300">{row.nakshatra}</td>
-                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300">{row.pada}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="sm:hidden flex flex-col gap-2 w-full max-w-full">
-        {rows.map((row) => (
-          <div
-            key={row.code}
-            className="rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/60 p-2 font-mono text-xs flex flex-col gap-1 w-full max-w-full"
-          >
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <span className={`font-bold ${row.isSpecial ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-700 dark:text-green-400'}`}>
-                {row.code}
-              </span>
-              {!row.isSpecial && (
-                <span className="text-zinc-800 dark:text-zinc-100">{row.name}</span>
-              )}
-              {row.karaka && (
-                <span className="text-amber-600 dark:text-amber-400 font-semibold ml-auto">{row.karaka}</span>
-              )}
-            </div>
-            <div className="text-zinc-700 dark:text-zinc-300">
-              {row.position}
-            </div>
-            <div className="text-cyan-700 dark:text-cyan-300" style={{ overflowWrap: 'anywhere' }}>
-              {row.nakshatra} · {row.pada}
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
