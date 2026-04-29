@@ -24,6 +24,8 @@ const CHART_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showTransitPlanets', label: 'transit' },
   { key: 'showDegrees', label: 'degrees' },
   { key: 'showNakshatra', label: 'nakshatra' },
+  { key: 'showNakshatraPada', label: 'pada + pada108' },
+  { key: 'showD108', label: 'D108 (experimental)' },
   { key: 'showCharaKaraka', label: 'karaka' },
   { key: 'showOuterPlanets', label: 'outer planets' },
   { key: 'showSpecialLagnas', label: 'special lagnas' },
