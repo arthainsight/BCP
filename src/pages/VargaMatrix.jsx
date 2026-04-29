@@ -1,13 +1,11 @@
 'use client';
 
+import { getVargaSignIndex, getSignIndex, getDegreesInSign } from '@/lib/varga';
+
 const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const DEFAULT_DIVISIONS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 const ROW_ORDER = ['Lagna', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 const SCORE_PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
-const MOVABLE_SIGNS = new Set([0, 3, 6, 9]);
-const FIXED_SIGNS = new Set([1, 4, 7, 10]);
-const DUAL_SIGNS = new Set([2, 5, 8, 11]);
-
 const OWN_SIGNS = {
   Sun: [4],
   Moon: [3],
@@ -38,48 +36,12 @@ const FRIEND_SIGNS = {
   Saturn: [1, 2, 5, 6, 9, 10],
 };
 
-function normalizeLongitude(longitude) {
-  return ((Number(longitude || 0) % 360) + 360) % 360;
-}
-
-export function getSignIndex(longitude) {
-  return Math.floor(normalizeLongitude(longitude) / 30);
-}
-
-export function getDegreesInSign(longitude) {
-  return normalizeLongitude(longitude) % 30;
-}
-
-function getSimpleVargaSign(longitude, division) {
-  const signIndex = getSignIndex(longitude);
-  const degreesInSign = getDegreesInSign(longitude);
-  const partSize = 30 / division;
-  const partIndex = Math.min(Math.floor(degreesInSign / partSize), division - 1);
-  return (signIndex + partIndex) % 12;
-}
-
-function getNavamsaSign(longitude) {
-  const signIndex = getSignIndex(longitude);
-  const degreesInSign = getDegreesInSign(longitude);
-  const partSize = 30 / 9;
-  const partIndex = Math.min(Math.floor(degreesInSign / partSize), 8);
-
-  let startSign = signIndex;
-  if (MOVABLE_SIGNS.has(signIndex)) {
-    startSign = signIndex;
-  } else if (FIXED_SIGNS.has(signIndex)) {
-    startSign = (signIndex + 8) % 12;
-  } else if (DUAL_SIGNS.has(signIndex)) {
-    startSign = (signIndex + 4) % 12;
-  }
-
-  return (startSign + partIndex) % 12;
-}
+// getSignIndex and getDegreesInSign are imported from @/lib/varga above.
+// Kept as named exports so any existing callers continue to work.
+export { getSignIndex, getDegreesInSign };
 
 export function getVargaSign(longitude, division) {
-  if (division === 1) return getSignIndex(longitude);
-  if (division === 9) return getNavamsaSign(longitude);
-  return getSimpleVargaSign(longitude, division);
+  return getVargaSignIndex(longitude, division);
 }
 
 export function buildVargaMatrix(planets = {}, lagna, divisions = DEFAULT_DIVISIONS) {

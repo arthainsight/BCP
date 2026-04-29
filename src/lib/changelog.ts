@@ -1,5 +1,13 @@
 export const CHANGELOG = [
   {
+    version: 'v1.22',
+    changes: [
+      'Fixed D9/Navamsa start-sign logic in the Varga Matrix (movable: same sign, fixed: 9th from sign, dual: 5th from sign)',
+      'Added sanity checks for D9 covering movable, fixed, and dual signs',
+      'No changes to dasha logic',
+    ],
+  },
+  {
     version: 'v1.21',
     changes: [
       'Expanded Varga Matrix with extended divisional charts (D2, D4, D7, D12, D16, D20, D24, D27, D30, D40, D45)',
