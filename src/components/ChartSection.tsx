@@ -89,45 +89,32 @@ export default function ChartSection({
   const monthHouse = showBcpHighlights ? bcp.activeMonthHouse : 0;
   const ashtakavargaOverlay = getAshtakavargaOverlay(chart);
 
+  const tabClass = (id: 'chart' | 'varga' | 'drishti') =>
+    `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
+    <div className="space-y-3 min-w-0 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
         {showBcpHighlights && view === 'chart' ? (
-          <div className="flex gap-4 text-xs font-mono px-1">
+          <div className="flex gap-3 text-[11px] sm:text-xs font-mono px-1 min-w-0 whitespace-nowrap overflow-x-auto">
             <span className="text-cyan-600 dark:text-cyan-400">Y: H{bcp.activeYearHouse}</span>
             <span className="text-emerald-700 dark:text-green-400">M: H{bcp.activeMonthHouse}</span>
           </div>
         ) : <div />}
 
-        <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
-          <button
-            type="button"
-            onClick={() => setView('chart')}
-            className={`px-2 py-1 text-[10px] font-mono rounded-md ${view === 'chart' ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`}
-          >
-            Chart
-          </button>
-          <button
-            type="button"
-            onClick={() => setView('varga')}
-            className={`px-2 py-1 text-[10px] font-mono rounded-md ${view === 'varga' ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`}
-          >
-            Varga Matrix
-          </button>
-          <button
-            type="button"
-            onClick={() => setView('drishti')}
-            className={`px-2 py-1 text-[10px] font-mono rounded-md ${view === 'drishti' ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`}
-          >
-            Dṛṣṭi
-          </button>
+        <div className="w-full sm:w-auto overflow-x-auto">
+          <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
+            <button type="button" onClick={() => setView('chart')} className={tabClass('chart')}>Chart</button>
+            <button type="button" onClick={() => setView('varga')} className={tabClass('varga')}>Varga</button>
+            <button type="button" onClick={() => setView('drishti')} className={tabClass('drishti')}>Dṛṣṭi</button>
+          </div>
         </div>
       </div>
 
       {view === 'varga' ? (
-        <VargaMatrix chart={chart} />
+        <div className="min-w-0 overflow-x-auto"><VargaMatrix chart={chart} /></div>
       ) : view === 'drishti' ? (
-        <DrishtiPanel chart={chart} />
+        <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} /></div>
       ) : chartStyle === 'south' ? (
         <SouthIndianChart
           activeYearHouse={yearHouse}
