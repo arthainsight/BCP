@@ -84,6 +84,7 @@ export interface CharaKaraka {
 }
 
 export type ChartStyle = 'north' | 'south';
+export type UiMode = 'simple' | 'research' | 'debug';
 
 export interface ChartDisplaySettings {
   chartStyle: ChartStyle;

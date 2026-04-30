@@ -6,6 +6,7 @@ import { DebugInfo } from '@/types';
 interface Props {
   debug?: DebugInfo;
   ianaTimezone?: string;
+  defaultOpen?: boolean;
 }
 
 function fmtOffset(offset: number): string {
@@ -13,8 +14,8 @@ function fmtOffset(offset: number): string {
   return `${sign}${offset % 1 === 0 ? offset.toFixed(0) : offset.toFixed(1)}h UTC`;
 }
 
-export default function CalculationDebugPanel({ debug, ianaTimezone }: Props) {
-  const [open, setOpen] = useState(false);
+export default function CalculationDebugPanel({ debug, ianaTimezone, defaultOpen = false }: Props) {
+  const [open, setOpen] = useState(defaultOpen);
 
   if (!debug) return null;
 

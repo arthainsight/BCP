@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v1.25',
+    changes: [
+      'Added UI mode switcher (Simple / Research / Debug) — persisted across sessions',
+      'Simple mode: dashas rendered flat, no debug panel',
+      'Research mode: each dasha is a collapsible card (first open by default); calculation details shown collapsed',
+      'Debug mode: same as research + calculation details expanded by default, DEBUG badge in header',
+      'Settings reorganised into Display (open) and Advanced (collapsed) sections',
+      'Advanced settings: transit, outer planets, special lagnas, panchang, experimental dashas',
+      'CollapsibleCard component added for reusable collapsible sections',
+    ],
+  },
+  {
     version: 'v1.24',
     changes: [
       'Fixed duplicate panel rendering: desktop and mobile layouts are now mutually exclusive at the lg breakpoint',

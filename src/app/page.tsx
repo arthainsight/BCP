@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS, DEFAULT_DASHA_SETTINGS } from '@/types';
+import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DashaSettings, UiMode, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
@@ -14,8 +14,34 @@ import GrahasPanel from '@/components/GrahasPanel';
 import DashaPanel from '@/components/DashaPanel';
 import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
+import CalculationDebugPanel from '@/components/CalculationDebugPanel';
 import { buildReportMarkdown } from '@/lib/exportReport';
 import FileActions, { ChartSnapshot } from '@/components/FileActions';
+
+function ModeSwitcher({ mode, onChange, compact }: { mode: UiMode; onChange: (m: UiMode) => void; compact?: boolean }) {
+  const modes: { id: UiMode; short: string; long: string }[] = [
+    { id: 'simple',   short: 'S', long: 'simple'   },
+    { id: 'research', short: 'R', long: 'research'  },
+    { id: 'debug',    short: 'D', long: 'debug'     },
+  ];
+  return (
+    <div className="flex gap-0.5 bg-zinc-100 dark:bg-zinc-800 rounded-md p-0.5">
+      {modes.map(m => (
+        <button
+          key={m.id}
+          onClick={() => onChange(m.id)}
+          className={`px-2 py-1 text-[10px] font-mono rounded transition-colors ${
+            mode === m.id
+              ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm'
+              : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+          }`}
+        >
+          {compact ? m.short : m.long}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function getTodayString(): string {
   const d = new Date();
@@ -136,6 +162,7 @@ export default function Home() {
   const [calculationSettings, setCalculationSettings] = useState<CalculationSettings>(DEFAULT_CALCULATION_SETTINGS);
   const [dashaSettings, setDashaSettings] = useState<DashaSettings>(DEFAULT_DASHA_SETTINGS);
   const [settingsRestored, setSettingsRestored] = useState(false);
+  const [uiMode, setUiMode] = useState<UiMode>('simple');
   const previousCalculationKeyRef = useRef('');
 
   // Manual BCP
@@ -205,6 +232,8 @@ export default function Home() {
       if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
       const dash = localStorage.getItem('dashaSettings');
       if (dash) setDashaSettings(migrateDashaSettings(JSON.parse(dash)));
+      const mode = localStorage.getItem('uiMode') as UiMode | null;
+      if (mode === 'simple' || mode === 'research' || mode === 'debug') setUiMode(mode);
     } catch {}
     setSettingsRestored(true);
   }, []);
@@ -234,6 +263,11 @@ export default function Home() {
       try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}
       return next;
     });
+  }, []);
+
+  const updateUiMode = useCallback((mode: UiMode) => {
+    setUiMode(mode);
+    try { localStorage.setItem('uiMode', mode); } catch {}
   }, []);
 
   const handleNewChart = useCallback(() => {
@@ -618,6 +652,11 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
           <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
+          {uiMode === 'debug' && (
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 border border-amber-300 dark:border-amber-700">
+              DEBUG
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
@@ -626,6 +665,7 @@ export default function Home() {
               {displayChartName}
             </span>
           </span>
+          <ModeSwitcher mode={uiMode} onChange={updateUiMode} />
           <FileActions
             snapshot={chartSnapshot}
             hasChart={hasChart}
@@ -641,13 +681,16 @@ export default function Home() {
 
       {/* Mobile header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 lg:hidden">
-        {/* Row 1: app name + theme icon */}
+        {/* Row 1: app name + mode switcher + theme icon */}
         <div className="flex items-center justify-between px-4 pt-2.5 pb-1">
           <div className="flex items-center gap-2">
             <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
             <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
           </div>
-          <ThemeToggle icon />
+          <div className="flex items-center gap-2">
+            <ModeSwitcher mode={uiMode} onChange={updateUiMode} compact />
+            <ThemeToggle icon />
+          </div>
         </div>
         {/* Row 2: chart title + actions */}
         <div className="pb-2.5 px-4">
@@ -714,13 +757,30 @@ export default function Home() {
               <DataPanel {...dataProps} />
             )}
             {desktopTab === 'grahas' && (
-              chartData
-                ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} />
-                : <EmptyState message="Calculate a chart to see graha positions" />
+              <>
+                {chartData
+                  ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} />
+                  : <EmptyState message="Calculate a chart to see graha positions" />
+                }
+                {uiMode !== 'simple' && chartData?.debug && (
+                  <CalculationDebugPanel
+                    debug={chartData.debug}
+                    ianaTimezone={ianaTimezone}
+                    defaultOpen={uiMode === 'debug'}
+                  />
+                )}
+              </>
             )}
             {desktopTab === 'dasha' && (
               effectiveBcpResult && chartData
-                ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
+                ? <DashaPanel
+                    bcp={effectiveBcpResult}
+                    planets={chartData.planets}
+                    ascendant={chartData.ascendant}
+                    birthDatetime={birthDatetime}
+                    dashaSettings={dashaSettings}
+                    collapsible={uiMode !== 'simple'}
+                  />
                 : <EmptyState message="Calculate a chart to see BCP dasha analysis" />
             )}
             {desktopTab === 'settings' && (
@@ -763,13 +823,27 @@ export default function Home() {
               ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} />
               : <EmptyState message="Calculate a chart in Data to see graha positions" />
             }
+            {uiMode !== 'simple' && chartData?.debug && (
+              <CalculationDebugPanel
+                debug={chartData.debug}
+                ianaTimezone={ianaTimezone}
+                defaultOpen={uiMode === 'debug'}
+              />
+            )}
           </Panel>
         )}
 
         {activeTab === 'dasha' && (
           <Panel>
             {effectiveBcpResult && chartData
-              ? <DashaPanel bcp={effectiveBcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
+              ? <DashaPanel
+                  bcp={effectiveBcpResult}
+                  planets={chartData.planets}
+                  ascendant={chartData.ascendant}
+                  birthDatetime={birthDatetime}
+                  dashaSettings={dashaSettings}
+                  collapsible={uiMode !== 'simple'}
+                />
               : <EmptyState message="Calculate a chart in Data to see BCP dasha analysis" />
             }
           </Panel>
