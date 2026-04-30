@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.33',
+    changes: [
+      'Added classical Bhava Bala (beta) based on Shadbala + Drig Bala projection',
+      'Bhavesha now uses full Shadbala total for house strength',
+      'Implemented Drig Bala split (Drig1–Drig4) for house aspect pressure',
+      'Improved overall structural accuracy of strength calculations',
+    ],
+  },
+  {
     version: 'v1.30',
     changes: [
       'Added Kala Bala (Natonnata, Paksha, Tribhaga)',
