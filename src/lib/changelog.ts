@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.34',
+    changes: [
+      'Added full Ashtakavarga system (Bhinna + Sarva)',
+      'Implemented bindu calculation per planet (BAV)',
+      'Added Sarva Ashtakavarga totals (SAV)',
+      'Added chart overlay data for Ashtakavarga (house strength visualization)',
+    ],
+  },
+  {
     version: 'v1.33',
     changes: [
       'Added classical Bhava Bala (beta) based on Shadbala + Drig Bala projection',
