@@ -3,9 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
+import type { AshtakavargaOverlayCell } from '@/lib/ashtakavarga';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#a855f7';
+const TRANSIT_COLOR = '#f43f5e';
+const ASHTAKAVARGA_COLOR = '#06b6d4';
 
 interface Props {
   activeYearHouse: number;
@@ -14,6 +17,7 @@ interface Props {
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
   transitPlanets?: PlanetData[];
+  ashtakavargaOverlay?: AshtakavargaOverlayCell[];
   showNatalPlanets?: boolean;
   showTransitPlanets?: boolean;
   showSigns?: boolean;
@@ -51,8 +55,6 @@ const SIGN_ABBR: Record<number, string> = {
   5: 'Le',  6: 'Vi',  7: 'Li',  8: 'Sc',
   9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
 };
-
-const TRANSIT_COLOR = '#f43f5e';
 
 type HouseShape = {
   house: number;
@@ -123,6 +125,7 @@ export default function NorthIndianChart({
   planets,
   specialLagnas = [],
   transitPlanets = [],
+  ashtakavargaOverlay = [],
   showNatalPlanets = true,
   showTransitPlanets = false,
   showSigns = true,
@@ -152,6 +155,7 @@ export default function NorthIndianChart({
       <svg viewBox="-25 -25 550 550" className="w-full h-auto overflow-visible" role="img" aria-label="North Indian Jyotish chart">
         {HOUSES.map((item) => {
           const sign = getSignForHouse(ascendantSign, item.house);
+          const avCell = ashtakavargaOverlay.find((cell) => cell.house === item.house);
           type MergedPlanet = PlanetData & { isTransit: boolean };
 
           const natalInHouse: MergedPlanet[] = showNatalPlanets
@@ -186,6 +190,19 @@ export default function NorthIndianChart({
               {showHouseNumbers && (
                 <text x={item.sign.x} y={item.sign.y + 14} textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="600" fill={hNumFill}>
                   H{item.house}
+                </text>
+              )}
+              {avCell && (
+                <text
+                  x={item.sign.x}
+                  y={item.sign.y - 16}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="11"
+                  fontWeight="800"
+                  fill={ASHTAKAVARGA_COLOR}
+                >
+                  AV {avCell.bindu}
                 </text>
               )}
               {allPlanets.map((planet, index) => {
@@ -237,13 +254,14 @@ export default function NorthIndianChart({
         })}
       </svg>
 
-      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas) && (
+      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || ashtakavargaOverlay.length > 0) && (
         <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono flex-wrap">
           {showBcpHighlights && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ Year</span>}
           {showBcpHighlights && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ Month</span>}
           {showBcpHighlights && <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>}
           {showTransitPlanets && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
+          {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV Ashtakavarga</span>}
         </div>
       )}
     </div>
