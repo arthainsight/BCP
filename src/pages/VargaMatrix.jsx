@@ -88,6 +88,36 @@ const VIMSOPAKA_SCHEMES = {
   },
 };
 
+const NAISARGIKA_BALA_VIRUPA = {
+  Sun: 60,
+  Moon: 51.43,
+  Venus: 42.86,
+  Jupiter: 34.29,
+  Mercury: 25.71,
+  Mars: 17.14,
+  Saturn: 8.57,
+};
+
+const SHADBALA_REQUIRED_RUPA = {
+  Sun: 6.5,
+  Moon: 6,
+  Mars: 5,
+  Mercury: 7,
+  Jupiter: 6.5,
+  Venus: 5.5,
+  Saturn: 5,
+};
+
+const DIG_BALA_MAX_HOUSE = {
+  Sun: 10,
+  Mars: 10,
+  Moon: 4,
+  Venus: 4,
+  Jupiter: 1,
+  Mercury: 1,
+  Saturn: 7,
+};
+
 // getSignIndex and getDegreesInSign are imported from @/lib/varga above.
 // Kept as named exports so any existing callers continue to work.
 export { getSignIndex, getDegreesInSign };
@@ -129,6 +159,58 @@ function getDignityCellClass(dignity) {
 
 function formatScore(value) {
   return Number.isFinite(value) ? value.toFixed(2).replace(/\.00$/, '') : '—';
+}
+
+function virupaToRupa(virupa) {
+  return virupa / 60;
+}
+
+function getPlanetHouse(planet, ascendantSign) {
+  if (typeof planet?.house === 'number') return planet.house;
+  if (typeof planet?.sign !== 'number' || typeof ascendantSign !== 'number') return null;
+  return ((planet.sign - ascendantSign + 12) % 12) + 1;
+}
+
+function circularHouseDistance(a, b) {
+  const raw = Math.abs(a - b) % 12;
+  return Math.min(raw, 12 - raw);
+}
+
+function calculateDigBalaVirupa(planetName, house) {
+  const maxHouse = DIG_BALA_MAX_HOUSE[planetName];
+  if (!maxHouse || typeof house !== 'number') return 0;
+  const distance = circularHouseDistance(house, maxHouse);
+  return Math.max(0, Math.min(60, 60 * (1 - distance / 6)));
+}
+
+function buildShadbalaRows(chart) {
+  const ascendantSign = chart?.ascendant?.sign;
+  return SCORE_PLANETS.map((planetName) => {
+    const planet = (chart?.planets ?? []).find((p) => p.name === planetName);
+    if (!planet) return null;
+
+    const house = getPlanetHouse(planet, ascendantSign);
+    const naisargikaVirupa = NAISARGIKA_BALA_VIRUPA[planetName] ?? 0;
+    const digVirupa = calculateDigBalaVirupa(planetName, house);
+    const totalVirupa = naisargikaVirupa + digVirupa;
+    const totalRupa = virupaToRupa(totalVirupa);
+    const requiredRupa = SHADBALA_REQUIRED_RUPA[planetName] ?? 0;
+    const ratio = requiredRupa ? totalRupa / requiredRupa : 0;
+
+    return {
+      planet: planetName,
+      house,
+      sthana: null,
+      dig: virupaToRupa(digVirupa),
+      kala: null,
+      cheshta: null,
+      naisargika: virupaToRupa(naisargikaVirupa),
+      drik: null,
+      total: totalRupa,
+      required: requiredRupa,
+      ratio,
+    };
+  }).filter(Boolean);
 }
 
 export function buildVargaMatrix(planets = {}, lagna, divisions = DEFAULT_DIVISIONS) {
@@ -204,6 +286,7 @@ export default function VargaMatrix({ chart }) {
   const lagna = typeof chart?.ascendant?.longitude === 'number' ? chart.ascendant.longitude : undefined;
   const matrix = buildVargaMatrix(planets, lagna, divisions);
   const strength = buildVimsopakaStrength(planets, matrix);
+  const shadbala = buildShadbalaRows(chart);
   const divisionList = formatDivisionList(divisions);
 
   if (!chart) {
@@ -285,6 +368,52 @@ export default function VargaMatrix({ chart }) {
                       {formatScore(row[key])} / 20
                     </td>
                   ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div>
+          <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; shadbala.partial</div>
+          <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
+            v1.28 shell: Naisargika Bala + Dig Bala only. Values shown in rūpa; Total is partial until Sthāna, Kāla, Ceṣṭā and Dṛk Bala are implemented.
+          </div>
+        </div>
+
+        <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
+          <table className="w-full min-w-[920px] border-collapse text-xs font-mono">
+            <thead>
+              <tr className="bg-zinc-100 dark:bg-zinc-800">
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Planet</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">House</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Sthāna</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Dig</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Kāla</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Ceṣṭā</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Naisargika</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Dṛk</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Partial Total</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Required</th>
+                <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Ratio</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shadbala.map((row) => (
+                <tr key={row.planet} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">{row.planet}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.house ? `H${row.house}` : '—'}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600">—</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.dig)}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600">—</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600">—</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.naisargika)}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600">—</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-amber-700 dark:text-amber-300">{formatScore(row.total)}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.required)}</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-cyan-700 dark:text-cyan-300">{formatScore(row.ratio)}</td>
                 </tr>
               ))}
             </tbody>
