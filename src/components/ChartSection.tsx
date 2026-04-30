@@ -5,6 +5,7 @@ import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } fr
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import VargaMatrix from '@/pages/VargaMatrix';
+import { getAshtakavargaOverlay } from '@/lib/ashtakavarga';
 
 export interface ChartSectionProps {
   bcp: BcpResult | null;
@@ -59,9 +60,7 @@ export default function ChartSection({
       setShowBcpHighlights(isBcpEnabled());
     };
 
-    const handleShowVarga = () => {
-      setView('varga');
-    };
+    const handleShowVarga = () => setView('varga');
 
     window.addEventListener('bcp:chart-style-change', handleChartStyleChange);
     window.addEventListener('bcp:dasha-bcp-toggle', handleBcpToggle);
@@ -84,6 +83,7 @@ export default function ChartSection({
 
   const yearHouse = showBcpHighlights ? bcp.activeYearHouse : 0;
   const monthHouse = showBcpHighlights ? bcp.activeMonthHouse : 0;
+  const ashtakavargaOverlay = getAshtakavargaOverlay(chart);
 
   return (
     <div className="space-y-3">
@@ -123,6 +123,7 @@ export default function ChartSection({
           planets={chart.planets}
           specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
+          ashtakavargaOverlay={ashtakavargaOverlay}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
           showTransitPlanets={chartDisplaySettings.showTransitPlanets}
@@ -141,6 +142,7 @@ export default function ChartSection({
           planets={chart.planets}
           specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
+          ashtakavargaOverlay={ashtakavargaOverlay}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
           showTransitPlanets={chartDisplaySettings.showTransitPlanets}
