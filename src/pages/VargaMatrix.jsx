@@ -39,6 +39,16 @@ const DEBILITATION_SIGNS = {
   Saturn: 0,
 };
 
+const EXALTATION_LONGITUDES = {
+  Sun: 10,
+  Moon: 33,
+  Mars: 298,
+  Mercury: 165,
+  Jupiter: 95,
+  Venus: 357,
+  Saturn: 200,
+};
+
 const NATURAL_RELATIONS = {
   Sun:     { friends: ['Moon', 'Mars', 'Jupiter'], neutral: ['Mercury'], enemies: ['Venus', 'Saturn'] },
   Moon:    { friends: ['Sun', 'Mercury'], neutral: ['Mars', 'Jupiter', 'Venus', 'Saturn'], enemies: [] },
@@ -118,12 +128,36 @@ const DIG_BALA_MAX_HOUSE = {
   Saturn: 7,
 };
 
+const ODD_EVEN_STRENGTH = {
+  Sun: 'odd',
+  Mars: 'odd',
+  Jupiter: 'odd',
+  Moon: 'even',
+  Venus: 'even',
+  Mercury: 'both',
+  Saturn: 'both',
+};
+
+const DREKKANA_STRENGTH = {
+  Sun: 1,
+  Mars: 1,
+  Jupiter: 1,
+  Mercury: 2,
+  Saturn: 2,
+  Moon: 3,
+  Venus: 3,
+};
+
 // getSignIndex and getDegreesInSign are imported from @/lib/varga above.
 // Kept as named exports so any existing callers continue to work.
 export { getSignIndex, getDegreesInSign };
 
 export function getVargaSign(longitude, division) {
   return getVargaSignIndex(longitude, division);
+}
+
+function normalizeDegrees(value) {
+  return ((value % 360) + 360) % 360;
 }
 
 function getDignity(planet, signIndex) {
@@ -176,11 +210,75 @@ function circularHouseDistance(a, b) {
   return Math.min(raw, 12 - raw);
 }
 
+function circularDegreeDistance(a, b) {
+  const raw = Math.abs(normalizeDegrees(a) - normalizeDegrees(b));
+  return Math.min(raw, 360 - raw);
+}
+
 function calculateDigBalaVirupa(planetName, house) {
   const maxHouse = DIG_BALA_MAX_HOUSE[planetName];
   if (!maxHouse || typeof house !== 'number') return 0;
   const distance = circularHouseDistance(house, maxHouse);
   return Math.max(0, Math.min(60, 60 * (1 - distance / 6)));
+}
+
+function calculateUcchaBalaVirupa(planetName, longitude) {
+  const exaltLongitude = EXALTATION_LONGITUDES[planetName];
+  if (typeof exaltLongitude !== 'number' || typeof longitude !== 'number') return 0;
+  const distanceFromExaltation = circularDegreeDistance(longitude, exaltLongitude);
+  return Math.max(0, Math.min(60, 60 * (1 - distanceFromExaltation / 180)));
+}
+
+function calculateSaptavargajaBalaVirupa(planetName, longitude) {
+  const divisions = [1, 2, 3, 7, 9, 12, 30];
+  const total = divisions.reduce((sum, division) => {
+    const signIndex = getVargaSign(longitude, division);
+    const dignity = getDignity(planetName, signIndex);
+    return sum + (DIGNITY_VISWA[dignity] ?? 0);
+  }, 0);
+  return total / divisions.length;
+}
+
+function calculateOjhayugmaBalaVirupa(planetName, longitude) {
+  const preference = ODD_EVEN_STRENGTH[planetName];
+  if (!preference || typeof longitude !== 'number') return 0;
+  if (preference === 'both') return 15;
+
+  const rasiSign = getVargaSign(longitude, 1);
+  const navamsaSign = getVargaSign(longitude, 9);
+  const signMatches = (signIndex) => {
+    const isOdd = signIndex % 2 === 0;
+    return preference === 'odd' ? isOdd : !isOdd;
+  };
+
+  return (signMatches(rasiSign) ? 15 : 0) + (signMatches(navamsaSign) ? 15 : 0);
+}
+
+function calculateKendradiBalaVirupa(house) {
+  if (typeof house !== 'number') return 0;
+  if ([1, 4, 7, 10].includes(house)) return 60;
+  if ([2, 5, 8, 11].includes(house)) return 30;
+  return 15;
+}
+
+function calculateDrekkanaBalaVirupa(planetName, longitude) {
+  if (typeof longitude !== 'number') return 0;
+  const preferredDrekkana = DREKKANA_STRENGTH[planetName];
+  if (!preferredDrekkana) return 0;
+  const degreeInSign = getDegreesInSign(longitude);
+  const drekkana = Math.floor(degreeInSign / 10) + 1;
+  return drekkana === preferredDrekkana ? 15 : 0;
+}
+
+function calculateSthanaBalaBreakdown(planetName, planet, house) {
+  const longitude = planet?.longitude;
+  const uccha = calculateUcchaBalaVirupa(planetName, longitude);
+  const saptavargaja = calculateSaptavargajaBalaVirupa(planetName, longitude);
+  const ojhayugma = calculateOjhayugmaBalaVirupa(planetName, longitude);
+  const kendradi = calculateKendradiBalaVirupa(house);
+  const drekkana = calculateDrekkanaBalaVirupa(planetName, longitude);
+  const total = uccha + saptavargaja + ojhayugma + kendradi + drekkana;
+  return { uccha, saptavargaja, ojhayugma, kendradi, drekkana, total };
 }
 
 function buildShadbalaRows(chart) {
@@ -190,9 +288,10 @@ function buildShadbalaRows(chart) {
     if (!planet) return null;
 
     const house = getPlanetHouse(planet, ascendantSign);
+    const sthanaBreakdown = calculateSthanaBalaBreakdown(planetName, planet, house);
     const naisargikaVirupa = NAISARGIKA_BALA_VIRUPA[planetName] ?? 0;
     const digVirupa = calculateDigBalaVirupa(planetName, house);
-    const totalVirupa = naisargikaVirupa + digVirupa;
+    const totalVirupa = sthanaBreakdown.total + naisargikaVirupa + digVirupa;
     const totalRupa = virupaToRupa(totalVirupa);
     const requiredRupa = SHADBALA_REQUIRED_RUPA[planetName] ?? 0;
     const ratio = requiredRupa ? totalRupa / requiredRupa : 0;
@@ -200,7 +299,8 @@ function buildShadbalaRows(chart) {
     return {
       planet: planetName,
       house,
-      sthana: null,
+      sthana: virupaToRupa(sthanaBreakdown.total),
+      sthanaBreakdown,
       dig: virupaToRupa(digVirupa),
       kala: null,
       cheshta: null,
@@ -379,7 +479,7 @@ export default function VargaMatrix({ chart }) {
         <div>
           <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; shadbala.partial</div>
           <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
-            v1.28 shell: Naisargika Bala + Dig Bala only. Values shown in rūpa; Total is partial until Sthāna, Kāla, Ceṣṭā and Dṛk Bala are implemented.
+            v1.29 shell: Sthāna Bala + Naisargika Bala + Dig Bala. Values shown in rūpa; Total is partial until Kāla, Ceṣṭā and Dṛk Bala are implemented.
           </div>
         </div>
 
@@ -405,7 +505,7 @@ export default function VargaMatrix({ chart }) {
                 <tr key={row.planet} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
                   <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">{row.planet}</td>
                   <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.house ? `H${row.house}` : '—'}</td>
-                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600">—</td>
+                  <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300" title={`Uccha ${formatScore(virupaToRupa(row.sthanaBreakdown.uccha))} + Saptavargaja ${formatScore(virupaToRupa(row.sthanaBreakdown.saptavargaja))} + Ojhayugma ${formatScore(virupaToRupa(row.sthanaBreakdown.ojhayugma))} + Kendradi ${formatScore(virupaToRupa(row.sthanaBreakdown.kendradi))} + Drekkana ${formatScore(virupaToRupa(row.sthanaBreakdown.drekkana))}`}>{formatScore(row.sthana)}</td>
                   <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.dig)}</td>
                   <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600">—</td>
                   <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-400 dark:text-zinc-600">—</td>
