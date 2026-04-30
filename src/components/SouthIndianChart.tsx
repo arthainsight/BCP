@@ -1,10 +1,12 @@
 'use client';
 
 import { PlanetData, SpecialLagna } from '@/types';
+import type { AshtakavargaOverlayCell } from '@/lib/ashtakavarga';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#a855f7';
 const TRANSIT_COLOR = '#f43f5e';
+const ASHTAKAVARGA_COLOR = '#06b6d4';
 
 interface Props {
   activeYearHouse: number;
@@ -13,6 +15,7 @@ interface Props {
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
   transitPlanets?: PlanetData[];
+  ashtakavargaOverlay?: AshtakavargaOverlayCell[];
   showNatalPlanets?: boolean;
   showTransitPlanets?: boolean;
   showSigns?: boolean;
@@ -94,6 +97,7 @@ export default function SouthIndianChart({
   planets,
   specialLagnas = [],
   transitPlanets = [],
+  ashtakavargaOverlay = [],
   showNatalPlanets = true,
   showTransitPlanets = false,
   showSigns = true,
@@ -149,6 +153,7 @@ export default function SouthIndianChart({
           const house = getHouse(sign, ascendantSign);
           const planetsHere = bySign[sign] ?? [];
           const specialHere = specialBySign[sign] ?? [];
+          const avCell = ashtakavargaOverlay.find((cell) => cell.house === house);
 
           return (
             <div
@@ -160,9 +165,16 @@ export default function SouthIndianChart({
                 <span className="text-zinc-400 dark:text-zinc-600">H{house}</span>
               </div>
 
-              {sign === ascendantSign && (
-                <div className="mt-1 text-[10px] leading-none font-bold text-emerald-700 dark:text-green-400">ASC</div>
-              )}
+              <div className="mt-1 flex items-center justify-between gap-1 text-[10px] leading-none">
+                {sign === ascendantSign ? (
+                  <span className="font-bold text-emerald-700 dark:text-green-400">ASC</span>
+                ) : <span />}
+                {avCell && (
+                  <span className="font-extrabold" style={{ color: ASHTAKAVARGA_COLOR }}>
+                    AV {avCell.bindu}
+                  </span>
+                )}
+              </div>
 
               <div className="mt-1 flex flex-col gap-0.5 text-[11px] leading-tight font-bold text-zinc-800 dark:text-zinc-100">
                 {planetsHere.map((p, index) => (
@@ -195,6 +207,7 @@ export default function SouthIndianChart({
         <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>
         {showTransitPlanets && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
         {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
+        {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV Ashtakavarga</span>}
       </div>
     </div>
   );
