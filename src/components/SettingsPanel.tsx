@@ -19,7 +19,7 @@ interface Props {
 const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300';
 
 const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
-  { key: 'showSigns',        label: 'signs' },
+  { key: 'showSigns', label: 'signs' },
   { key: 'showNatalPlanets', label: 'natal' },
   { key: 'showTransitPlanets', label: 'transit' },
   { key: 'showDegrees', label: 'degrees' },
@@ -30,23 +30,18 @@ const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showOuterPlanets', label: 'outer planets' },
   { key: 'showSpecialLagnas', label: 'special lagnas' },
   { key: 'showPanchang', label: 'panchang' },
-=======
-  { key: 'showDegrees',      label: 'degrees' },
-  { key: 'showNakshatra',    label: 'nakshatra' },
-  { key: 'showCharaKaraka',  label: 'karaka' },
->>>>>>> 66a30bc (feat: UI modes (Simple/Research/Debug) + settings restructure, v1.25)
 ];
 
 const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showTransitPlanets', label: 'transit' },
-  { key: 'showOuterPlanets',   label: 'outer planets' },
-  { key: 'showSpecialLagnas',  label: 'special lagnas' },
-  { key: 'showPanchang',       label: 'panchang' },
+  { key: 'showOuterPlanets', label: 'outer planets' },
+  { key: 'showSpecialLagnas', label: 'special lagnas' },
+  { key: 'showPanchang', label: 'panchang' },
 ];
 
-const CORE_DASHAS        = DASHA_REGISTRY.filter(d => d.group === 'Core');
+const CORE_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Core');
 const EXPERIMENTAL_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Experimental');
-const PLACEHOLDER_DASHAS  = DASHA_REGISTRY.filter(d => d.group === 'Other systems');
+const PLACEHOLDER_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Other systems');
 
 function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void }) {
   return (
@@ -81,9 +76,9 @@ export default function SettingsPanel(props: Props) {
     dashaSettings, onUpdateDashaSettings,
   } = props;
 
-  const [displayOpen,  setDisplayOpen]  = useState(true);
+  const [displayOpen, setDisplayOpen] = useState(true);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const [aboutOpen,    setAboutOpen]    = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [selectedChartStyle, setSelectedChartStyle] = useState<'north' | 'south'>(
     chartDisplaySettings.chartStyle ?? 'north'
   );
