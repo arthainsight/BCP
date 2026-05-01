@@ -97,7 +97,8 @@ export function buildBhinnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAsh
     return {
       planet: planetName,
       houses,
-total: houses.reduce<number>((sum, value) => sum + value, 0),    };
+      total: houses.reduce<number>((sum, value) => sum + value, 0),
+    };
   });
 }
 
@@ -132,6 +133,9 @@ export function buildAshtakavarga(chart: AshtakavargaChartLike): AshtakavargaRes
   return { bav, sav };
 }
 
-export function getAshtakavargaOverlay(chart: AshtakavargaChartLike): AshtakavargaOverlayCell[] {
-  return buildAshtakavarga(chart).sav.overlay;
+export function getAshtakavargaOverlay(_chart: AshtakavargaChartLike): AshtakavargaOverlayCell[] {
+  // Hotfix: AV overlay was being forced onto the chart without any Settings toggle.
+  // Keep the AV calculation helpers intact, but do not render AV markers until a proper
+  // explicit showAshtakavarga setting is wired through the UI.
+  return [];
 }
