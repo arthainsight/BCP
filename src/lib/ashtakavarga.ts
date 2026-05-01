@@ -97,8 +97,7 @@ export function buildBhinnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAsh
     return {
       planet: planetName,
       houses,
-      total: houses.reduce((sum, value) => sum + value, 0),
-    };
+total: houses.reduce<number>((sum, value) => sum + value, 0),    };
   });
 }
 
