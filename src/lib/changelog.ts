@@ -1,5 +1,13 @@
 export const CHANGELOG = [
   {
+    version: 'v1.36',
+    changes: [
+      'BNN Pro: ordered trinal chain engine (Fire / Earth / Air / Water circuits)',
+      'Degree sequence matters — Venus → Moon and Moon → Venus carry distinct meanings',
+      'Chain activation model: dasha planets and transits (sign conjunction + 7th aspect)',
+    ],
+  },
+  {
     version: 'v1.35',
     changes: [
       'Added Graha Drishti (planetary aspects)',

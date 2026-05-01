@@ -89,7 +89,7 @@ export default function ChartSection({
 
   const yearHouse = showBcpHighlights ? bcp.activeYearHouse : 0;
   const monthHouse = showBcpHighlights ? bcp.activeMonthHouse : 0;
-  const ashtakavargaOverlay = getAshtakavargaOverlay(chart);
+  const ashtakavargaOverlay = chartDisplaySettings.showAshtakavarga ? getAshtakavargaOverlay(chart) : [];
 
   const tabClass = (id: 'chart' | 'varga' | 'drishti') =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;

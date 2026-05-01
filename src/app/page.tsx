@@ -19,7 +19,7 @@ import { buildReportMarkdown } from '@/lib/exportReport';
 import FileActions, { ChartSnapshot } from '@/components/FileActions';
 import BcpSummary from '@/components/BcpSummary';
 import BcpManualOverride from '@/components/BcpManualOverride';
-import BnnAlphaPanel from '@/components/BnnAlphaPanel';
+import BnnProPanel from '@/components/BnnProPanel';
 
 function ModeSwitcher({ mode, onChange, compact }: { mode: UiMode; onChange: (m: UiMode) => void; compact?: boolean }) {
   const modes: { id: UiMode; short: string; long: string }[] = [
@@ -841,8 +841,8 @@ export default function Home() {
             )}
             {desktopTab === 'bnn' && (
               chartData
-                ? <BnnAlphaPanel planets={chartData.planets} ascendant={chartData.ascendant} />
-                : <EmptyState message="Calculate a chart to see BNN Alpha analysis" />
+                ? <BnnProPanel chart={chartData} transitPlanets={transitPlanets} />
+                : <EmptyState message="Calculate a chart to see BNN Pro analysis" />
             )}
             {desktopTab === 'settings' && (
               <SettingsPanel {...settingsProps} />
@@ -935,8 +935,8 @@ export default function Home() {
         {activeTab === 'bnn' && (
           <Panel>
             {chartData
-              ? <BnnAlphaPanel planets={chartData.planets} ascendant={chartData.ascendant} />
-              : <EmptyState message="Calculate a chart in Data to see BNN Alpha analysis" />
+              ? <BnnProPanel chart={chartData} transitPlanets={transitPlanets} />
+              : <EmptyState message="Calculate a chart in Data to see BNN Pro analysis" />
             }
           </Panel>
         )}

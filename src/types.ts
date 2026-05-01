@@ -104,6 +104,7 @@ export interface ChartDisplaySettings {
   showGrahaDrishti: boolean;
   showRashiDrishti: boolean;
   showBnnAlpha: boolean;
+  showAshtakavarga: boolean;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -123,6 +124,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showGrahaDrishti: false,
   showRashiDrishti: false,
   showBnnAlpha: false,
+  showAshtakavarga: false,
 };
 
 export interface CalculationSettings {
