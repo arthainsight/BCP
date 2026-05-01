@@ -1,5 +1,25 @@
 export const CHANGELOG = [
   {
+    version: 'v1.38',
+    changes: [
+      'BNN v2: planetary chain engine (depth-2 and depth-3 ordered chains)',
+      'Multi-factor chain scoring: conjunction +10, trine +5, Jupiter/Saturn presence, Ketu/Rahu modifiers',
+      'Signal filtering: top-5–7 findings with guaranteed Saturn / Jupiter / Moon coverage',
+      'Structured output: Key Patterns, Support Factors, Risk Factors (Ketu / Ra-Mo)',
+      'Rahu chains flagged as unstable in UI',
+    ],
+  },
+  {
+    version: 'v1.37',
+    changes: [
+      'BNN Relationship Engine: graha-to-graha analysis (conjunction, 2nd, 5th, 7th, 9th, 12th)',
+      'Topic-based readings: Career, Marriage, Education, Wealth, Children, Spirituality, Health, General',
+      'Anchor Graha selector with Auto (topic anchors) or specific graha',
+      'Confidence scoring (high/medium/low) and strength scoring per finding',
+      'Full relation map table (collapsible)',
+    ],
+  },
+  {
     version: 'v1.36',
     changes: [
       'BNN Pro: ordered trinal chain engine (Fire / Earth / Air / Water circuits)',
