@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# bhrigu.code
 
-## Getting Started
+A fast, experimental Jyotish toolkit focused on **Bhrigu Chakra Paddhati (BCP)** and practical chart analysis.
 
-First, run the development server:
+Built for exploration — not dogma.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## What this is
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**bhrigu.code** is a browser-based astrology tool that combines:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+* BCP (Bhrigu Chakra Paddhati)
+* Vimśottarī dasha
+* Graha & Rāśi dṛṣṭi
+* Ashtakavarga overlays
+* Nakshatra-based analysis
+* Divisional chart matrix (D1 → D60)
+* Research modules (BNN alpha)
 
-## Learn More
+The goal is simple:
 
-To learn more about Next.js, take a look at the following resources:
+> Make chart reading faster, clearer, and more systematic.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Core ideas
 
-## Deploy on Vercel
+* **Chart first, theory second**
+* **Toggle everything**
+* **See patterns, not just data**
+* **Keep it practical**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This is not meant to replace traditional study —
+it’s meant to **accelerate it**.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Features
+
+### Chart
+
+* North & South Indian styles
+* BCP year/month highlighting
+* Special lagnas
+* Ashtakavarga overlay
+
+### Analysis
+
+* Graha dṛṣṭi (planetary aspects)
+* Rāśi dṛṣṭi (Jaimini)
+* Chara karakas
+
+### Dasha
+
+* BCP engine
+* Vimśottarī
+* Extensible dasha system (work in progress)
+
+### Research tools
+
+* BNN alpha (pattern-based rule cards)
+* Varga matrix (D1–D60 overview)
+
+---
+
+## Philosophy
+
+Most astrology tools try to be:
+
+* either **too traditional**
+* or **too simplified**
+
+This project sits in between:
+
+> Structured enough to be useful
+> Open enough to experiment
+
+---
+
+## Status
+
+Actively developed.
+Expect bugs, changes, and unfinished ideas.
+
+---
+
+## Tech
+
+* Next.js + TypeScript
+* Runs fully in browser
+* Local storage for saved charts
+
+---
+
+## Disclaimer
+
+This is a research tool.
+Use your own judgement.
