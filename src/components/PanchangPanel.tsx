@@ -8,6 +8,7 @@ interface Props {
   birthDatetime: string;
   utcOffsetHours: number;
   ayanamsaName: string;
+  nakshatraAdjust?: number;
 }
 
 function Row({ label, value }: { label: string; value: string | null }) {
@@ -49,7 +50,7 @@ function renderRows(p: PanchangResult) {
   );
 }
 
-export default function PanchangPanel({ chart, birthDatetime, utcOffsetHours, ayanamsaName }: Props) {
+export default function PanchangPanel({ chart, birthDatetime, utcOffsetHours, ayanamsaName, nakshatraAdjust = 0 }: Props) {
   if (!chart) {
     return (
       <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">
@@ -58,7 +59,7 @@ export default function PanchangPanel({ chart, birthDatetime, utcOffsetHours, ay
     );
   }
 
-  const p = calculatePanchang(chart, birthDatetime, utcOffsetHours, ayanamsaName);
+  const p = calculatePanchang(chart, birthDatetime, utcOffsetHours, ayanamsaName, nakshatraAdjust);
 
   return (
     <div className="space-y-4">

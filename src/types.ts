@@ -31,6 +31,7 @@ export interface PlanetData {
 export interface DebugInfo {
   julianDay: number;
   ayanamsa: number;
+  siderealAyanamsa?: number;
   utcOffset: number;
   ascendantDegree: number;
   ascendantSign: number;
@@ -100,6 +101,9 @@ export interface ChartDisplaySettings {
   showOuterPlanets: boolean;
   showSpecialLagnas: boolean;
   showPanchang: boolean;
+  showGrahaDrishti: boolean;
+  showRashiDrishti: boolean;
+  showBnnAlpha: boolean;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -116,16 +120,21 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showOuterPlanets: false,
   showSpecialLagnas: true,
   showPanchang: false,
+  showGrahaDrishti: false,
+  showRashiDrishti: false,
+  showBnnAlpha: false,
 };
 
 export interface CalculationSettings {
   ayanamsa: string;
   nodeMode: string;
+  nakshatraMode: 'sidereal' | 'tropical';
 }
 
 export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   ayanamsa: 'lahiri',
   nodeMode: 'mean',
+  nakshatraMode: 'sidereal',
 };
 
 export interface CharaOptions {

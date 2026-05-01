@@ -4,7 +4,7 @@ import { PlanetData, SpecialLagna } from '@/types';
 import type { AshtakavargaOverlayCell } from '@/lib/ashtakavarga';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
-const SPECIAL_LAGNA_COLOR = '#a855f7';
+const SPECIAL_LAGNA_COLOR = '#d97706';
 const TRANSIT_COLOR = '#f43f5e';
 const ASHTAKAVARGA_COLOR = '#06b6d4';
 
@@ -25,6 +25,7 @@ interface Props {
   showOuterPlanets?: boolean;
   showSpecialLagnas?: boolean;
   karakaByPlanet?: Record<string, string>;
+  nakshatraAdjust?: number;
 }
 
 const SIGN_NAMES = ['', 'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
@@ -76,6 +77,7 @@ function getPlanetLabel(
   showNakshatra: boolean,
   showCharaKaraka: boolean,
   karakaByPlanet: Record<string, string>,
+  nakshatraAdjust: number,
 ): string {
   const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
   if (isTransit) return code;
@@ -86,7 +88,7 @@ function getPlanetLabel(
     const karaka = karakaByPlanet[planet.name];
     if (karaka) parts.push(karaka);
   }
-  if (showNakshatra) parts.push(getNakAbbr(planet.longitude));
+  if (showNakshatra) parts.push(getNakAbbr(((planet.longitude + nakshatraAdjust) % 360 + 360) % 360));
   return parts.join(' ');
 }
 
@@ -107,6 +109,7 @@ export default function SouthIndianChart({
   showOuterPlanets = false,
   showSpecialLagnas = false,
   karakaByPlanet = {},
+  nakshatraAdjust = 0,
 }: Props) {
   type MergedPlanet = PlanetData & { isTransit: boolean };
   const bySign: Record<number, MergedPlanet[]> = {};
@@ -183,7 +186,7 @@ export default function SouthIndianChart({
                     className="truncate"
                     style={p.isTransit ? { color: TRANSIT_COLOR } : undefined}
                   >
-                    {getPlanetLabel(p, p.isTransit, showDegrees, showNakshatra, showCharaKaraka, karakaByPlanet)}
+                    {getPlanetLabel(p, p.isTransit, showDegrees, showNakshatra, showCharaKaraka, karakaByPlanet, nakshatraAdjust)}
                   </span>
                 ))}
                 {specialHere.map((sl, index) => (
@@ -201,14 +204,20 @@ export default function SouthIndianChart({
         })}
       </div>
 
-      <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono flex-wrap">
-        <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ Year</span>
-        <span className="text-emerald-700 dark:text-green-400 font-semibold">■ Month</span>
-        <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>
-        {showTransitPlanets && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
-        {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
-        {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV Ashtakavarga</span>}
-      </div>
+      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || ashtakavargaOverlay.length > 0) && (
+        <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono flex-wrap">
+          {(activeYearHouse > 0 || activeMonthHouse > 0) && (
+            <>
+              <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ Year</span>
+              <span className="text-emerald-700 dark:text-green-400 font-semibold">■ Month</span>
+              <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>
+            </>
+          )}
+          {showTransitPlanets && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
+          {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
+          {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV Ashtakavarga</span>}
+        </div>
+      )}
     </div>
   );
 }

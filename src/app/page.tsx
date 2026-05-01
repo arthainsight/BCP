@@ -17,6 +17,9 @@ import PanchangPanel from '@/components/PanchangPanel';
 import CalculationDebugPanel from '@/components/CalculationDebugPanel';
 import { buildReportMarkdown } from '@/lib/exportReport';
 import FileActions, { ChartSnapshot } from '@/components/FileActions';
+import BcpSummary from '@/components/BcpSummary';
+import BcpManualOverride from '@/components/BcpManualOverride';
+import BnnAlphaPanel from '@/components/BnnAlphaPanel';
 
 function ModeSwitcher({ mode, onChange, compact }: { mode: UiMode; onChange: (m: UiMode) => void; compact?: boolean }) {
   const modes: { id: UiMode; short: string; long: string }[] = [
@@ -78,7 +81,7 @@ function computeManualBcp(completedAge: number, month: number): BcpResult {
   };
 }
 
-const DESKTOP_TABS = ['data', 'grahas', 'dasha', 'settings'] as const;
+const DESKTOP_TABS = ['data', 'grahas', 'dasha', 'bnn', 'settings'] as const;
 type DesktopTab = (typeof DESKTOP_TABS)[number];
 
 type CalculationOptions = {
@@ -124,6 +127,24 @@ function Panel({ children }: { children: React.ReactNode }) {
   return (
     <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
       {children}
+    </div>
+  );
+}
+
+const AYANAMSA_LABELS: Record<string, string> = {
+  tropical: 'Tropical', lahiri: 'Lahiri', raman: 'Raman', krishnamurti: 'KP',
+};
+
+function CalcSummaryBar({ ayanamsa, nodeMode, ianaTimezone }: {
+  ayanamsa: string;
+  nodeMode: string;
+  ianaTimezone?: string;
+}) {
+  return (
+    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
+      <span>{AYANAMSA_LABELS[ayanamsa] ?? ayanamsa} ayanamsa</span>
+      <span>{nodeMode === 'true' ? 'true node' : 'mean node'}</span>
+      {ianaTimezone && <span>{ianaTimezone}</span>}
     </div>
   );
 }
@@ -214,6 +235,15 @@ export default function Home() {
     charaKarakas.forEach((k) => { map[k.planet] = k.karaka; });
     return map;
   }, [charaKarakas]);
+
+  // Nakshatra longitude adjustment: converts stored planet longitude to effective nakshatra longitude.
+  // Formula: tropicalLon = lon + mainAyanamsa; siderealLon (Lahiri) = tropicalLon - siderealAyanamsa
+  const nakshatraAdjust = useMemo(() => {
+    const mainAyanamsa = chartData?.debug?.ayanamsa ?? 0;
+    const siderealAyanamsa = chartData?.debug?.siderealAyanamsa ?? mainAyanamsa;
+    if (calculationSettings.nakshatraMode === 'tropical') return mainAyanamsa;
+    return mainAyanamsa - siderealAyanamsa;
+  }, [chartData?.debug, calculationSettings.nakshatraMode]);
 
   useEffect(() => {
     if (useManualBcpMode || !bcpResult) return;
@@ -616,6 +646,7 @@ export default function Home() {
     onTransitDatetimeChange: setTransitDatetime,
     onCalculateTransit: handleCalculateTransit,
     transitLoading,
+    nakshatraAdjust,
   };
 
   const dataProps = {
@@ -629,11 +660,14 @@ export default function Home() {
     onGeocode: handleGeocode,
     onSelectGeo: handleSelectGeo,
     onCalculate: handleCalculate,
+    loading, error, canCalculate,
+  };
+
+  const bcpManualProps = {
     useManualBcpMode, onUseManualBcpModeChange: setUseManualBcpMode,
     manualBcpAge, onManualBcpAgeChange: setManualBcpAge,
     manualBcpMonth, onManualBcpMonthChange: setManualBcpMonth,
     manualBcpResult,
-    loading, error, canCalculate,
   };
 
   const settingsProps = {
@@ -716,12 +750,30 @@ export default function Home() {
 
       {/* ── DESKTOP: 2-column grid ────────────────────────────────────── */}
       <div className="hidden lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] gap-4 items-start p-4">
-        {/* Left: Chart + optional Panchang */}
+        {/* Left: Chart + optional BCP summary + optional Panchang */}
         <div className="space-y-3">
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-            <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
+            {uiMode !== 'simple' && (
+              <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
+            )}
             <ChartSection {...chartSectionProps} />
+            {chartData && (
+              <CalcSummaryBar
+                ayanamsa={calculationSettings.ayanamsa}
+                nodeMode={calculationSettings.nodeMode}
+                ianaTimezone={ianaTimezone || undefined}
+              />
+            )}
           </div>
+          {uiMode === 'simple' && effectiveBcpResult && chartData && (
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
+              <BcpSummary
+                bcp={effectiveBcpResult}
+                planets={chartData.planets}
+                ascSign={chartData.ascendant.sign}
+              />
+            </div>
+          )}
           {chartDisplaySettings.showPanchang && chartData && (
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
               <PanchangPanel
@@ -729,6 +781,7 @@ export default function Home() {
                 birthDatetime={birthDatetime}
                 utcOffsetHours={effectiveTzOffset ?? 0}
                 ayanamsaName={calculationSettings.ayanamsa}
+                nakshatraAdjust={nakshatraAdjust}
               />
             </div>
           )}
@@ -759,7 +812,7 @@ export default function Home() {
             {desktopTab === 'grahas' && (
               <>
                 {chartData
-                  ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} />
+                  ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} />
                   : <EmptyState message="Calculate a chart to see graha positions" />
                 }
                 {uiMode !== 'simple' && chartData?.debug && (
@@ -773,15 +826,23 @@ export default function Home() {
             )}
             {desktopTab === 'dasha' && (
               effectiveBcpResult && chartData
-                ? <DashaPanel
-                    bcp={effectiveBcpResult}
-                    planets={chartData.planets}
-                    ascendant={chartData.ascendant}
-                    birthDatetime={birthDatetime}
-                    dashaSettings={dashaSettings}
-                    collapsible={uiMode !== 'simple'}
-                  />
+                ? <div className="space-y-4">
+                    <BcpManualOverride {...bcpManualProps} />
+                    <DashaPanel
+                      bcp={effectiveBcpResult}
+                      planets={chartData.planets}
+                      ascendant={chartData.ascendant}
+                      birthDatetime={birthDatetime}
+                      dashaSettings={dashaSettings}
+                      collapsible={uiMode !== 'simple'}
+                    />
+                  </div>
                 : <EmptyState message="Calculate a chart to see BCP dasha analysis" />
+            )}
+            {desktopTab === 'bnn' && (
+              chartData
+                ? <BnnAlphaPanel planets={chartData.planets} ascendant={chartData.ascendant} />
+                : <EmptyState message="Calculate a chart to see BNN Alpha analysis" />
             )}
             {desktopTab === 'settings' && (
               <SettingsPanel {...settingsProps} />
@@ -795,9 +856,27 @@ export default function Home() {
         {activeTab === 'chart' && (
           <div className="space-y-3">
             <Panel>
-              <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
+              {uiMode !== 'simple' && (
+                <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
+              )}
               <ChartSection {...chartSectionProps} />
+              {chartData && (
+                <CalcSummaryBar
+                  ayanamsa={calculationSettings.ayanamsa}
+                  nodeMode={calculationSettings.nodeMode}
+                  ianaTimezone={ianaTimezone || undefined}
+                />
+              )}
             </Panel>
+            {uiMode === 'simple' && effectiveBcpResult && chartData && (
+              <Panel>
+                <BcpSummary
+                  bcp={effectiveBcpResult}
+                  planets={chartData.planets}
+                  ascSign={chartData.ascendant.sign}
+                />
+              </Panel>
+            )}
             {chartDisplaySettings.showPanchang && chartData && (
               <Panel>
                 <PanchangPanel
@@ -805,6 +884,7 @@ export default function Home() {
                   birthDatetime={birthDatetime}
                   utcOffsetHours={effectiveTzOffset ?? 0}
                   ayanamsaName={calculationSettings.ayanamsa}
+                  nakshatraAdjust={nakshatraAdjust}
                 />
               </Panel>
             )}
@@ -820,7 +900,7 @@ export default function Home() {
         {activeTab === 'grahas' && (
           <Panel>
             {chartData
-              ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} />
+              ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} />
               : <EmptyState message="Calculate a chart in Data to see graha positions" />
             }
             {uiMode !== 'simple' && chartData?.debug && (
@@ -836,15 +916,27 @@ export default function Home() {
         {activeTab === 'dasha' && (
           <Panel>
             {effectiveBcpResult && chartData
-              ? <DashaPanel
-                  bcp={effectiveBcpResult}
-                  planets={chartData.planets}
-                  ascendant={chartData.ascendant}
-                  birthDatetime={birthDatetime}
-                  dashaSettings={dashaSettings}
-                  collapsible={uiMode !== 'simple'}
-                />
+              ? <div className="space-y-4">
+                  <BcpManualOverride {...bcpManualProps} />
+                  <DashaPanel
+                    bcp={effectiveBcpResult}
+                    planets={chartData.planets}
+                    ascendant={chartData.ascendant}
+                    birthDatetime={birthDatetime}
+                    dashaSettings={dashaSettings}
+                    collapsible={uiMode !== 'simple'}
+                  />
+                </div>
               : <EmptyState message="Calculate a chart in Data to see BCP dasha analysis" />
+            }
+          </Panel>
+        )}
+
+        {activeTab === 'bnn' && (
+          <Panel>
+            {chartData
+              ? <BnnAlphaPanel planets={chartData.planets} ascendant={chartData.ascendant} />
+              : <EmptyState message="Calculate a chart in Data to see BNN Alpha analysis" />
             }
           </Panel>
         )}

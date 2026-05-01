@@ -89,9 +89,9 @@ function getD108(longitude: number) {
   return { sign: d108Sign, part };
 }
 
-function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>) {
+function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>, adjLon: (l: number) => number) {
   const graha = GRAHA_NAMES[planet.name] ?? { code: planet.name.slice(0, 2), name: planet.name };
-  const nak = getNakshatra(planet.longitude);
+  const nak = getNakshatra(adjLon(planet.longitude));
   const d108 = getD108(planet.longitude);
   return {
     code: graha.code,
@@ -113,6 +113,7 @@ interface Props {
   showNakshatra?: boolean;
   showNakshatraPada?: boolean;
   showD108?: boolean;
+  nakshatraAdjust?: number;
 }
 
 export default function JyotishGrahaTable({
@@ -123,12 +124,14 @@ export default function JyotishGrahaTable({
   showNakshatra = true,
   showNakshatraPada = true,
   showD108 = false,
+  nakshatraAdjust = 0,
 }: Props) {
-  const ascNak = getNakshatra(chart.ascendant.longitude);
+  const adjLon = (lon: number) => ((lon + nakshatraAdjust) % 360 + 360) % 360;
+  const ascNak = getNakshatra(adjLon(chart.ascendant.longitude));
   const ascD108 = getD108(chart.ascendant.longitude);
 
   const buildSpecialLagnaRow = (sl: SpecialLagna) => {
-    const nak = getNakshatra(sl.longitude);
+    const nak = getNakshatra(adjLon(sl.longitude));
     const d108 = getD108(sl.longitude);
     return {
       code: sl.name,
@@ -159,7 +162,7 @@ export default function JyotishGrahaTable({
       d108: `${SIGN_ABBR[ascD108.sign]} (${ascD108.part})`,
       isSpecial: false,
     },
-    ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet), isSpecial: false })),
+    ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet, adjLon), isSpecial: false })),
     ...(showSpecialLagnas ? (chart.specialLagnas ?? []).map(buildSpecialLagnaRow) : []),
   ];
 

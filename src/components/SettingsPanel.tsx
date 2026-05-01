@@ -21,22 +21,21 @@ const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-
 const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showSigns', label: 'signs' },
   { key: 'showNatalPlanets', label: 'natal' },
-  { key: 'showTransitPlanets', label: 'transit' },
   { key: 'showDegrees', label: 'degrees' },
   { key: 'showNakshatra', label: 'nakshatra' },
-  { key: 'showNakshatraPada', label: 'pada + pada108' },
-  { key: 'showD108', label: 'D108 (experimental)' },
   { key: 'showCharaKaraka', label: 'karaka' },
-  { key: 'showOuterPlanets', label: 'outer planets' },
-  { key: 'showSpecialLagnas', label: 'special lagnas' },
-  { key: 'showPanchang', label: 'panchang' },
 ];
 
 const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showTransitPlanets', label: 'transit' },
+  { key: 'showNakshatraPada', label: 'pada + pada108' },
+  { key: 'showD108', label: 'D108 (experimental)' },
   { key: 'showOuterPlanets', label: 'outer planets' },
   { key: 'showSpecialLagnas', label: 'special lagnas' },
   { key: 'showPanchang', label: 'panchang' },
+  { key: 'showGrahaDrishti', label: 'graha dṛṣṭi' },
+  { key: 'showRashiDrishti', label: 'rāśi dṛṣṭi' },
+  { key: 'showBnnAlpha', label: 'BNN alpha (research)' },
 ];
 
 const CORE_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Core');
@@ -132,6 +131,17 @@ export default function SettingsPanel(props: Props) {
                 <option value="lahiri">Lahiri</option>
                 <option value="raman">Raman</option>
                 <option value="krishnamurti">Krishnamurti / KP</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">nakshatra zodiac</label>
+              <select
+                className={SELECT}
+                value={calculationSettings.nakshatraMode ?? 'sidereal'}
+                onChange={(e) => onUpdateCalculationSettings({ nakshatraMode: e.target.value as 'sidereal' | 'tropical' })}
+              >
+                <option value="sidereal">Sidereal (Lahiri)</option>
+                <option value="tropical">Tropical</option>
               </select>
             </div>
             <div>

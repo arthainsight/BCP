@@ -1,10 +1,12 @@
 import { ChartData, ChartDisplaySettings, DEFAULT_CHART_DISPLAY } from '@/types';
 import JyotishGrahaTable from './JyotishGrahaTable';
+import DrishtiPanel from './DrishtiPanel';
 
 interface Props {
   chart: ChartData;
   karakaByPlanet: Record<string, string>;
   chartDisplaySettings?: ChartDisplaySettings;
+  nakshatraAdjust?: number;
 }
 
 function readChartDisplaySettings(fallback?: ChartDisplaySettings): ChartDisplaySettings {
@@ -18,7 +20,7 @@ function readChartDisplaySettings(fallback?: ChartDisplaySettings): ChartDisplay
   }
 }
 
-export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySettings }: Props) {
+export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySettings, nakshatraAdjust = 0 }: Props) {
   const settings = readChartDisplaySettings(chartDisplaySettings);
 
   return (
@@ -32,7 +34,16 @@ export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySetting
         showNakshatra={settings.showNakshatra}
         showNakshatraPada={settings.showNakshatraPada}
         showD108={settings.showD108}
+        nakshatraAdjust={nakshatraAdjust}
       />
+      {(settings.showGrahaDrishti || settings.showRashiDrishti) && (
+        <DrishtiPanel
+          planets={chart.planets}
+          ascendantSign={chart.ascendant.sign}
+          showGrahaDrishti={settings.showGrahaDrishti}
+          showRashiDrishti={settings.showRashiDrishti}
+        />
+      )}
     </div>
   );
 }

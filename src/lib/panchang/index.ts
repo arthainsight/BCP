@@ -105,6 +105,7 @@ export function calculatePanchang(
   birthDatetime: string,
   utcOffsetHours: number,
   ayanamsaName: string,
+  nakshatraAdjust = 0,
 ): PanchangResult {
   const sun  = chart.planets.find(p => p.name === 'Sun')!;
   const moon = chart.planets.find(p => p.name === 'Moon')!;
@@ -136,9 +137,10 @@ export function calculatePanchang(
 
   // ── Nakshatra ─────────────────────────────────────────────────────────
   const nkWidth      = 360 / 27;
-  const nkIdx        = Math.floor(moon.longitude / nkWidth);
+  const moonNakLon   = ((moon.longitude + nakshatraAdjust) % 360 + 360) % 360;
+  const nkIdx        = Math.floor(moonNakLon / nkWidth);
   const nakshatra    = NAKSHATRA_NAMES[nkIdx] ?? '?';
-  const nkFrac       = (moon.longitude % nkWidth) / nkWidth;
+  const nkFrac       = (moonNakLon % nkWidth) / nkWidth;
   const nakshatraPada = Math.floor(nkFrac * 4) + 1;
 
   // ── Karana ────────────────────────────────────────────────────────────

@@ -96,6 +96,7 @@ export async function calculateChart(
 
   const jd = await sweJulday(utc.year, utc.month, utc.day, utc.totalHours);
   const ayanamsa = await sweGetAyanamsa(jd, ayanamsaMode);
+  const siderealAyanamsa = ayanamsaMode === 'lahiri' ? ayanamsa : await sweGetAyanamsa(jd, 'lahiri');
   const useTropical = ayanamsaMode === 'tropical';
 
   const planets = await calculatePlanetPositions(jd, ayanamsa, useTropical);
@@ -133,6 +134,7 @@ export async function calculateChart(
   const debug: DebugInfo = {
     julianDay: jd,
     ayanamsa,
+    siderealAyanamsa,
     utcOffset: timezoneOffset,
     ascendantDegree: ascDegree,
     ascendantSign: ascSignIndex + 1,

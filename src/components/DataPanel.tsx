@@ -1,6 +1,6 @@
 'use client';
 
-import { GeoResult, BcpResult } from '@/types';
+import { GeoResult } from '@/types';
 
 interface Props {
   birthDatetime: string;
@@ -24,14 +24,6 @@ interface Props {
   onGeocode: () => void;
   onSelectGeo: (idx: number, results: GeoResult[]) => void;
   onCalculate: () => void;
-
-  useManualBcpMode: boolean;
-  onUseManualBcpModeChange: (v: boolean) => void;
-  manualBcpAge: string;
-  onManualBcpAgeChange: (v: string) => void;
-  manualBcpMonth: string;
-  onManualBcpMonthChange: (v: string) => void;
-  manualBcpResult: BcpResult | null;
 
   loading: boolean;
   error: string;
@@ -74,10 +66,6 @@ export default function DataPanel({
   manualLng, onManualLngChange,
   ianaTimezone, autoTzOffset, tzOverride, onTzOverrideChange,
   onGeocode, onSelectGeo, onCalculate,
-  useManualBcpMode, onUseManualBcpModeChange,
-  manualBcpAge, onManualBcpAgeChange,
-  manualBcpMonth, onManualBcpMonthChange,
-  manualBcpResult,
   loading, error, canCalculate,
 }: Props) {
   const shiftTargetDate = (unit: 'month' | 'year', amount: number) => {
@@ -246,47 +234,6 @@ export default function DataPanel({
         {loading ? 'calculating...' : '$ run bcp'}
       </button>
 
-      {/* Manual BCP override */}
-      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; bcp.manual</span>
-          <label className="flex items-center gap-2 text-xs font-mono text-zinc-500 dark:text-zinc-400 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={useManualBcpMode}
-              onChange={(e) => onUseManualBcpModeChange(e.target.checked)}
-              className="w-4 h-4 accent-emerald-600 dark:accent-green-500"
-            />
-            override
-          </label>
-        </div>
-
-        {useManualBcpMode && (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">completed age</label>
-                <input type="number" min="0" value={manualBcpAge} onChange={(e) => onManualBcpAgeChange(e.target.value)} placeholder="41" className={INPUT} />
-              </div>
-              <div>
-                <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">month (1–12)</label>
-                <input type="number" min="1" max="12" value={manualBcpMonth} onChange={(e) => onManualBcpMonthChange(e.target.value)} placeholder="1" className={INPUT} />
-              </div>
-            </div>
-
-            {manualBcpResult && (
-              <div className="bg-amber-50 dark:bg-zinc-800 border border-amber-300 dark:border-amber-700/60 rounded p-2 text-xs font-mono text-amber-700 dark:text-amber-400 space-y-0.5">
-                <div>year: {manualBcpResult.runningYear} · cycle: {manualBcpResult.bcpCycle}</div>
-                <div>
-                  year_house: <strong>H{manualBcpResult.activeYearHouse}</strong>
-                  {' · '}
-                  month_house: <strong>H{manualBcpResult.activeMonthHouse}</strong>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
     </div>
   );
 }

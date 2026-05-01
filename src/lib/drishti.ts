@@ -1,3 +1,5 @@
+import type { PlanetData } from '@/types';
+
 export type DrishtiMode = 'graha' | 'rashi' | 'both';
 
 export type DrishtiChartPlanet = {
@@ -42,10 +44,34 @@ export type DrishtiResult = {
   houses: DrishtiHouseSummary[];
 };
 
+export interface GrahaDrishtiAspect {
+  planet: string;
+  fromHouse: number;
+  toHouse: number;
+  aspectedPlanets: string[];
+}
+
+export interface RashiDrishtiAspect {
+  fromSign: number;
+  fromPlanets: string[];
+  toSign: number;
+  toPlanets: string[];
+}
+
 const SIGN_ABBR = ['', 'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const GRAHA_PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
+
 const GRAHA_CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
+  Sun: 'Su',
+  Moon: 'Mo',
+  Mars: 'Ma',
+  Mercury: 'Me',
+  Jupiter: 'Ju',
+  Venus: 'Ve',
+  Saturn: 'Sa',
+  Rahu: 'Ra',
+  Ketu: 'Ke',
 };
 
 const SPECIAL_GRAHA_ASPECTS: Record<string, number[]> = {
@@ -75,10 +101,6 @@ function relativeHouseToAbsolute(fromHouse: number, relativeHouse: number): numb
   return ((fromHouse + relativeHouse - 2) % 12) + 1;
 }
 
-function relativeSignToAbsolute(fromSign: number, relativeSign: number): number {
-  return normalizeSign(fromSign + relativeSign - 1);
-}
-
 function isMovable(sign: number): boolean {
   return [1, 4, 7, 10].includes(sign);
 }
@@ -104,23 +126,34 @@ function getRashiAspectSigns(sign: number): number[] {
   return [];
 }
 
+function grahaAspectOffsets(planet: string): number[] {
+  return SPECIAL_GRAHA_ASPECTS[planet] ?? [7];
+}
+
+function targetHouse(fromHouse: number, offset: number): number {
+  return relativeHouseToAbsolute(fromHouse, offset);
+}
+
 export function buildGrahaDrishti(chart: DrishtiChartLike): GrahaDrishtiRow[] {
-  return GRAHA_PLANETS.map((name) => chart.planets?.find((planet) => planet.name === name)).filter(Boolean).map((planet) => {
-    const p = planet as DrishtiChartPlanet;
-    const fromHouse = getHouseFromPlanet(chart, p);
-    const fromSign = typeof p.sign === 'number' ? p.sign : null;
-    const relativeAspects = SPECIAL_GRAHA_ASPECTS[p.name] ?? [7];
-    const aspects = typeof fromHouse === 'number'
-      ? relativeAspects.map((relative) => relativeHouseToAbsolute(fromHouse, relative))
-      : [];
-    return {
-      planet: p.name,
-      fromHouse,
-      fromSign,
-      aspects,
-      labels: aspects.map((house, index) => `${relativeAspects[index]}th→H${house}`),
-    };
-  });
+  return GRAHA_PLANETS
+    .map((name) => chart.planets?.find((planet) => planet.name === name))
+    .filter((planet): planet is DrishtiChartPlanet => Boolean(planet))
+    .map((planet) => {
+      const fromHouse = getHouseFromPlanet(chart, planet);
+      const fromSign = typeof planet.sign === 'number' ? planet.sign : null;
+      const relativeAspects = grahaAspectOffsets(planet.name);
+      const aspects = typeof fromHouse === 'number'
+        ? relativeAspects.map((relative) => relativeHouseToAbsolute(fromHouse, relative))
+        : [];
+
+      return {
+        planet: planet.name,
+        fromHouse,
+        fromSign,
+        aspects,
+        labels: aspects.map((house, index) => `${relativeAspects[index]}th→H${house}`),
+      };
+    });
 }
 
 export function buildRashiDrishti(chart: DrishtiChartLike): RashiDrishtiRow[] {
@@ -130,6 +163,7 @@ export function buildRashiDrishti(chart: DrishtiChartLike): RashiDrishtiRow[] {
     const aspectsHouses = aspectsSigns
       .map((targetSign) => getHouseFromSign(targetSign, chart.ascendant?.sign))
       .filter((houseNumber): houseNumber is number => typeof houseNumber === 'number');
+
     return {
       sign,
       signLabel: SIGN_ABBR[sign],
@@ -152,6 +186,7 @@ export function buildDrishti(chart: DrishtiChartLike): DrishtiResult {
     const rashiHits = rashi
       .filter((row) => row.aspectsHouses.includes(house))
       .map((row) => row.signLabel);
+
     return {
       house,
       graha: grahaHits,
@@ -159,5 +194,56 @@ export function buildDrishti(chart: DrishtiChartLike): DrishtiResult {
       total: grahaHits.length + rashiHits.length,
     };
   });
+
   return { graha, rashi, houses };
+}
+
+export function calculateGrahaDrishti(planets: PlanetData[]): GrahaDrishtiAspect[] {
+  const visible = planets.filter((planet) => !OUTER_PLANETS.includes(planet.name));
+  const aspects: GrahaDrishtiAspect[] = [];
+
+  for (const planet of visible) {
+    if (typeof planet.house !== 'number') continue;
+
+    for (const offset of grahaAspectOffsets(planet.name)) {
+      const toHouse = targetHouse(planet.house, offset);
+      const aspectedPlanets = visible
+        .filter((target) => target.name !== planet.name && target.house === toHouse)
+        .map((target) => target.name);
+
+      aspects.push({
+        planet: planet.name,
+        fromHouse: planet.house,
+        toHouse,
+        aspectedPlanets,
+      });
+    }
+  }
+
+  return aspects;
+}
+
+export function calculateRashiDrishti(planets: PlanetData[], ascendantSign: number): RashiDrishtiAspect[] {
+  const visible = planets.filter((planet) => !OUTER_PLANETS.includes(planet.name));
+  const aspects: RashiDrishtiAspect[] = [];
+  const occupiedSigns = new Set<number>([ascendantSign, ...visible.map((planet) => planet.sign)]);
+
+  for (const fromSign of occupiedSigns) {
+    const fromPlanets = visible.filter((planet) => planet.sign === fromSign).map((planet) => planet.name);
+    if (fromSign === ascendantSign) fromPlanets.unshift('Asc');
+
+    for (const toSign of getRashiAspectSigns(fromSign)) {
+      const toPlanets = visible.filter((planet) => planet.sign === toSign).map((planet) => planet.name);
+      if (toSign === ascendantSign) toPlanets.unshift('Asc');
+
+      aspects.push({
+        fromSign,
+        fromPlanets,
+        toSign,
+        toPlanets,
+      });
+    }
+  }
+
+  return aspects;
 }

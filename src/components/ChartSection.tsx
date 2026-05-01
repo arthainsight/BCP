@@ -18,6 +18,7 @@ export interface ChartSectionProps {
   onTransitDatetimeChange: (v: string) => void;
   onCalculateTransit: () => void;
   transitLoading: boolean;
+  nakshatraAdjust?: number;
 }
 
 function isBcpEnabled(): boolean {
@@ -37,6 +38,7 @@ export default function ChartSection({
   transitPlanets,
   chartDisplaySettings,
   karakaByPlanet,
+  nakshatraAdjust = 0,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
@@ -79,8 +81,8 @@ export default function ChartSection({
 
   if (!bcp || !chart) {
     return (
-      <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">
-        Enter birth data in Data tab, then click "$ run bcp"
+      <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs text-center px-4">
+        Enter birth data in the Data tab, then click Calculate to see the chart.
       </div>
     );
   }
@@ -114,7 +116,7 @@ export default function ChartSection({
       {view === 'varga' ? (
         <div className="min-w-0 overflow-x-auto"><VargaMatrix chart={chart} /></div>
       ) : view === 'drishti' ? (
-        <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} /></div>
+        <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} showGrahaDrishti={chartDisplaySettings.showGrahaDrishti ?? true} showRashiDrishti={chartDisplaySettings.showRashiDrishti ?? true} /></div>
       ) : chartStyle === 'south' ? (
         <SouthIndianChart
           activeYearHouse={yearHouse}
@@ -133,6 +135,7 @@ export default function ChartSection({
           showOuterPlanets={chartDisplaySettings.showOuterPlanets}
           showSpecialLagnas={chartDisplaySettings.showSpecialLagnas}
           karakaByPlanet={karakaByPlanet}
+          nakshatraAdjust={nakshatraAdjust}
         />
       ) : (
         <NorthIndianChart
@@ -153,6 +156,7 @@ export default function ChartSection({
           showSpecialLagnas={chartDisplaySettings.showSpecialLagnas}
           showBcpHighlights={showBcpHighlights}
           karakaByPlanet={karakaByPlanet}
+          nakshatraAdjust={nakshatraAdjust}
         />
       )}
     </div>

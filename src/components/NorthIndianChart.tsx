@@ -6,7 +6,7 @@ import { PlanetData, SpecialLagna } from '@/types';
 import type { AshtakavargaOverlayCell } from '@/lib/ashtakavarga';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
-const SPECIAL_LAGNA_COLOR = '#a855f7';
+const SPECIAL_LAGNA_COLOR = '#d97706';
 const TRANSIT_COLOR = '#f43f5e';
 const ASHTAKAVARGA_COLOR = '#06b6d4';
 
@@ -29,6 +29,7 @@ interface Props {
   showOuterPlanets?: boolean;
   showSpecialLagnas?: boolean;
   karakaByPlanet?: Record<string, string>;
+  nakshatraAdjust?: number;
 }
 
 const PLANET_CODES: Record<string, string> = {
@@ -137,6 +138,7 @@ export default function NorthIndianChart({
   showOuterPlanets = false,
   showSpecialLagnas = false,
   karakaByPlanet = {},
+  nakshatraAdjust = 0,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -214,7 +216,7 @@ export default function NorthIndianChart({
                     const k = karakaByPlanet[planet.name];
                     if (k) parts.push(k);
                   }
-                  if (showNakshatra) parts.push(getNakAbbr(planet.longitude));
+                  if (showNakshatra) parts.push(getNakAbbr(((planet.longitude + nakshatraAdjust) % 360 + 360) % 360));
                 }
                 const label = parts.join(' ');
                 const fontSize = planet.isTransit ? '12' : (parts.length > 1 ? '13' : '16');
