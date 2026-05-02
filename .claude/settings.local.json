@@ -19,7 +19,8 @@
       "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\riku_\\\\bhrigu-chakra-app\" -Directory)",
       "Bash(Select-Object -ExpandProperty Name)",
       "Bash(xargs -I {} basename {})",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(xargs wc *)"
     ]
   }
 }

@@ -650,6 +650,8 @@ export default function Home() {
     onCalculateTransit: handleCalculateTransit,
     transitLoading,
     nakshatraAdjust,
+    birthDatetime,
+    targetDate,
   };
 
   const dataProps = {

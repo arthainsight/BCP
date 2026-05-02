@@ -10,6 +10,11 @@ const SPECIAL_LAGNA_COLOR = '#d97706';
 const TRANSIT_COLOR = '#f43f5e';
 const ASHTAKAVARGA_COLOR = '#06b6d4';
 
+const BNN_MAJOR_LIGHT = '#ea580c';
+const BNN_MAJOR_DARK  = '#f97316';
+const BNN_MINOR_LIGHT = '#7c3aed';
+const BNN_MINOR_DARK  = '#a78bfa';
+
 interface Props {
   activeYearHouse: number;
   activeMonthHouse: number;
@@ -30,6 +35,8 @@ interface Props {
   showSpecialLagnas?: boolean;
   karakaByPlanet?: Record<string, string>;
   nakshatraAdjust?: number;
+  bnnMajorHouse?: number;
+  bnnMinorHouse?: number;
 }
 
 const PLANET_CODES: Record<string, string> = {
@@ -79,20 +86,39 @@ const HOUSES: HouseShape[] = [
   { house: 12, points: '500,0 375,125 250,0',                planet: { x: 375, y: 70  }, sign: { x: 375, y: 95  } },
 ];
 
-function getHouseFill(house: number, activeYearHouse: number, activeMonthHouse: number, isDark: boolean, showBcpHighlights: boolean): string {
-  const both  = showBcpHighlights && house === activeYearHouse && house === activeMonthHouse;
-  const year  = showBcpHighlights && house === activeYearHouse;
-  const month = showBcpHighlights && house === activeMonthHouse;
+function getHouseFill(
+  house: number,
+  activeYearHouse: number,
+  activeMonthHouse: number,
+  isDark: boolean,
+  showBcpHighlights: boolean,
+  bnnMajHouse: number,
+  bnnMinHouse: number,
+): string {
+  const bcpBoth  = showBcpHighlights && house === activeYearHouse && house === activeMonthHouse;
+  const bcpYear  = showBcpHighlights && house === activeYearHouse;
+  const bcpMonth = showBcpHighlights && house === activeMonthHouse;
 
   if (isDark) {
-    if (both)  return 'rgba(168, 85, 247, 0.20)';
-    if (year)  return 'rgba(34, 211, 238, 0.18)';
-    if (month) return 'rgba(74, 222, 128, 0.16)';
+    if (bcpBoth)  return 'rgba(168, 85, 247, 0.20)';
+    if (bcpYear)  return 'rgba(34, 211, 238, 0.18)';
+    if (bcpMonth) return 'rgba(74, 222, 128, 0.16)';
+    const bnnMaj = bnnMajHouse > 0 && house === bnnMajHouse;
+    const bnnMin = bnnMinHouse > 0 && house === bnnMinHouse;
+    if (bnnMaj && bnnMin) return 'rgba(249, 115, 22, 0.20)';
+    if (bnnMaj) return 'rgba(249, 115, 22, 0.15)';
+    if (bnnMin) return 'rgba(139, 92, 246, 0.14)';
     return '#18181b';
   }
-  if (both)  return 'rgba(147, 51, 234, 0.14)';
-  if (year)  return 'rgba(0, 160, 220, 0.14)';
-  if (month) return 'rgba(22, 163, 74, 0.12)';
+
+  if (bcpBoth)  return 'rgba(147, 51, 234, 0.14)';
+  if (bcpYear)  return 'rgba(0, 160, 220, 0.14)';
+  if (bcpMonth) return 'rgba(22, 163, 74, 0.12)';
+  const bnnMaj = bnnMajHouse > 0 && house === bnnMajHouse;
+  const bnnMin = bnnMinHouse > 0 && house === bnnMinHouse;
+  if (bnnMaj && bnnMin) return 'rgba(234, 88, 12, 0.16)';
+  if (bnnMaj) return 'rgba(234, 88, 12, 0.11)';
+  if (bnnMin) return 'rgba(124, 58, 237, 0.09)';
   return '#ffffff';
 }
 
@@ -139,6 +165,8 @@ export default function NorthIndianChart({
   showSpecialLagnas = false,
   karakaByPlanet = {},
   nakshatraAdjust = 0,
+  bnnMajorHouse = 0,
+  bnnMinorHouse = 0,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -151,6 +179,10 @@ export default function NorthIndianChart({
   const strokeColor = isDark ? '#71717a' : '#71717a';
   const signFill = isDark ? '#a1a1aa' : '#52525b';
   const hNumFill = isDark ? '#71717a' : '#71717a';
+  const bnnMajColor = isDark ? BNN_MAJOR_DARK : BNN_MAJOR_LIGHT;
+  const bnnMinColor = isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT;
+
+  const hasBnn = bnnMajorHouse > 0 || bnnMinorHouse > 0;
 
   return (
     <div className="w-full max-w-[620px] mx-auto">
@@ -176,14 +208,38 @@ export default function NorthIndianChart({
           const totalHeight = (Math.max(totalItems, 1) - 1) * dynamicLineHeight;
           const startY = item.planet.y - totalHeight / 2;
 
+          const isBnnMaj = bnnMajorHouse > 0 && item.house === bnnMajorHouse;
+          const isBnnMin = bnnMinorHouse > 0 && item.house === bnnMinorHouse;
+          const bnnLabel = (isBnnMaj && isBnnMin) ? 'BNN Maj+Min' : isBnnMaj ? 'BNN Maj' : isBnnMin ? 'BNN Min' : null;
+          const bnnLabelColor = (isBnnMaj && isBnnMin) ? (isDark ? '#e879f9' : '#a21caf') : isBnnMaj ? bnnMajColor : bnnMinColor;
+
           return (
             <g key={item.house}>
               <polygon
                 points={item.points}
-                fill={getHouseFill(item.house, activeYearHouse, activeMonthHouse, isDark, showBcpHighlights)}
+                fill={getHouseFill(item.house, activeYearHouse, activeMonthHouse, isDark, showBcpHighlights, bnnMajorHouse, bnnMinorHouse)}
                 stroke={strokeColor}
                 strokeWidth="2"
               />
+              {/* BNN Major: solid orange border overlay */}
+              {isBnnMaj && (
+                <polygon
+                  points={item.points}
+                  fill="none"
+                  stroke={bnnMajColor}
+                  strokeWidth="3"
+                />
+              )}
+              {/* BNN Minor: dashed violet border overlay */}
+              {isBnnMin && (
+                <polygon
+                  points={item.points}
+                  fill="none"
+                  stroke={bnnMinColor}
+                  strokeWidth="3"
+                  strokeDasharray="8,5"
+                />
+              )}
               {showSigns && (
                 <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize="13" fontWeight="600" fill={signFill}>
                   {SIGN_ABBR[sign]}
@@ -205,6 +261,20 @@ export default function NorthIndianChart({
                   fill={ASHTAKAVARGA_COLOR}
                 >
                   AV {avCell.bindu}
+                </text>
+              )}
+              {/* BNN label — sits below the sign abbreviation */}
+              {bnnLabel && (
+                <text
+                  x={item.sign.x}
+                  y={item.sign.y + (showSigns ? 13 : 0)}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="8"
+                  fontWeight="800"
+                  fill={bnnLabelColor}
+                >
+                  {bnnLabel}
                 </text>
               )}
               {allPlanets.map((planet, index) => {
@@ -256,11 +326,13 @@ export default function NorthIndianChart({
         })}
       </svg>
 
-      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || ashtakavargaOverlay.length > 0) && (
-        <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono flex-wrap">
-          {showBcpHighlights && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ Year</span>}
-          {showBcpHighlights && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ Month</span>}
-          {showBcpHighlights && <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>}
+      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || ashtakavargaOverlay.length > 0 || hasBnn) && (
+        <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
+          {showBcpHighlights && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ BCP Year</span>}
+          {showBcpHighlights && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ BCP Month</span>}
+          {showBcpHighlights && <span className="text-purple-600 dark:text-purple-400 font-semibold">■ BCP Both</span>}
+          {bnnMajorHouse > 0 && <span style={{ color: isDark ? BNN_MAJOR_DARK : BNN_MAJOR_LIGHT }} className="font-semibold">■ BNN Major</span>}
+          {bnnMinorHouse > 0 && <span style={{ color: isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT }} className="font-semibold">╌ BNN Minor</span>}
           {showTransitPlanets && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
           {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV Ashtakavarga</span>}

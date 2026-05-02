@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
 import type { AshtakavargaOverlayCell } from '@/lib/ashtakavarga';
 
@@ -7,6 +9,11 @@ const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
 const TRANSIT_COLOR = '#f43f5e';
 const ASHTAKAVARGA_COLOR = '#06b6d4';
+
+const BNN_MAJOR_LIGHT = '#ea580c';
+const BNN_MAJOR_DARK  = '#f97316';
+const BNN_MINOR_LIGHT = '#7c3aed';
+const BNN_MINOR_DARK  = '#a78bfa';
 
 interface Props {
   activeYearHouse: number;
@@ -26,6 +33,8 @@ interface Props {
   showSpecialLagnas?: boolean;
   karakaByPlanet?: Record<string, string>;
   nakshatraAdjust?: number;
+  bnnMajorHouse?: number;
+  bnnMinorHouse?: number;
 }
 
 const SIGN_NAMES = ['', 'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
@@ -110,7 +119,17 @@ export default function SouthIndianChart({
   showSpecialLagnas = false,
   karakaByPlanet = {},
   nakshatraAdjust = 0,
+  bnnMajorHouse = 0,
+  bnnMinorHouse = 0,
 }: Props) {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isDark = !mounted || resolvedTheme === 'dark';
+
+  const bnnMajColor = isDark ? BNN_MAJOR_DARK : BNN_MAJOR_LIGHT;
+  const bnnMinColor = isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT;
+
   type MergedPlanet = PlanetData & { isTransit: boolean };
   const bySign: Record<number, MergedPlanet[]> = {};
 
@@ -139,6 +158,8 @@ export default function SouthIndianChart({
     });
   }
 
+  const hasBnn = bnnMajorHouse > 0 || bnnMinorHouse > 0;
+
   return (
     <div className="w-full max-w-[520px] mx-auto">
       <div
@@ -158,11 +179,44 @@ export default function SouthIndianChart({
           const specialHere = specialBySign[sign] ?? [];
           const avCell = ashtakavargaOverlay.find((cell) => cell.house === house);
 
+          const isBnnMaj = bnnMajorHouse > 0 && house === bnnMajorHouse;
+          const isBnnMin = bnnMinorHouse > 0 && house === bnnMinorHouse;
+
+          // BNN background tint — only when BCP is not active on this house
+          const isBcpActive = house === activeYearHouse || house === activeMonthHouse;
+          const bnnBg = !isBcpActive
+            ? (isBnnMaj && isBnnMin)
+              ? isDark ? 'rgba(249,115,22,0.18)' : 'rgba(234,88,12,0.12)'
+              : isBnnMaj
+              ? isDark ? 'rgba(249,115,22,0.14)' : 'rgba(234,88,12,0.09)'
+              : isBnnMin
+              ? isDark ? 'rgba(139,92,246,0.13)' : 'rgba(124,58,237,0.07)'
+              : undefined
+            : undefined;
+
+          const bnnBothLabel = isBnnMaj && isBnnMin;
+
           return (
             <div
               key={sign}
-              className={`w-full h-full min-w-0 min-h-0 overflow-hidden rounded-md border p-1.5 font-mono ${getCellClass(house, activeYearHouse, activeMonthHouse)}`}
+              className={`relative w-full h-full min-w-0 min-h-0 overflow-hidden rounded-md border p-1.5 font-mono ${getCellClass(house, activeYearHouse, activeMonthHouse)}`}
+              style={bnnBg ? { backgroundColor: bnnBg } : undefined}
             >
+              {/* BNN Major: solid orange border overlay */}
+              {isBnnMaj && (
+                <div
+                  className="absolute inset-0 rounded-md pointer-events-none"
+                  style={{ border: `2px solid ${bnnMajColor}`, zIndex: 10 }}
+                />
+              )}
+              {/* BNN Minor: dashed violet border overlay */}
+              {isBnnMin && (
+                <div
+                  className="absolute inset-0 rounded-md pointer-events-none"
+                  style={{ border: `2px dashed ${bnnMinColor}`, zIndex: 11 }}
+                />
+              )}
+
               <div className="flex items-start justify-between gap-1 text-[10px] leading-none text-zinc-500 dark:text-zinc-400">
                 <span>{showSigns ? SIGN_NAMES[sign] : ''}</span>
                 <span className="text-zinc-400 dark:text-zinc-600">H{house}</span>
@@ -198,21 +252,42 @@ export default function SouthIndianChart({
                     {sl.name}
                   </span>
                 ))}
+                {/* BNN labels */}
+                {bnnBothLabel ? (
+                  <span className="truncate text-[8px] leading-tight font-bold" style={{ color: isDark ? '#e879f9' : '#a21caf' }}>
+                    BNN Maj+Min
+                  </span>
+                ) : (
+                  <>
+                    {isBnnMaj && (
+                      <span className="truncate text-[8px] leading-tight font-bold" style={{ color: bnnMajColor }}>
+                        BNN Maj
+                      </span>
+                    )}
+                    {isBnnMin && (
+                      <span className="truncate text-[8px] leading-tight font-bold" style={{ color: bnnMinColor }}>
+                        BNN Min
+                      </span>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           );
         })}
       </div>
 
-      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || ashtakavargaOverlay.length > 0) && (
-        <div className="mt-3 flex justify-center gap-4 text-[13px] font-mono flex-wrap">
+      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || ashtakavargaOverlay.length > 0 || hasBnn) && (
+        <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {(activeYearHouse > 0 || activeMonthHouse > 0) && (
             <>
-              <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ Year</span>
-              <span className="text-emerald-700 dark:text-green-400 font-semibold">■ Month</span>
-              <span className="text-purple-600 dark:text-purple-400 font-semibold">■ Both</span>
+              <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ BCP Year</span>
+              <span className="text-emerald-700 dark:text-green-400 font-semibold">■ BCP Month</span>
+              <span className="text-purple-600 dark:text-purple-400 font-semibold">■ BCP Both</span>
             </>
           )}
+          {bnnMajorHouse > 0 && <span style={{ color: bnnMajColor }} className="font-semibold">■ BNN Major</span>}
+          {bnnMinorHouse > 0 && <span style={{ color: bnnMinColor }} className="font-semibold">╌ BNN Minor</span>}
           {showTransitPlanets && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
           {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV Ashtakavarga</span>}

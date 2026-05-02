@@ -109,6 +109,8 @@ export interface ChartDisplaySettings {
   showBnnJupiterMinor: boolean;
   showBnnEventDetection: boolean;
   showBnnDebug: boolean;
+  showBnnMajorHighlight: boolean;
+  showBnnMinorHighlight: boolean;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -133,6 +135,8 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showBnnJupiterMinor: false,
   showBnnEventDetection: true,
   showBnnDebug: false,
+  showBnnMajorHighlight: true,
+  showBnnMinorHighlight: true,
 };
 
 export interface CalculationSettings {

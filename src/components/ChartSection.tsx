@@ -1,12 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import VargaMatrix from '@/pages/VargaMatrix';
 import DrishtiPanel from '@/components/DrishtiPanel';
 import { getAshtakavargaOverlay } from '@/lib/ashtakavarga';
+import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
+import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
+
+function parseBirthDt(dt: string): Date | null {
+  const m = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
+  if (!m) return null;
+  return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]), parseInt(m[4]), parseInt(m[5]), parseInt(m[6]));
+}
+
+function parseTargetDt(td: string): Date | null {
+  const p = td.split('-');
+  if (p.length !== 3) return null;
+  const [y, mo, d] = p.map(Number);
+  if (isNaN(y) || isNaN(mo) || isNaN(d)) return null;
+  return new Date(y, mo - 1, d, 12, 0, 0);
+}
 
 export interface ChartSectionProps {
   bcp: BcpResult | null;
@@ -19,6 +35,8 @@ export interface ChartSectionProps {
   onCalculateTransit: () => void;
   transitLoading: boolean;
   nakshatraAdjust?: number;
+  birthDatetime?: string;
+  targetDate?: string;
 }
 
 function isBcpEnabled(): boolean {
@@ -39,10 +57,33 @@ export default function ChartSection({
   chartDisplaySettings,
   karakaByPlanet,
   nakshatraAdjust = 0,
+  birthDatetime,
+  targetDate,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
   const [view, setView] = useState<'chart' | 'varga' | 'drishti'>('chart');
+
+  const bnnHouses = useMemo(() => {
+    if (!chart || !birthDatetime || !targetDate) return { major: 0, minor: 0 };
+    const birth = parseBirthDt(birthDatetime);
+    const target = parseTargetDt(targetDate);
+    if (!birth || !target) return { major: 0, minor: 0 };
+    const ageYears = Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
+    if (!natalJupiter) return { major: 0, minor: 0 };
+    const natalJupiterSignIndex = natalJupiter.sign - 1;
+    const natalJupiterDegree = natalJupiter.degree;
+    const planets = chart.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 }));
+    const roundsResult = calculateJupiterianRounds({ natalJupiterSignIndex, natalJupiterDegree, ageYears });
+    const minorResult = calculateMinorProgression({ natalJupiterSignIndex, ageYears, planets });
+    const asc = chart.ascendant.sign;
+    const majorHouse = roundsResult.currentRound
+      ? ((roundsResult.currentRound.activeSignIndex + 1 - asc + 12) % 12) + 1
+      : 0;
+    const minorHouse = ((minorResult.minorSignIndex + 1 - asc + 12) % 12) + 1;
+    return { major: majorHouse, minor: minorHouse };
+  }, [chart, birthDatetime, targetDate]);
 
   useEffect(() => {
     setChartStyle(chartDisplaySettings.chartStyle ?? 'north');
@@ -90,6 +131,8 @@ export default function ChartSection({
   const yearHouse = showBcpHighlights ? bcp.activeYearHouse : 0;
   const monthHouse = showBcpHighlights ? bcp.activeMonthHouse : 0;
   const ashtakavargaOverlay = chartDisplaySettings.showAshtakavarga ? getAshtakavargaOverlay(chart) : [];
+  const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
+  const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
 
   const tabClass = (id: 'chart' | 'varga' | 'drishti') =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
@@ -136,6 +179,8 @@ export default function ChartSection({
           showSpecialLagnas={chartDisplaySettings.showSpecialLagnas}
           karakaByPlanet={karakaByPlanet}
           nakshatraAdjust={nakshatraAdjust}
+          bnnMajorHouse={bnnMajorHouse}
+          bnnMinorHouse={bnnMinorHouse}
         />
       ) : (
         <NorthIndianChart
@@ -157,6 +202,8 @@ export default function ChartSection({
           showBcpHighlights={showBcpHighlights}
           karakaByPlanet={karakaByPlanet}
           nakshatraAdjust={nakshatraAdjust}
+          bnnMajorHouse={bnnMajorHouse}
+          bnnMinorHouse={bnnMinorHouse}
         />
       )}
     </div>

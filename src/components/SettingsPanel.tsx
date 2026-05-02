@@ -24,6 +24,8 @@ const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showDegrees', label: 'degrees' },
   { key: 'showNakshatra', label: 'nakshatra' },
   { key: 'showCharaKaraka', label: 'karaka' },
+  { key: 'showBnnMajorHighlight', label: 'BNN Major' },
+  { key: 'showBnnMinorHighlight', label: 'BNN Minor' },
 ];
 
 const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
