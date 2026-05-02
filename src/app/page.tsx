@@ -694,6 +694,13 @@ export default function Home() {
     targetDate,
     bnnMajorHouseFromParent: effectiveBnnHouses.major,
     bnnMinorHouseFromParent: effectiveBnnHouses.minor,
+    bcpEnabled: dashaSettings.dashas.bcp,
+    useManualBcpMode,
+    onUseManualBcpModeChange: setUseManualBcpMode,
+    manualBcpAge,
+    onManualBcpAgeChange: setManualBcpAge,
+    manualBcpMonth,
+    onManualBcpMonthChange: setManualBcpMonth,
   };
 
   const dataProps = {
@@ -933,6 +940,10 @@ export default function Home() {
                     chart={chartData}
                     bcp={effectiveBcpResult}
                     transitPlanets={transitPlanets}
+                    transitDatetime={transitDatetime}
+                    onTransitDatetimeChange={setTransitDatetime}
+                    onCalculateTransit={handleCalculateTransit}
+                    transitLoading={transitLoading}
                     birthDatetime={birthDatetime}
                     targetDate={targetDate}
                     chartDisplaySettings={chartDisplaySettings}
@@ -1087,6 +1098,10 @@ export default function Home() {
                   chart={chartData}
                   bcp={effectiveBcpResult}
                   transitPlanets={transitPlanets}
+                  transitDatetime={transitDatetime}
+                  onTransitDatetimeChange={setTransitDatetime}
+                  onCalculateTransit={handleCalculateTransit}
+                  transitLoading={transitLoading}
                   birthDatetime={birthDatetime}
                   targetDate={targetDate}
                   chartDisplaySettings={chartDisplaySettings}

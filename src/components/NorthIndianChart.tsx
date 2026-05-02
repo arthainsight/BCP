@@ -37,6 +37,7 @@ interface Props {
   nakshatraAdjust?: number;
   bnnMajorHouse?: number;
   bnnMinorHouse?: number;
+  legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
 }
 
 const PLANET_CODES: Record<string, string> = {
@@ -167,6 +168,7 @@ export default function NorthIndianChart({
   nakshatraAdjust = 0,
   bnnMajorHouse = 0,
   bnnMinorHouse = 0,
+  legendLayers,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -329,12 +331,12 @@ export default function NorthIndianChart({
 
       {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || ashtakavargaOverlay.length > 0 || hasBnn) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
-          {showBcpHighlights && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ BCP Year</span>}
-          {showBcpHighlights && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ BCP Month</span>}
-          {showBcpHighlights && <span className="text-purple-600 dark:text-purple-400 font-semibold">■ BCP Both</span>}
-          {bnnMajorHouse > 0 && <span style={{ color: isDark ? BNN_MAJOR_DARK : BNN_MAJOR_LIGHT }} className="font-semibold">■ BNN Major</span>}
-          {bnnMinorHouse > 0 && <span style={{ color: isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT }} className="font-semibold">╌ BNN Minor</span>}
-          {showTransitPlanets && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
+          {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ BCP Year</span>}
+          {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ BCP Month</span>}
+          {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-purple-600 dark:text-purple-400 font-semibold">■ BCP Both</span>}
+          {bnnMajorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: isDark ? BNN_MAJOR_DARK : BNN_MAJOR_LIGHT }} className="font-semibold">■ BNN Major</span>}
+          {bnnMinorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT }} className="font-semibold">╌ BNN Minor</span>}
+          {showTransitPlanets && legendLayers?.transit !== false && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
           {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV Ashtakavarga</span>}
         </div>

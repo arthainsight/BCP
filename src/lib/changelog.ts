@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.44',
+    changes: [
+      'Transit datetime controls now visible under main chart and in Natal+Transit workspace panel',
+      'BCP age/month manual override controls now appear under the main chart when BCP is enabled',
+      'Legend items are now panel-specific in workspace: BCP legend only in BCP panel, BNN legend only in BNN panel, transit legend only in Natal+Transit panel',
+      'Natal and Natal+Transit workspace panels no longer show BCP legend items',
+    ],
+  },
+  {
     version: 'v1.43',
     changes: [
       'Fixed BNN age override chart syncing — override state lifted to page level, chart highlights update instantly',

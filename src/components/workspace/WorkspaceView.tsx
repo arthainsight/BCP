@@ -7,6 +7,7 @@ import type {
 } from '@/types';
 import NorthIndianChart from '../NorthIndianChart';
 import SouthIndianChart from '../SouthIndianChart';
+import TransitDateControls from '../TransitDateControls';
 import BNNEventDetectionPanel from '../BNNEventDetectionPanel';
 import BcpManualOverride from '../BcpManualOverride';
 import GrahasPanel from '../GrahasPanel';
@@ -113,6 +114,10 @@ export interface WorkspaceViewProps {
   chart: ChartData;
   bcp: BcpResult | null;
   transitPlanets: PlanetData[];
+  transitDatetime: string;
+  onTransitDatetimeChange: (v: string) => void;
+  onCalculateTransit: () => void;
+  transitLoading?: boolean;
   birthDatetime: string;
   targetDate: string;
   chartDisplaySettings: ChartDisplaySettings;
@@ -130,6 +135,10 @@ export default function WorkspaceView({
   chart,
   bcp,
   transitPlanets,
+  transitDatetime,
+  onTransitDatetimeChange,
+  onCalculateTransit,
+  transitLoading = false,
   birthDatetime,
   targetDate,
   chartDisplaySettings,
@@ -183,6 +192,7 @@ export default function WorkspaceView({
     bnnMaj?: number;
     bnnMin?: number;
     showTransit?: boolean;
+    legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
   }) {
     const {
       yearHouse = 0,
@@ -190,6 +200,7 @@ export default function WorkspaceView({
       bnnMaj = 0,
       bnnMin = 0,
       showTransit = false,
+      legendLayers,
     } = opts;
 
     const shared = {
@@ -211,6 +222,7 @@ export default function WorkspaceView({
       bnnMinorHouse: bnnMin,
       transitPlanets: showTransit ? transitPlanets : [],
       showTransitPlanets: showTransit,
+      legendLayers,
     };
 
     return chartStyle === 'south'
@@ -222,17 +234,18 @@ export default function WorkspaceView({
   function renderContent(panel: WorkspacePanel) {
     switch (panel.type) {
       case 'natal':
-        return renderChart({});
+        return renderChart({ legendLayers: { bcp: false, bnn: false, transit: false } });
 
       case 'natal-transit':
         return (
           <div className="space-y-2">
-            {renderChart({ showTransit: transitPlanets.length > 0 })}
-            {transitPlanets.length === 0 && (
-              <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 text-center pt-1">
-                No transit data — calculate transit in the main view.
-              </p>
-            )}
+            {renderChart({ showTransit: transitPlanets.length > 0, legendLayers: { bcp: false, bnn: false, transit: true } })}
+            <TransitDateControls
+              transitDatetime={transitDatetime}
+              onTransitDatetimeChange={onTransitDatetimeChange}
+              onCalculateTransit={onCalculateTransit}
+              transitLoading={transitLoading}
+            />
           </div>
         );
 
@@ -242,6 +255,7 @@ export default function WorkspaceView({
             {renderChart({
               yearHouse: bcp?.activeYearHouse ?? 0,
               monthHouse: bcp?.activeMonthHouse ?? 0,
+              legendLayers: { bcp: true, bnn: false, transit: false },
             })}
             {bcp && (
               <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 space-y-3">
@@ -257,7 +271,7 @@ export default function WorkspaceView({
       case 'bnn':
         return (
           <div className="space-y-4">
-            {renderChart({ bnnMaj: bnnHouses.major, bnnMin: bnnHouses.minor })}
+            {renderChart({ bnnMaj: bnnHouses.major, bnnMin: bnnHouses.minor, legendLayers: { bcp: false, bnn: true, transit: false } })}
             <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3">
               <BNNEventDetectionPanel
                 chart={chart}

@@ -9,6 +9,8 @@ import DrishtiPanel from '@/components/DrishtiPanel';
 import { getAshtakavargaOverlay } from '@/lib/ashtakavarga';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
+import TransitDateControls from './TransitDateControls';
+import BCPAgeControls from './BCPAgeControls';
 
 function parseBirthDt(dt: string): Date | null {
   const m = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
@@ -39,6 +41,13 @@ export interface ChartSectionProps {
   targetDate?: string;
   bnnMajorHouseFromParent?: number;
   bnnMinorHouseFromParent?: number;
+  bcpEnabled?: boolean;
+  useManualBcpMode?: boolean;
+  onUseManualBcpModeChange?: (v: boolean) => void;
+  manualBcpAge?: string;
+  onManualBcpAgeChange?: (v: string) => void;
+  manualBcpMonth?: string;
+  onManualBcpMonthChange?: (v: string) => void;
 }
 
 function isBcpEnabled(): boolean {
@@ -58,11 +67,22 @@ export default function ChartSection({
   transitPlanets,
   chartDisplaySettings,
   karakaByPlanet,
+  transitDatetime,
+  onTransitDatetimeChange,
+  onCalculateTransit,
+  transitLoading = false,
   nakshatraAdjust = 0,
   birthDatetime,
   targetDate,
   bnnMajorHouseFromParent,
   bnnMinorHouseFromParent,
+  bcpEnabled,
+  useManualBcpMode,
+  onUseManualBcpModeChange,
+  manualBcpAge,
+  onManualBcpAgeChange,
+  manualBcpMonth,
+  onManualBcpMonthChange,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
@@ -212,6 +232,29 @@ export default function ChartSection({
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
         />
+      )}
+
+      {view === 'chart' && transitDatetime !== undefined && onTransitDatetimeChange && onCalculateTransit && (
+        <div className="space-y-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
+          <TransitDateControls
+            transitDatetime={transitDatetime}
+            onTransitDatetimeChange={onTransitDatetimeChange}
+            onCalculateTransit={onCalculateTransit}
+            transitLoading={transitLoading}
+          />
+          {bcpEnabled && manualBcpAge !== undefined && onManualBcpAgeChange && manualBcpMonth !== undefined && onManualBcpMonthChange && (
+            <BCPAgeControls
+              useManualBcpMode={useManualBcpMode ?? false}
+              onUseManualBcpModeChange={onUseManualBcpModeChange ?? (() => {})}
+              manualBcpAge={manualBcpAge}
+              onManualBcpAgeChange={onManualBcpAgeChange}
+              manualBcpMonth={manualBcpMonth}
+              onManualBcpMonthChange={onManualBcpMonthChange}
+              activeYearHouse={bcp?.activeYearHouse}
+              activeMonthHouse={bcp?.activeMonthHouse}
+            />
+          )}
+        </div>
       )}
     </div>
   );
