@@ -39,6 +39,8 @@ const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showAshtakavarga', label: 'ashtakavarga (AV)' },
   { key: 'showBnnJupiterianRounds', label: 'BNN Jupiterian Rounds' },
   { key: 'showBnnJupiterMinor', label: 'BNN Jupiter Minor' },
+  { key: 'showBnnEventDetection', label: 'BNN Event Detection' },
+  { key: 'showBnnDebug', label: 'BNN Engine Debug' },
 ];
 
 const CORE_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Core');

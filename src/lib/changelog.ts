@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.40',
+    changes: [
+      'Added BNN Event Detection panel combining Jupiterian Rounds and Minor Progression into interpretable event windows',
+      'Event categories: marriage, career, property, children, father/authority, wealth/family, spirituality, health/pressure, foreign travel, education',
+      'Confidence levels (high/medium/low) based on dual-layer activation scoring',
+      'Moved raw BNN engine output behind Advanced BNN Engine Debug toggle (off by default)',
+    ],
+  },
+  {
     version: 'v1.39',
     changes: [
       'Added BNN Jupiterian Rounds panel with natal Jupiter degree based rounds',
