@@ -3,6 +3,8 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DashaSettings, UiMode, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
+import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
+import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
@@ -194,8 +196,8 @@ export default function Home() {
   const [manualBcpAge, setManualBcpAge] = useState('');
   const [manualBcpMonth, setManualBcpMonth] = useState('');
 
-  // BNN age override (lifted from BNNEventDetectionPanel so chart highlights stay in sync)
-  const [bnnEffectiveAge, setBnnEffectiveAge] = useState<number | undefined>(undefined);
+  // BNN age override — lifted here so chart highlights + event panel stay in sync
+  const [bnnOverrideStr, setBnnOverrideStr] = useState('');
 
   // Active saved chart name (null = no saved chart active)
   const [activeChartName, setActiveChartName] = useState<string | null>(null);
@@ -250,6 +252,41 @@ export default function Home() {
     if (calculationSettings.nakshatraMode === 'tropical') return mainAyanamsa;
     return mainAyanamsa - siderealAyanamsa;
   }, [chartData?.debug, calculationSettings.nakshatraMode]);
+
+  // BNN: effective age (override or auto-computed from birth + target dates)
+  const bnnAutoAge = useMemo(() => {
+    const birth = parseDateTime(birthDatetime);
+    const target = parseTargetDateString(targetDate);
+    if (!birth || !target) return 0;
+    return Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+  }, [birthDatetime, targetDate]);
+
+  const effectiveBnnAge = useMemo(() => {
+    const trimmed = bnnOverrideStr.trim();
+    if (trimmed) {
+      const n = parseFloat(trimmed);
+      if (!isNaN(n) && n >= 0) return n;
+    }
+    return bnnAutoAge;
+  }, [bnnOverrideStr, bnnAutoAge]);
+
+  const effectiveBnnHouses = useMemo(() => {
+    if (!chartData) return { major: 0, minor: 0 };
+    const natalJupiter = chartData.planets.find(p => p.name === 'Jupiter');
+    if (!natalJupiter) return { major: 0, minor: 0 };
+    const natalJupiterSignIndex = natalJupiter.sign - 1;
+    const natalJupiterDegree = natalJupiter.degree;
+    const planets = chartData.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 }));
+    const roundsResult = calculateJupiterianRounds({ natalJupiterSignIndex, natalJupiterDegree, ageYears: effectiveBnnAge });
+    const minorResult = calculateMinorProgression({ natalJupiterSignIndex, ageYears: effectiveBnnAge, planets });
+    const asc = chartData.ascendant.sign;
+    return {
+      major: roundsResult.currentRound
+        ? ((roundsResult.currentRound.activeSignIndex + 1 - asc + 12) % 12) + 1
+        : 0,
+      minor: ((minorResult.minorSignIndex + 1 - asc + 12) % 12) + 1,
+    };
+  }, [chartData, effectiveBnnAge]);
 
   useEffect(() => {
     if (useManualBcpMode || !bcpResult) return;
@@ -655,7 +692,8 @@ export default function Home() {
     nakshatraAdjust,
     birthDatetime,
     targetDate,
-    bnnAgeOverride: bnnEffectiveAge,
+    bnnMajorHouseFromParent: effectiveBnnHouses.major,
+    bnnMinorHouseFromParent: effectiveBnnHouses.minor,
   };
 
   const dataProps = {
@@ -856,7 +894,8 @@ export default function Home() {
                         chart={chartData}
                         birthDatetime={birthDatetime}
                         targetDate={targetDate}
-                        onEffectiveAgeChange={setBnnEffectiveAge}
+                        bnnOverrideStr={bnnOverrideStr}
+                        onBnnOverrideStrChange={setBnnOverrideStr}
                       />
                     )}
                     {chartDisplaySettings.showBnnJupiterianRounds && (
@@ -900,6 +939,11 @@ export default function Home() {
                     karakaByPlanet={karakaByPlanet}
                     nakshatraAdjust={nakshatraAdjust}
                     dashaSettings={dashaSettings}
+                    effectiveBnnHouses={effectiveBnnHouses}
+                    bnnOverrideStr={bnnOverrideStr}
+                    onBnnOverrideStrChange={setBnnOverrideStr}
+                    bcpEnabled={dashaSettings.dashas.bcp}
+                    bcpManualProps={bcpManualProps}
                   />
                 : <EmptyState message="Calculate a chart to use workspace mode" />
             )}
@@ -1000,7 +1044,8 @@ export default function Home() {
                       chart={chartData}
                       birthDatetime={birthDatetime}
                       targetDate={targetDate}
-                      onEffectiveAgeChange={setBnnEffectiveAge}
+                      bnnOverrideStr={bnnOverrideStr}
+                      onBnnOverrideStrChange={setBnnOverrideStr}
                     />
                   )}
                   {chartDisplaySettings.showBnnJupiterianRounds && (
@@ -1048,6 +1093,11 @@ export default function Home() {
                   karakaByPlanet={karakaByPlanet}
                   nakshatraAdjust={nakshatraAdjust}
                   dashaSettings={dashaSettings}
+                  effectiveBnnHouses={effectiveBnnHouses}
+                  bnnOverrideStr={bnnOverrideStr}
+                  onBnnOverrideStrChange={setBnnOverrideStr}
+                  bcpEnabled={dashaSettings.dashas.bcp}
+                  bcpManualProps={bcpManualProps}
                 />
               : <EmptyState message="Calculate a chart in Data to use workspace mode" />
             }

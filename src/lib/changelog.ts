@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.43',
+    changes: [
+      'Fixed BNN age override chart syncing — override state lifted to page level, chart highlights update instantly',
+      'Added BCP age controls below BCP chart in workspace panels',
+      'Fixed retrograde detection — SEFLG_SPEED flag now correctly passed to Swiss Ephemeris (all grahas, not just nodes)',
+      'BNN age override shared across BNN tab and workspace BNN panels',
+    ],
+  },
+  {
     version: 'v1.42',
     changes: [
       'Retrograde planets now show ℞ in chart, Graha Table — Rahu/Ketu always marked retrograde',

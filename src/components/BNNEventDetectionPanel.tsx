@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ChartData } from '@/types';
 import { SIGN_NAMES } from '@/lib/varga/index';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
@@ -152,13 +152,15 @@ interface Props {
   chart: ChartData;
   birthDatetime?: string;
   targetDate?: string;
-  onEffectiveAgeChange?: (age: number) => void;
+  /** Controlled override string — when provided, the local state is ignored */
+  bnnOverrideStr?: string;
+  onBnnOverrideStrChange?: (v: string) => void;
 }
 
 const INPUT =
   'px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 w-24';
 
-export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDate, onEffectiveAgeChange }: Props) {
+export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDate, bnnOverrideStr, onBnnOverrideStrChange }: Props) {
   const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
   const natalJupiterSignIndex = natalJupiter ? natalJupiter.sign - 1 : 0;
   const natalJupiterDegree = natalJupiter ? natalJupiter.degree : 0;
@@ -171,20 +173,20 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
     return computeAgeYears(birth, target);
   }, [birthDatetime, targetDate]);
 
-  const [manualAgeStr, setManualAgeStr] = useState('');
+  // Controlled when parent provides bnnOverrideStr; local state as fallback
+  const [localOverrideStr, setLocalOverrideStr] = useState('');
+  const isControlled = bnnOverrideStr !== undefined;
+  const overrideStr = isControlled ? bnnOverrideStr : localOverrideStr;
+  const setOverrideStr = isControlled ? (onBnnOverrideStrChange ?? (() => {})) : setLocalOverrideStr;
 
   const effectiveAge = useMemo(() => {
-    const trimmed = manualAgeStr.trim();
+    const trimmed = overrideStr.trim();
     if (trimmed) {
       const n = parseFloat(trimmed);
       if (!isNaN(n) && n >= 0) return n;
     }
     return autoAge ?? 0;
-  }, [manualAgeStr, autoAge]);
-
-  useEffect(() => {
-    onEffectiveAgeChange?.(effectiveAge);
-  }, [effectiveAge, onEffectiveAgeChange]);
+  }, [overrideStr, autoAge]);
 
   const adaptedPlanets = useMemo(
     () => chart.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 })),
@@ -275,8 +277,8 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
             min="0"
             max="120"
             step="0.1"
-            value={manualAgeStr}
-            onChange={e => setManualAgeStr(e.target.value)}
+            value={overrideStr}
+            onChange={e => setOverrideStr(e.target.value)}
             placeholder={effectiveAge.toFixed(1)}
             className={INPUT}
           />

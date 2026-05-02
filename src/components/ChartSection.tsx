@@ -37,7 +37,8 @@ export interface ChartSectionProps {
   nakshatraAdjust?: number;
   birthDatetime?: string;
   targetDate?: string;
-  bnnAgeOverride?: number;
+  bnnMajorHouseFromParent?: number;
+  bnnMinorHouseFromParent?: number;
 }
 
 function isBcpEnabled(): boolean {
@@ -60,40 +61,36 @@ export default function ChartSection({
   nakshatraAdjust = 0,
   birthDatetime,
   targetDate,
-  bnnAgeOverride,
+  bnnMajorHouseFromParent,
+  bnnMinorHouseFromParent,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
   const [view, setView] = useState<'chart' | 'varga' | 'drishti'>('chart');
 
   const bnnHouses = useMemo(() => {
-    if (!chart) return { major: 0, minor: 0 };
+    // Use parent-provided houses when available (keeps age override in sync with chart highlights)
+    if (bnnMajorHouseFromParent !== undefined || bnnMinorHouseFromParent !== undefined) {
+      return { major: bnnMajorHouseFromParent ?? 0, minor: bnnMinorHouseFromParent ?? 0 };
+    }
+    if (!chart || !birthDatetime || !targetDate) return { major: 0, minor: 0 };
+    const birth = parseBirthDt(birthDatetime);
+    const target = parseTargetDt(targetDate);
+    if (!birth || !target) return { major: 0, minor: 0 };
+    const ageYears = Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
     const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
     if (!natalJupiter) return { major: 0, minor: 0 };
     const natalJupiterSignIndex = natalJupiter.sign - 1;
     const natalJupiterDegree = natalJupiter.degree;
     const planets = chart.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 }));
-
-    let ageYears: number;
-    if (bnnAgeOverride !== undefined) {
-      ageYears = bnnAgeOverride;
-    } else {
-      if (!birthDatetime || !targetDate) return { major: 0, minor: 0 };
-      const birth = parseBirthDt(birthDatetime);
-      const target = parseTargetDt(targetDate);
-      if (!birth || !target) return { major: 0, minor: 0 };
-      ageYears = Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-    }
-
     const roundsResult = calculateJupiterianRounds({ natalJupiterSignIndex, natalJupiterDegree, ageYears });
     const minorResult = calculateMinorProgression({ natalJupiterSignIndex, ageYears, planets });
     const asc = chart.ascendant.sign;
-    const majorHouse = roundsResult.currentRound
-      ? ((roundsResult.currentRound.activeSignIndex + 1 - asc + 12) % 12) + 1
-      : 0;
-    const minorHouse = ((minorResult.minorSignIndex + 1 - asc + 12) % 12) + 1;
-    return { major: majorHouse, minor: minorHouse };
-  }, [chart, birthDatetime, targetDate, bnnAgeOverride]);
+    return {
+      major: roundsResult.currentRound ? ((roundsResult.currentRound.activeSignIndex + 1 - asc + 12) % 12) + 1 : 0,
+      minor: ((minorResult.minorSignIndex + 1 - asc + 12) % 12) + 1,
+    };
+  }, [chart, birthDatetime, targetDate, bnnMajorHouseFromParent, bnnMinorHouseFromParent]);
 
   useEffect(() => {
     setChartStyle(chartDisplaySettings.chartStyle ?? 'north');

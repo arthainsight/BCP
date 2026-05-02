@@ -67,7 +67,8 @@ export async function sweGetAyanamsa(jd: number, ayanamsa: AyanamsaMode = 'lahir
 }
 
 export async function sweCalcUt(jd: number, planetId: number): Promise<{ longitude: number; speed: number }> {
-  const r = (await getSwe()).calc_ut(jd, planetId, 2); // 2=SEFLG_SWIEPH; [0]=lon, [3]=speed
+  // 258 = SEFLG_SWIEPH(2) | SEFLG_SPEED(256) — speed is only populated when SEFLG_SPEED is set
+  const r = (await getSwe()).calc_ut(jd, planetId, 258);
   return { longitude: r[0], speed: r[3] };
 }
 

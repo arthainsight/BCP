@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type {
   ChartData, BcpResult, PlanetData, ChartDisplaySettings,
   DashaSettings, WorkspacePanel, WorkspacePanelType,
@@ -8,11 +8,10 @@ import type {
 import NorthIndianChart from '../NorthIndianChart';
 import SouthIndianChart from '../SouthIndianChart';
 import BNNEventDetectionPanel from '../BNNEventDetectionPanel';
+import BcpManualOverride from '../BcpManualOverride';
 import GrahasPanel from '../GrahasPanel';
 import DashaPanel from '../DashaPanel';
 import BcpSummary from '../BcpSummary';
-import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
-import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -43,23 +42,6 @@ const DEFAULT_PANELS: WorkspacePanel[] = [
 const VIMSHOTTARI_SETTINGS: DashaSettings = {
   dashas: { bcp: false, vimshottari: true, vds: false },
 };
-
-// ── Date helpers (same as ChartSection) ───────────────────────────────────────
-
-function parseBirthDt(dt: string): Date | null {
-  const m = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
-  if (!m) return null;
-  return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]),
-    parseInt(m[4]), parseInt(m[5]), parseInt(m[6]));
-}
-
-function parseTargetDt(td: string): Date | null {
-  const p = td.split('-');
-  if (p.length !== 3) return null;
-  const [y, mo, d] = p.map(Number);
-  if (isNaN(y) || isNaN(mo) || isNaN(d)) return null;
-  return new Date(y, mo - 1, d, 12, 0, 0);
-}
 
 // ── WorkspacePanelCard ────────────────────────────────────────────────────────
 
@@ -117,6 +99,16 @@ function WorkspacePanelCard({ panel, canRemove, onTypeChange, onRemove, children
 
 // ── Main WorkspaceView ────────────────────────────────────────────────────────
 
+type BcpManualProps = {
+  useManualBcpMode: boolean;
+  onUseManualBcpModeChange: (v: boolean) => void;
+  manualBcpAge: string;
+  onManualBcpAgeChange: (v: string) => void;
+  manualBcpMonth: string;
+  onManualBcpMonthChange: (v: string) => void;
+  manualBcpResult: BcpResult | null;
+};
+
 export interface WorkspaceViewProps {
   chart: ChartData;
   bcp: BcpResult | null;
@@ -127,6 +119,11 @@ export interface WorkspaceViewProps {
   karakaByPlanet: Record<string, string>;
   nakshatraAdjust: number;
   dashaSettings: DashaSettings;
+  effectiveBnnHouses: { major: number; minor: number };
+  bnnOverrideStr: string;
+  onBnnOverrideStrChange: (v: string) => void;
+  bcpEnabled: boolean;
+  bcpManualProps: BcpManualProps;
 }
 
 export default function WorkspaceView({
@@ -138,6 +135,11 @@ export default function WorkspaceView({
   chartDisplaySettings,
   karakaByPlanet,
   nakshatraAdjust,
+  effectiveBnnHouses,
+  bnnOverrideStr,
+  onBnnOverrideStrChange,
+  bcpEnabled,
+  bcpManualProps,
 }: WorkspaceViewProps) {
   // ── Panel state ──
   const [panels, setPanels] = useState<WorkspacePanel[]>(() => {
@@ -155,27 +157,8 @@ export default function WorkspaceView({
     try { localStorage.setItem('workspace_panels', JSON.stringify(panels)); } catch {}
   }, [panels]);
 
-  // ── BNN computation (shared across all bnn panels) ──
-  const bnnHouses = useMemo(() => {
-    const birth = parseBirthDt(birthDatetime);
-    const target = parseTargetDt(targetDate);
-    if (!birth || !target) return { major: 0, minor: 0 };
-    const ageYears = Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-    const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
-    if (!natalJupiter) return { major: 0, minor: 0 };
-    const natalJupiterSignIndex = natalJupiter.sign - 1;
-    const natalJupiterDegree = natalJupiter.degree;
-    const planets = chart.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 }));
-    const roundsResult = calculateJupiterianRounds({ natalJupiterSignIndex, natalJupiterDegree, ageYears });
-    const minorResult = calculateMinorProgression({ natalJupiterSignIndex, ageYears, planets });
-    const asc = chart.ascendant.sign;
-    return {
-      major: roundsResult.currentRound
-        ? ((roundsResult.currentRound.activeSignIndex + 1 - asc + 12) % 12) + 1
-        : 0,
-      minor: ((minorResult.minorSignIndex + 1 - asc + 12) % 12) + 1,
-    };
-  }, [chart, birthDatetime, targetDate]);
+  // bnnHouses come from parent (already includes age override via effectiveBnnHouses)
+  const bnnHouses = effectiveBnnHouses;
 
   // ── Panel management ──
   const addPanel = useCallback(() => {
@@ -261,8 +244,11 @@ export default function WorkspaceView({
               monthHouse: bcp?.activeMonthHouse ?? 0,
             })}
             {bcp && (
-              <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3">
+              <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 space-y-3">
                 <BcpSummary bcp={bcp} planets={chart.planets} ascSign={chart.ascendant.sign} />
+                {bcpEnabled && (
+                  <BcpManualOverride {...bcpManualProps} />
+                )}
               </div>
             )}
           </div>
@@ -277,6 +263,8 @@ export default function WorkspaceView({
                 chart={chart}
                 birthDatetime={birthDatetime}
                 targetDate={targetDate}
+                bnnOverrideStr={bnnOverrideStr}
+                onBnnOverrideStrChange={onBnnOverrideStrChange}
               />
             </div>
           </div>

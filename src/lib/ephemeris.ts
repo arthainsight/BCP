@@ -70,12 +70,13 @@ async function calculatePlanetPositions(jd: number, ayanamsa: number, useTropica
 
 async function addNodes(planets: PlanetData[], jd: number, ayanamsa: number, useTropical: boolean, nodeMode: 'mean' | 'true') {
   const nodeId = nodeMode === 'true' ? SE_TRUE_NODE : SE_MEAN_NODE;
-  const { longitude: rahuTropical } = await sweCalcUt(jd, nodeId);
+  const { longitude: rahuTropical, speed: nodeSpeed } = await sweCalcUt(jd, nodeId);
   const rahuLon = useTropical ? normalize(rahuTropical) : normalize(rahuTropical - ayanamsa);
-  planets.push({ name: "Rahu", longitude: rahuLon, sign: Math.floor(rahuLon / 30) + 1, degree: rahuLon % 30, house: 0, isRetrograde: true });
+  const nodeRetro = nodeSpeed < 0;
+  planets.push({ name: "Rahu", longitude: rahuLon, sign: Math.floor(rahuLon / 30) + 1, degree: rahuLon % 30, house: 0, isRetrograde: nodeRetro });
 
   const ketuLon = normalize(rahuLon + 180);
-  planets.push({ name: "Ketu", longitude: ketuLon, sign: Math.floor(ketuLon / 30) + 1, degree: ketuLon % 30, house: 0, isRetrograde: true });
+  planets.push({ name: "Ketu", longitude: ketuLon, sign: Math.floor(ketuLon / 30) + 1, degree: ketuLon % 30, house: 0, isRetrograde: nodeRetro });
 }
 
 export async function calculateChart(
