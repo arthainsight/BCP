@@ -9,7 +9,7 @@ import NorthIndianChart from '../NorthIndianChart';
 import SouthIndianChart from '../SouthIndianChart';
 import TransitDateControls from '../TransitDateControls';
 import BNNEventDetectionPanel from '../BNNEventDetectionPanel';
-import BcpManualOverride from '../BcpManualOverride';
+import BCPAgeControls from '../BCPAgeControls';
 import GrahasPanel from '../GrahasPanel';
 import DashaPanel from '../DashaPanel';
 import BcpSummary from '../BcpSummary';
@@ -249,24 +249,42 @@ export default function WorkspaceView({
           </div>
         );
 
-      case 'bcp':
+      case 'bcp': {
+        const effectiveWorkspaceBcp =
+          bcpManualProps.useManualBcpMode && bcpManualProps.manualBcpResult
+            ? bcpManualProps.manualBcpResult
+            : bcp;
         return (
           <div className="space-y-4">
             {renderChart({
-              yearHouse: bcp?.activeYearHouse ?? 0,
-              monthHouse: bcp?.activeMonthHouse ?? 0,
+              yearHouse: effectiveWorkspaceBcp?.activeYearHouse ?? 0,
+              monthHouse: effectiveWorkspaceBcp?.activeMonthHouse ?? 0,
               legendLayers: { bcp: true, bnn: false, transit: false },
             })}
             {bcp && (
               <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 space-y-3">
                 <BcpSummary bcp={bcp} planets={chart.planets} ascSign={chart.ascendant.sign} />
                 {bcpEnabled && (
-                  <BcpManualOverride {...bcpManualProps} />
+                  <BCPAgeControls
+                    useManualBcpMode={bcpManualProps.useManualBcpMode}
+                    onUseManualBcpModeChange={bcpManualProps.onUseManualBcpModeChange}
+                    manualBcpAge={bcpManualProps.manualBcpAge}
+                    onManualBcpAgeChange={bcpManualProps.onManualBcpAgeChange}
+                    manualBcpMonth={bcpManualProps.manualBcpMonth}
+                    onManualBcpMonthChange={bcpManualProps.onManualBcpMonthChange}
+                    activeYearHouse={
+                      bcpManualProps.manualBcpResult?.activeYearHouse ?? bcp?.activeYearHouse
+                    }
+                    activeMonthHouse={
+                      bcpManualProps.manualBcpResult?.activeMonthHouse ?? bcp?.activeMonthHouse
+                    }
+                  />
                 )}
               </div>
             )}
           </div>
         );
+      }
 
       case 'bnn':
         return (
