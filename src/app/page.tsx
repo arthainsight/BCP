@@ -23,6 +23,7 @@ import BnnPanel from '@/components/bnn/BnnPanel';
 import BNNJupiterianRoundsPanel from '@/components/BNNJupiterianRoundsPanel';
 import BNNJupiterMinorPanel from '@/components/BNNJupiterMinorPanel';
 import BNNEventDetectionPanel from '@/components/BNNEventDetectionPanel';
+import WorkspaceView from '@/components/workspace/WorkspaceView';
 
 function ModeSwitcher({ mode, onChange, compact }: { mode: UiMode; onChange: (m: UiMode) => void; compact?: boolean }) {
   const modes: { id: UiMode; short: string; long: string }[] = [
@@ -84,8 +85,7 @@ function computeManualBcp(completedAge: number, month: number): BcpResult {
   };
 }
 
-const DESKTOP_TABS = ['data', 'grahas', 'dasha', 'bnn', 'settings'] as const;
-type DesktopTab = (typeof DESKTOP_TABS)[number];
+type DesktopTab = 'data' | 'grahas' | 'dasha' | 'bnn' | 'workspace' | 'settings';
 
 type CalculationOptions = {
   preserveCurrentPanel?: boolean;
@@ -794,12 +794,12 @@ export default function Home() {
 
         {/* Right: tabbed panels */}
         <div className="space-y-3">
-          <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
-            {DESKTOP_TABS.map((tab) => (
+          <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1 overflow-x-auto">
+            {(['data', 'grahas', 'dasha', 'bnn', ...(chartDisplaySettings.showWorkspace ? ['workspace'] : []), 'settings'] as DesktopTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setDesktopTab(tab)}
-                className={`flex-1 py-1.5 text-xs font-mono rounded-md transition-colors ${
+                className={`flex-1 min-w-max py-1.5 text-xs font-mono rounded-md transition-colors ${
                   desktopTab === tab
                     ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm'
                     : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -882,6 +882,21 @@ export default function Home() {
                     )}
                   </div>
                 : <EmptyState message="Calculate a chart to see BNN analysis" />
+            )}
+            {desktopTab === 'workspace' && (
+              chartData && effectiveBcpResult
+                ? <WorkspaceView
+                    chart={chartData}
+                    bcp={effectiveBcpResult}
+                    transitPlanets={transitPlanets}
+                    birthDatetime={birthDatetime}
+                    targetDate={targetDate}
+                    chartDisplaySettings={chartDisplaySettings}
+                    karakaByPlanet={karakaByPlanet}
+                    nakshatraAdjust={nakshatraAdjust}
+                    dashaSettings={dashaSettings}
+                  />
+                : <EmptyState message="Calculate a chart to use workspace mode" />
             )}
             {desktopTab === 'settings' && (
               <SettingsPanel {...settingsProps} />
@@ -1014,6 +1029,25 @@ export default function Home() {
           </Panel>
         )}
 
+        {activeTab === 'workspace' && (
+          <Panel>
+            {chartData && effectiveBcpResult
+              ? <WorkspaceView
+                  chart={chartData}
+                  bcp={effectiveBcpResult}
+                  transitPlanets={transitPlanets}
+                  birthDatetime={birthDatetime}
+                  targetDate={targetDate}
+                  chartDisplaySettings={chartDisplaySettings}
+                  karakaByPlanet={karakaByPlanet}
+                  nakshatraAdjust={nakshatraAdjust}
+                  dashaSettings={dashaSettings}
+                />
+              : <EmptyState message="Calculate a chart in Data to use workspace mode" />
+            }
+          </Panel>
+        )}
+
         {activeTab === 'settings' && (
           <Panel>
             <SettingsPanel {...settingsProps} />
@@ -1023,7 +1057,11 @@ export default function Home() {
 
       {/* Mobile bottom nav */}
       <div className="lg:hidden">
-        <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+        <BottomNav
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          showWorkspace={chartDisplaySettings.showWorkspace}
+        />
       </div>
 
       {/* Footer (desktop only) */}

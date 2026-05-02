@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.41',
+    changes: [
+      'Added multi-chart workspace mode with independent panels for BNN, BCP, Natal+Transit, Vimshottari and Graha Table',
+      'Each workspace panel independently controls which highlights are shown (BNN vs BCP vs none)',
+      'Desktop: 2–3 column responsive grid; mobile: stacked with per-panel collapse',
+      'Add up to 4 panels; panel type changes via dropdown; panel configuration persists across sessions',
+    ],
+  },
+  {
     version: 'v1.40',
     changes: [
       'Added BNN Event Detection panel combining Jupiterian Rounds and Minor Progression into interpretable event windows',

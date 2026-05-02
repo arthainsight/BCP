@@ -87,6 +87,20 @@ export interface CharaKaraka {
 export type ChartStyle = 'north' | 'south';
 export type UiMode = 'simple' | 'research' | 'debug';
 
+export type WorkspacePanelType =
+  | 'natal'
+  | 'natal-transit'
+  | 'bcp'
+  | 'bnn'
+  | 'vimshottari'
+  | 'graha-table';
+
+export type WorkspacePanel = {
+  id: string;
+  title: string;
+  type: WorkspacePanelType;
+};
+
 export interface ChartDisplaySettings {
   chartStyle: ChartStyle;
   showSigns: boolean;
@@ -111,6 +125,7 @@ export interface ChartDisplaySettings {
   showBnnDebug: boolean;
   showBnnMajorHighlight: boolean;
   showBnnMinorHighlight: boolean;
+  showWorkspace: boolean;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -137,6 +152,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showBnnDebug: false,
   showBnnMajorHighlight: true,
   showBnnMinorHighlight: true,
+  showWorkspace: false,
 };
 
 export interface CalculationSettings {

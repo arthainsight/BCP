@@ -29,6 +29,7 @@ const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
 ];
 
 const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
+  { key: 'showWorkspace', label: 'workspace mode' },
   { key: 'showTransitPlanets', label: 'transit' },
   { key: 'showNakshatraPada', label: 'pada + pada108' },
   { key: 'showD108', label: 'D108 (experimental)' },
