@@ -5,51 +5,203 @@ import type { ChartData } from '@/types';
 import { SIGN_NAMES } from '@/lib/varga/index';
 import {
   calculateJupiterianRounds,
-  getHouseFromTemporaryLagna,
+  buildBNNJupiterianActivationString,
 } from '@/lib/bnn/jupiterianRounds';
-import { GRAHA_KARAKAS, GRAHA_FULL_NAMES } from '@/lib/bnn/karakas';
-import type { GrahaKey } from '@/lib/bnn/types';
+import type {
+  BNNJupiterianGrahaActivation,
+  BNNJupiterianActivationResult,
+  ActivationRole,
+} from '@/lib/bnn/jupiterianRounds';
 
-const PLANET_TO_KEY: Record<string, GrahaKey> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me',
-  Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
-};
-
-// BNN Jupiterian-specific Sun karakatwa (not Parashari dasha interpretation)
-const SUN_JR_KARAKATWA = [
-  'Fame / Name / Recognition',
-  'Talent / Brilliance / Specialisation',
-  'Father / Son / Prominent Person',
-  'Large-scale prospects / Ambitious plans',
-  'Government / Political / Administration',
-  'Presiding deity / Religious ceremonies / Family functions',
-  'Chemicals / Designing / Organisational matters',
-];
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function parseBirthDatetime(dt: string): Date | null {
-  const match = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
-  if (!match) return null;
-  const [, dd, mm, yyyy, hh, min, ss] = match;
-  return new Date(
-    parseInt(yyyy), parseInt(mm) - 1, parseInt(dd),
-    parseInt(hh), parseInt(min), parseInt(ss),
-  );
+  const m = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
+  if (!m) return null;
+  return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]), parseInt(m[4]), parseInt(m[5]), parseInt(m[6]));
 }
 
 function parseTargetDate(td: string): Date | null {
-  const parts = td.split('-');
-  if (parts.length !== 3) return null;
-  const year = parseInt(parts[0]);
-  const month = parseInt(parts[1]);
-  const day = parseInt(parts[2]);
-  if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
-  return new Date(year, month - 1, day, 12, 0, 0);
+  const p = td.split('-');
+  if (p.length !== 3) return null;
+  const [y, mo, d] = p.map(Number);
+  if (isNaN(y) || isNaN(mo) || isNaN(d)) return null;
+  return new Date(y, mo - 1, d, 12, 0, 0);
 }
 
 function computeAgeYears(birth: Date, target: Date): number {
-  const diffMs = target.getTime() - birth.getTime();
-  return Math.max(0, diffMs / (365.25 * 24 * 60 * 60 * 1000));
+  return Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
 }
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+const ROLE_LABEL: Record<ActivationRole, string> = {
+  primary: '1st',
+  trine: 'trine',
+  seventh: '7th',
+  dispositor: 'disp.',
+  'support-2-12': '2/12',
+  other: 'other',
+};
+
+const ROLE_CLASS: Record<ActivationRole, string> = {
+  primary:        'bg-emerald-100 dark:bg-green-950/50 text-emerald-700 dark:text-green-400',
+  trine:          'bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400',
+  seventh:        'bg-amber-100 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400',
+  dispositor:     'bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-400',
+  'support-2-12': 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400',
+  other:          'bg-zinc-50 dark:bg-zinc-900 text-zinc-400 dark:text-zinc-600',
+};
+
+function RoleBadge({ role }: { role: ActivationRole }) {
+  return (
+    <span className={`text-[9px] font-mono px-1 py-0.5 rounded ${ROLE_CLASS[role]}`}>
+      {ROLE_LABEL[role]}
+    </span>
+  );
+}
+
+function ActivationCard({ a }: { a: BNNJupiterianGrahaActivation }) {
+  const visibleRoles = a.roles.filter(r => r !== 'other');
+  return (
+    <div className="rounded border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-2 space-y-1.5">
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <span className="font-semibold text-xs font-mono text-zinc-800 dark:text-zinc-200">{a.graha}</span>
+        <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{a.grahaName}</span>
+        <span className="text-[10px] font-mono bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 px-1 rounded">
+          H{a.houseFromTemporaryLagna}
+        </span>
+        <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{a.signName}</span>
+        {a.score > 0 && (
+          <span className="ml-auto text-[10px] font-mono text-emerald-600 dark:text-green-600 tabular-nums">
+            +{a.score}
+          </span>
+        )}
+      </div>
+      {visibleRoles.length > 0 && (
+        <div className="flex gap-1 flex-wrap">
+          {visibleRoles.map(r => <RoleBadge key={r} role={r} />)}
+        </div>
+      )}
+      <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 leading-relaxed">
+        {a.karakatwa.slice(0, 3).join(' · ')}
+        {a.karakatwa.length > 3 && <span className="text-zinc-300 dark:text-zinc-700"> …</span>}
+      </div>
+      <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-500 leading-relaxed">
+        {a.interpretation}
+      </div>
+    </div>
+  );
+}
+
+function ActivationSection({
+  title,
+  grahas,
+  emptyNote,
+  note,
+}: {
+  title: string;
+  grahas: BNNJupiterianGrahaActivation[];
+  emptyNote: string;
+  note?: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+        {title}
+      </div>
+      {grahas.length === 0 ? (
+        <div className="text-[10px] font-mono text-zinc-300 dark:text-zinc-700 italic pl-1">{emptyNote}</div>
+      ) : (
+        <div className="space-y-1.5">
+          {grahas.map(a => <ActivationCard key={a.graha} a={a} />)}
+        </div>
+      )}
+      {note && (
+        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 italic pl-1">{note}</div>
+      )}
+    </div>
+  );
+}
+
+function DispositorSection({ activation }: { activation: BNNJupiterianActivationResult }) {
+  const entry = activation.activations.find(a => a.roles.includes('dispositor'));
+  return (
+    <div className="space-y-1.5">
+      <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+        Dispositor Driver
+      </div>
+      {entry ? (
+        <ActivationCard a={entry} />
+      ) : (
+        <div className="text-[10px] font-mono text-zinc-300 dark:text-zinc-700 italic pl-1">
+          Dispositor ({activation.dispositorGraha}) not found in chart data.
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RankedSummaryTable({ activations }: { activations: BNNJupiterianGrahaActivation[] }) {
+  return (
+    <div className="space-y-1.5">
+      <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+        Ranked Activation Summary
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs font-mono border-collapse min-w-[580px]">
+          <thead>
+            <tr className="border-b border-zinc-200 dark:border-zinc-700">
+              <th className="text-left py-1 pr-2 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal w-6">#</th>
+              <th className="text-left py-1 pr-3 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal">Graha</th>
+              <th className="text-left py-1 pr-2 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal w-8">H</th>
+              <th className="text-left py-1 pr-3 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal">Roles</th>
+              <th className="text-left py-1 pr-3 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal w-10">Score</th>
+              <th className="text-left py-1 pr-3 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal">Karakatwa</th>
+              <th className="text-left py-1 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal">Interpretation</th>
+            </tr>
+          </thead>
+          <tbody>
+            {activations.map((a, idx) => (
+              <tr key={a.graha} className="border-b border-zinc-100 dark:border-zinc-800 align-top">
+                <td className="py-1 pr-2 text-zinc-400 dark:text-zinc-600 tabular-nums">{idx + 1}</td>
+                <td className="py-1 pr-3 text-zinc-700 dark:text-zinc-300">
+                  <span className="font-semibold">{a.graha}</span>
+                  <span className="text-zinc-400 dark:text-zinc-600 ml-1 text-[10px]">{a.grahaName}</span>
+                </td>
+                <td className="py-1 pr-2 text-zinc-500 dark:text-zinc-500 tabular-nums">{a.houseFromTemporaryLagna}</td>
+                <td className="py-1 pr-3">
+                  <div className="flex gap-0.5 flex-wrap">
+                    {a.roles.filter(r => r !== 'other').map(r => <RoleBadge key={r} role={r} />)}
+                    {a.roles.every(r => r === 'other') && (
+                      <span className="text-[9px] font-mono text-zinc-300 dark:text-zinc-700">—</span>
+                    )}
+                  </div>
+                </td>
+                <td className="py-1 pr-3 text-zinc-500 dark:text-zinc-500 tabular-nums">
+                  {a.score > 0 ? `+${a.score}` : '0'}
+                </td>
+                <td className="py-1 pr-3 text-zinc-500 dark:text-zinc-500">
+                  <span className="text-[10px]">{a.karakatwa[0]}</span>
+                  {a.karakatwa.length > 1 && (
+                    <span className="text-zinc-300 dark:text-zinc-700 text-[10px]"> +{a.karakatwa.length - 1}</span>
+                  )}
+                </td>
+                <td className="py-1 text-zinc-400 dark:text-zinc-600 text-[10px] leading-relaxed max-w-[180px]">
+                  {a.interpretation.length > 60
+                    ? a.interpretation.slice(0, 60) + '…'
+                    : a.interpretation}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 interface Props {
   chart: ChartData;
@@ -63,7 +215,7 @@ const INPUT =
 export default function BNNJupiterianRoundsPanel({ chart, birthDatetime, targetDate }: Props) {
   const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
 
-  // Derive sign index and degree (with safe defaults so all hooks run unconditionally)
+  // Safe defaults so all hooks run unconditionally before any early return
   const natalJupiterSignIndex = natalJupiter ? natalJupiter.sign - 1 : 0;
   const natalJupiterDegree = natalJupiter ? natalJupiter.degree : 0;
 
@@ -91,25 +243,15 @@ export default function BNNJupiterianRoundsPanel({ chart, birthDatetime, targetD
     [natalJupiterSignIndex, natalJupiterDegree, effectiveAge],
   );
 
-  const grahaActivations = useMemo(() => {
-    if (!result.currentRound) return [];
-    const { activeSignIndex } = result.currentRound;
-    return chart.planets
-      .filter(p => PLANET_TO_KEY[p.name] !== undefined)
-      .map(p => {
-        const key = PLANET_TO_KEY[p.name];
-        const planetSignIndex = p.sign - 1;
-        const house = getHouseFromTemporaryLagna(activeSignIndex, planetSignIndex);
-        const karakatwa =
-          key === 'Su'
-            ? SUN_JR_KARAKATWA.join('; ')
-            : (GRAHA_KARAKAS[key]?.join(', ') ?? 'Karakatwa mapping pending');
-        return { key, name: GRAHA_FULL_NAMES[key], natalSign: SIGN_NAMES[planetSignIndex], house, karakatwa };
-      })
-      .sort((a, b) => a.house - b.house);
+  const activation = useMemo<BNNJupiterianActivationResult | null>(() => {
+    if (!result.currentRound) return null;
+    return buildBNNJupiterianActivationString({
+      activeSignIndex: result.currentRound.activeSignIndex,
+      planets: chart.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 })),
+    });
   }, [chart.planets, result.currentRound]);
 
-  // Early return after all hooks
+  // All hooks must run before any conditional return
   if (!natalJupiter) {
     return (
       <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 py-4 text-center">
@@ -124,10 +266,9 @@ export default function BNNJupiterianRoundsPanel({ chart, birthDatetime, targetD
 
   return (
     <div className="space-y-5">
-      {/* Title */}
       <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; BNN Jupiterian Rounds</div>
 
-      {/* Natal Jupiter info */}
+      {/* Natal Jupiter */}
       <div className="space-y-1">
         <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
           natal jupiter
@@ -234,60 +375,83 @@ export default function BNNJupiterianRoundsPanel({ chart, birthDatetime, targetD
         </div>
       </div>
 
-      {/* Graha activation table */}
-      {currentRound && grahaActivations.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
-            graha activations from {currentRound.activeSignName} (temp. lagna)
+      {/* ── BNN Jupiterian Activation String ─────────────────────────────────── */}
+      {currentRound && activation && (
+        <div className="space-y-5 border-t border-zinc-200 dark:border-zinc-700 pt-5">
+
+          {/* Section title */}
+          <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">
+            &gt; BNN Jupiterian Activation String
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs font-mono border-collapse">
-              <thead>
-                <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                  <th className="text-left py-1 pr-2 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal">H</th>
-                  <th className="text-left py-1 pr-3 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal">Graha</th>
-                  <th className="text-left py-1 pr-3 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal">Natal sign</th>
-                  <th className="text-left py-1 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600 font-normal">Karakatwa</th>
-                </tr>
-              </thead>
-              <tbody>
-                {grahaActivations.map(g => (
-                  <tr key={g.key} className="border-b border-zinc-100 dark:border-zinc-800 align-top">
-                    <td className="py-1 pr-2 text-zinc-500 dark:text-zinc-500">{g.house}</td>
-                    <td className="py-1 pr-3 text-zinc-700 dark:text-zinc-300">
-                      <span className="font-semibold">{g.key}</span>
-                      <span className="text-zinc-400 dark:text-zinc-600 ml-1">{g.name}</span>
-                    </td>
-                    <td className="py-1 pr-3 text-zinc-600 dark:text-zinc-400">{g.natalSign}</td>
-                    <td className="py-1 text-zinc-500 dark:text-zinc-500 leading-relaxed">
-                      {g.key === 'Su' ? (
-                        <details className="cursor-pointer">
-                          <summary className="text-zinc-500 dark:text-zinc-400 select-none">
-                            Sun karakatwa (BNN JR)
-                          </summary>
-                          <ul className="mt-1 space-y-0.5 text-[10px]">
-                            {SUN_JR_KARAKATWA.map(k => <li key={k}>· {k}</li>)}
-                          </ul>
-                        </details>
-                      ) : (
-                        <span className="text-[10px]">{g.karakatwa}</span>
-                      )}
-                    </td>
-                  </tr>
+
+          {/* Context strip */}
+          <div className="rounded-md border border-zinc-200 dark:border-zinc-700 px-3 py-2">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-mono">
+              <span className="text-zinc-400 dark:text-zinc-600">
+                Active rashi:{' '}
+                <span className="text-emerald-700 dark:text-green-400 font-semibold">{activation.activeSignName}</span>
+              </span>
+              <span className="text-zinc-400 dark:text-zinc-600">
+                Temp. lagna:{' '}
+                <span className="text-emerald-700 dark:text-green-400 font-semibold">{activation.activeSignName}</span>
+              </span>
+              <span className="text-zinc-400 dark:text-zinc-600">
+                Dispositor:{' '}
+                <span className="text-purple-700 dark:text-purple-400 font-semibold">{activation.dispositorGraha}</span>
+              </span>
+              <span className="text-zinc-400 dark:text-zinc-600">
+                Round:{' '}
+                <span className="text-zinc-700 dark:text-zinc-300">{currentRound.roundNumber}</span>
+              </span>
+            </div>
+            {activation.summary.length > 0 && (
+              <div className="mt-2 space-y-0.5">
+                {activation.summary.map((s, i) => (
+                  <div key={i} className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">· {s}</div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            )}
           </div>
+
+          <ActivationSection
+            title="Primary Activation"
+            grahas={activation.primaryActivations}
+            emptyNote="No grahas placed in the active rashi"
+          />
+
+          <ActivationSection
+            title="Trinal Activation 1-5-9"
+            grahas={activation.trineActivations}
+            emptyNote="No grahas in 5th or 9th from temporary lagna"
+          />
+
+          <ActivationSection
+            title="7th Activation"
+            grahas={activation.seventhActivations}
+            emptyNote="No grahas in 7th from temporary lagna"
+          />
+
+          <DispositorSection activation={activation} />
+
+          <ActivationSection
+            title="2/12 Support Axis"
+            grahas={activation.supportAxisActivations}
+            emptyNote="No grahas in 2nd or 12th"
+            note="2/12 is shown as a support axis, not the main activation rule."
+          />
+
+          <RankedSummaryTable activations={activation.activations} />
         </div>
       )}
 
       {/* Explanatory note */}
       <div className="rounded-md border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-3 py-2">
         <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 leading-relaxed">
-          BNN Jupiterian Rounds are calculated from natal Jupiter&apos;s degree within its sign.
-          The active rashi acts as a temporary lagna / reference point for each round.
+          BNN Jupiterian Rounds use natal Jupiter&apos;s degree to establish age-based rounds.
+          The active rashi acts as a temporary lagna / reference point.
+          Primary = grahas in the active rashi. Trinal = 5th/9th. 7th = confrontation axis.
+          Dispositor always shown. 2/12 is a support axis only.
           This is separate from transit Jupiter, BCP, Vimshottari, and Parashari dasha logic.
-          Sun karakatwa reflects the BNN timing layer — not Parashari house significations.
         </p>
       </div>
     </div>

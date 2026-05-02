@@ -106,6 +106,7 @@ export interface ChartDisplaySettings {
   showBnnAlpha: boolean;
   showAshtakavarga: boolean;
   showBnnJupiterianRounds: boolean;
+  showBnnJupiterMinor: boolean;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -127,6 +128,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showBnnAlpha: false,
   showAshtakavarga: false,
   showBnnJupiterianRounds: false,
+  showBnnJupiterMinor: false,
 };
 
 export interface CalculationSettings {

@@ -21,6 +21,7 @@ import BcpSummary from '@/components/BcpSummary';
 import BcpManualOverride from '@/components/BcpManualOverride';
 import BnnPanel from '@/components/bnn/BnnPanel';
 import BNNJupiterianRoundsPanel from '@/components/BNNJupiterianRoundsPanel';
+import BNNJupiterMinorPanel from '@/components/BNNJupiterMinorPanel';
 
 function ModeSwitcher({ mode, onChange, compact }: { mode: UiMode; onChange: (m: UiMode) => void; compact?: boolean }) {
   const modes: { id: UiMode; short: string; long: string }[] = [
@@ -853,6 +854,15 @@ export default function Home() {
                         />
                       </div>
                     )}
+                    {chartDisplaySettings.showBnnJupiterMinor && (
+                      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                        <BNNJupiterMinorPanel
+                          chart={chartData}
+                          birthDatetime={birthDatetime}
+                          targetDate={targetDate}
+                        />
+                      </div>
+                    )}
                   </div>
                 : <EmptyState message="Calculate a chart to see BNN analysis" />
             )}
@@ -952,6 +962,15 @@ export default function Home() {
                   {chartDisplaySettings.showBnnJupiterianRounds && (
                     <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
                       <BNNJupiterianRoundsPanel
+                        chart={chartData}
+                        birthDatetime={birthDatetime}
+                        targetDate={targetDate}
+                      />
+                    </div>
+                  )}
+                  {chartDisplaySettings.showBnnJupiterMinor && (
+                    <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                      <BNNJupiterMinorPanel
                         chart={chartData}
                         birthDatetime={birthDatetime}
                         targetDate={targetDate}
