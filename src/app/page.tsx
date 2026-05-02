@@ -20,6 +20,7 @@ import FileActions, { ChartSnapshot } from '@/components/FileActions';
 import BcpSummary from '@/components/BcpSummary';
 import BcpManualOverride from '@/components/BcpManualOverride';
 import BnnPanel from '@/components/bnn/BnnPanel';
+import BNNJupiterianRoundsPanel from '@/components/BNNJupiterianRoundsPanel';
 
 function ModeSwitcher({ mode, onChange, compact }: { mode: UiMode; onChange: (m: UiMode) => void; compact?: boolean }) {
   const modes: { id: UiMode; short: string; long: string }[] = [
@@ -841,7 +842,18 @@ export default function Home() {
             )}
             {desktopTab === 'bnn' && (
               chartData
-                ? <BnnPanel chart={chartData} />
+                ? <div className="space-y-6">
+                    <BnnPanel chart={chartData} />
+                    {chartDisplaySettings.showBnnJupiterianRounds && (
+                      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                        <BNNJupiterianRoundsPanel
+                          chart={chartData}
+                          birthDatetime={birthDatetime}
+                          targetDate={targetDate}
+                        />
+                      </div>
+                    )}
+                  </div>
                 : <EmptyState message="Calculate a chart to see BNN analysis" />
             )}
             {desktopTab === 'settings' && (
@@ -935,7 +947,18 @@ export default function Home() {
         {activeTab === 'bnn' && (
           <Panel>
             {chartData
-              ? <BnnPanel chart={chartData} />
+              ? <div className="space-y-6">
+                  <BnnPanel chart={chartData} />
+                  {chartDisplaySettings.showBnnJupiterianRounds && (
+                    <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
+                      <BNNJupiterianRoundsPanel
+                        chart={chartData}
+                        birthDatetime={birthDatetime}
+                        targetDate={targetDate}
+                      />
+                    </div>
+                  )}
+                </div>
               : <EmptyState message="Calculate a chart in Data to see BNN analysis" />
             }
           </Panel>

@@ -15,7 +15,11 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git config *)",
-      "Bash(echo \"EXIT:$?\")"
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\riku_\\\\bhrigu-chakra-app\" -Directory)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(xargs -I {} basename {})",
+      "Bash(node *)"
     ]
   }
 }

@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.39',
+    changes: [
+      'Added BNN Jupiterian Rounds panel with natal Jupiter degree based rounds',
+      'Active rashi / temporary lagna from natal Jupiter sign progression',
+      'Age controls: auto-computed from birth + target date, with manual override',
+      'Graha activation table: house from temporary lagna, sorted 1–12, with karakatwa',
+      'Sun karakatwa reflects BNN timing layer (Fame, Talent, Government, etc.) — not Parashari dasha',
+    ],
+  },
+  {
     version: 'v1.38',
     changes: [
       'BNN v2: planetary chain engine (depth-2 and depth-3 ordered chains)',

@@ -37,6 +37,7 @@ const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showRashiDrishti', label: 'rāśi dṛṣṭi' },
   { key: 'showBnnAlpha', label: 'BNN alpha (research)' },
   { key: 'showAshtakavarga', label: 'ashtakavarga (AV)' },
+  { key: 'showBnnJupiterianRounds', label: 'BNN Jupiterian Rounds' },
 ];
 
 const CORE_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Core');
