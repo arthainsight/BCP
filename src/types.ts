@@ -26,6 +26,7 @@ export interface PlanetData {
   sign: number;
   degree: number;
   house: number;
+  isRetrograde?: boolean;
 }
 
 export interface DebugInfo {

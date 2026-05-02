@@ -37,6 +37,7 @@ export interface ChartSectionProps {
   nakshatraAdjust?: number;
   birthDatetime?: string;
   targetDate?: string;
+  bnnAgeOverride?: number;
 }
 
 function isBcpEnabled(): boolean {
@@ -59,22 +60,31 @@ export default function ChartSection({
   nakshatraAdjust = 0,
   birthDatetime,
   targetDate,
+  bnnAgeOverride,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
   const [view, setView] = useState<'chart' | 'varga' | 'drishti'>('chart');
 
   const bnnHouses = useMemo(() => {
-    if (!chart || !birthDatetime || !targetDate) return { major: 0, minor: 0 };
-    const birth = parseBirthDt(birthDatetime);
-    const target = parseTargetDt(targetDate);
-    if (!birth || !target) return { major: 0, minor: 0 };
-    const ageYears = Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    if (!chart) return { major: 0, minor: 0 };
     const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
     if (!natalJupiter) return { major: 0, minor: 0 };
     const natalJupiterSignIndex = natalJupiter.sign - 1;
     const natalJupiterDegree = natalJupiter.degree;
     const planets = chart.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 }));
+
+    let ageYears: number;
+    if (bnnAgeOverride !== undefined) {
+      ageYears = bnnAgeOverride;
+    } else {
+      if (!birthDatetime || !targetDate) return { major: 0, minor: 0 };
+      const birth = parseBirthDt(birthDatetime);
+      const target = parseTargetDt(targetDate);
+      if (!birth || !target) return { major: 0, minor: 0 };
+      ageYears = Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    }
+
     const roundsResult = calculateJupiterianRounds({ natalJupiterSignIndex, natalJupiterDegree, ageYears });
     const minorResult = calculateMinorProgression({ natalJupiterSignIndex, ageYears, planets });
     const asc = chart.ascendant.sign;
@@ -83,7 +93,7 @@ export default function ChartSection({
       : 0;
     const minorHouse = ((minorResult.minorSignIndex + 1 - asc + 12) % 12) + 1;
     return { major: majorHouse, minor: minorHouse };
-  }, [chart, birthDatetime, targetDate]);
+  }, [chart, birthDatetime, targetDate, bnnAgeOverride]);
 
   useEffect(() => {
     setChartStyle(chartDisplaySettings.chartStyle ?? 'north');

@@ -279,7 +279,8 @@ export default function NorthIndianChart({
               )}
               {allPlanets.map((planet, index) => {
                 const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
-                const parts: string[] = [code];
+                const retroSuffix = !planet.isTransit && planet.isRetrograde ? '℞' : '';
+                const parts: string[] = [code + retroSuffix];
                 if (!planet.isTransit) {
                   if (showDegrees) parts.push(`${Math.floor(planet.degree)}°`);
                   if (showCharaKaraka) {

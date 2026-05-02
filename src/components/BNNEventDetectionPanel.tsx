@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ChartData } from '@/types';
 import { SIGN_NAMES } from '@/lib/varga/index';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
@@ -152,12 +152,13 @@ interface Props {
   chart: ChartData;
   birthDatetime?: string;
   targetDate?: string;
+  onEffectiveAgeChange?: (age: number) => void;
 }
 
 const INPUT =
   'px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 w-24';
 
-export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDate }: Props) {
+export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDate, onEffectiveAgeChange }: Props) {
   const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
   const natalJupiterSignIndex = natalJupiter ? natalJupiter.sign - 1 : 0;
   const natalJupiterDegree = natalJupiter ? natalJupiter.degree : 0;
@@ -180,6 +181,10 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
     }
     return autoAge ?? 0;
   }, [manualAgeStr, autoAge]);
+
+  useEffect(() => {
+    onEffectiveAgeChange?.(effectiveAge);
+  }, [effectiveAge, onEffectiveAgeChange]);
 
   const adaptedPlanets = useMemo(
     () => chart.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 })),

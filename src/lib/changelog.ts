@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.42',
+    changes: [
+      'Retrograde planets now show ℞ in chart, Graha Table — Rahu/Ketu always marked retrograde',
+      'BCP Override and BCP Summary now hidden when BCP dasha is turned off',
+      'Workspace mode opens full-width on desktop (chart column collapses)',
+      'BNN age override syncs to chart highlight colors via lifted state',
+    ],
+  },
+  {
     version: 'v1.41',
     changes: [
       'Added multi-chart workspace mode with independent panels for BNN, BCP, Natal+Transit, Vimshottari and Graha Table',

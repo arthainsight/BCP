@@ -94,7 +94,7 @@ function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, strin
   const nak = getNakshatra(adjLon(planet.longitude));
   const d108 = getD108(planet.longitude);
   return {
-    code: graha.code,
+    code: graha.code + (planet.isRetrograde ? ' ℞' : ''),
     name: graha.name,
     karaka: karakaByPlanet[planet.name] ?? '',
     position: `${SIGN_ABBR[planet.sign]} ${formatDms(planet.degree)}`,

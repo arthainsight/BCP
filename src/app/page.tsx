@@ -194,6 +194,9 @@ export default function Home() {
   const [manualBcpAge, setManualBcpAge] = useState('');
   const [manualBcpMonth, setManualBcpMonth] = useState('');
 
+  // BNN age override (lifted from BNNEventDetectionPanel so chart highlights stay in sync)
+  const [bnnEffectiveAge, setBnnEffectiveAge] = useState<number | undefined>(undefined);
+
   // Active saved chart name (null = no saved chart active)
   const [activeChartName, setActiveChartName] = useState<string | null>(null);
 
@@ -652,6 +655,7 @@ export default function Home() {
     nakshatraAdjust,
     birthDatetime,
     targetDate,
+    bnnAgeOverride: bnnEffectiveAge,
   };
 
   const dataProps = {
@@ -753,10 +757,10 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ── DESKTOP: 2-column grid ────────────────────────────────────── */}
-      <div className="hidden lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] gap-4 items-start p-4">
-        {/* Left: Chart + optional BCP summary + optional Panchang */}
-        <div className="space-y-3">
+      {/* ── DESKTOP: 2-column grid (or full-width workspace) ────────── */}
+      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'workspace' ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
+        {/* Left: Chart + optional BCP summary + optional Panchang (hidden in workspace mode) */}
+        <div className={`space-y-3 ${desktopTab === 'workspace' ? 'hidden' : ''}`}>
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
             {uiMode !== 'simple' && (
               <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
@@ -770,7 +774,7 @@ export default function Home() {
               />
             )}
           </div>
-          {uiMode === 'simple' && effectiveBcpResult && chartData && (
+          {uiMode === 'simple' && dashaSettings.dashas.bcp && effectiveBcpResult && chartData && (
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
               <BcpSummary
                 bcp={effectiveBcpResult}
@@ -832,7 +836,7 @@ export default function Home() {
             {desktopTab === 'dasha' && (
               effectiveBcpResult && chartData
                 ? <div className="space-y-4">
-                    <BcpManualOverride {...bcpManualProps} />
+                    {dashaSettings.dashas.bcp && <BcpManualOverride {...bcpManualProps} />}
                     <DashaPanel
                       bcp={effectiveBcpResult}
                       planets={chartData.planets}
@@ -852,6 +856,7 @@ export default function Home() {
                         chart={chartData}
                         birthDatetime={birthDatetime}
                         targetDate={targetDate}
+                        onEffectiveAgeChange={setBnnEffectiveAge}
                       />
                     )}
                     {chartDisplaySettings.showBnnJupiterianRounds && (
@@ -922,7 +927,7 @@ export default function Home() {
                 />
               )}
             </Panel>
-            {uiMode === 'simple' && effectiveBcpResult && chartData && (
+            {uiMode === 'simple' && dashaSettings.dashas.bcp && effectiveBcpResult && chartData && (
               <Panel>
                 <BcpSummary
                   bcp={effectiveBcpResult}
@@ -971,7 +976,7 @@ export default function Home() {
           <Panel>
             {effectiveBcpResult && chartData
               ? <div className="space-y-4">
-                  <BcpManualOverride {...bcpManualProps} />
+                  {dashaSettings.dashas.bcp && <BcpManualOverride {...bcpManualProps} />}
                   <DashaPanel
                     bcp={effectiveBcpResult}
                     planets={chartData.planets}
@@ -995,6 +1000,7 @@ export default function Home() {
                       chart={chartData}
                       birthDatetime={birthDatetime}
                       targetDate={targetDate}
+                      onEffectiveAgeChange={setBnnEffectiveAge}
                     />
                   )}
                   {chartDisplaySettings.showBnnJupiterianRounds && (

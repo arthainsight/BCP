@@ -53,7 +53,7 @@ async function calculatePlanetPositions(jd: number, ayanamsa: number, useTropica
   const planets: PlanetData[] = [];
 
   for (const planetId of PLANET_IDS) {
-    const tropicalLon = await sweCalcUt(jd, planetId);
+    const { longitude: tropicalLon, speed } = await sweCalcUt(jd, planetId);
     const lon = useTropical ? normalize(tropicalLon) : normalize(tropicalLon - ayanamsa);
     planets.push({
       name: PLANET_NAMES[planetId],
@@ -61,6 +61,7 @@ async function calculatePlanetPositions(jd: number, ayanamsa: number, useTropica
       sign: Math.floor(lon / 30) + 1,
       degree: lon % 30,
       house: 0,
+      isRetrograde: speed < 0,
     });
   }
 
@@ -69,12 +70,12 @@ async function calculatePlanetPositions(jd: number, ayanamsa: number, useTropica
 
 async function addNodes(planets: PlanetData[], jd: number, ayanamsa: number, useTropical: boolean, nodeMode: 'mean' | 'true') {
   const nodeId = nodeMode === 'true' ? SE_TRUE_NODE : SE_MEAN_NODE;
-  const rahuTropical = await sweCalcUt(jd, nodeId);
+  const { longitude: rahuTropical } = await sweCalcUt(jd, nodeId);
   const rahuLon = useTropical ? normalize(rahuTropical) : normalize(rahuTropical - ayanamsa);
-  planets.push({ name: "Rahu", longitude: rahuLon, sign: Math.floor(rahuLon / 30) + 1, degree: rahuLon % 30, house: 0 });
+  planets.push({ name: "Rahu", longitude: rahuLon, sign: Math.floor(rahuLon / 30) + 1, degree: rahuLon % 30, house: 0, isRetrograde: true });
 
   const ketuLon = normalize(rahuLon + 180);
-  planets.push({ name: "Ketu", longitude: ketuLon, sign: Math.floor(ketuLon / 30) + 1, degree: ketuLon % 30, house: 0 });
+  planets.push({ name: "Ketu", longitude: ketuLon, sign: Math.floor(ketuLon / 30) + 1, degree: ketuLon % 30, house: 0, isRetrograde: true });
 }
 
 export async function calculateChart(

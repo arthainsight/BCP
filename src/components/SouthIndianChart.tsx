@@ -89,9 +89,10 @@ function getPlanetLabel(
   nakshatraAdjust: number,
 ): string {
   const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
+  const retroSuffix = !isTransit && planet.isRetrograde ? '℞' : '';
   if (isTransit) return code;
 
-  const parts = [code];
+  const parts = [code + retroSuffix];
   if (showDegrees) parts.push(`${Math.floor(planet.degree)}°`);
   if (showCharaKaraka) {
     const karaka = karakaByPlanet[planet.name];

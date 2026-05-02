@@ -66,8 +66,9 @@ export async function sweGetAyanamsa(jd: number, ayanamsa: AyanamsaMode = 'lahir
   return (await getSwe()).get_ayanamsa_ut(jd);
 }
 
-export async function sweCalcUt(jd: number, planetId: number): Promise<number> {
-  return (await getSwe()).calc_ut(jd, planetId, 2)[0]; // 2=SEFLG_SWIEPH; [0]=longitude
+export async function sweCalcUt(jd: number, planetId: number): Promise<{ longitude: number; speed: number }> {
+  const r = (await getSwe()).calc_ut(jd, planetId, 2); // 2=SEFLG_SWIEPH; [0]=lon, [3]=speed
+  return { longitude: r[0], speed: r[3] };
 }
 
 export async function sweGetAscendant(jd: number, lat: number, lng: number): Promise<number> {
