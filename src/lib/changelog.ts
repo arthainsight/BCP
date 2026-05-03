@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v1.55',
+    changes: [
+      'Bhava Bala: added occupant (Bhava Graha) contribution — ~approx: benefic occupant +45 × Ṣaḍbala ratio, malefic −30 × ratio virupa',
+      'Bhava Bala: Bhavadhipati column now shows lord virupa, required minimum, and ratio transparently (source from Ṣaḍbala)',
+      'Bhava Bala: ~Bhava Dig Bala expanded — kendra +15 vp, panapara +7.5 vp, apoklima 0 vp (labeled approximate)',
+      'Bhava Bala: expandable per-house debug row shows lord source, each occupant with contribution, each aspecting planet with contribution and aspect strength, and explicit A+B+C=total formula',
+      'Bhava Bala: Status column added — strong/ok/weak relative to chart mean (not a fixed threshold)',
+      'Bhava Bala: negative contributions visible in Drig− column and occupant column for malefic planets',
+      'Added bhavaBala.test.ts: deterministic verification fixture with fully worked H1 and H4 manual calculations',
+    ],
+  },
+  {
     version: 'v1.54',
     changes: [
       'Shadbala rewritten to use classical virūpa totals and planet-specific minimum thresholds',
