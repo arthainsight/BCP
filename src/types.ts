@@ -98,7 +98,11 @@ export type WorkspacePanelType =
   | 'bnn'
   | 'vimshottari'
   | 'graha-table'
-  | 'yoga-table';
+  | 'yoga-table'
+  | 'varga-matrix'
+  | 'varga-strength'
+  | 'shadbala'
+  | 'bhava-bala';
 
 export type WorkspacePanel = {
   id: string;

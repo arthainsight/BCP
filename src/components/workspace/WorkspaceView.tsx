@@ -14,27 +14,36 @@ import GrahasPanel from '../GrahasPanel';
 import DashaPanel from '../DashaPanel';
 import BcpSummary from '../BcpSummary';
 import YogaTable from '../YogaTable';
+import { VargaMatrixCard, VargaStrengthCard, ShadbalaCard, BhavaBalaCard } from '@/pages/VargaMatrix';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const PANEL_OPTIONS: { value: WorkspacePanelType; label: string }[] = [
-  { value: 'natal',        label: 'Natal Chart' },
-  { value: 'natal-transit', label: 'Natal + Transit' },
-  { value: 'bcp',          label: 'BCP' },
-  { value: 'bnn',          label: 'BNN' },
-  { value: 'vimshottari',  label: 'Vimshottari' },
-  { value: 'graha-table',  label: 'Graha Table' },
-  { value: 'yoga-table',   label: 'Yoga Table' },
+  { value: 'natal',          label: 'Natal Chart' },
+  { value: 'natal-transit',  label: 'Natal + Transit' },
+  { value: 'bcp',            label: 'BCP' },
+  { value: 'bnn',            label: 'BNN' },
+  { value: 'vimshottari',    label: 'Vimshottari' },
+  { value: 'graha-table',    label: 'Graha Table' },
+  { value: 'yoga-table',     label: 'Yoga Table' },
+  { value: 'varga-matrix',   label: 'Varga Matrix' },
+  { value: 'varga-strength', label: 'Varga Strength / Viṁśopaka Bala' },
+  { value: 'shadbala',       label: 'Shadbala beta' },
+  { value: 'bhava-bala',     label: 'Bhava Bala beta' },
 ];
 
 const PANEL_TITLES: Record<WorkspacePanelType, string> = {
-  'natal':        'Natal Chart',
-  'natal-transit': 'Natal + Transit',
-  'bcp':          'BCP',
-  'bnn':          'BNN',
-  'vimshottari':  'Vimshottari',
-  'graha-table':  'Graha Table',
-  'yoga-table':   'Yoga Table',
+  'natal':          'Natal Chart',
+  'natal-transit':  'Natal + Transit',
+  'bcp':            'BCP',
+  'bnn':            'BNN',
+  'vimshottari':    'Vimshottari',
+  'graha-table':    'Graha Table',
+  'yoga-table':     'Yoga Table',
+  'varga-matrix':   'Varga Matrix',
+  'varga-strength': 'Varga Strength / Viṁśopaka Bala',
+  'shadbala':       'Shadbala beta',
+  'bhava-bala':     'Bhava Bala beta',
 };
 
 const DEFAULT_PANELS: WorkspacePanel[] = [
@@ -332,6 +341,18 @@ export default function WorkspaceView({
 
       case 'yoga-table':
         return <YogaTable chart={chart} />;
+
+      case 'varga-matrix':
+        return <VargaMatrixCard chart={chart} />;
+
+      case 'varga-strength':
+        return <VargaStrengthCard chart={chart} />;
+
+      case 'shadbala':
+        return <ShadbalaCard chart={chart} />;
+
+      case 'bhava-bala':
+        return <BhavaBalaCard chart={chart} />;
     }
   }
 
