@@ -1,5 +1,13 @@
 export const CHANGELOG = [
   {
+    version: 'v1.52',
+    changes: [
+      'Varga Matrix, Varga Strength / Viṁśopaka Bala, Shadbala beta, and Bhava Bala beta are now independent Workspace panels',
+      'Each section can be added as a standalone Workspace panel and toggled independently',
+      'Existing Chart Render → Varga combined view preserved unchanged',
+    ],
+  },
+  {
     version: 'v1.51',
     changes: [
       'Removed Target Date from the main page input area.',

@@ -84,6 +84,175 @@ function buildVimsopakaStrength(planets = {}, matrix = {}) { return SCORE_PLANET
 function mapPlanetLongitudes(chart) { const wanted = new Set(ROW_ORDER.filter((name) => name !== 'Lagna')); const result = {}; (chart?.planets ?? []).forEach((planet) => { if (wanted.has(planet.name) && typeof planet.longitude === 'number') result[planet.name] = planet.longitude; }); return result; }
 function formatDivisionList(divisions) { return divisions.map((division) => `D${division}`).join(', '); }
 
+export function VargaMatrixCard({ chart }) {
+  if (!chart) return <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">Calculate a chart to see Varga Matrix</div>;
+  const divisions = DEFAULT_DIVISIONS;
+  const planets = mapPlanetLongitudes(chart);
+  const lagna = typeof chart?.ascendant?.longitude === 'number' ? chart.ascendant.longitude : undefined;
+  const matrix = buildVargaMatrix(planets, lagna, divisions);
+  return (
+    <div className="space-y-3">
+      <div>
+        <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">Varga Matrix</div>
+        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">{formatDivisionList(divisions)} from sidereal longitudes. Cell colour = dignity; debilitated = 0 strength.</div>
+      </div>
+      <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
+        <table className="w-full min-w-[980px] border-collapse text-xs font-mono">
+          <thead>
+            <tr className="bg-zinc-100 dark:bg-zinc-800">
+              <th className="sticky left-0 z-10 bg-zinc-100 dark:bg-zinc-800 text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Body</th>
+              {divisions.map((d) => <th key={d} className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">D{d}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {ROW_ORDER.map((name) => (
+              <tr key={name} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <td className="sticky left-0 z-10 bg-white dark:bg-zinc-900 p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">{name}</td>
+                {divisions.map((d) => {
+                  const cell = matrix[name][`D${d}`];
+                  return (
+                    <td key={d} className={`p-2 border whitespace-nowrap ${getDignityCellClass(cell.dignity)}`} title={DIGNITY_LABELS[cell.dignity]}>
+                      <span className="font-bold">{cell.sign}</span>
+                      {cell.dignity !== 'none' && <span className="ml-1 text-[9px] opacity-75">{DIGNITY_LABELS[cell.dignity]}</span>}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export function VargaStrengthCard({ chart }) {
+  if (!chart) return <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">Calculate a chart to see Varga Strength</div>;
+  const divisions = DEFAULT_DIVISIONS;
+  const planets = mapPlanetLongitudes(chart);
+  const lagna = typeof chart?.ascendant?.longitude === 'number' ? chart.ascendant.longitude : undefined;
+  const matrix = buildVargaMatrix(planets, lagna, divisions);
+  const strength = buildVimsopakaStrength(planets, matrix);
+  return (
+    <div className="space-y-3">
+      <div>
+        <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">Varga Strength / Viṁśopaka Bala</div>
+        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">Four weighted calculations out of 20. Rahu/Ketu and Lagna excluded.</div>
+      </div>
+      <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
+        <table className="w-full min-w-[720px] border-collapse text-xs font-mono">
+          <thead>
+            <tr className="bg-zinc-100 dark:bg-zinc-800">
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Planet</th>
+              {Object.entries(VIMSOPAKA_SCHEMES).map(([key, scheme]) => (
+                <th key={key} className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">{scheme.label}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {strength.map((row) => (
+              <tr key={row.planet} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">{row.planet}</td>
+                {Object.keys(VIMSOPAKA_SCHEMES).map((key) => (
+                  <td key={key} className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-amber-700 dark:text-amber-300">{formatScore(row[key])} / 20</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export function ShadbalaCard({ chart }) {
+  if (!chart) return <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">Calculate a chart to see Shadbala</div>;
+  const shadbala = buildShadbalaRows(chart);
+  return (
+    <div className="space-y-3">
+      <div>
+        <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">Shadbala <span className="text-[9px] font-normal text-amber-600 dark:text-amber-400 ml-1">beta</span></div>
+        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">Beta: all six Shadbala heads are present. Values in rūpa; Cheṣṭā, Dṛg and Ayana are approximation-based.</div>
+      </div>
+      <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
+        <table className="w-full min-w-[920px] border-collapse text-xs font-mono">
+          <thead>
+            <tr className="bg-zinc-100 dark:bg-zinc-800">
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Planet</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Sthāna</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Dig</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Samaya</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Cheṣṭā</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Naisargika</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Dṛg</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Total</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {shadbala.map((row) => (
+              <tr key={row.planet} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">{row.planet}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300" title={`Uccha ${formatScore(virupaToRupa(row.sthanaBreakdown.uccha))} + Saptavargaja ${formatScore(virupaToRupa(row.sthanaBreakdown.saptavargaja))} + Ojhayugma ${formatScore(virupaToRupa(row.sthanaBreakdown.ojhayugma))} + Kendradi ${formatScore(virupaToRupa(row.sthanaBreakdown.kendradi))} + Drekkana ${formatScore(virupaToRupa(row.sthanaBreakdown.drekkana))}`}>{formatScore(row.sthana)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.dig)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300" title={`Sect ${row.kalaBreakdown.sect}; Natonnata ${formatScore(virupaToRupa(row.kalaBreakdown.natonnata))} + Paksha ${formatScore(virupaToRupa(row.kalaBreakdown.paksha))} + Tribhaga ${formatScore(virupaToRupa(row.kalaBreakdown.tribhaaga))} + Varsheshadi ${formatScore(virupaToRupa(row.kalaBreakdown.varsheshadi))} + Ayana ${formatScore(virupaToRupa(row.kalaBreakdown.ayana))}`}>{formatScore(row.kala)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.cheshta)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.naisargika)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.drik)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-amber-700 dark:text-amber-300">{formatScore(row.total)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-cyan-700 dark:text-cyan-300">{formatScore(row.ratio * 100)}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+export function BhavaBalaCard({ chart }) {
+  if (!chart) return <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">Calculate a chart to see Bhava Bala</div>;
+  const bhavaBala = buildBhavaBalaRows(chart);
+  return (
+    <div className="space-y-3">
+      <div>
+        <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">Bhava Bala <span className="text-[9px] font-normal text-amber-600 dark:text-amber-400 ml-1">beta</span></div>
+        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">Beta house strength index: lord strength + occupants + aspects. Compact 0–100 score.</div>
+      </div>
+      <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
+        <table className="w-full min-w-[780px] border-collapse text-xs font-mono">
+          <thead>
+            <tr className="bg-zinc-100 dark:bg-zinc-800">
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">House</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Sign</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Lord</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Lord Bala</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Occupants</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Aspects</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Total</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Quality</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bhavaBala.map((row) => (
+              <tr key={row.house} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">H{row.house}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.sign}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.lord}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300" title={row.lordNote}>{formatScore(row.lordScore)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300" title={row.occupantNote}>{formatScore(row.occupantScore)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300" title={row.aspectNote}>{formatScore(row.aspectScore)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-amber-700 dark:text-amber-300">{formatScore(row.total)}</td>
+                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-cyan-700 dark:text-cyan-300">{row.quality}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function VargaMatrix({ chart }) {
   const divisions = DEFAULT_DIVISIONS;
   const planets = mapPlanetLongitudes(chart);
