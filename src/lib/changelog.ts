@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v1.54',
+    changes: [
+      'Shadbala rewritten to use classical virūpa totals and planet-specific minimum thresholds',
+      'All six Shadbala components now stored and displayed in virūpa (not rūpa decimals)',
+      'Naisargika Bala updated to exact classical integer values: Sun 60, Moon 51, Venus 43, Jupiter 34, Mercury 26, Mars 17, Saturn 9',
+      'Planet-specific required minimums in virūpa: Sun 390, Moon 360, Mars 300, Mercury 420, Jupiter 390, Venus 330, Saturn 300',
+      'Strength percentage calculated as totalVirupa / requiredVirupa × 100',
+      'UI now shows raw virūpa total, required minimum, percentage, and status (weak/ok/strong with colour coding)',
+      'Dṛg Bala now allows negative values where malefic aspects reduce strength (classical convention)',
+      'Debug table marks approximate components with ~ prefix (Saptavargaja, Dig, Natonnata, Tribhaga, Ayana, Cheṣṭā, Dṛg)',
+    ],
+  },
+  {
     version: 'v1.53',
     changes: [
       'Bhava Bala beta: replaced heuristic 0–100 scoring with classical Bhavesha + Bhava Drig calculation',
