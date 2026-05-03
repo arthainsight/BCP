@@ -1,5 +1,12 @@
 export const CHANGELOG = [
   {
+    version: 'v1.51',
+    changes: [
+      'Removed Target Date from the main page input area.',
+      'Renamed Run BCP action to Calculate Chart for clearer UX.',
+    ],
+  },
+  {
     version: 'v1.48',
     changes: [
       'Inactive yogas hidden by default — only active yogas are shown in the Yoga Table',

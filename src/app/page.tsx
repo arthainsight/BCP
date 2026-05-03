@@ -722,7 +722,6 @@ export default function Home() {
   const dataProps = {
     birthDatetime, onBirthDatetimeChange: setBirthDatetime,
     city, onCityChange: setCity,
-    targetDate, onTargetDateChange: setTargetDate,
     geoResults, showCoords,
     manualLat, onManualLatChange: setManualLat,
     manualLng, onManualLngChange: setManualLng,
