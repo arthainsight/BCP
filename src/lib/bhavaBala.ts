@@ -79,6 +79,10 @@ export function getClassicalAspectStrength(fromName: string, fromLongitude: numb
   return clamp(strength, 0, 1);
 }
 
+// Simplified Bhava Drig Bala: orb-based drishti to the sign midpoint (sign * 30 + 15°).
+// NOT the cusp-based Drig Bala from classical texts — the actual house cusp longitude is
+// not available here, so the sign midpoint is used as a proxy.
+// drig1/drig3: strong aspects (strength >= 0.66); drig2/drig4: weaker aspects.
 function calculateBhavaDrig(chart: ChartLike, house: number): Pick<BhavaBalaRow, 'drig1' | 'drig2' | 'drig3' | 'drig4'> {
   const midpoint = getHouseMidLongitude(chart.ascendant?.sign, house);
   const result = { drig1: 0, drig2: 0, drig3: 0, drig4: 0 };
@@ -117,6 +121,18 @@ function createShadbalaMap(shadbala: ShadbalaLike[]): Record<string, number> {
   );
 }
 
+// Computes a partial classical Bhava Bala using two of the classical components:
+//   1. Bhavesha Bala  — the house lord's total Shadbala (virupa), passed in via `shadbala`.
+//   2. Bhava Drig Bala — simplified drishti to the house sign midpoint (see calculateBhavaDrig).
+//   3. Kendra bonus — +15 virupa for angular houses (H1, H4, H7, H10), per classical convention.
+//
+// NOT yet implemented (require additional inputs not currently available):
+//   • Bhava Digbala (directional strength of the house)
+//   • Bhava Kala Bala (temporal strength)
+//   • Cusp-based Bhava Drig (exact house cusp longitudes)
+//
+// All values are in virupa. There is no normalization to 0–100; consumers should interpret
+// totals relative to each other within a chart, not against a fixed scale.
 export function buildClassicalBhavaBala(chart: ChartLike, shadbala: ShadbalaLike[]): BhavaBalaRow[] {
   const ascendantSign = chart.ascendant?.sign;
   const shadbalaMap = createShadbalaMap(shadbala);

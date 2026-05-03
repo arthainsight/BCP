@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v1.53',
+    changes: [
+      'Bhava Bala beta: replaced heuristic 0–100 scoring with classical Bhavesha + Bhava Drig calculation',
+      'Bhavesha Bala now uses the lord\'s actual Ṣaḍbala (virupa) computed from the same chart data',
+      'Bhava Drig uses orb-based drishti to the house sign midpoint — four components (strong/weak × benefic/malefic)',
+      'Kendra bonus: +15 virupa for angular houses (H1, H4, H7, H10), per classical convention',
+      'Values now in virupa (no arbitrary 0–100 normalisation); heuristic Quality column removed',
+      'Code comments clarify what is implemented and what is not yet (Digbala, Kala Bala, cusp-based Drig)',
+    ],
+  },
+  {
     version: 'v1.52',
     changes: [
       'Varga Matrix, Varga Strength / Viṁśopaka Bala, Shadbala beta, and Bhava Bala beta are now independent Workspace panels',
