@@ -118,7 +118,7 @@ function isAdjacentSign(a: number, b: number): boolean {
   return diff === 1 || diff === 11;
 }
 
-function getRashiAspectSigns(sign: number): number[] {
+export function getRashiAspectSigns(sign: number): number[] {
   const signs = Array.from({ length: 12 }, (_, index) => index + 1);
   if (isMovable(sign)) return signs.filter((target) => isFixed(target) && !isAdjacentSign(sign, target));
   if (isFixed(sign)) return signs.filter((target) => isMovable(target) && !isAdjacentSign(sign, target));
