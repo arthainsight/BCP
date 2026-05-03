@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Fragment } from 'react';
 import { getVargaSignIndex, getSignIndex, getDegreesInSign } from '@/lib/varga';
 import { buildClassicalBhavaBala } from '@/lib/bhavaBala';
 
@@ -309,44 +309,128 @@ export function ShadbalaCard({ chart }) {
 }
 
 export function BhavaBalaCard({ chart }) {
+  const [expandedHouse, setExpandedHouse] = useState(null);
   if (!chart) return <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">Calculate a chart to see Bhava Bala</div>;
-  // Bhavesha Bala uses the lord's Shadbala (already computed). Drig Bala uses simplified
-  // orb-based drishti to the house sign midpoint. Bhava Digbala and Kala Bala not included.
   const shadbala = buildShadbalaRows(chart);
   const bhavaBala = buildClassicalBhavaBala(chart, shadbala);
+  const mean = bhavaBala.reduce((s, r) => s + r.total, 0) / 12;
+
+  function getStatus(total) {
+    if (total >= mean * 1.1) return 'strong';
+    if (total >= mean * 0.9) return 'ok';
+    return 'weak';
+  }
+  function getStatusCls(status) {
+    if (status === 'strong') return 'text-emerald-600 dark:text-emerald-400';
+    if (status === 'ok') return 'text-amber-600 dark:text-amber-400';
+    return 'text-red-600 dark:text-red-400';
+  }
+
   return (
     <div className="space-y-3">
       <div>
         <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">Bhava Bala <span className="text-[9px] font-normal text-amber-600 dark:text-amber-400 ml-1">beta</span></div>
-        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">Bhavesha = lord&apos;s Ṣaḍbala (virupa). Drig = simplified drishti to sign midpoint. Kendra = +15 virupa (H1/4/7/10). Bhava Digbala and Kala Bala not yet included.</div>
+        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
+          Bhavadhipati = lord&apos;s Ṣaḍbala virupa (ratio shown). ~Drig = orb-based drishti to sign midpoint.
+          ~Occupant = benefic +45×ratio, malefic −30×ratio. ~Dig = kendra +15/panapara +7.5 vp.
+          Status relative to chart mean. Click a row for per-house debug breakdown.
+        </div>
       </div>
       <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
-        <table className="w-full min-w-[640px] border-collapse text-xs font-mono">
+        <table className="w-full min-w-[860px] border-collapse text-xs font-mono">
           <thead>
             <tr className="bg-zinc-100 dark:bg-zinc-800">
               <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">House</th>
               <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Sign</th>
               <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Lord</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Bhavesha</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Drig+</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Drig−</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Kendra</th>
-              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Total</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Bhavadhipati vp</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">~Occupants</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">~Drig+</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">~Drig−</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">~Dig</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Total vp</th>
+              <th className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Status</th>
             </tr>
           </thead>
           <tbody>
-            {bhavaBala.map((row) => (
-              <tr key={row.house} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">H{row.house}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.sign}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.lord}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.bhavesha)}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.drig1 + row.drig2)}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.drig3 + row.drig4)}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{formatScore(row.kendra)}</td>
-                <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-amber-700 dark:text-amber-300">{formatScore(row.total)}</td>
-              </tr>
-            ))}
+            {bhavaBala.map((row) => {
+              const status = getStatus(row.total);
+              const statusCls = getStatusCls(status);
+              const isExpanded = expandedHouse === row.house;
+              const totalPct = mean > 0 ? Math.round((row.total / mean) * 100) : 0;
+              const drigPos = row.drig1 + row.drig2;
+              const drigNeg = row.drig3 + row.drig4;
+              return (
+                <Fragment key={row.house}>
+                  <tr
+                    className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 cursor-pointer"
+                    onClick={() => setExpandedHouse(isExpanded ? null : row.house)}
+                  >
+                    <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400 whitespace-nowrap">
+                      H{row.house} <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{isExpanded ? '▼' : '▶'}</span>
+                    </td>
+                    <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.sign}</td>
+                    <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.lord}</td>
+                    <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300" title={row.bhaveshaSource}>
+                      {formatScore(row.bhavesha)}
+                      <span className="ml-1 text-[9px] text-zinc-400 dark:text-zinc-500">{row.bhaveshaRatio.toFixed(2)}×</span>
+                    </td>
+                    <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">
+                      {row.occupants.length === 0 ? <span className="text-zinc-400 dark:text-zinc-600">—</span> : row.occupants.map((o) => (
+                        <span key={o.name} className={o.nature === 'benefic' ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}>
+                          {o.name}({o.contribution > 0 ? '+' : ''}{Math.round(o.contribution)})
+                        </span>
+                      ))}
+                    </td>
+                    <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-emerald-700 dark:text-emerald-400">{drigPos > 0 ? `+${formatScore(drigPos)}` : '—'}</td>
+                    <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-red-600 dark:text-red-400">{drigNeg < 0 ? formatScore(drigNeg) : '—'}</td>
+                    <td className="p-2 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300">{row.kendra > 0 ? `+${formatScore(row.kendra)}` : '—'}</td>
+                    <td className="p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-amber-700 dark:text-amber-300 whitespace-nowrap">
+                      {Math.round(row.total)} <span className="text-[9px] text-zinc-400 dark:text-zinc-500">({totalPct}%)</span>
+                    </td>
+                    <td className={`p-2 border border-zinc-100 dark:border-zinc-800 font-bold ${statusCls}`}>{status}</td>
+                  </tr>
+                  {isExpanded && (
+                    <tr className="bg-zinc-50 dark:bg-zinc-800/40">
+                      <td colSpan={10} className="p-3 border border-zinc-100 dark:border-zinc-800 text-[10px] font-mono text-zinc-600 dark:text-zinc-400">
+                        <div className="space-y-1.5">
+                          <div>
+                            <span className="text-zinc-500 dark:text-zinc-500">Lord:</span> {row.lord} —{' '}
+                            <span className="text-zinc-500 dark:text-zinc-500">source:</span> {row.bhaveshaSource}
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 dark:text-zinc-500">~Occupants:</span>{' '}
+                            {row.occupants.length === 0
+                              ? 'none'
+                              : row.occupants.map((o) => `${o.name} (${o.nature}, ${o.note}) → ${o.contribution > 0 ? '+' : ''}${o.contribution.toFixed(1)} vp`).join('; ')}
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 dark:text-zinc-500">~Drig aspects to H{row.house} sign midpoint:</span>{' '}
+                            {row.drigDetails.length === 0
+                              ? 'none'
+                              : row.drigDetails.map((d) => `${d.planet}(${d.nature[0]}: ${d.contribution > 0 ? '+' : ''}${d.contribution.toFixed(1)} vp, str=${d.aspectStrength.toFixed(2)})`).join('; ')}
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 dark:text-zinc-500">~Dig Bala:</span>{' '}
+                            {row.kendra > 0
+                              ? `+${row.kendra} vp (${[1, 4, 7, 10].includes(row.house) ? 'kendra/angular' : 'panapara/succedent'})`
+                              : '0 (apoklima/cadent)'} — approximate
+                          </div>
+                          <div className="border-t border-zinc-200 dark:border-zinc-700 pt-1.5 text-zinc-500 dark:text-zinc-500">
+                            Calculation: Bhavadhipati {formatScore(row.bhavesha)}
+                            {row.occupantTotal !== 0 && ` + ~Occ ${row.occupantTotal > 0 ? '+' : ''}${row.occupantTotal.toFixed(1)}`}
+                            {` + ~Drig+ ${formatScore(row.drig1 + row.drig2)}`}
+                            {` + ~Drig− ${formatScore(row.drig3 + row.drig4)}`}
+                            {row.kendra > 0 && ` + ~Dig ${row.kendra}`}
+                            {' = '}<span className="font-bold text-amber-700 dark:text-amber-300">{Math.round(row.total)} vp</span>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
