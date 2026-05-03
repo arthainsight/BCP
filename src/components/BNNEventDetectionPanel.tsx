@@ -7,6 +7,11 @@ import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import { detectBNNEventWindows, type BNNEventWindow } from '@/lib/bnn/eventDetection';
 
+const SIGN_ABBR: Record<number, string> = {
+  1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
+  7: 'Li', 8: 'Sc', 9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function parseBirthDatetime(dt: string): Date | null {
@@ -165,6 +170,8 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
   const natalJupiterSignIndex = natalJupiter ? natalJupiter.sign - 1 : 0;
   const natalJupiterDegree = natalJupiter ? natalJupiter.degree : 0;
 
+  const [collapsed, setCollapsed] = useState(false);
+
   const autoAge = useMemo(() => {
     if (!birthDatetime || !targetDate) return null;
     const birth = parseBirthDatetime(birthDatetime);
@@ -225,97 +232,146 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
   const ageYearsInt = Math.floor(effectiveAge);
   const ageMonthsInt = Math.round((effectiveAge - ageYearsInt) * 12);
 
-  const majorActiveSign = roundsResult.currentRound
+  const temporaryLagna = roundsResult.currentRound
     ? SIGN_NAMES[roundsResult.currentRound.activeSignIndex]
     : null;
+  const currentRoundNumber = roundsResult.currentRound?.roundNumber ?? null;
+  const balanceDegrees = roundsResult.balanceDegrees;
+  const natalJupSignName = SIGN_NAMES[natalJupiterSignIndex];
+  const natalJupSignAbbr = SIGN_ABBR[natalJupiter.sign] ?? natalJupSignName;
 
   const highWindows = eventWindows.filter(w => w.confidence === 'high');
   const mediumWindows = eventWindows.filter(w => w.confidence === 'medium');
   const lowWindows = eventWindows.filter(w => w.confidence === 'low');
 
   return (
-    <div className="space-y-5">
-      <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; BNN Event Detection</div>
+    <div className="space-y-4">
+      {/* Header — collapsible */}
+      <button
+        type="button"
+        onClick={() => setCollapsed(v => !v)}
+        className="flex items-center justify-between w-full text-left"
+      >
+        <span className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; BNN Event Detection</span>
+        <span className="text-[9px] text-zinc-400 dark:text-zinc-600 ml-2">{collapsed ? '▶' : '▼'}</span>
+      </button>
 
-      {/* Context strip */}
-      <div className="rounded-md border border-zinc-200 dark:border-zinc-700 px-3 py-2 space-y-1">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
-          context
-        </div>
-        <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[10px] font-mono">
-          <span className="text-zinc-500 dark:text-zinc-400">
-            age{' '}
-            <span className="text-emerald-700 dark:text-green-400 font-semibold">
-              {ageYearsInt}y {ageMonthsInt}m
-            </span>
-          </span>
-          {majorActiveSign && (
-            <span className="text-zinc-500 dark:text-zinc-400">
-              major round:{' '}
-              <span className="text-zinc-700 dark:text-zinc-300">{majorActiveSign}</span>
-            </span>
-          )}
-          <span className="text-zinc-500 dark:text-zinc-400">
-            minor sign:{' '}
-            <span className="text-zinc-700 dark:text-zinc-300">{minorProgression.minorSignName}</span>
-          </span>
-        </div>
-      </div>
+      {!collapsed && (
+        <div className="space-y-5">
+          {/* Context strip */}
+          <div className="rounded-md border border-zinc-200 dark:border-zinc-700 px-3 py-2.5 space-y-2">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+              context
+            </div>
 
-      {/* Age override */}
-      <div className="space-y-1.5">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">age</div>
-        {autoAge !== null && (
-          <div className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
-            auto: {ageYearsInt} yrs {ageMonthsInt} mo
+            {/* Age row */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono">
+              <span className="text-zinc-500 dark:text-zinc-400">
+                auto:{' '}
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  {autoAge !== null ? `${Math.floor(autoAge)}y ${Math.round((autoAge - Math.floor(autoAge)) * 12)}m` : '—'}
+                </span>
+              </span>
+              <span className="text-zinc-500 dark:text-zinc-400">
+                using:{' '}
+                <span className="text-emerald-700 dark:text-green-400 font-semibold">
+                  {ageYearsInt}y {ageMonthsInt}m
+                </span>
+              </span>
+            </div>
+
+            {/* Jupiter + round */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono">
+              <span className="text-zinc-500 dark:text-zinc-400">
+                natal ♃:{' '}
+                <span className="text-zinc-700 dark:text-zinc-300">
+                  {natalJupSignAbbr} {natalJupiterDegree.toFixed(1)}°
+                </span>
+              </span>
+              <span className="text-zinc-500 dark:text-zinc-400">
+                balance:{' '}
+                <span className="text-zinc-700 dark:text-zinc-300">{balanceDegrees.toFixed(1)}°</span>
+              </span>
+              {currentRoundNumber !== null && (
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  round:{' '}
+                  <span className="text-zinc-700 dark:text-zinc-300">#{currentRoundNumber}</span>
+                </span>
+              )}
+            </div>
+
+            {/* Temp Lagna + Minor */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono">
+              {temporaryLagna && (
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  temp lagna:{' '}
+                  <span className="text-orange-600 dark:text-orange-400 font-semibold">{temporaryLagna}</span>
+                </span>
+              )}
+              <span className="text-zinc-500 dark:text-zinc-400">
+                minor sign:{' '}
+                <span className="text-violet-600 dark:text-violet-400 font-semibold">{minorProgression.minorSignName}</span>
+              </span>
+            </div>
+
+            {/* Age override inline */}
+            <div className="flex items-center gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800">
+              <label className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 shrink-0">age override:</label>
+              <input
+                type="number"
+                min="0"
+                max="120"
+                step="0.1"
+                value={overrideStr}
+                onChange={e => setOverrideStr(e.target.value)}
+                placeholder={effectiveAge.toFixed(1)}
+                className={INPUT}
+              />
+              {overrideStr.trim() && (
+                <button
+                  type="button"
+                  onClick={() => setOverrideStr('')}
+                  className="text-[9px] font-mono text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                >
+                  clear
+                </button>
+              )}
+            </div>
           </div>
-        )}
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-mono text-zinc-500 dark:text-zinc-400">override:</label>
-          <input
-            type="number"
-            min="0"
-            max="120"
-            step="0.1"
-            value={overrideStr}
-            onChange={e => setOverrideStr(e.target.value)}
-            placeholder={effectiveAge.toFixed(1)}
-            className={INPUT}
+
+          {/* Strong event windows */}
+          <EventGroup
+            label="Strong event windows"
+            labelClass="text-emerald-600 dark:text-green-500"
+            windows={highWindows}
+            emptyText="No high-confidence event windows active."
           />
+
+          {/* Medium event windows */}
+          <EventGroup
+            label="Medium event windows"
+            labelClass="text-amber-600 dark:text-amber-500"
+            windows={mediumWindows}
+            emptyText="No medium-confidence event windows active."
+          />
+
+          {/* Low / background */}
+          <EventGroup
+            label="Low / background themes"
+            labelClass="text-zinc-400 dark:text-zinc-600"
+            windows={lowWindows}
+            emptyText="No background themes active."
+          />
+
+          {/* Explanation note */}
+          <div className="rounded-md border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-3 py-2">
+            <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 leading-relaxed">
+              BNN Event Detection combines Jupiterian Round (major) and Minor Jupiter Progression (minor).
+              High = both active. Always confirm with dasha and transit.
+            </p>
+          </div>
         </div>
-      </div>
-
-      {/* High confidence */}
-      <EventGroup
-        label="Strong event windows"
-        labelClass="text-emerald-600 dark:text-green-500"
-        windows={highWindows}
-        emptyText="No high-confidence event windows active."
-      />
-
-      {/* Medium confidence */}
-      <EventGroup
-        label="Medium event windows"
-        labelClass="text-amber-600 dark:text-amber-500"
-        windows={mediumWindows}
-        emptyText="No medium-confidence event windows active."
-      />
-
-      {/* Low confidence */}
-      <EventGroup
-        label="Low / background themes"
-        labelClass="text-zinc-400 dark:text-zinc-600"
-        windows={lowWindows}
-        emptyText="No background themes active."
-      />
-
-      {/* Disclaimer */}
-      <div className="rounded-md border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-3 py-2">
-        <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 leading-relaxed">
-          Event windows combine Jupiterian Round (major layer) and Minor Jupiter Progression (minor layer).
-          High = strong activation in both layers. Always confirm with dasha and transit before treating as prediction.
-        </p>
-      </div>
+      )}
     </div>
   );
 }

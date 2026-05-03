@@ -109,7 +109,9 @@ interface Props {
   showOuterPlanets?: boolean;
   showSpecialLagnas?: boolean;
   showNakshatra?: boolean;
+  /** @deprecated Pada columns removed */
   showNakshatraPada?: boolean;
+  /** @deprecated D108 removed */
   showD108?: boolean;
   nakshatraAdjust?: number;
 }
@@ -121,8 +123,6 @@ export default function JyotishGrahaTable({
   showOuterPlanets = false,
   showSpecialLagnas = true,
   showNakshatra = true,
-  showNakshatraPada = true,
-  showD108 = false,
   nakshatraAdjust = 0,
 }: Props) {
   const adjLon = (lon: number) => ((lon + nakshatraAdjust) % 360 + 360) % 360;
@@ -174,9 +174,6 @@ export default function JyotishGrahaTable({
             <th className="p-2 text-left">Graha</th>
             <th className="p-2 text-left">Pos</th>
             {showNakshatra && <th className="p-2 text-left">Nakṣatra</th>}
-            {showNakshatraPada && <th className="p-2 text-left">Pada</th>}
-            {showNakshatraPada && <th className="p-2 text-left">Pada108</th>}
-            {showD108 && <th className="p-2 text-left">D108</th>}
           </tr>
         </thead>
         <tbody>
@@ -186,9 +183,6 @@ export default function JyotishGrahaTable({
               <td className="p-2 text-zinc-800 dark:text-zinc-100">{row.name}</td>
               <td className="p-2 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">{row.position}</td>
               {showNakshatra && <td className="p-2 text-cyan-700 dark:text-cyan-300 whitespace-nowrap">{row.nakshatra}</td>}
-              {showNakshatraPada && <td className="p-2 text-zinc-600 dark:text-zinc-300">{row.pada}</td>}
-              {showNakshatraPada && <td className="p-2 text-zinc-600 dark:text-zinc-300">{row.pada108}</td>}
-              {showD108 && <td className="p-2 text-purple-700 dark:text-purple-300 whitespace-nowrap">{row.d108}</td>}
             </tr>
           ))}
         </tbody>
