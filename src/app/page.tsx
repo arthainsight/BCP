@@ -22,8 +22,6 @@ import FileActions, { ChartSnapshot } from '@/components/FileActions';
 import BcpSummary from '@/components/BcpSummary';
 import BcpManualOverride from '@/components/BcpManualOverride';
 import BnnPanel from '@/components/bnn/BnnPanel';
-import BNNJupiterianRoundsPanel from '@/components/BNNJupiterianRoundsPanel';
-import BNNJupiterMinorPanel from '@/components/BNNJupiterMinorPanel';
 import BNNEventDetectionPanel from '@/components/BNNEventDetectionPanel';
 import WorkspaceView from '@/components/workspace/WorkspaceView';
 
@@ -912,33 +910,13 @@ export default function Home() {
             {desktopTab === 'bnn' && (
               chartData
                 ? <div className="space-y-6">
-                    {chartDisplaySettings.showBnnEventDetection && (
-                      <BNNEventDetectionPanel
-                        chart={chartData}
-                        birthDatetime={birthDatetime}
-                        targetDate={targetDate}
-                        bnnOverrideStr={bnnOverrideStr}
-                        onBnnOverrideStrChange={setBnnOverrideStr}
-                      />
-                    )}
-                    {chartDisplaySettings.showBnnJupiterianRounds && (
-                      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
-                        <BNNJupiterianRoundsPanel
-                          chart={chartData}
-                          birthDatetime={birthDatetime}
-                          targetDate={targetDate}
-                        />
-                      </div>
-                    )}
-                    {chartDisplaySettings.showBnnJupiterMinor && (
-                      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
-                        <BNNJupiterMinorPanel
-                          chart={chartData}
-                          birthDatetime={birthDatetime}
-                          targetDate={targetDate}
-                        />
-                      </div>
-                    )}
+                    <BNNEventDetectionPanel
+                      chart={chartData}
+                      birthDatetime={birthDatetime}
+                      targetDate={targetDate}
+                      bnnOverrideStr={bnnOverrideStr}
+                      onBnnOverrideStrChange={setBnnOverrideStr}
+                    />
                     {chartDisplaySettings.showBnnDebug && (
                       <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
                         <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-3">
@@ -1066,33 +1044,13 @@ export default function Home() {
           <Panel>
             {chartData
               ? <div className="space-y-6">
-                  {chartDisplaySettings.showBnnEventDetection && (
-                    <BNNEventDetectionPanel
-                      chart={chartData}
-                      birthDatetime={birthDatetime}
-                      targetDate={targetDate}
-                      bnnOverrideStr={bnnOverrideStr}
-                      onBnnOverrideStrChange={setBnnOverrideStr}
-                    />
-                  )}
-                  {chartDisplaySettings.showBnnJupiterianRounds && (
-                    <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
-                      <BNNJupiterianRoundsPanel
-                        chart={chartData}
-                        birthDatetime={birthDatetime}
-                        targetDate={targetDate}
-                      />
-                    </div>
-                  )}
-                  {chartDisplaySettings.showBnnJupiterMinor && (
-                    <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
-                      <BNNJupiterMinorPanel
-                        chart={chartData}
-                        birthDatetime={birthDatetime}
-                        targetDate={targetDate}
-                      />
-                    </div>
-                  )}
+                  <BNNEventDetectionPanel
+                    chart={chartData}
+                    birthDatetime={birthDatetime}
+                    targetDate={targetDate}
+                    bnnOverrideStr={bnnOverrideStr}
+                    onBnnOverrideStrChange={setBnnOverrideStr}
+                  />
                   {chartDisplaySettings.showBnnDebug && (
                     <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
                       <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-3">

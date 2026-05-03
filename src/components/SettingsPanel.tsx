@@ -36,18 +36,12 @@ const PRECISION_OPTIONS: [DegreePrecision, string][] = [
 const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showWorkspace', label: 'workspace mode' },
   { key: 'showTransitPlanets', label: 'transit' },
-  { key: 'showNakshatraPada', label: 'pada + pada108' },
-  { key: 'showD108', label: 'D108 (experimental)' },
   { key: 'showOuterPlanets', label: 'outer planets' },
   { key: 'showSpecialLagnas', label: 'special lagnas' },
   { key: 'showPanchang', label: 'panchang' },
   { key: 'showGrahaDrishti', label: 'graha dṛṣṭi' },
   { key: 'showRashiDrishti', label: 'rāśi dṛṣṭi' },
   { key: 'showBnnAlpha', label: 'BNN alpha (research)' },
-  { key: 'showAshtakavarga', label: 'ashtakavarga (AV)' },
-  { key: 'showBnnJupiterianRounds', label: 'BNN Jupiterian Rounds' },
-  { key: 'showBnnJupiterMinor', label: 'BNN Jupiter Minor' },
-  { key: 'showBnnEventDetection', label: 'BNN Event Detection' },
   { key: 'showBnnDebug', label: 'BNN Engine Debug' },
 ];
 

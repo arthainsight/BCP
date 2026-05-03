@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v1.56',
+    changes: [
+      'BNN simplified into single Event Detection module; removed standalone Jupiterian Rounds and Minor Progression panels',
+      'BNN Event Detection context now shows natal Jupiter sign/degree, balance, current round number, and Temporary Lagna',
+      'BNN Event Detection panel is collapsible; age override cleared with one click',
+      'Removed Pada, Pada108, and D108 Experimental columns from Graha Table',
+      'Removed BNN Jupiterian Rounds and BNN Jupiter Minor settings toggles',
+      'Ashtakavarga handling corrected: shows "Ashtakavarga not available yet" instead of unreliable values',
+    ],
+  },
+  {
     version: 'v1.55',
     changes: [
       'Bhava Bala: added occupant (Bhava Graha) contribution — ~approx: benefic occupant +45 × Ṣaḍbala ratio, malefic −30 × ratio virupa',
