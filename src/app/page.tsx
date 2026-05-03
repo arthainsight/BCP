@@ -300,7 +300,12 @@ export default function Home() {
   useEffect(() => {
     try {
       const ds = localStorage.getItem('chartDisplaySettings');
-      if (ds) setChartDisplaySettings({ ...DEFAULT_CHART_DISPLAY, ...JSON.parse(ds) });
+      if (ds) {
+        const parsed = JSON.parse(ds);
+        const merged = { ...DEFAULT_CHART_DISPLAY, ...parsed };
+        if (!parsed.degreePrecision && parsed.showDegrees) merged.degreePrecision = 'degree';
+        setChartDisplaySettings(merged);
+      }
       const cs = localStorage.getItem('calculationSettings');
       if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
       const dash = localStorage.getItem('dashaSettings');

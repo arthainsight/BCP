@@ -1,7 +1,24 @@
 export const CHANGELOG = [
   {
+    version: 'v1.48',
+    changes: [
+      'Inactive yogas hidden by default — only active yogas are shown in the Yoga Table',
+      'Yoga Table can now be added as a standalone Workspace panel',
+      'Workspace now supports up to 8 panels (was 4)',
+      'Added Mukuta, Raja, Sakata, Dhana, Chandra, Adhi, Uttama, Sama and Adhama yogas',
+      'Added Pancha Mahapurusha yogas: Ruchaka (Mars), Bhadra (Mercury), Hamsa (Jupiter), Malavya (Venus), Shasha (Saturn)',
+    ],
+  },
+  {
+    version: 'v1.47',
+    changes: [
+      'Added Yoga Table with Vosi, Vesi, Ubhayachari, Anapha, Sunapha, Durudhara and Kemadruma yoga detection.',
+    ],
+  },
+  {
     version: 'v1.44',
     changes: [
+      'Added configurable degree precision: Off, rounded degrees, degrees + minutes, and degrees + minutes + seconds. Transit planets now follow the same degree display setting.',
       'Transit datetime controls now visible under main chart and in Natal+Transit workspace panel',
       'BCP age/month manual override controls now appear under the main chart when BCP is enabled',
       'Legend items are now panel-specific in workspace: BCP legend only in BCP panel, BNN legend only in BNN panel, transit legend only in Natal+Transit panel',

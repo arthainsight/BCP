@@ -13,6 +13,7 @@ import BCPAgeControls from '../BCPAgeControls';
 import GrahasPanel from '../GrahasPanel';
 import DashaPanel from '../DashaPanel';
 import BcpSummary from '../BcpSummary';
+import YogaTable from '../YogaTable';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,7 @@ const PANEL_OPTIONS: { value: WorkspacePanelType; label: string }[] = [
   { value: 'bnn',          label: 'BNN' },
   { value: 'vimshottari',  label: 'Vimshottari' },
   { value: 'graha-table',  label: 'Graha Table' },
+  { value: 'yoga-table',   label: 'Yoga Table' },
 ];
 
 const PANEL_TITLES: Record<WorkspacePanelType, string> = {
@@ -32,6 +34,7 @@ const PANEL_TITLES: Record<WorkspacePanelType, string> = {
   'bnn':          'BNN',
   'vimshottari':  'Vimshottari',
   'graha-table':  'Graha Table',
+  'yoga-table':   'Yoga Table',
 };
 
 const DEFAULT_PANELS: WorkspacePanel[] = [
@@ -171,7 +174,7 @@ export default function WorkspaceView({
 
   // ── Panel management ──
   const addPanel = useCallback(() => {
-    if (panels.length >= 4) return;
+    if (panels.length >= 8) return;
     setPanels(prev => [...prev, { id: `ws-${Date.now()}`, title: 'Natal Chart', type: 'natal' }]);
   }, [panels.length]);
 
@@ -209,7 +212,7 @@ export default function WorkspaceView({
       specialLagnas: chart.specialLagnas ?? [],
       showNatalPlanets: chartDisplaySettings.showNatalPlanets ?? true,
       showSigns: chartDisplaySettings.showSigns ?? true,
-      showDegrees: chartDisplaySettings.showDegrees ?? false,
+      degreePrecision: chartDisplaySettings.degreePrecision ?? 'off',
       showCharaKaraka: chartDisplaySettings.showCharaKaraka ?? false,
       showNakshatra: chartDisplaySettings.showNakshatra ?? true,
       showOuterPlanets: chartDisplaySettings.showOuterPlanets ?? false,
@@ -326,20 +329,24 @@ export default function WorkspaceView({
             nakshatraAdjust={nakshatraAdjust}
           />
         );
+
+      case 'yoga-table':
+        return <YogaTable chart={chart} />;
     }
   }
 
   // ── Grid class ──
   const gridClass =
-    panels.length === 1 ? 'grid grid-cols-1' :
-    panels.length === 2 ? 'grid grid-cols-1 md:grid-cols-2' :
-                          'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3';
+    panels.length <= 1 ? 'grid grid-cols-1' :
+    panels.length <= 2 ? 'grid grid-cols-1 md:grid-cols-2' :
+    panels.length <= 4 ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3' :
+                         'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4';
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; workspace</div>
-        {panels.length < 4 && (
+        {panels.length < 8 && (
           <button
             type="button"
             onClick={addPanel}

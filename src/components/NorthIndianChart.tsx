@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
+import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { AshtakavargaOverlayCell } from '@/lib/ashtakavarga';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
@@ -27,7 +28,7 @@ interface Props {
   showTransitPlanets?: boolean;
   showSigns?: boolean;
   showHouseNumbers?: boolean;
-  showDegrees?: boolean;
+  degreePrecision?: DegreePrecision;
   showCharaKaraka?: boolean;
   showNakshatra?: boolean;
   showBcpHighlights?: boolean;
@@ -158,7 +159,7 @@ export default function NorthIndianChart({
   showTransitPlanets = false,
   showSigns = true,
   showHouseNumbers = false,
-  showDegrees = false,
+  degreePrecision = 'off' as DegreePrecision,
   showCharaKaraka = false,
   showNakshatra = false,
   showBcpHighlights = true,
@@ -283,8 +284,8 @@ export default function NorthIndianChart({
                 const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
                 const retroSuffix = !planet.isTransit && planet.isRetrograde ? '℞' : '';
                 const parts: string[] = [code + retroSuffix];
+                if (degreePrecision !== 'off') parts.push(formatDegree(planet.degree, degreePrecision));
                 if (!planet.isTransit) {
-                  if (showDegrees) parts.push(`${Math.floor(planet.degree)}°`);
                   if (showCharaKaraka) {
                     const k = karakaByPlanet[planet.name];
                     if (k) parts.push(k);

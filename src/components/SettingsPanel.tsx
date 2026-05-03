@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
+import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
 import UpdatesPanel from './UpdatesPanel';
@@ -21,9 +22,15 @@ const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-
 const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showSigns', label: 'signs' },
   { key: 'showNatalPlanets', label: 'natal' },
-  { key: 'showDegrees', label: 'degrees' },
   { key: 'showNakshatra', label: 'nakshatra' },
   { key: 'showCharaKaraka', label: 'karaka' },
+];
+
+const PRECISION_OPTIONS: [DegreePrecision, string][] = [
+  ['off', 'Off'],
+  ['degree', '12°'],
+  ['minute', "12°34'"],
+  ['second', "12°34'56\""],
 ];
 
 const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
@@ -195,6 +202,25 @@ export default function SettingsPanel(props: Props) {
                     onUpdateChartDisplay?.({ showBnnMajorHighlight: next, showBnnMinorHighlight: next });
                   }}
                 />
+              </div>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 shrink-0">degrees</span>
+              <div className="flex gap-0.5">
+                {PRECISION_OPTIONS.map(([val, lbl]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => onUpdateChartDisplay?.({ degreePrecision: val })}
+                    className={`px-1.5 py-0.5 text-[9px] font-mono rounded-sm border transition-colors ${
+                      (chartDisplaySettings.degreePrecision ?? 'off') === val
+                        ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
+                        : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    {lbl}
+                  </button>
+                ))}
               </div>
             </div>
           </div>

@@ -199,7 +199,7 @@ export default function ChartSection({
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
           showTransitPlanets={chartDisplaySettings.showTransitPlanets}
-          showDegrees={chartDisplaySettings.showDegrees}
+          degreePrecision={chartDisplaySettings.degreePrecision ?? 'off'}
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
           showOuterPlanets={chartDisplaySettings.showOuterPlanets}
@@ -221,7 +221,7 @@ export default function ChartSection({
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
           showTransitPlanets={chartDisplaySettings.showTransitPlanets}
-          showDegrees={chartDisplaySettings.showDegrees}
+          degreePrecision={chartDisplaySettings.degreePrecision ?? 'off'}
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
           showOuterPlanets={chartDisplaySettings.showOuterPlanets}

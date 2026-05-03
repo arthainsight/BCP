@@ -1,4 +1,5 @@
 import { ChartData, PlanetData, SpecialLagna } from '@/types';
+import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 
@@ -52,12 +53,8 @@ const NAKSHATRAS = [
   { name: 'Revatī', lord: 'Me' },
 ];
 
-function formatDms(deg: number): string {
-  const d = Math.floor(deg);
-  const minFloat = (deg - d) * 60;
-  const m = Math.floor(minFloat);
-  const s = Math.round((minFloat - m) * 60);
-  return `${d}°${m}'${s}''`;
+function tableFormatDeg(deg: number, precision: DegreePrecision): string {
+  return formatDegree(deg, precision === 'off' ? 'second' : precision);
 }
 
 function normalizeLongitude(longitude: number): number {
@@ -89,7 +86,7 @@ function getD108(longitude: number) {
   return { sign: d108Sign, part };
 }
 
-function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>, adjLon: (l: number) => number) {
+function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>, adjLon: (l: number) => number, precision: DegreePrecision) {
   const graha = GRAHA_NAMES[planet.name] ?? { code: planet.name.slice(0, 2), name: planet.name };
   const nak = getNakshatra(adjLon(planet.longitude));
   const d108 = getD108(planet.longitude);
@@ -97,7 +94,7 @@ function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, strin
     code: graha.code + (planet.isRetrograde ? ' ℞' : ''),
     name: graha.name,
     karaka: karakaByPlanet[planet.name] ?? '',
-    position: `${SIGN_ABBR[planet.sign]} ${formatDms(planet.degree)}`,
+    position: `${SIGN_ABBR[planet.sign]} ${tableFormatDeg(planet.degree, precision)}`,
     nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
     pada: nak.pada,
     pada108: nak.pada108,
@@ -108,6 +105,7 @@ function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, strin
 interface Props {
   chart: ChartData;
   karakaByPlanet?: Record<string, string>;
+  degreePrecision?: DegreePrecision;
   showOuterPlanets?: boolean;
   showSpecialLagnas?: boolean;
   showNakshatra?: boolean;
@@ -119,6 +117,7 @@ interface Props {
 export default function JyotishGrahaTable({
   chart,
   karakaByPlanet = {},
+  degreePrecision = 'off',
   showOuterPlanets = false,
   showSpecialLagnas = true,
   showNakshatra = true,
@@ -137,7 +136,7 @@ export default function JyotishGrahaTable({
       code: sl.name,
       name: sl.name,
       karaka: '',
-      position: `${SIGN_ABBR[sl.sign]} ${formatDms(sl.degree)}`,
+      position: `${SIGN_ABBR[sl.sign]} ${tableFormatDeg(sl.degree, degreePrecision)}`,
       nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
       pada: nak.pada,
       pada108: nak.pada108,
@@ -155,14 +154,14 @@ export default function JyotishGrahaTable({
       code: 'As',
       name: 'Lagna',
       karaka: '',
-      position: `${SIGN_ABBR[chart.ascendant.sign]} ${formatDms(chart.ascendant.degree)}`,
+      position: `${SIGN_ABBR[chart.ascendant.sign]} ${tableFormatDeg(chart.ascendant.degree, degreePrecision)}`,
       nakshatra: `${ascNak.name}(${ascNak.number}) ${ascNak.lord}`,
       pada: ascNak.pada,
       pada108: ascNak.pada108,
       d108: `${SIGN_ABBR[ascD108.sign]} (${ascD108.part})`,
       isSpecial: false,
     },
-    ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet, adjLon), isSpecial: false })),
+    ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet, adjLon, degreePrecision), isSpecial: false })),
     ...(showSpecialLagnas ? (chart.specialLagnas ?? []).map(buildSpecialLagnaRow) : []),
   ];
 

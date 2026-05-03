@@ -1,6 +1,7 @@
 import { ChartData, ChartDisplaySettings, DEFAULT_CHART_DISPLAY } from '@/types';
 import JyotishGrahaTable from './JyotishGrahaTable';
 import DrishtiPanel from './DrishtiPanel';
+import YogaTable from './YogaTable';
 
 interface Props {
   chart: ChartData;
@@ -29,6 +30,7 @@ export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySetting
       <JyotishGrahaTable
         chart={chart}
         karakaByPlanet={karakaByPlanet}
+        degreePrecision={settings.degreePrecision ?? 'off'}
         showOuterPlanets={settings.showOuterPlanets}
         showSpecialLagnas={settings.showSpecialLagnas}
         showNakshatra={settings.showNakshatra}
@@ -44,6 +46,9 @@ export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySetting
           showRashiDrishti={settings.showRashiDrishti}
         />
       )}
+      <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3">
+        <YogaTable chart={chart} />
+      </div>
     </div>
   );
 }

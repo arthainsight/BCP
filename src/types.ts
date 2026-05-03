@@ -1,3 +1,6 @@
+import type { DegreePrecision } from '@/lib/formatDegree';
+export type { DegreePrecision };
+
 export interface GeoResult {
   name: string;
   country: string;
@@ -94,7 +97,8 @@ export type WorkspacePanelType =
   | 'bcp'
   | 'bnn'
   | 'vimshottari'
-  | 'graha-table';
+  | 'graha-table'
+  | 'yoga-table';
 
 export type WorkspacePanel = {
   id: string;
@@ -108,6 +112,7 @@ export interface ChartDisplaySettings {
   showNatalPlanets: boolean;
   showTransitPlanets: boolean;
   showDegrees: boolean;
+  degreePrecision: DegreePrecision;
   showNakshatra: boolean;
   showNakshatraPada: boolean;
   showD108: boolean;
@@ -135,6 +140,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showNatalPlanets: true,
   showTransitPlanets: false,
   showDegrees: false,
+  degreePrecision: 'off',
   showNakshatra: true,
   showNakshatraPada: true,
   showD108: false,

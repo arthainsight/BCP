@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
+import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { AshtakavargaOverlayCell } from '@/lib/ashtakavarga';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
@@ -26,7 +27,7 @@ interface Props {
   showNatalPlanets?: boolean;
   showTransitPlanets?: boolean;
   showSigns?: boolean;
-  showDegrees?: boolean;
+  degreePrecision?: DegreePrecision;
   showCharaKaraka?: boolean;
   showNakshatra?: boolean;
   showOuterPlanets?: boolean;
@@ -83,7 +84,7 @@ function getCellClass(house: number, year: number, month: number): string {
 function getPlanetLabel(
   planet: PlanetData,
   isTransit: boolean,
-  showDegrees: boolean,
+  degreePrecision: DegreePrecision,
   showNakshatra: boolean,
   showCharaKaraka: boolean,
   karakaByPlanet: Record<string, string>,
@@ -91,15 +92,15 @@ function getPlanetLabel(
 ): string {
   const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
   const retroSuffix = !isTransit && planet.isRetrograde ? '℞' : '';
-  if (isTransit) return code;
-
   const parts = [code + retroSuffix];
-  if (showDegrees) parts.push(`${Math.floor(planet.degree)}°`);
-  if (showCharaKaraka) {
-    const karaka = karakaByPlanet[planet.name];
-    if (karaka) parts.push(karaka);
+  if (degreePrecision !== 'off') parts.push(formatDegree(planet.degree, degreePrecision));
+  if (!isTransit) {
+    if (showCharaKaraka) {
+      const karaka = karakaByPlanet[planet.name];
+      if (karaka) parts.push(karaka);
+    }
+    if (showNakshatra) parts.push(getNakAbbr(((planet.longitude + nakshatraAdjust) % 360 + 360) % 360));
   }
-  if (showNakshatra) parts.push(getNakAbbr(((planet.longitude + nakshatraAdjust) % 360 + 360) % 360));
   return parts.join(' ');
 }
 
@@ -114,7 +115,7 @@ export default function SouthIndianChart({
   showNatalPlanets = true,
   showTransitPlanets = false,
   showSigns = true,
-  showDegrees = false,
+  degreePrecision = 'off' as DegreePrecision,
   showCharaKaraka = false,
   showNakshatra = false,
   showOuterPlanets = false,
@@ -243,7 +244,7 @@ export default function SouthIndianChart({
                     className="truncate"
                     style={p.isTransit ? { color: TRANSIT_COLOR } : undefined}
                   >
-                    {getPlanetLabel(p, p.isTransit, showDegrees, showNakshatra, showCharaKaraka, karakaByPlanet, nakshatraAdjust)}
+                    {getPlanetLabel(p, p.isTransit, degreePrecision, showNakshatra, showCharaKaraka, karakaByPlanet, nakshatraAdjust)}
                   </span>
                 ))}
                 {specialHere.map((sl, index) => (
