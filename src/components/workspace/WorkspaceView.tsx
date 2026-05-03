@@ -263,7 +263,7 @@ export default function WorkspaceView({
             })}
             {bcp && (
               <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 space-y-3">
-                <BcpSummary bcp={bcp} planets={chart.planets} ascSign={chart.ascendant.sign} />
+                <BcpSummary bcp={effectiveWorkspaceBcp ?? bcp} planets={chart.planets} ascSign={chart.ascendant.sign} />
                 {bcpEnabled && (
                   <BCPAgeControls
                     useManualBcpMode={bcpManualProps.useManualBcpMode}
@@ -272,12 +272,8 @@ export default function WorkspaceView({
                     onManualBcpAgeChange={bcpManualProps.onManualBcpAgeChange}
                     manualBcpMonth={bcpManualProps.manualBcpMonth}
                     onManualBcpMonthChange={bcpManualProps.onManualBcpMonthChange}
-                    activeYearHouse={
-                      bcpManualProps.manualBcpResult?.activeYearHouse ?? bcp?.activeYearHouse
-                    }
-                    activeMonthHouse={
-                      bcpManualProps.manualBcpResult?.activeMonthHouse ?? bcp?.activeMonthHouse
-                    }
+                    activeYearHouse={effectiveWorkspaceBcp?.activeYearHouse ?? bcp?.activeYearHouse}
+                    activeMonthHouse={effectiveWorkspaceBcp?.activeMonthHouse ?? bcp?.activeMonthHouse}
                   />
                 )}
               </div>

@@ -228,7 +228,7 @@ export default function Home() {
       ? computeManualBcp(manualBcpAgeNum, manualBcpMonthNum)
       : null;
 
-  const effectiveBcpResult = useManualBcpMode ? manualBcpResult : bcpResult;
+  const effectiveBcpResult = useManualBcpMode && manualBcpResult ? manualBcpResult : bcpResult;
 
   const canCalculate =
     !!birthDatetime && showCoords && !!manualLat && !!manualLng && effectiveTzOffset !== null;
@@ -322,6 +322,14 @@ export default function Home() {
     });
   }, []);
 
+  const updateChartDisplay = useCallback((update: Partial<ChartDisplaySettings>) => {
+    setChartDisplaySettings((prev) => {
+      const next = { ...prev, ...update };
+      try { localStorage.setItem('chartDisplaySettings', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, []);
+
   const updateCalculationSettings = useCallback((update: Partial<CalculationSettings>) => {
     setCalculationSettings((prev) => {
       const next = { ...prev, ...update };
@@ -363,6 +371,9 @@ export default function Home() {
     setManualBcpMonth('');
     setTargetDate(getTodayString());
     previousCalculationKeyRef.current = '';
+    setActiveTab('data');
+    setDesktopTab('data');
+    setActiveChartName(null);
   }, []);
 
   const handleGeocode = useCallback(async () => {
@@ -727,6 +738,7 @@ export default function Home() {
   const settingsProps = {
     chartDisplaySettings,
     onToggleChartDisplay: toggleChartDisplay,
+    onUpdateChartDisplay: updateChartDisplay,
     calculationSettings,
     onUpdateCalculationSettings: updateCalculationSettings,
     dashaSettings,
@@ -935,10 +947,10 @@ export default function Home() {
                 : <EmptyState message="Calculate a chart to see BNN analysis" />
             )}
             {desktopTab === 'workspace' && (
-              chartData && effectiveBcpResult
+              chartData && bcpResult
                 ? <WorkspaceView
                     chart={chartData}
-                    bcp={effectiveBcpResult}
+                    bcp={bcpResult}
                     transitPlanets={transitPlanets}
                     transitDatetime={transitDatetime}
                     onTransitDatetimeChange={setTransitDatetime}
@@ -1093,10 +1105,10 @@ export default function Home() {
 
         {activeTab === 'workspace' && (
           <Panel>
-            {chartData && effectiveBcpResult
+            {chartData && bcpResult
               ? <WorkspaceView
                   chart={chartData}
-                  bcp={effectiveBcpResult}
+                  bcp={bcpResult}
                   transitPlanets={transitPlanets}
                   transitDatetime={transitDatetime}
                   onTransitDatetimeChange={setTransitDatetime}
