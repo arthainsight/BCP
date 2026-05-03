@@ -251,6 +251,7 @@ export function BhavaBalaCard({ chart }) {
 }
 
 export default function VargaMatrix({ chart }) {
+  if (!chart) return <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">Calculate a chart first.</div>;
   const divisions = DEFAULT_DIVISIONS;
   const planets = mapPlanetLongitudes(chart);
   const lagna = typeof chart?.ascendant?.longitude === 'number' ? chart.ascendant.longitude : undefined;
@@ -259,7 +260,6 @@ export default function VargaMatrix({ chart }) {
   const shadbala = buildShadbalaRows(chart);
   const bhavaBala = buildClassicalBhavaBala(chart, shadbala);
   const divisionList = formatDivisionList(divisions);
-  if (!chart) return <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">Calculate a chart to see Varga Matrix</div>;
   return <div className="space-y-5">
     <div><div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; varga.matrix</div><div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">{divisionList} from existing sidereal longitudes. Cell colour = dignity; debilitated = 0 strength.</div></div>
     <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg"><table className="w-full min-w-[980px] border-collapse text-xs font-mono"><thead><tr className="bg-zinc-100 dark:bg-zinc-800"><th className="sticky left-0 z-10 bg-zinc-100 dark:bg-zinc-800 text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">Body</th>{divisions.map((division) => <th key={division} className="text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400">D{division}</th>)}</tr></thead><tbody>{ROW_ORDER.map((name) => <tr key={name} className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"><td className="sticky left-0 z-10 bg-white dark:bg-zinc-900 p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">{name}</td>{divisions.map((division) => { const cell = matrix[name][`D${division}`]; return <td key={division} className={`p-2 border whitespace-nowrap ${getDignityCellClass(cell.dignity)}`} title={DIGNITY_LABELS[cell.dignity]}><span className="font-bold">{cell.sign}</span>{cell.dignity !== 'none' && <span className="ml-1 text-[9px] opacity-75">{DIGNITY_LABELS[cell.dignity]}</span>}</td>; })}</tr>)}</tbody></table></div>
