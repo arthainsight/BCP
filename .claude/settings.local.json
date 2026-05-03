@@ -20,7 +20,8 @@
       "Bash(Select-Object -ExpandProperty Name)",
       "Bash(xargs -I {} basename {})",
       "Bash(node *)",
-      "Bash(xargs wc *)"
+      "Bash(xargs wc *)",
+      "PowerShell(npx tsc --noEmit 2>&1)"
     ]
   }
 }

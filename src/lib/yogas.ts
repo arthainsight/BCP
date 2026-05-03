@@ -1,4 +1,5 @@
 import { PlanetData } from '@/types';
+import { getRashiAspectSigns } from '@/lib/drishti';
 
 export type YogaStatus = 'active' | 'inactive';
 export type YogaCategory = 'solar' | 'moon' | 'raja' | 'dhana' | 'general' | 'pancha-mahapurusha';
@@ -48,6 +49,34 @@ const PANCHA_DEFS: { id: string; name: string; planet: string; ownSigns: number[
 ];
 
 const TRACKED_PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+
+const BENEFIC_CANDIDATES = ['Jupiter', 'Venus', 'Mercury', 'Moon'];
+const NAT_MALEFIC = new Set(['Sun', 'Mars', 'Saturn', 'Rahu', 'Ketu']);
+
+// Dynamic benefic status: true = benefic, false = malefic, null = neutral.
+// Avoids circular dep with yogaStrength.ts — inline the same Moon-phase + Mercury-companion logic.
+function dynamicBeneficStatus(name: string, planets: PlanetData[]): true | false | null {
+  const NAT_BENEFIC = new Set(['Jupiter', 'Venus']);
+  if (NAT_BENEFIC.has(name)) return true;
+  if (NAT_MALEFIC.has(name)) return false;
+  if (name === 'Moon') {
+    const sun  = planets.find(p => p.name === 'Sun');
+    const moon = planets.find(p => p.name === 'Moon');
+    if (sun && moon) {
+      const diff = ((moon.longitude - sun.longitude) + 360) % 360;
+      if (diff >= 120 && diff <= 240) return true;
+      if (diff <= 60  || diff >= 300) return false;
+    }
+    return null;
+  }
+  if (name === 'Mercury') {
+    const mercury = planets.find(p => p.name === 'Mercury');
+    if (!mercury) return true;
+    if (planets.some(p => p.name !== 'Mercury' && p.sign === mercury.sign && NAT_MALEFIC.has(p.name))) return false;
+    return true;
+  }
+  return null;
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -395,6 +424,171 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
           : `${pm.planet} in ${sn(p.sign)} (${signQuality}) but in house ${p.house} — not Kendra`,
     });
   }
+
+  // ── Amala Yoga ───────────────────────────────────────────────────────────────
+  // Natural benefic in 10th house from Lagna
+
+  {
+    const in10thLagna = planets.filter(p =>
+      BENEFIC_CANDIDATES.includes(p.name) &&
+      p.house === 10 &&
+      dynamicBeneficStatus(p.name, planets) === true
+    );
+    results.push({
+      id: 'amala-lagna', name: 'Amala (from Lagna)', category: 'general',
+      status: in10thLagna.length > 0 ? 'active' : 'inactive',
+      referencePlanet: 'Lagna',
+      planetsInvolved: in10thLagna.map(p => p.name),
+      rule: 'Natural benefic in 10th house from Lagna',
+      resultText: in10thLagna.length > 0
+        ? `${in10thLagna.map(p => p.name).join(', ')} in 10th from Lagna`
+        : 'No benefic in 10th house from Lagna',
+    });
+  }
+
+  // Natural benefic in 10th sign from Moon
+  if (moon) {
+    const tenth = ((moon.sign - 1 + 9) % 12) + 1;
+    const in10thMoon = planets.filter(p =>
+      BENEFIC_CANDIDATES.includes(p.name) &&
+      p.name !== 'Moon' &&
+      p.sign === tenth &&
+      dynamicBeneficStatus(p.name, planets) === true
+    );
+    results.push({
+      id: 'amala-moon', name: 'Amala (from Moon)', category: 'general',
+      status: in10thMoon.length > 0 ? 'active' : 'inactive',
+      referencePlanet: 'Moon',
+      planetsInvolved: in10thMoon.map(p => p.name),
+      rule: 'Natural benefic in 10th sign from Moon',
+      resultText: in10thMoon.length > 0
+        ? `${in10thMoon.map(p => p.name).join(', ')} in 10th from Moon (${sn(tenth)})`
+        : `No benefic in 10th from Moon (${sn(tenth)})`,
+    });
+  }
+
+  // ── Budha Aditya Yoga ─────────────────────────────────────────────────────
+  // Sun and Mercury in same sign
+
+  if (sun) {
+    const mercury = planets.find(p => p.name === 'Mercury');
+    if (mercury) {
+      const conjunct = sun.sign === mercury.sign;
+      const angDist  = (() => {
+        const d = Math.abs(((mercury.longitude - sun.longitude) + 360) % 360);
+        return d > 180 ? 360 - d : d;
+      })();
+      const combust = angDist < 14;
+
+      let text: string;
+      if (conjunct) {
+        text = `Sun and Mercury in ${sn(sun.sign)}`;
+        if (combust) text += ` — Mercury combust (${angDist.toFixed(1)}° from Sun)`;
+      } else {
+        text = `Sun in ${sn(sun.sign)}, Mercury in ${sn(mercury.sign)} — not conjunct`;
+      }
+
+      results.push({
+        id: 'budha-aditya', name: 'Budha Aditya', category: 'general',
+        status: conjunct ? 'active' : 'inactive',
+        referencePlanet: 'Sun, Mercury',
+        planetsInvolved: conjunct ? ['Sun', 'Mercury'] : [],
+        rule: 'Sun and Mercury conjunct in same sign',
+        resultText: text,
+      });
+    }
+  }
+
+  // ── Chandra Mangala Yoga ──────────────────────────────────────────────────
+  // Moon and Mars conjunct OR mutually aspecting (rāśi aspect)
+
+  if (moon) {
+    const mars = planets.find(p => p.name === 'Mars');
+    if (mars) {
+      const conjunct      = moon.sign === mars.sign;
+      const mutualAspect  = !conjunct && getRashiAspectSigns(moon.sign).includes(mars.sign);
+      const active        = conjunct || mutualAspect;
+
+      results.push({
+        id: 'chandra-mangala', name: 'Chandra Mangala', category: 'moon',
+        status: active ? 'active' : 'inactive',
+        referencePlanet: 'Moon, Mars',
+        planetsInvolved: active ? ['Moon', 'Mars'] : [],
+        rule: 'Moon and Mars conjunct or mutually aspect (rāśi aspect)',
+        resultText: conjunct
+          ? `Moon and Mars conjunct in ${sn(moon.sign)}`
+          : mutualAspect
+            ? `Moon (${sn(moon.sign)}) and Mars (${sn(mars.sign)}) mutually aspect`
+            : `Moon (${sn(moon.sign)}) and Mars (${sn(mars.sign)}) — no conjunction or mutual aspect`,
+      });
+    }
+  }
+
+  // ── Susubha Yoga ──────────────────────────────────────────────────────────
+  // Natural benefics occupy or aspect Lagna by rāśi aspect
+
+  {
+    const lagnaSign     = ascendantSign;
+    const aspectLagna   = getRashiAspectSigns(lagnaSign);
+
+    const inLagna = planets.filter(p =>
+      BENEFIC_CANDIDATES.includes(p.name) &&
+      p.sign === lagnaSign &&
+      dynamicBeneficStatus(p.name, planets) === true
+    );
+    const aspectingBenefics = planets.filter(p =>
+      BENEFIC_CANDIDATES.includes(p.name) &&
+      aspectLagna.includes(p.sign) &&
+      dynamicBeneficStatus(p.name, planets) === true
+    );
+
+    const allNames = [...new Set([...inLagna.map(p => p.name), ...aspectingBenefics.map(p => p.name)])];
+    const active   = allNames.length > 0;
+
+    const parts: string[] = [];
+    if (inLagna.length > 0)           parts.push(`${inLagna.map(p => p.name).join(', ')} in Lagna`);
+    if (aspectingBenefics.length > 0) parts.push(`${aspectingBenefics.map(p => p.name).join(', ')} aspecting Lagna`);
+
+    results.push({
+      id: 'susubha', name: 'Susubha', category: 'general',
+      status: active ? 'active' : 'inactive',
+      referencePlanet: 'Lagna',
+      planetsInvolved: allNames,
+      rule: 'Natural benefics in Lagna or casting rāśi aspect on Lagna',
+      resultText: active ? parts.join('; ') : 'No benefic occupies or aspects Lagna',
+    });
+  }
+
+  // ── Pending definitions ───────────────────────────────────────────────────
+  // Amara, Dhvaja, Muni have multiple conflicting definitions across traditions.
+  // These are stubs — do not activate until exact rules are confirmed.
+
+  results.push({
+    id: 'amara', name: 'Amara', category: 'general',
+    status: 'inactive',
+    referencePlanet: '—',
+    planetsInvolved: [],
+    rule: 'Definition pending — exact rule required',
+    resultText: 'Definition pending — exact rule required',
+  });
+
+  results.push({
+    id: 'dhvaja', name: 'Dhvaja', category: 'general',
+    status: 'inactive',
+    referencePlanet: '—',
+    planetsInvolved: [],
+    rule: 'Definition pending — exact rule required',
+    resultText: 'Definition pending — exact rule required',
+  });
+
+  results.push({
+    id: 'muni', name: 'Muni', category: 'general',
+    status: 'inactive',
+    referencePlanet: '—',
+    planetsInvolved: [],
+    rule: 'Definition pending — exact rule required',
+    resultText: 'Definition pending — exact rule required',
+  });
 
   return results;
 }
