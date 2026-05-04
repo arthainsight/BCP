@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
+import type { AvMode } from '@/lib/ashtakavarga';
 import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
@@ -42,7 +43,18 @@ const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showGrahaDrishti', label: 'graha dṛṣṭi' },
   { key: 'showRashiDrishti', label: 'rāśi dṛṣṭi' },
   { key: 'showBnnAlpha', label: 'BNN alpha (research)' },
-  { key: 'showBnnDebug', label: 'BNN Engine Debug' },
+];
+
+const AV_MODE_OPTIONS: { value: AvMode; label: string }[] = [
+  { value: 'off', label: 'Off' },
+  { value: 'sav', label: 'SAV — Sarvashtakavarga (total)' },
+  { value: 'Sun', label: 'Sun BAV' },
+  { value: 'Moon', label: 'Moon BAV' },
+  { value: 'Mars', label: 'Mars BAV' },
+  { value: 'Mercury', label: 'Mercury BAV' },
+  { value: 'Jupiter', label: 'Jupiter BAV' },
+  { value: 'Venus', label: 'Venus BAV' },
+  { value: 'Saturn', label: 'Saturn BAV' },
 ];
 
 const CORE_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Core');
@@ -197,6 +209,20 @@ export default function SettingsPanel(props: Props) {
                   }}
                 />
               </div>
+            </div>
+            <div className="mt-3">
+              <label className="block text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-1">
+                AV / Ashtakavarga
+              </label>
+              <select
+                className={SELECT}
+                value={chartDisplaySettings.avMode ?? 'off'}
+                onChange={(e) => onUpdateChartDisplay?.({ avMode: e.target.value as AvMode })}
+              >
+                {AV_MODE_OPTIONS.map(({ value, label }) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
             </div>
             <div className="mt-2 flex items-center justify-between gap-2">
               <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 shrink-0">degrees</span>

@@ -1,4 +1,5 @@
 export type AshtakavargaPlanet = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
+export type AvMode = 'off' | 'sav' | AshtakavargaPlanet;
 
 export type AshtakavargaChartPlanet = {
   name: string;
@@ -133,9 +134,26 @@ export function buildAshtakavarga(chart: AshtakavargaChartLike): AshtakavargaRes
   return { bav, sav };
 }
 
-export function getAshtakavargaOverlay(_chart: AshtakavargaChartLike): AshtakavargaOverlayCell[] {
-  // Hotfix: AV overlay was being forced onto the chart without any Settings toggle.
-  // Keep the AV calculation helpers intact, but do not render AV markers until a proper
-  // explicit showAshtakavarga setting is wired through the UI.
-  return [];
+function bavRowToOverlayCells(chart: AshtakavargaChartLike, row: BhinnaAshtakavargaRow): AshtakavargaOverlayCell[] {
+  return row.houses.map((bindu, index) => {
+    const house = index + 1;
+    const signIndex = getHouseSignIndex(chart, house);
+    const strength = getStrength(bindu);
+    return {
+      house,
+      sign: typeof signIndex === 'number' ? SIGN_ABBR[signIndex] : '—',
+      bindu,
+      strength,
+      label: `${bindu}`,
+    };
+  });
+}
+
+export function getAshtakavargaOverlay(chart: AshtakavargaChartLike, mode: AvMode): AshtakavargaOverlayCell[] {
+  if (mode === 'off') return [];
+  const { bav, sav } = buildAshtakavarga(chart);
+  if (mode === 'sav') return sav.overlay;
+  const row = bav.find(r => r.planet === mode);
+  if (!row) return [];
+  return bavRowToOverlayCells(chart, row);
 }
