@@ -1,4 +1,5 @@
 export type AshtakavargaPlanet = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
+export type AshtakavargaContributor = AshtakavargaPlanet | 'Lagna';
 export type AvMode = 'off' | 'sav' | AshtakavargaPlanet;
 
 export type AshtakavargaChartPlanet = {
@@ -40,18 +41,94 @@ export type AshtakavargaResult = {
 
 const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const PLANETS: AshtakavargaPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+const CONTRIBUTORS: AshtakavargaContributor[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Lagna'];
 
-// Classical-style compact BAV rules: bindu-giving houses counted from each planet's own natal house.
-// This is the correct architecture for BAV/SAV, but still marked beta because full Parashara AV
-// also includes separate contributor-specific rules and reduction systems.
+// Full Parashara Ashtakavarga rules:
+// FULL_BAV_RULES[planet][contributor] = houses (relative to contributor's natal position) that give 1 bindu.
+// With all 8 contributors each giving 0–1 per house, each planet's BAV ranges 0–8 per sign,
+// and SAV (sum of all 7 planets) ranges ~18–48 per sign.
+export const FULL_BAV_RULES: Record<AshtakavargaPlanet, Record<AshtakavargaContributor, number[]>> = {
+  Sun: {
+    Sun:     [1, 2, 4, 7, 8, 9, 10, 11],
+    Moon:    [3, 6, 10, 11],
+    Mars:    [1, 2, 4, 7, 8, 9, 10, 11],
+    Mercury: [3, 5, 6, 9, 10, 11, 12],
+    Jupiter: [5, 6, 9, 11],
+    Venus:   [6, 7, 12],
+    Saturn:  [1, 2, 4, 7, 8, 9, 10, 11],
+    Lagna:   [3, 4, 6, 10, 11, 12],
+  },
+  Moon: {
+    Sun:     [3, 6, 7, 8, 10, 11],
+    Moon:    [1, 3, 6, 7, 10, 11],
+    Mars:    [2, 3, 5, 6, 9, 10, 11],
+    Mercury: [1, 3, 4, 5, 7, 8, 10, 11],
+    Jupiter: [1, 4, 7, 8, 10, 11, 12],
+    Venus:   [3, 4, 5, 7, 9, 10, 11],
+    Saturn:  [3, 5, 6, 11],
+    Lagna:   [3, 6, 10, 11],
+  },
+  Mars: {
+    Sun:     [3, 5, 6, 10, 11],
+    Moon:    [3, 6, 11],
+    Mars:    [1, 2, 4, 7, 8, 10, 11],
+    Mercury: [3, 5, 6, 11],
+    Jupiter: [6, 10, 11, 12],
+    Venus:   [6, 8, 11, 12],
+    Saturn:  [1, 2, 4, 7, 8, 10, 11],
+    Lagna:   [1, 3, 6, 10, 11],
+  },
+  Mercury: {
+    Sun:     [5, 6, 9, 11, 12],
+    Moon:    [2, 4, 6, 8, 10, 11],
+    Mars:    [1, 2, 4, 7, 8, 9, 10, 11],
+    Mercury: [1, 3, 5, 6, 9, 10, 11, 12],
+    Jupiter: [6, 8, 11, 12],
+    Venus:   [1, 2, 3, 4, 5, 8, 9, 11],
+    Saturn:  [1, 2, 4, 7, 8, 9, 10, 11],
+    Lagna:   [1, 2, 4, 6, 8, 10, 11],
+  },
+  Jupiter: {
+    Sun:     [1, 2, 3, 4, 7, 8, 9, 10, 11],
+    Moon:    [2, 5, 7, 9, 11],
+    Mars:    [1, 2, 4, 7, 8, 10, 11],
+    Mercury: [1, 2, 4, 5, 6, 9, 10, 11],
+    Jupiter: [1, 2, 3, 4, 7, 8, 10, 11],
+    Venus:   [2, 5, 6, 9, 10, 11],
+    Saturn:  [3, 5, 6, 12],
+    Lagna:   [1, 2, 4, 5, 6, 7, 9, 10, 11],
+  },
+  Venus: {
+    Sun:     [8, 11, 12],
+    Moon:    [1, 2, 3, 4, 5, 8, 9, 11, 12],
+    Mars:    [3, 4, 6, 9, 11, 12],
+    Mercury: [3, 5, 6, 9, 11],
+    Jupiter: [5, 8, 9, 10, 11],
+    Venus:   [1, 2, 3, 4, 5, 8, 9, 10, 11],
+    Saturn:  [3, 4, 5, 8, 9, 10, 11],
+    Lagna:   [1, 2, 3, 4, 5, 8, 9, 11],
+  },
+  Saturn: {
+    Sun:     [1, 2, 4, 7, 8, 10, 11],
+    Moon:    [3, 6, 11],
+    Mars:    [3, 5, 6, 10, 11, 12],
+    Mercury: [6, 8, 9, 10, 11, 12],
+    Jupiter: [5, 6, 11, 12],
+    Venus:   [6, 11, 12],
+    Saturn:  [3, 5, 6, 11],
+    Lagna:   [1, 3, 4, 6, 10, 11],
+  },
+};
+
+// Kept for backward compatibility; self-contribution row matches FULL_BAV_RULES[planet][planet].
 export const BAV_RULES: Record<AshtakavargaPlanet, number[]> = {
-  Sun: [1, 2, 4, 7, 8, 9, 10, 11],
-  Moon: [3, 6, 7, 10, 11],
-  Mars: [3, 5, 6, 10, 11],
-  Mercury: [2, 4, 6, 8, 10, 11],
-  Jupiter: [5, 6, 9, 11],
-  Venus: [6, 7, 12],
-  Saturn: [3, 5, 6, 10, 11],
+  Sun:     FULL_BAV_RULES.Sun.Sun,
+  Moon:    FULL_BAV_RULES.Moon.Moon,
+  Mars:    FULL_BAV_RULES.Mars.Mars,
+  Mercury: FULL_BAV_RULES.Mercury.Mercury,
+  Jupiter: FULL_BAV_RULES.Jupiter.Jupiter,
+  Venus:   FULL_BAV_RULES.Venus.Venus,
+  Saturn:  FULL_BAV_RULES.Saturn.Saturn,
 };
 
 function getPlanet(chart: AshtakavargaChartLike, name: string): AshtakavargaChartPlanet | undefined {
@@ -75,24 +152,47 @@ function getRelativeHouse(fromHouse: number, toHouse: number): number {
   return ((toHouse - fromHouse + 12) % 12) + 1;
 }
 
-function getStrength(bindu: number): AshtakavargaOverlayCell['strength'] {
-  if (bindu >= 5) return 'very-high';
-  if (bindu >= 4) return 'high';
-  if (bindu >= 3) return 'medium';
+function getBavStrength(bindu: number): AshtakavargaOverlayCell['strength'] {
+  if (bindu >= 6) return 'very-high';
+  if (bindu >= 5) return 'high';
+  if (bindu >= 4) return 'medium';
+  return 'low';
+}
+
+function getSavStrength(bindu: number): AshtakavargaOverlayCell['strength'] {
+  if (bindu >= 30) return 'very-high';
+  if (bindu >= 25) return 'high';
+  if (bindu >= 20) return 'medium';
   return 'low';
 }
 
 export function buildBhinnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAshtakavargaRow[] {
   return PLANETS.map((planetName) => {
-    const planet = getPlanet(chart, planetName);
-    const planetHouse = getPlanetHouse(chart, planet);
-    const rules = BAV_RULES[planetName];
+    const rules = FULL_BAV_RULES[planetName];
 
     const houses = Array.from({ length: 12 }, (_, index) => {
       const house = index + 1;
-      if (typeof planetHouse !== 'number') return 0;
-      const relativeHouse = getRelativeHouse(planetHouse, house);
-      return rules.includes(relativeHouse) ? 1 : 0;
+      let bindu = 0;
+
+      for (const contributor of CONTRIBUTORS) {
+        let contributorHouse: number;
+        if (contributor === 'Lagna') {
+          // Lagna is always at house 1; relative house equals the target house number itself
+          contributorHouse = 1;
+        } else {
+          const contributorPlanet = getPlanet(chart, contributor);
+          const h = getPlanetHouse(chart, contributorPlanet);
+          if (typeof h !== 'number') continue;
+          contributorHouse = h;
+        }
+
+        const relativeHouse = getRelativeHouse(contributorHouse, house);
+        if (rules[contributor].includes(relativeHouse)) {
+          bindu += 1;
+        }
+      }
+
+      return bindu;
     });
 
     return {
@@ -111,7 +211,7 @@ export function buildSarvaAshtakavarga(chart: AshtakavargaChartLike, bav: Bhinna
   const overlay = houses.map((bindu, index) => {
     const house = index + 1;
     const signIndex = getHouseSignIndex(chart, house);
-    const strength = getStrength(bindu);
+    const strength = getSavStrength(bindu);
     return {
       house,
       sign: typeof signIndex === 'number' ? SIGN_ABBR[signIndex] : '—',
@@ -138,7 +238,7 @@ function bavRowToOverlayCells(chart: AshtakavargaChartLike, row: BhinnaAshtakava
   return row.houses.map((bindu, index) => {
     const house = index + 1;
     const signIndex = getHouseSignIndex(chart, house);
-    const strength = getStrength(bindu);
+    const strength = getBavStrength(bindu);
     return {
       house,
       sign: typeof signIndex === 'number' ? SIGN_ABBR[signIndex] : '—',
