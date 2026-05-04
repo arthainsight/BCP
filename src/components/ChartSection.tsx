@@ -7,6 +7,7 @@ import SouthIndianChart from './SouthIndianChart';
 import VargaMatrix from '@/pages/VargaMatrix';
 import DrishtiPanel from '@/components/DrishtiPanel';
 import { getAshtakavargaOverlay } from '@/lib/ashtakavarga';
+import type { AvMode } from '@/lib/ashtakavarga';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import TransitDateControls from './TransitDateControls';
@@ -157,7 +158,9 @@ export default function ChartSection({
 
   const yearHouse = showBcpHighlights ? bcp.activeYearHouse : 0;
   const monthHouse = showBcpHighlights ? bcp.activeMonthHouse : 0;
-  const ashtakavargaOverlay = chartDisplaySettings.showAshtakavarga ? getAshtakavargaOverlay(chart) : [];
+  const avMode: AvMode = chartDisplaySettings.avMode ?? 'off';
+  const ashtakavargaOverlay = avMode !== 'off' ? getAshtakavargaOverlay(chart, avMode) : [];
+  const avOverlayLabel = avMode === 'sav' ? 'SAV' : avMode !== 'off' ? `${avMode} BAV` : undefined;
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
 
@@ -196,6 +199,7 @@ export default function ChartSection({
           specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
           ashtakavargaOverlay={ashtakavargaOverlay}
+          avOverlayLabel={avOverlayLabel}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
           showTransitPlanets={chartDisplaySettings.showTransitPlanets}
@@ -218,6 +222,7 @@ export default function ChartSection({
           specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
           ashtakavargaOverlay={ashtakavargaOverlay}
+          avOverlayLabel={avOverlayLabel}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
           showTransitPlanets={chartDisplaySettings.showTransitPlanets}

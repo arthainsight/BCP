@@ -38,6 +38,7 @@ interface Props {
   nakshatraAdjust?: number;
   bnnMajorHouse?: number;
   bnnMinorHouse?: number;
+  avOverlayLabel?: string;
   legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
 }
 
@@ -169,6 +170,7 @@ export default function NorthIndianChart({
   nakshatraAdjust = 0,
   bnnMajorHouse = 0,
   bnnMinorHouse = 0,
+  avOverlayLabel,
   legendLayers,
 }: Props) {
   const { resolvedTheme } = useTheme();
@@ -339,7 +341,7 @@ export default function NorthIndianChart({
           {bnnMinorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT }} className="font-semibold">╌ BNN Minor</span>}
           {showTransitPlanets && legendLayers?.transit !== false && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
-          {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV Ashtakavarga</span>}
+          {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV / {avOverlayLabel ?? 'Ashtakavarga'}</span>}
         </div>
       )}
     </div>

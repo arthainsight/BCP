@@ -21,7 +21,6 @@ import { buildReportMarkdown } from '@/lib/exportReport';
 import FileActions, { ChartSnapshot } from '@/components/FileActions';
 import BcpSummary from '@/components/BcpSummary';
 import BcpManualOverride from '@/components/BcpManualOverride';
-import BnnPanel from '@/components/bnn/BnnPanel';
 import BNNEventDetectionPanel from '@/components/BNNEventDetectionPanel';
 import WorkspaceView from '@/components/workspace/WorkspaceView';
 
@@ -909,23 +908,13 @@ export default function Home() {
             )}
             {desktopTab === 'bnn' && (
               chartData
-                ? <div className="space-y-6">
-                    <BNNEventDetectionPanel
-                      chart={chartData}
-                      birthDatetime={birthDatetime}
-                      targetDate={targetDate}
-                      bnnOverrideStr={bnnOverrideStr}
-                      onBnnOverrideStrChange={setBnnOverrideStr}
-                    />
-                    {chartDisplaySettings.showBnnDebug && (
-                      <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
-                        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-3">
-                          Advanced BNN Engine Debug
-                        </div>
-                        <BnnPanel chart={chartData} />
-                      </div>
-                    )}
-                  </div>
+                ? <BNNEventDetectionPanel
+                    chart={chartData}
+                    birthDatetime={birthDatetime}
+                    targetDate={targetDate}
+                    bnnOverrideStr={bnnOverrideStr}
+                    onBnnOverrideStrChange={setBnnOverrideStr}
+                  />
                 : <EmptyState message="Calculate a chart to see BNN analysis" />
             )}
             {desktopTab === 'workspace' && (
@@ -1043,23 +1032,13 @@ export default function Home() {
         {activeTab === 'bnn' && (
           <Panel>
             {chartData
-              ? <div className="space-y-6">
-                  <BNNEventDetectionPanel
-                    chart={chartData}
-                    birthDatetime={birthDatetime}
-                    targetDate={targetDate}
-                    bnnOverrideStr={bnnOverrideStr}
-                    onBnnOverrideStrChange={setBnnOverrideStr}
-                  />
-                  {chartDisplaySettings.showBnnDebug && (
-                    <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4">
-                      <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-3">
-                        Advanced BNN Engine Debug
-                      </div>
-                      <BnnPanel chart={chartData} />
-                    </div>
-                  )}
-                </div>
+              ? <BNNEventDetectionPanel
+                  chart={chartData}
+                  birthDatetime={birthDatetime}
+                  targetDate={targetDate}
+                  bnnOverrideStr={bnnOverrideStr}
+                  onBnnOverrideStrChange={setBnnOverrideStr}
+                />
               : <EmptyState message="Calculate a chart in Data to see BNN analysis" />
             }
           </Panel>
