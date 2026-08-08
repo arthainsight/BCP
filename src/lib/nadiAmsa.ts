@@ -4,12 +4,33 @@ export const NADI_AMSA_COUNT = 150;
 export const NADI_AMSA_SIZE_DEGREES = 30 / NADI_AMSA_COUNT;
 export const NADI_HALF_SIZE_DEGREES = NADI_AMSA_SIZE_DEGREES / 2;
 
+// Deva Keralam / Chandra Kala Nadi names in their canonical movable-sign order.
+// Transliteration variants exist; these spellings are kept stable for lookup/export.
+export const DEVA_KERALAM_NADI_NAMES = [
+  'Vasudhā', 'Vaiṣṇavī', 'Brāhmī', 'Kālakūṭa', 'Śāṅkarī', 'Sudhākarī', 'Samā', 'Saumyā', 'Surā', 'Māyā',
+  'Manoharā', 'Mādhavī', 'Mañjusvanā', 'Ghorā', 'Kumbhinī', 'Kuṭilā', 'Prabhā', 'Parā', 'Payasvinī', 'Mālā',
+  'Jagatī', 'Jarjharā', 'Dhruvā', 'Musalā', 'Mudgarā', 'Pāśā', 'Campakā', 'Dāminī', 'Mahī', 'Kaluṣā',
+  'Kamalā', 'Kāntā', 'Kālā', 'Karikarā', 'Kṣamā', 'Durdharā', 'Durbhagā', 'Viśvā', 'Viśīrṇā', 'Vikaṭā',
+  'Āvilā', 'Vibhramā', 'Sukhadā', 'Snigdhā', 'Sodarā', 'Surasundarī', 'Amṛtaplāvinī', 'Karālā', 'Kāmadhuk', 'Karavīraṇī',
+  'Gahvarā', 'Kuṇḍinī', 'Raudrā', 'Viśākhyā', 'Viṣanāśinī', 'Narmadā', 'Śītalā', 'Nimnā', 'Prītā', 'Priyavardhinī',
+  'Mānaghnā', 'Durbhagā', 'Citrā', 'Citriṇī', 'Cirañjīvinī', 'Bhūpā', 'Gadāharā', 'Nālā', 'Nalinī', 'Nirmalā',
+  'Nadī', 'Sudhāmṛtāṁśu', 'Kālikā', 'Kaluṣāṅkurā', 'Trailokyamohanakarī', 'Mahāmārī', 'Suśītalā', 'Sukhadā', 'Suprabhā', 'Śobhā',
+  'Śobhanā', 'Śivadā', 'Śivā', 'Bālā', 'Jvālā', 'Gadā', 'Gāḍhā', 'Nūtanā', 'Sumanoharā', 'Somavallī',
+  'Somalatā', 'Maṅgalā', 'Mudrikā', 'Kṣudhā', 'Mokṣāpavargā', 'Valayā', 'Navanītā', 'Niśācarī', 'Nirṛti', 'Nigaḍā',
+  'Sārā', 'Saṅgītā', 'Samadā', 'Samā', 'Viśvambharā', 'Kumārī', 'Kokilā', 'Kuñjarākṛti', 'Aindrā', 'Svāhā',
+  'Svarā', 'Vahni', 'Prītā', 'Rakṣajalāplavā', 'Vāruṇī', 'Madirā', 'Maitrī', 'Hāriṇī', 'Hariṇī', 'Marut',
+  'Dhanañjayā', 'Dhanakarī', 'Dhanadā', 'Kacchapāmbujā', 'Māṁsānī', 'Śūlinī', 'Raudrī', 'Śivā', 'Śivakarī', 'Kalā',
+  'Kuṇḍā', 'Mukundā', 'Bharatā', 'Haritā', 'Kadalī', 'Smarā', 'Kandalā', 'Kokilā', 'Pāpā', 'Kāminī',
+  'Kalaśodbhavā', 'Vīraprasū', 'Saṅgarā', 'Śatayajñā', 'Śatāvarī', 'Prahvī', 'Pāṭalinī', 'Nāgā', 'Paṅkajā', 'Parameśvarī',
+] as const;
+
 export type NadiHalf = 'purva' | 'para';
 
 export interface DevaKeralamNadiAmsa {
   system: 'deva-keralam';
   rawDivision: number;
   nadiNumber: number;
+  nadiName: string;
   modality: 'movable' | 'fixed' | 'dual';
   offsetDegrees: number;
 }
@@ -47,6 +68,7 @@ export function calculateDevaKeralamNadiAmsa(longitude: number): DevaKeralamNadi
       system: 'deva-keralam',
       rawDivision: rawDivision + 1,
       nadiNumber: NADI_AMSA_COUNT - rawDivision,
+      nadiName: DEVA_KERALAM_NADI_NAMES[NADI_AMSA_COUNT - rawDivision - 1],
       modality: 'fixed',
       offsetDegrees: degrees - rawDivision * NADI_AMSA_SIZE_DEGREES,
     };
@@ -57,6 +79,7 @@ export function calculateDevaKeralamNadiAmsa(longitude: number): DevaKeralamNadi
       system: 'deva-keralam',
       rawDivision: rawDivision + 1,
       nadiNumber: rawDivision < 75 ? rawDivision + 76 : rawDivision - 74,
+      nadiName: DEVA_KERALAM_NADI_NAMES[(rawDivision < 75 ? rawDivision + 76 : rawDivision - 74) - 1],
       modality: 'dual',
       offsetDegrees: degrees - rawDivision * NADI_AMSA_SIZE_DEGREES,
     };
@@ -66,6 +89,7 @@ export function calculateDevaKeralamNadiAmsa(longitude: number): DevaKeralamNadi
     system: 'deva-keralam',
     rawDivision: rawDivision + 1,
     nadiNumber: rawDivision + 1,
+    nadiName: DEVA_KERALAM_NADI_NAMES[rawDivision],
     modality: 'movable',
     offsetDegrees: degrees - rawDivision * NADI_AMSA_SIZE_DEGREES,
   };
