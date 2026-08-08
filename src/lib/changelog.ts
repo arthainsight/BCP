@@ -1,5 +1,12 @@
 export const CHANGELOG = [
   {
+    version: 'v1.58',
+    changes: [
+      'Added all 150 Deva Keralam / Chandra Kala Nadi nāḍī-aṁśa names',
+      'Nāḍī table now shows the calculated name together with its number and sign modality',
+    ],
+  },
+  {
     version: 'v1.57',
     changes: [
       'Added a dedicated Nāḍī tab for Lagna and graha calculations',
