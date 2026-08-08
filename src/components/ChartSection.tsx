@@ -12,6 +12,7 @@ import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import TransitDateControls from './TransitDateControls';
 import BCPAgeControls from './BCPAgeControls';
+import NadiAmsaPanel from './NadiAmsaPanel';
 
 function parseBirthDt(dt: string): Date | null {
   const m = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
@@ -87,7 +88,7 @@ export default function ChartSection({
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
-  const [view, setView] = useState<'chart' | 'varga' | 'drishti'>('chart');
+  const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'drishti'>('chart');
 
   const bnnHouses = useMemo(() => {
     // Use parent-provided houses when available (keeps age override in sync with chart highlights)
@@ -164,7 +165,7 @@ export default function ChartSection({
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
 
-  const tabClass = (id: 'chart' | 'varga' | 'drishti') =>
+  const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'drishti') =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
 
   return (
@@ -181,6 +182,7 @@ export default function ChartSection({
           <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
             <button type="button" onClick={() => setView('chart')} className={tabClass('chart')}>Chart</button>
             <button type="button" onClick={() => setView('varga')} className={tabClass('varga')}>Varga</button>
+            <button type="button" onClick={() => setView('nadi')} className={tabClass('nadi')}>Nāḍī</button>
             <button type="button" onClick={() => setView('drishti')} className={tabClass('drishti')}>Dṛṣṭi</button>
           </div>
         </div>
@@ -188,6 +190,8 @@ export default function ChartSection({
 
       {view === 'varga' ? (
         <div className="min-w-0 overflow-x-auto"><VargaMatrix chart={chart} /></div>
+      ) : view === 'nadi' ? (
+        <div className="min-w-0 overflow-x-auto"><NadiAmsaPanel chart={chart} /></div>
       ) : view === 'drishti' ? (
         <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} showGrahaDrishti={chartDisplaySettings.showGrahaDrishti ?? true} showRashiDrishti={chartDisplaySettings.showRashiDrishti ?? true} /></div>
       ) : chartStyle === 'south' ? (
