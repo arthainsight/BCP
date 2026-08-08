@@ -5,11 +5,14 @@ const almostAt = (degrees: number) => degrees - 1e-9;
 
 // Deva Keralam modality ordering and exact 0°12′ boundaries.
 assert.equal(calculateDevaKeralamNadiAmsa(0).nadiNumber, 1);
+assert.equal(calculateDevaKeralamNadiAmsa(0).nadiName, 'Vasudhā');
 assert.equal(calculateDevaKeralamNadiAmsa(0.2).nadiNumber, 2);
 assert.equal(calculateDevaKeralamNadiAmsa(almostAt(30)).nadiNumber, 150);
+assert.equal(calculateDevaKeralamNadiAmsa(almostAt(30)).nadiName, 'Parameśvarī');
 assert.equal(calculateDevaKeralamNadiAmsa(30).nadiNumber, 150);
 assert.equal(calculateDevaKeralamNadiAmsa(30.2).nadiNumber, 149);
 assert.equal(calculateDevaKeralamNadiAmsa(60).nadiNumber, 76);
+assert.equal(calculateDevaKeralamNadiAmsa(60).nadiName, 'Mahāmārī');
 assert.equal(calculateDevaKeralamNadiAmsa(almostAt(75)).nadiNumber, 150);
 assert.equal(calculateDevaKeralamNadiAmsa(75).nadiNumber, 1);
 assert.equal(calculateDevaKeralamNadiAmsa(almostAt(90)).nadiNumber, 75);
