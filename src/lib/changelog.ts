@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.57',
+    changes: [
+      'Added a dedicated Nāḍī tab for Lagna and graha calculations',
+      'Deva Keralam: 150 equal 0°12′ divisions with movable, fixed, and dual sign ordering',
+      'Siddhar: separate equal D150 harmonic placement with pūrva/para 0°06′ halves',
+      'Added boundary tests for sign modalities, 15° dual-sign reset, and nāḍī halves',
+    ],
+  },
+  {
     version: 'v1.56',
     changes: [
       'BNN simplified into single Event Detection module; removed standalone Jupiterian Rounds and Minor Progression panels',
