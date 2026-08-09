@@ -231,8 +231,8 @@ export default function Home() {
     !!birthDatetime && showCoords && !!manualLat && !!manualLng && effectiveTzOffset !== null;
 
   const charaKarakas: CharaKaraka[] = useMemo(
-    () => (chartData ? calculateCharaKarakas(chartData.planets) : []),
-    [chartData]
+    () => (chartData ? calculateCharaKarakas(chartData.planets, calculationSettings.charaKarakaRankMode) : []),
+    [chartData, calculationSettings.charaKarakaRankMode]
   );
 
   const karakaByPlanet = useMemo(() => {

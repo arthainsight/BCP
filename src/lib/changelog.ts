@@ -1,5 +1,13 @@
 export const CHANGELOG = [
   {
+    version: 'v1.59',
+    changes: [
+      'Added selectable Chara Karaka ranking: classical highest degree or highest minute',
+      'Highest-minute mode compares the minute–second remainder and reverses Rahu before ranking',
+      'Added deterministic tests for both Chara Karaka ranking modes',
+    ],
+  },
+  {
     version: 'v1.58',
     changes: [
       'Added all 150 Deva Keralam / Chandra Kala Nadi nāḍī-aṁśa names',

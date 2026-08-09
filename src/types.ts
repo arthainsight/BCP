@@ -170,12 +170,14 @@ export interface CalculationSettings {
   ayanamsa: string;
   nodeMode: string;
   nakshatraMode: 'sidereal' | 'tropical';
+  charaKarakaRankMode: 'degree' | 'minute';
 }
 
 export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   ayanamsa: 'lahiri',
   nodeMode: 'mean',
   nakshatraMode: 'sidereal',
+  charaKarakaRankMode: 'degree',
 };
 
 export interface CharaOptions {

@@ -170,6 +170,20 @@ export default function SettingsPanel(props: Props) {
                 <option value="true">True Node</option>
               </select>
             </div>
+            <div>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">chara karaka ranking</label>
+              <select
+                className={SELECT}
+                value={calculationSettings.charaKarakaRankMode ?? 'degree'}
+                onChange={(e) => onUpdateCalculationSettings({ charaKarakaRankMode: e.target.value as 'degree' | 'minute' })}
+              >
+                <option value="degree">Highest degree (classical)</option>
+                <option value="minute">Highest minute</option>
+              </select>
+              <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                Minute mode compares the minute–second remainder; Rahu is measured in reverse.
+              </div>
+            </div>
           </div>
 
           <div>
