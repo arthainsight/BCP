@@ -31,19 +31,33 @@ export interface CharaKaraka {
   degree: number;
 }
 
+export type CharaKarakaRankMode = 'degree' | 'minute';
+
 const RELEVANT_PLANETS = new Set([
   'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu',
 ]);
 
-export function calculateCharaKarakas(planets: PlanetData[]): CharaKaraka[] {
+export function calculateCharaKarakas(
+  planets: PlanetData[],
+  rankMode: CharaKarakaRankMode = 'degree',
+): CharaKaraka[] {
   const ranked = planets
     .filter((p) => RELEVANT_PLANETS.has(p.name))
-    .map((p) => ({
-      planet: p.name,
-      // Rahu moves retrograde; use distance from 30° end of sign
-      effectiveDegree: p.name === 'Rahu' ? 30 - p.degree : p.degree,
-    }))
-    .sort((a, b) => b.effectiveDegree - a.effectiveDegree);
+    .map((p) => {
+      // Rahu moves retrograde; use distance from the 30° end of the sign.
+      const effectiveDegree = p.name === 'Rahu' ? 30 - p.degree : p.degree;
+      const effectiveMinute = (effectiveDegree - Math.floor(effectiveDegree)) * 60;
+      return {
+        planet: p.name,
+        effectiveDegree,
+        rankValue: rankMode === 'minute' ? effectiveMinute : effectiveDegree,
+      };
+    })
+    .sort((a, b) =>
+      b.rankValue - a.rankValue
+      || b.effectiveDegree - a.effectiveDegree
+      || a.planet.localeCompare(b.planet)
+    );
 
   return ranked.map((entry, i) => ({
     karaka: KARAKA_ABBR[i],
