@@ -5,6 +5,7 @@ import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, Calc
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
+import { calculateNadiParaya, type NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
@@ -282,6 +283,27 @@ export default function Home() {
         : 0,
       minor: ((minorResult.minorSignIndex + 1 - asc + 12) % 12) + 1,
     };
+  }, [chartData, effectiveBnnAge]);
+
+  const effectiveNadiParayaHouses = useMemo<NadiParayaHouseActivation[]>(() => {
+    if (!chartData) return [];
+    const jupiter = chartData.planets.find(p => p.name === 'Jupiter');
+    const saturn = chartData.planets.find(p => p.name === 'Saturn');
+    const rahu = chartData.planets.find(p => p.name === 'Rahu');
+    if (!jupiter || !saturn || !rahu) return [];
+    const paraya = calculateNadiParaya({
+      ageYears: effectiveBnnAge,
+      natalJupiterSignIndex: jupiter.sign - 1,
+      natalSaturnSignIndex: saturn.sign - 1,
+      natalRahuSignIndex: rahu.sign - 1,
+      jupiterRetrograde: Boolean(jupiter.isRetrograde),
+      saturnRetrograde: Boolean(saturn.isRetrograde),
+    });
+    const asc = chartData.ascendant.sign;
+    return [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu].map(period => ({
+      body: period.body,
+      house: ((period.signIndex + 1 - asc + 12) % 12) + 1,
+    }));
   }, [chartData, effectiveBnnAge]);
 
   useEffect(() => {
@@ -710,6 +732,7 @@ export default function Home() {
     targetDate,
     bnnMajorHouseFromParent: effectiveBnnHouses.major,
     bnnMinorHouseFromParent: effectiveBnnHouses.minor,
+    nadiParayaHousesFromParent: effectiveNadiParayaHouses,
     bcpEnabled: dashaSettings.dashas.bcp,
     useManualBcpMode,
     onUseManualBcpModeChange: setUseManualBcpMode,
@@ -939,6 +962,7 @@ export default function Home() {
                     nakshatraAdjust={nakshatraAdjust}
                     dashaSettings={dashaSettings}
                     effectiveBnnHouses={effectiveBnnHouses}
+                    effectiveNadiParayaHouses={effectiveNadiParayaHouses}
                     bnnOverrideStr={bnnOverrideStr}
                     onBnnOverrideStrChange={setBnnOverrideStr}
                     bcpEnabled={dashaSettings.dashas.bcp}
@@ -1072,6 +1096,7 @@ export default function Home() {
                   nakshatraAdjust={nakshatraAdjust}
                   dashaSettings={dashaSettings}
                   effectiveBnnHouses={effectiveBnnHouses}
+                  effectiveNadiParayaHouses={effectiveNadiParayaHouses}
                   bnnOverrideStr={bnnOverrideStr}
                   onBnnOverrideStrChange={setBnnOverrideStr}
                   bcpEnabled={dashaSettings.dashas.bcp}
