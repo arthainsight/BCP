@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.64',
+    date: '2026-08-10',
+    title: 'Chara Daśā timeline',
+    changes: [
+      'Promoted Chara Daśā from experimental output to a complete core timeline.',
+      'Added dated mahādaśā rows, active-period highlighting and drill-down antardaśās.',
+      'Retained the selectable Lagna/Ātmakāraka, direction, lord and duration rules.',
+    ],
+  },
+  {
     version: 'v1.63',
     date: '2026-08-10',
     title: 'Kālachakra Daśā',
