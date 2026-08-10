@@ -2,7 +2,7 @@ import { DashaSettings } from '@/types';
 
 export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta' | 'placeholder';
-export type DashaRendererKey = 'bcp' | 'vimshottari' | 'vds' | 'chara';
+export type DashaRendererKey = 'bcp' | 'vimshottari' | 'vds' | 'chara' | 'kalachakra';
 
 export type DashaRegistryItem = {
   key: DashaKey;
@@ -18,6 +18,7 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'vds', label: 'Vimsottari Original', group: 'Core', status: 'implemented', renderer: 'vds' },
 
   { key: 'chara', label: 'Chara Dasha', group: 'Experimental', status: 'beta', renderer: 'chara' },
+  { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Experimental', status: 'beta', renderer: 'kalachakra' },
 
   { key: 'tara', label: 'Tara Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'yogini', label: 'Yogini Dasha', group: 'Other systems', status: 'placeholder' },
@@ -32,8 +33,6 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'shattrimshaSama', label: 'Shattrimsha Sama Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'charaBeta', label: 'Chara Dasha old beta', group: 'Other systems', status: 'placeholder' },
   { key: 'narayana', label: 'Narayana Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'kaalChakra', label: 'Kaal Chakra Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'kalaChakra', label: 'Kalachakra Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'sudarshanaChakra', label: 'Sudarshana Chakra Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'moola', label: 'Moola Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'naisargika', label: 'Naisargika Dasha', group: 'Other systems', status: 'placeholder' },
