@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.71',
+    date: '2026-08-10',
+    title: 'Nadi paraya progressions',
+    changes: [
+      'Added unified Nadi paraya cards for Jupiter, Saturn, Rahu and Ketu in the BNN panel.',
+      'Saturn follows the repeating 3–2 year pattern; Rahu and Ketu move backward with the repeating 2–1 year pattern.',
+      'Retrograde natal Jupiter and Saturn begin their paraya activation one sign earlier.',
+    ],
+  },
+  {
     version: 'v1.70',
     date: '2026-08-10',
     title: 'Custom Lahiri ayanamsa',

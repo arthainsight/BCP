@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict';
+import { buildParayaTimeline, calculateNadiParaya } from './nadiParaya';
+
+const atBirth = calculateNadiParaya({
+  ageYears: 0,
+  natalJupiterSignIndex: 0,
+  natalSaturnSignIndex: 7,
+  natalRahuSignIndex: 11,
+});
+assert.equal(atBirth.jupiter.signIndex, 0);
+assert.equal(atBirth.saturn.signIndex, 7);
+assert.equal(atBirth.saturn.endAge, 3);
+assert.equal(atBirth.rahu.signIndex, 11);
+assert.equal(atBirth.rahu.endAge, 2);
+assert.equal(atBirth.ketu.signIndex, 5);
+
+const boundaries = calculateNadiParaya({
+  ageYears: 3,
+  natalJupiterSignIndex: 0,
+  natalSaturnSignIndex: 7,
+  natalRahuSignIndex: 11,
+});
+assert.equal(boundaries.saturn.signIndex, 8);
+assert.equal(boundaries.saturn.startAge, 3);
+assert.equal(boundaries.saturn.endAge, 5);
+assert.equal(boundaries.rahu.signIndex, 9);
+assert.equal(boundaries.rahu.startAge, 3);
+assert.equal(boundaries.rahu.endAge, 5);
+
+const retrograde = calculateNadiParaya({
+  ageYears: 0,
+  natalJupiterSignIndex: 0,
+  natalSaturnSignIndex: 7,
+  natalRahuSignIndex: 11,
+  jupiterRetrograde: true,
+  saturnRetrograde: true,
+});
+assert.equal(retrograde.jupiter.signIndex, 11);
+assert.equal(retrograde.saturn.signIndex, 6);
+assert.equal(retrograde.rahu.signIndex, 11);
+
+const saturnCycle = buildParayaTimeline({ body: 'Saturn', natalSignIndex: 0, maxAge: 30 });
+const rahuCycle = buildParayaTimeline({ body: 'Rahu', natalSignIndex: 0, maxAge: 18 });
+assert.equal(saturnCycle.length, 12);
+assert.equal(saturnCycle.at(-1)?.endAge, 30);
+assert.equal(rahuCycle.length, 12);
+assert.equal(rahuCycle.at(-1)?.endAge, 18);
+
+console.log('Nadi paraya tests passed');
