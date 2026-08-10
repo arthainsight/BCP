@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.67',
+    date: '2026-08-10',
+    title: 'Planetary Avasthas',
+    changes: [
+      'Added a separate expandable Planetary Avasthas table under Grahas.',
+      'Added Bālādi, Dīptādi, Jāgratādi, Lajjitādi and primary Śayanādi states with calculation details.',
+      'Śayanādi uses the birth nakshatra, planetary nakshatra/navāṁśa, sunrise ghati and Lagna.',
+    ],
+  },
+  {
     version: 'v1.66',
     date: '2026-08-10',
     title: 'Kālachakra birth-balance fix',

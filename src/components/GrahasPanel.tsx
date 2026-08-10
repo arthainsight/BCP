@@ -2,12 +2,14 @@ import { ChartData, ChartDisplaySettings, DEFAULT_CHART_DISPLAY } from '@/types'
 import JyotishGrahaTable from './JyotishGrahaTable';
 import DrishtiPanel from './DrishtiPanel';
 import YogaTable from './YogaTable';
+import AvasthaPanel from './AvasthaPanel';
 
 interface Props {
   chart: ChartData;
   karakaByPlanet: Record<string, string>;
   chartDisplaySettings?: ChartDisplaySettings;
   nakshatraAdjust?: number;
+  birthDatetime?: string;
 }
 
 function readChartDisplaySettings(fallback?: ChartDisplaySettings): ChartDisplaySettings {
@@ -21,7 +23,7 @@ function readChartDisplaySettings(fallback?: ChartDisplaySettings): ChartDisplay
   }
 }
 
-export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySettings, nakshatraAdjust = 0 }: Props) {
+export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySettings, nakshatraAdjust = 0, birthDatetime = '' }: Props) {
   const settings = readChartDisplaySettings(chartDisplaySettings);
 
   return (
@@ -46,6 +48,7 @@ export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySetting
           showRashiDrishti={settings.showRashiDrishti}
         />
       )}
+      <AvasthaPanel chart={chart} birthDatetime={birthDatetime} />
       <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3">
         <YogaTable chart={chart} />
       </div>

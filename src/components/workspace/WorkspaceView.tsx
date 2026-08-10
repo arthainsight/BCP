@@ -336,6 +336,7 @@ export default function WorkspaceView({
             karakaByPlanet={karakaByPlanet}
             chartDisplaySettings={chartDisplaySettings}
             nakshatraAdjust={nakshatraAdjust}
+            birthDatetime={birthDatetime}
           />
         );
 
