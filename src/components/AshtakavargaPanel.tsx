@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { ChartData } from '@/types';
 import { buildAshtakavarga, mapAshtakavargaHousesToSigns } from '@/lib/ashtakavarga';
-import type { AshtakavargaPlanet } from '@/lib/ashtakavarga';
+import type { AshtakavargaPlanet, AshtakavargaSystem } from '@/lib/ashtakavarga';
 
 const SIGNS = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const PLANET_ABBR: Record<string, string> = {
@@ -17,6 +17,18 @@ const PLANET_ABBR: Record<string, string> = {
 };
 
 type AvSelection = 'SAV' | AshtakavargaPlanet;
+
+function numberColor(value: number, isSav: boolean): string {
+  const neutral = isSav ? value === 28 : value === 4;
+  if (neutral) return 'text-black dark:text-white';
+  const good = isSav ? value > 28 : value > 4;
+  return good ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400';
+}
+
+function svgNumberColor(value: number, isSav: boolean): string {
+  if (isSav ? value === 28 : value === 4) return 'currentColor';
+  return (isSav ? value > 28 : value > 4) ? '#16a34a' : '#dc2626';
+}
 
 const HOUSES = [
   { house: 1, points: '250,0 375,125 250,250 125,125', x: 250, y: 118, sx: 250, sy: 220 },
@@ -33,7 +45,7 @@ const HOUSES = [
   { house: 12, points: '500,0 375,125 250,0', x: 375, y: 54, sx: 375, sy: 96 },
 ];
 
-function NorthIndianAvChart({ houses, ascendantSign, label }: { houses: number[]; ascendantSign: number; label: string }) {
+function NorthIndianAvChart({ houses, ascendantSign, label, isSav }: { houses: number[]; ascendantSign: number; label: string; isSav: boolean }) {
   return (
     <div className="mx-auto w-full max-w-[560px]">
       <div className="mb-2 text-center text-xs font-mono font-semibold text-emerald-700 dark:text-emerald-400">{label}</div>
@@ -43,7 +55,7 @@ function NorthIndianAvChart({ houses, ascendantSign, label }: { houses: number[]
           return (
             <g key={item.house}>
               <polygon points={item.points} fill="transparent" stroke="currentColor" strokeOpacity="0.55" strokeWidth="2" />
-              <text x={item.x} y={item.y} textAnchor="middle" dominantBaseline="middle" fontSize="30" fontWeight="800" fill="currentColor">
+              <text x={item.x} y={item.y} textAnchor="middle" dominantBaseline="middle" fontSize="30" fontWeight="800" fill={svgNumberColor(houses[item.house - 1] ?? 0, isSav)}>
                 {houses[item.house - 1] ?? 0}
               </text>
               <text x={item.sx} y={item.sy} textAnchor="middle" dominantBaseline="middle" fontSize="12" fontWeight="600" fill="currentColor" opacity="0.55">
@@ -58,10 +70,11 @@ function NorthIndianAvChart({ houses, ascendantSign, label }: { houses: number[]
 }
 
 export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
-  const { bav, sav } = buildAshtakavarga(chart);
   const ascendantSign = chart.ascendant.sign;
   const [view, setView] = useState<'table' | 'north'>('table');
+  const [system, setSystem] = useState<AshtakavargaSystem>('parashara');
   const [selection, setSelection] = useState<AvSelection>('SAV');
+  const { bav, sav } = buildAshtakavarga(chart, system);
   const selectedRow = selection === 'SAV' ? null : bav.find((row) => row.planet === selection);
   const selectedHouses = selectedRow?.houses ?? sav.houses;
 
@@ -78,6 +91,11 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
         </div>
       </div>
 
+      <div className="mb-3 flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
+        <button type="button" onClick={() => setSystem('parashara')} className={`flex-1 rounded px-2.5 py-1.5 text-[10px] font-mono ${system === 'parashara' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>Parāśara</button>
+        <button type="button" onClick={() => setSystem('varahamihira')} className={`flex-1 rounded px-2.5 py-1.5 text-[10px] font-mono ${system === 'varahamihira' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>Varāhamihira</button>
+      </div>
+
       {view === 'north' ? (
         <div>
           <label className="mb-3 block text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
@@ -87,7 +105,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
               {bav.map((row) => <option key={row.planet} value={row.planet}>{row.planet} BAV</option>)}
             </select>
           </label>
-          <NorthIndianAvChart houses={selectedHouses} ascendantSign={ascendantSign} label={selection === 'SAV' ? 'SAV' : `${selection} BAV`} />
+          <NorthIndianAvChart houses={selectedHouses} ascendantSign={ascendantSign} label={`${system === 'parashara' ? 'Parāśara' : 'Varāhamihira'} · ${selection === 'SAV' ? 'SAV' : `${selection} BAV`}`} isSav={selection === 'SAV'} />
         </div>
       ) : (
       <div className="overflow-x-auto">
@@ -110,16 +128,16 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
                     {PLANET_ABBR[row.planet]}
                   </th>
                   {values.map((value, signIndex) => (
-                    <td key={SIGNS[signIndex]} className="border border-zinc-200 dark:border-zinc-700 px-2 py-2 tabular-nums">{value}</td>
+                    <td key={SIGNS[signIndex]} className={`border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-semibold tabular-nums ${numberColor(value, false)}`}>{value}</td>
                   ))}
                   <td className="border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-semibold tabular-nums">{row.total}</td>
                 </tr>
               );
             })}
-            <tr className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300">
-              <th scope="row" title="Sarva Ashtakavarga" className="sticky left-0 z-10 bg-emerald-50 dark:bg-emerald-950 border border-zinc-200 dark:border-zinc-700 px-2 py-2 text-left font-bold">SAV</th>
+            <tr>
+              <th scope="row" title="Sarva Ashtakavarga" className="sticky left-0 z-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 px-2 py-2 text-left font-bold">SAV</th>
               {mapAshtakavargaHousesToSigns(sav.houses, ascendantSign).map((value, signIndex) => (
-                <td key={SIGNS[signIndex]} className="border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-bold tabular-nums">{value}</td>
+                <td key={SIGNS[signIndex]} className={`border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-bold tabular-nums ${numberColor(value, true)}`}>{value}</td>
               ))}
               <td className="border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-bold tabular-nums">{sav.total}</td>
             </tr>

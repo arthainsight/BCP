@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.62',
+    date: '2026-08-10',
+    title: 'Parāśara and Varāhamihira Aṣṭakavarga',
+    changes: [
+      'Added selectable Parāśara and Varāhamihira calculation tables.',
+      'Applied the selected system to both the numeric table and North Indian chart.',
+      'Colored only the point numbers: green above neutral, red below neutral, and black at neutral.',
+    ],
+  },
+  {
     version: 'v1.61',
     date: '2026-08-10',
     title: 'North Indian Aṣṭakavarga chart',
