@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.72',
+    date: '2026-08-10',
+    title: 'Nadi paraya colors',
+    changes: [
+      'Added distinct colors to Nadi paraya cards: Jupiter gold, Saturn blue, Rahu violet and Ketu orange.',
+      'Colors are applied to the active sign, border and subtle background in both light and dark themes.',
+    ],
+  },
+  {
     version: 'v1.71',
     date: '2026-08-10',
     title: 'Nadi paraya progressions',
