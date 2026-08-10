@@ -23,6 +23,7 @@ import BcpSummary from '@/components/BcpSummary';
 import BcpManualOverride from '@/components/BcpManualOverride';
 import BNNEventDetectionPanel from '@/components/BNNEventDetectionPanel';
 import WorkspaceView from '@/components/workspace/WorkspaceView';
+import PublicChartsPanel from '@/components/PublicChartsPanel';
 
 function ModeSwitcher({ mode, onChange, compact }: { mode: UiMode; onChange: (m: UiMode) => void; compact?: boolean }) {
   const modes: { id: UiMode; short: string; long: string }[] = [
@@ -84,7 +85,7 @@ function computeManualBcp(completedAge: number, month: number): BcpResult {
   };
 }
 
-type DesktopTab = 'data' | 'grahas' | 'dasha' | 'bnn' | 'workspace' | 'settings';
+type DesktopTab = 'data' | 'grahas' | 'dasha' | 'bnn' | 'public' | 'workspace' | 'settings';
 
 type CalculationOptions = {
   preserveCurrentPanel?: boolean;
@@ -816,9 +817,9 @@ export default function Home() {
       </header>
 
       {/* ── DESKTOP: 2-column grid (or full-width workspace) ────────── */}
-      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'workspace' ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
+      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'workspace' || desktopTab === 'public' ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
         {/* Left: Chart + optional BCP summary + optional Panchang (hidden in workspace mode) */}
-        <div className={`space-y-3 ${desktopTab === 'workspace' ? 'hidden' : ''}`}>
+        <div className={`space-y-3 ${desktopTab === 'workspace' || desktopTab === 'public' ? 'hidden' : ''}`}>
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
             {uiMode !== 'simple' && (
               <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-3">&gt; chart.render</div>
@@ -857,7 +858,7 @@ export default function Home() {
         {/* Right: tabbed panels */}
         <div className="space-y-3">
           <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1 overflow-x-auto">
-            {(['data', 'grahas', 'dasha', 'bnn', ...(chartDisplaySettings.showWorkspace ? ['workspace'] : []), 'settings'] as DesktopTab[]).map((tab) => (
+            {(['data', 'grahas', 'dasha', 'bnn', 'public', ...(chartDisplaySettings.showWorkspace ? ['workspace'] : []), 'settings'] as DesktopTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setDesktopTab(tab)}
@@ -917,6 +918,7 @@ export default function Home() {
                   />
                 : <EmptyState message="Calculate a chart to see BNN analysis" />
             )}
+            {desktopTab === 'public' && <PublicChartsPanel />}
             {desktopTab === 'workspace' && (
               chartData && bcpResult
                 ? <WorkspaceView
@@ -1042,6 +1044,10 @@ export default function Home() {
               : <EmptyState message="Calculate a chart in Data to see BNN analysis" />
             }
           </Panel>
+        )}
+
+        {activeTab === 'public' && (
+          <Panel><PublicChartsPanel /></Panel>
         )}
 
         {activeTab === 'workspace' && (

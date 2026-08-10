@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.65',
+    date: '2026-08-10',
+    title: 'Public Charts directory',
+    changes: [
+      'Added a dedicated Public tab for opening ready-made public-figure charts.',
+      'Added direct Astro-Databank name search plus Astro-Seek and Astrotheme directories.',
+      'Added source-quality guidance for Rodden ratings and uncertain birth times.',
+    ],
+  },
+  {
     version: 'v1.64',
     date: '2026-08-10',
     title: 'Chara Daśā timeline',
