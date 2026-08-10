@@ -135,14 +135,15 @@ function Panel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function CalcSummaryBar({ ayanamsa, nodeMode, ianaTimezone }: {
+function CalcSummaryBar({ ayanamsa, ayanamsaOffsetDegrees, nodeMode, ianaTimezone }: {
   ayanamsa: string;
+  ayanamsaOffsetDegrees: number;
   nodeMode: string;
   ianaTimezone?: string;
 }) {
   return (
     <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
-      <span>{ayanamsaLabel(ayanamsa, true)} ayanamsa</span>
+      <span>{ayanamsaLabel(ayanamsa, true)}{ayanamsa === 'custom-lahiri' ? ` (${ayanamsaOffsetDegrees >= 0 ? '+' : ''}${ayanamsaOffsetDegrees}°)` : ''} ayanamsa</span>
       <span>{nodeMode === 'true' ? 'true node' : 'mean node'}</span>
       {ianaTimezone && <span>{ianaTimezone}</span>}
     </div>
@@ -441,6 +442,7 @@ export default function Home() {
           year: yyyy, month: mm, day: dd, hour: hh, minute: min, second: ss,
           lat: String(lat), lng: String(lng), tz: String(tzOffset),
           ayanamsa: calculationSettings.ayanamsa,
+          ayanamsaOffset: String(calculationSettings.ayanamsaOffsetDegrees ?? 0),
           nodeMode: calculationSettings.nodeMode,
         });
 
@@ -463,7 +465,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [calculationSettings.ayanamsa, calculationSettings.nodeMode]
+    [calculationSettings.ayanamsa, calculationSettings.ayanamsaOffsetDegrees, calculationSettings.nodeMode]
   );
 
   const handleCalculate = useCallback(async (options?: CalculationOptions) => {
@@ -488,6 +490,7 @@ export default function Home() {
       effectiveTzOffset,
       targetDate,
       calculationSettings.ayanamsa,
+      calculationSettings.ayanamsaOffsetDegrees,
       calculationSettings.nodeMode,
     ].join('|');
 
@@ -505,6 +508,7 @@ export default function Home() {
     effectiveTzOffset,
     targetDate,
     calculationSettings.ayanamsa,
+    calculationSettings.ayanamsaOffsetDegrees,
     calculationSettings.nodeMode,
     handleCalculate,
   ]);
@@ -530,6 +534,7 @@ export default function Home() {
         year: yyyy, month: mm, day: dd, hour: hh, minute: min, second: ss,
         lat: String(lat), lng: String(lng), tz: String(effectiveTzOffset),
         ayanamsa: calculationSettings.ayanamsa,
+        ayanamsaOffset: String(calculationSettings.ayanamsaOffsetDegrees ?? 0),
         nodeMode: calculationSettings.nodeMode,
       });
       const res = await fetch('/api/chart?' + params.toString());
@@ -548,7 +553,7 @@ export default function Home() {
     } finally {
       setTransitLoading(false);
     }
-  }, [transitDatetime, chartData, manualLat, manualLng, effectiveTzOffset, calculationSettings.ayanamsa, calculationSettings.nodeMode]);
+  }, [transitDatetime, chartData, manualLat, manualLng, effectiveTzOffset, calculationSettings.ayanamsa, calculationSettings.ayanamsaOffsetDegrees, calculationSettings.nodeMode]);
 
   const handleExportReport = useCallback(() => {
     const lat = parseFloat(manualLat);
@@ -825,6 +830,7 @@ export default function Home() {
             {chartData && (
               <CalcSummaryBar
                 ayanamsa={calculationSettings.ayanamsa}
+                ayanamsaOffsetDegrees={calculationSettings.ayanamsaOffsetDegrees ?? 0}
                 nodeMode={calculationSettings.nodeMode}
                 ianaTimezone={ianaTimezone || undefined}
               />
@@ -959,6 +965,7 @@ export default function Home() {
               {chartData && (
                 <CalcSummaryBar
                   ayanamsa={calculationSettings.ayanamsa}
+                  ayanamsaOffsetDegrees={calculationSettings.ayanamsaOffsetDegrees ?? 0}
                   nodeMode={calculationSettings.nodeMode}
                   ianaTimezone={ianaTimezone || undefined}
                 />
