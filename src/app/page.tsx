@@ -24,6 +24,7 @@ import BcpManualOverride from '@/components/BcpManualOverride';
 import BNNEventDetectionPanel from '@/components/BNNEventDetectionPanel';
 import WorkspaceView from '@/components/workspace/WorkspaceView';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
+import { ayanamsaLabel } from '@/lib/ayanamsas';
 
 function ModeSwitcher({ mode, onChange, compact }: { mode: UiMode; onChange: (m: UiMode) => void; compact?: boolean }) {
   const modes: { id: UiMode; short: string; long: string }[] = [
@@ -134,10 +135,6 @@ function Panel({ children }: { children: React.ReactNode }) {
   );
 }
 
-const AYANAMSA_LABELS: Record<string, string> = {
-  tropical: 'Tropical', lahiri: 'Lahiri', raman: 'Raman', krishnamurti: 'KP',
-};
-
 function CalcSummaryBar({ ayanamsa, nodeMode, ianaTimezone }: {
   ayanamsa: string;
   nodeMode: string;
@@ -145,7 +142,7 @@ function CalcSummaryBar({ ayanamsa, nodeMode, ianaTimezone }: {
 }) {
   return (
     <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
-      <span>{AYANAMSA_LABELS[ayanamsa] ?? ayanamsa} ayanamsa</span>
+      <span>{ayanamsaLabel(ayanamsa, true)} ayanamsa</span>
       <span>{nodeMode === 'true' ? 'true node' : 'mean node'}</span>
       {ianaTimezone && <span>{ianaTimezone}</span>}
     </div>
