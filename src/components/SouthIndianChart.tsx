@@ -4,12 +4,10 @@ import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
-import type { AshtakavargaOverlayCell } from '@/lib/ashtakavarga';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
 const TRANSIT_COLOR = '#f43f5e';
-const ASHTAKAVARGA_COLOR = '#06b6d4';
 
 const BNN_MAJOR_LIGHT = '#ea580c';
 const BNN_MAJOR_DARK  = '#f97316';
@@ -23,7 +21,6 @@ interface Props {
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
   transitPlanets?: PlanetData[];
-  ashtakavargaOverlay?: AshtakavargaOverlayCell[];
   showNatalPlanets?: boolean;
   showTransitPlanets?: boolean;
   showSigns?: boolean;
@@ -36,7 +33,6 @@ interface Props {
   nakshatraAdjust?: number;
   bnnMajorHouse?: number;
   bnnMinorHouse?: number;
-  avOverlayLabel?: string;
   legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
 }
 
@@ -112,7 +108,6 @@ export default function SouthIndianChart({
   planets,
   specialLagnas = [],
   transitPlanets = [],
-  ashtakavargaOverlay = [],
   showNatalPlanets = true,
   showTransitPlanets = false,
   showSigns = true,
@@ -125,7 +120,6 @@ export default function SouthIndianChart({
   nakshatraAdjust = 0,
   bnnMajorHouse = 0,
   bnnMinorHouse = 0,
-  avOverlayLabel,
   legendLayers,
 }: Props) {
   const { resolvedTheme } = useTheme();
@@ -183,7 +177,6 @@ export default function SouthIndianChart({
           const house = getHouse(sign, ascendantSign);
           const planetsHere = bySign[sign] ?? [];
           const specialHere = specialBySign[sign] ?? [];
-          const avCell = ashtakavargaOverlay.find((cell) => cell.house === house);
 
           const isBnnMaj = bnnMajorHouse > 0 && house === bnnMajorHouse;
           const isBnnMin = bnnMinorHouse > 0 && house === bnnMinorHouse;
@@ -232,11 +225,6 @@ export default function SouthIndianChart({
                 {sign === ascendantSign ? (
                   <span className="font-bold text-emerald-700 dark:text-green-400">ASC</span>
                 ) : <span />}
-                {avCell && (
-                  <span className="font-extrabold" style={{ color: ASHTAKAVARGA_COLOR }}>
-                    AV {avCell.bindu}
-                  </span>
-                )}
               </div>
 
               <div className="mt-1 flex flex-col gap-0.5 text-[11px] leading-tight font-bold text-zinc-800 dark:text-zinc-100">
@@ -283,7 +271,7 @@ export default function SouthIndianChart({
         })}
       </div>
 
-      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || ashtakavargaOverlay.length > 0 || hasBnn) && (
+      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || hasBnn) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {(activeYearHouse > 0 || activeMonthHouse > 0) && legendLayers?.bcp !== false && (
             <>
@@ -296,7 +284,6 @@ export default function SouthIndianChart({
           {bnnMinorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: bnnMinColor }} className="font-semibold">╌ BNN Minor</span>}
           {showTransitPlanets && legendLayers?.transit !== false && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
-          {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV / {avOverlayLabel ?? 'Ashtakavarga'}</span>}
         </div>
       )}
     </div>
