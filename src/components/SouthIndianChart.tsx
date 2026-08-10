@@ -232,7 +232,7 @@ export default function SouthIndianChart({
                       className="flex-1 rounded-sm text-center text-[8px] leading-3 font-bold text-white"
                       style={{ backgroundColor: PARAYA_COLORS[activation.body] }}
                     >
-                      {PARAYA_CODES[activation.body]}
+                      {PARAYA_CODES[activation.body]} {activation.degree.toFixed(1)}°
                     </span>
                   ))}
                 </div>
