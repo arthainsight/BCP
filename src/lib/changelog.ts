@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.69',
+    date: '2026-08-10',
+    title: 'Expanded ayanamsas',
+    changes: [
+      'Added Chandra-Hari/True Mūla, Wilhelm Mūla, Mardyks, Babylonian Britton and Ushāśaśi ayanamsas.',
+      'Added ten common systems: Lahiri, Raman, KP, Fagan–Bradley, Yukteshwar, J.N. Bhasin, De Luce, Djwhal Khul, True Chitra and True Revati.',
+      'All sidereal choices use their native Swiss Ephemeris mode and apply consistently to planets, nodes and Lagna.',
+    ],
+  },
+  {
     version: 'v1.68',
     date: '2026-08-10',
     title: 'Sahams',
