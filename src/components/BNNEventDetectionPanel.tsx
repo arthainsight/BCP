@@ -153,13 +153,37 @@ function EventGroup({
 }
 
 function ParayaCard({ symbol, period, retrograde }: { symbol: string; period: ParayaPeriod; retrograde?: boolean }) {
+  const colors: Record<ParayaPeriod['body'], { card: string; label: string; sign: string }> = {
+    Jupiter: {
+      card: 'border-amber-300 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/20',
+      label: 'text-amber-700 dark:text-amber-500',
+      sign: 'text-amber-700 dark:text-amber-400',
+    },
+    Saturn: {
+      card: 'border-blue-300 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/20',
+      label: 'text-blue-700 dark:text-blue-500',
+      sign: 'text-blue-700 dark:text-blue-400',
+    },
+    Rahu: {
+      card: 'border-violet-300 dark:border-violet-900 bg-violet-50 dark:bg-violet-950/20',
+      label: 'text-violet-700 dark:text-violet-500',
+      sign: 'text-violet-700 dark:text-violet-400',
+    },
+    Ketu: {
+      card: 'border-orange-300 dark:border-orange-900 bg-orange-50 dark:bg-orange-950/20',
+      label: 'text-orange-700 dark:text-orange-500',
+      sign: 'text-orange-700 dark:text-orange-400',
+    },
+  };
+  const color = colors[period.body];
+
   return (
-    <div className="rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-2">
+    <div className={`rounded border px-2.5 py-2 ${color.card}`}>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+        <span className={`text-[10px] font-mono font-medium ${color.label}`}>
           {symbol} {period.body}{retrograde ? ' ℞' : ''}
         </span>
-        <span className="text-xs font-mono font-semibold text-violet-600 dark:text-violet-400">{period.signName}</span>
+        <span className={`text-xs font-mono font-semibold ${color.sign}`}>{period.signName}</span>
       </div>
       <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
         age {period.startAge}–{period.endAge} · {period.durationYears}y · cycle {period.cycleNumber}
