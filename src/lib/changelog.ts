@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.66',
+    date: '2026-08-10',
+    title: 'Kālachakra birth-balance fix',
+    changes: [
+      'Fixed Kālachakra birth balance so the elapsed Moon-pāda fraction applies only to the first rāśi period, not the whole life cycle.',
+      'Current mahādaśā periods now remain available for Moon positions near the end of a pada.',
+      'Corrected first-period antardaśā balance and repeated-sign cycle selection.',
+    ],
+  },
+  {
     version: 'v1.65',
     date: '2026-08-10',
     title: 'Public Charts directory',
