@@ -5,7 +5,7 @@ import {
   SE_MEAN_NODE, SE_TRUE_NODE,
   sweJulday, sweGetAyanamsa, sweCalcUt, sweGetAscendant,
 } from "./ephemerisAdapter";
-import { resolveAyanamsaMode } from './ayanamsas';
+import { applyAyanamsaOffset, resolveAyanamsaMode } from './ayanamsas';
 
 const PLANET_NAMES: Record<number, string> = {
   [SE_SUN]: "Sun",
@@ -86,14 +86,16 @@ export async function calculateChart(
   lng: number,
   timezoneOffset: number,
   ayanamsaSetting: string = 'lahiri',
-  nodeModeSetting: string = 'mean'
+  nodeModeSetting: string = 'mean',
+  ayanamsaOffsetDegrees: number = 0
 ): Promise<ChartData> {
   const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
   const nodeMode = resolveNodeMode(nodeModeSetting);
   const utc = toUtcParts(year, month, day, hour, minute, second, timezoneOffset);
 
   const jd = await sweJulday(utc.year, utc.month, utc.day, utc.totalHours);
-  const ayanamsa = await sweGetAyanamsa(jd, ayanamsaMode);
+  const baseAyanamsa = await sweGetAyanamsa(jd, ayanamsaMode);
+  const ayanamsa = applyAyanamsaOffset(baseAyanamsa, ayanamsaMode, ayanamsaOffsetDegrees);
   const siderealAyanamsa = ayanamsaMode === 'lahiri' ? ayanamsa : await sweGetAyanamsa(jd, 'lahiri');
   const useTropical = ayanamsaMode === 'tropical';
 
@@ -164,14 +166,16 @@ export async function calculateTransits(
   timezoneOffset: number,
   natalAscSignIndex: number,
   ayanamsaSetting: string = 'lahiri',
-  nodeModeSetting: string = 'mean'
+  nodeModeSetting: string = 'mean',
+  ayanamsaOffsetDegrees: number = 0
 ): Promise<PlanetData[]> {
   const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
   const nodeMode = resolveNodeMode(nodeModeSetting);
   const utc = toUtcParts(year, month, day, hour, minute, second, timezoneOffset);
 
   const jd = await sweJulday(utc.year, utc.month, utc.day, utc.totalHours);
-  const ayanamsa = await sweGetAyanamsa(jd, ayanamsaMode);
+  const baseAyanamsa = await sweGetAyanamsa(jd, ayanamsaMode);
+  const ayanamsa = applyAyanamsaOffset(baseAyanamsa, ayanamsaMode, ayanamsaOffsetDegrees);
   const useTropical = ayanamsaMode === 'tropical';
 
   const planets = await calculatePlanetPositions(jd, ayanamsa, useTropical);
