@@ -21,10 +21,18 @@ const CYCLES: number[][][] = [
   [[8,9,10,11,0,1,2,4,3], [5,6,7,11,10,9,8,7,6], [5,4,3,2,1,0,8,9,10], [11,0,1,2,4,3,5,6,7]],
   [[11,10,9,8,7,6,5,4,3], [2,1,0,8,9,10,11,0,1], [2,4,3,5,6,7,11,10,9], [8,7,6,5,4,3,2,1,0]],
 ];
-const PARAMAYUSH = [[100,85,83,86], [100,85,83,86], [86,83,85,100], [86,83,85,100]];
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
 
-export type KalachakraEntry = { sign: number; signName: string; startDate: Date; endDate: Date; durationYears: number };
+export type KalachakraEntry = {
+  sign: number;
+  signName: string;
+  startDate: Date;
+  endDate: Date;
+  durationYears: number;
+  cycleIndex: number;
+  fullDurationYears: number;
+  elapsedYears: number;
+};
 export type KalachakraResult = {
   nakshatra: string;
   pada: number;
@@ -43,8 +51,24 @@ function groupForNakshatra(index: number): number {
   return STAR_GROUPS.findIndex((group) => group.includes(index as never));
 }
 
-function entry(sign: number, startDate: Date, durationYears: number): KalachakraEntry {
-  return { sign: sign + 1, signName: SIGN_NAMES[sign], startDate, endDate: addYears(startDate, durationYears), durationYears };
+function entry(
+  sign: number,
+  startDate: Date,
+  durationYears: number,
+  cycleIndex: number,
+  fullDurationYears = durationYears,
+  elapsedYears = 0,
+): KalachakraEntry {
+  return {
+    sign: sign + 1,
+    signName: SIGN_NAMES[sign],
+    startDate,
+    endDate: addYears(startDate, durationYears),
+    durationYears,
+    cycleIndex,
+    fullDurationYears,
+    elapsedYears,
+  };
 }
 
 export function calculateKalachakra(moonLongitude: number, birthDate: Date): KalachakraResult {
@@ -57,23 +81,17 @@ export function calculateKalachakra(moonLongitude: number, birthDate: Date): Kal
   const fractionInPada = (positionInNakshatra - padaIndex * padaSpan) / padaSpan;
   const group = groupForNakshatra(nakshatraIndex);
   const cycle = CYCLES[group][padaIndex];
-  const paramayush = PARAMAYUSH[group][padaIndex];
-  const completedYears = fractionInPada * paramayush;
-
-  let accumulated = 0;
-  let activeIndex = 0;
-  for (let i = 0; i < cycle.length; i++) {
-    const next = accumulated + SIGN_YEARS[cycle[i]];
-    if (completedYears < next) { activeIndex = i; break; }
-    accumulated = next;
-  }
+  const firstSignYears = SIGN_YEARS[cycle[0]];
+  const elapsedFirstSignYears = fractionInPada * firstSignYears;
 
   const entries: KalachakraEntry[] = [];
   let cursor = birthDate;
-  for (let i = activeIndex; i < cycle.length; i++) {
+  for (let i = 0; i < cycle.length; i++) {
     const sign = cycle[i];
-    const duration = i === activeIndex ? accumulated + SIGN_YEARS[sign] - completedYears : SIGN_YEARS[sign];
-    const item = entry(sign, cursor, duration);
+    const fullDuration = SIGN_YEARS[sign];
+    const elapsed = i === 0 ? elapsedFirstSignYears : 0;
+    const duration = fullDuration - elapsed;
+    const item = entry(sign, cursor, duration, i, fullDuration, elapsed);
     entries.push(item);
     cursor = item.endDate;
   }
@@ -93,14 +111,22 @@ export function calculateKalachakra(moonLongitude: number, birthDate: Date): Kal
 }
 
 export function calculateKalachakraAntardashas(parent: KalachakraEntry, cycle: number[]): KalachakraEntry[] {
-  const parentIndex = cycle.indexOf(parent.sign - 1);
+  const parentIndex = parent.cycleIndex >= 0 ? parent.cycleIndex : cycle.indexOf(parent.sign - 1);
   const ordered = parentIndex < 0 ? cycle : [...cycle.slice(parentIndex), ...cycle.slice(0, parentIndex)];
   const totalWeight = ordered.reduce((sum, sign) => sum + SIGN_YEARS[sign], 0);
-  let cursor = parent.startDate;
-  return ordered.map((sign) => {
-    const duration = parent.durationYears * SIGN_YEARS[sign] / totalWeight;
-    const item = entry(sign, cursor, duration);
+  let cursor = addYears(parent.startDate, -parent.elapsedYears);
+  const fullEntries = ordered.map((sign, index) => {
+    const duration = parent.fullDurationYears * SIGN_YEARS[sign] / totalWeight;
+    const item = entry(sign, cursor, duration, index);
     cursor = item.endDate;
     return item;
   });
+
+  return fullEntries
+    .filter((item) => item.endDate > parent.startDate)
+    .map((item) => {
+      if (item.startDate >= parent.startDate) return item;
+      const durationYears = (item.endDate.getTime() - parent.startDate.getTime()) / YEAR_MS;
+      return entry(item.sign - 1, parent.startDate, durationYears, item.cycleIndex, item.fullDurationYears, item.fullDurationYears - durationYears);
+    });
 }
