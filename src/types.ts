@@ -1,7 +1,5 @@
 import type { DegreePrecision } from '@/lib/formatDegree';
 export type { DegreePrecision };
-import type { AvMode } from '@/lib/ashtakavarga';
-export type { AvMode };
 
 export interface GeoResult {
   name: string;
@@ -130,7 +128,6 @@ export interface ChartDisplaySettings {
   showGrahaDrishti: boolean;
   showRashiDrishti: boolean;
   showBnnAlpha: boolean;
-  avMode: AvMode;
   showBnnJupiterianRounds: boolean;
   showBnnJupiterMinor: boolean;
   showBnnEventDetection: boolean;
@@ -157,7 +154,6 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showGrahaDrishti: false,
   showRashiDrishti: false,
   showBnnAlpha: false,
-  avMode: 'off',
   showBnnJupiterianRounds: false,
   showBnnJupiterMinor: false,
   showBnnEventDetection: true,
