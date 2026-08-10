@@ -8,10 +8,12 @@ const atBirth = calculateNadiParaya({
   natalRahuSignIndex: 11,
 });
 assert.equal(atBirth.jupiter.signIndex, 0);
+assert.equal(atBirth.jupiter.degree, 0);
 assert.equal(atBirth.saturn.signIndex, 7);
 assert.equal(atBirth.saturn.endAge, 3);
 assert.equal(atBirth.rahu.signIndex, 11);
 assert.equal(atBirth.rahu.endAge, 2);
+assert.ok(atBirth.rahu.degree > 29.99 && atBirth.rahu.degree < 30);
 assert.equal(atBirth.ketu.signIndex, 5);
 
 const boundaries = calculateNadiParaya({
@@ -38,6 +40,23 @@ const retrograde = calculateNadiParaya({
 assert.equal(retrograde.jupiter.signIndex, 11);
 assert.equal(retrograde.saturn.signIndex, 6);
 assert.equal(retrograde.rahu.signIndex, 11);
+
+const midPeriods = calculateNadiParaya({
+  ageYears: 1,
+  natalJupiterSignIndex: 0,
+  natalSaturnSignIndex: 7,
+  natalRahuSignIndex: 11,
+});
+assert.equal(midPeriods.saturn.degree, 10);
+assert.equal(midPeriods.rahu.degree, 15);
+
+const midJupiter = calculateNadiParaya({
+  ageYears: 0.5,
+  natalJupiterSignIndex: 0,
+  natalSaturnSignIndex: 7,
+  natalRahuSignIndex: 11,
+});
+assert.equal(midJupiter.jupiter.degree, 15);
 
 const saturnCycle = buildParayaTimeline({ body: 'Saturn', natalSignIndex: 0, maxAge: 30 });
 const rahuCycle = buildParayaTimeline({ body: 'Rahu', natalSignIndex: 0, maxAge: 18 });
