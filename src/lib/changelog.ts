@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.74',
+    date: '2026-08-10',
+    title: 'Nadi paraya degrees',
+    changes: [
+      'Added the exact in-sign progression degree for Jupiter, Saturn, Rahu and Ketu.',
+      'Forward progressions advance from 0° to 30°; Rahu and Ketu move from 30° toward 0°.',
+      'Current paraya degrees are shown both in the BNN cards and directly on North and South Indian charts.',
+    ],
+  },
+  {
     version: 'v1.73',
     date: '2026-08-10',
     title: 'Nadi paraya chart highlights',

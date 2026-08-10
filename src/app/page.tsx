@@ -303,6 +303,7 @@ export default function Home() {
     return [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu].map(period => ({
       body: period.body,
       house: ((period.signIndex + 1 - asc + 12) % 12) + 1,
+      degree: period.degree,
     }));
   }, [chartData, effectiveBnnAge]);
 

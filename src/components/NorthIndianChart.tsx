@@ -293,7 +293,7 @@ export default function NorthIndianChart({
                 >
                   {parayaHere.map((activation, index) => (
                     <tspan key={activation.body} fill={PARAYA_COLORS[activation.body]} dx={index === 0 ? 0 : 4}>
-                      {PARAYA_CODES[activation.body]}
+                      {PARAYA_CODES[activation.body]} {activation.degree.toFixed(1)}°
                     </tspan>
                   ))}
                 </text>
