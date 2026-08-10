@@ -5,6 +5,7 @@ export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu';
 export type NadiParayaHouseActivation = {
   body: ParayaBody;
   house: number;
+  degree: number;
 };
 
 export type ParayaPeriod = {
@@ -15,6 +16,7 @@ export type ParayaPeriod = {
   endAge: number;
   durationYears: number;
   cycleNumber: number;
+  degree: number;
 };
 
 export type NadiParayaResult = {
@@ -49,6 +51,11 @@ function periodAtAge(params: {
     const endAgeInCycle = startAgeInCycle + durationYears;
     if (ageInCycle < endAgeInCycle || step === 11) {
       const signIndex = normalizeSign(startSign + params.direction * step);
+      const elapsedInPeriod = Math.max(0, ageInCycle - startAgeInCycle);
+      const progress = Math.max(0, Math.min(1, elapsedInPeriod / durationYears));
+      const degree = params.direction === 1
+        ? progress * 30
+        : Math.min(29.999999, (1 - progress) * 30);
       return {
         body: params.body,
         signIndex,
@@ -57,6 +64,7 @@ function periodAtAge(params: {
         endAge: completedCycles * cycleLength + endAgeInCycle,
         durationYears,
         cycleNumber: completedCycles + 1,
+        degree,
       };
     }
     startAgeInCycle = endAgeInCycle;
