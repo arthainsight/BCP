@@ -112,3 +112,27 @@ export function calculateCleanCharaMD(planets: PlanetData[], ascSign: number, bi
 
   return { startSign: start.sign, startBasis: start.basis, entries };
 }
+
+export function calculateCleanCharaSubDashas(parent: CleanCharaEntry, options: CharaOptions): CleanCharaEntry[] {
+  const direction = directionFor(parent.sign, options);
+  const durationYears = parent.durationYears / 12;
+  const entries: CleanCharaEntry[] = [];
+  let sign = options.antardashaStart === 'same-dasha-rasi' ? parent.sign : nextSign(parent.sign, direction);
+  let cursorDate = parent.startDate;
+
+  for (let i = 0; i < 12; i++) {
+    const endDate = addYears(cursorDate, durationYears);
+    entries.push({
+      sign,
+      signName: SIGN_NAMES[sign],
+      abbr: SIGN_ABBR[sign],
+      startDate: cursorDate,
+      endDate,
+      durationYears,
+      debug: { lord: lordFor(sign, options), lordSign: null, direction: direction === 1 ? 'forward' : 'reverse', countMode: options.durationCount, baseCount: 0, exaltDebilAdjustment: 0 },
+    });
+    cursorDate = endDate;
+    sign = nextSign(sign, direction);
+  }
+  return entries;
+}

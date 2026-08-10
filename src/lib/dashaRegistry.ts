@@ -17,7 +17,7 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'vimshottari', label: 'Vimsottari', group: 'Core', status: 'implemented', renderer: 'vimshottari' },
   { key: 'vds', label: 'Vimsottari Original', group: 'Core', status: 'implemented', renderer: 'vds' },
 
-  { key: 'chara', label: 'Chara Dasha', group: 'Experimental', status: 'beta', renderer: 'chara' },
+  { key: 'chara', label: 'Chara Daśā', group: 'Core', status: 'implemented', renderer: 'chara' },
   { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Experimental', status: 'beta', renderer: 'kalachakra' },
 
   { key: 'tara', label: 'Tara Dasha', group: 'Other systems', status: 'placeholder' },
