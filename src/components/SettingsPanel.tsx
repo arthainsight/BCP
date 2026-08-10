@@ -5,6 +5,7 @@ import { ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_DASHA
 import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
+import { AYANAMSA_OPTIONS } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
 
 interface Props {
@@ -133,10 +134,11 @@ export default function SettingsPanel(props: Props) {
             <div>
               <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">ayanamsa</label>
               <select className={SELECT} value={calculationSettings.ayanamsa} onChange={(e) => onUpdateCalculationSettings({ ayanamsa: e.target.value })}>
-                <option value="tropical">Tropical (Sayana)</option>
-                <option value="lahiri">Lahiri</option>
-                <option value="raman">Raman</option>
-                <option value="krishnamurti">Krishnamurti / KP</option>
+                {['Zodiac', 'Requested', 'Common'].map((group) => (
+                  <optgroup key={group} label={group}>
+                    {AYANAMSA_OPTIONS.filter((option) => option.group === group).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </optgroup>
+                ))}
               </select>
             </div>
             <div>
