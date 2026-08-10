@@ -5,7 +5,7 @@ import { ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_DASHA
 import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
-import { AYANAMSA_OPTIONS } from '@/lib/ayanamsas';
+import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
 
 interface Props {
@@ -134,12 +134,36 @@ export default function SettingsPanel(props: Props) {
             <div>
               <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">ayanamsa</label>
               <select className={SELECT} value={calculationSettings.ayanamsa} onChange={(e) => onUpdateCalculationSettings({ ayanamsa: e.target.value })}>
-                {['Zodiac', 'Requested', 'Common'].map((group) => (
+                {['Zodiac', 'Custom', 'Requested', 'Common'].map((group) => (
                   <optgroup key={group} label={group}>
                     {AYANAMSA_OPTIONS.filter((option) => option.group === group).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
                   </optgroup>
                 ))}
               </select>
+              {calculationSettings.ayanamsa === 'custom-lahiri' && (
+                <div className="mt-2 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-2">
+                  <label className="block text-[10px] font-mono text-zinc-500 dark:text-zinc-400 mb-1">
+                    Lahiri adjustment (degrees)
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <button type="button" className="px-2 py-1.5 rounded border border-zinc-300 dark:border-zinc-600 text-xs font-mono" onClick={() => onUpdateCalculationSettings({ ayanamsaOffsetDegrees: normalizeAyanamsaOffset((calculationSettings.ayanamsaOffsetDegrees ?? 0) - 0.1) })}>−0.1°</button>
+                    <input
+                      className={`${SELECT} min-w-0 text-center`}
+                      type="number"
+                      min="-180"
+                      max="180"
+                      step="0.000001"
+                      value={calculationSettings.ayanamsaOffsetDegrees ?? 0}
+                      onChange={(e) => onUpdateCalculationSettings({ ayanamsaOffsetDegrees: normalizeAyanamsaOffset(e.target.valueAsNumber) })}
+                      aria-label="Custom Lahiri adjustment in degrees"
+                    />
+                    <button type="button" className="px-2 py-1.5 rounded border border-zinc-300 dark:border-zinc-600 text-xs font-mono" onClick={() => onUpdateCalculationSettings({ ayanamsaOffsetDegrees: normalizeAyanamsaOffset((calculationSettings.ayanamsaOffsetDegrees ?? 0) + 0.1) })}>+0.1°</button>
+                  </div>
+                  <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                    Negative subtracts from Lahiri; positive adds. Decimals are allowed (1′ = 0.016667°).
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">nakshatra zodiac</label>
