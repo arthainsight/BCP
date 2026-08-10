@@ -6,8 +6,7 @@ import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import VargaMatrix from '@/pages/VargaMatrix';
 import DrishtiPanel from '@/components/DrishtiPanel';
-import { getAshtakavargaOverlay } from '@/lib/ashtakavarga';
-import type { AvMode } from '@/lib/ashtakavarga';
+import AshtakavargaPanel from '@/components/AshtakavargaPanel';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import TransitDateControls from './TransitDateControls';
@@ -88,7 +87,7 @@ export default function ChartSection({
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
-  const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'drishti'>('chart');
+  const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti'>('chart');
 
   const bnnHouses = useMemo(() => {
     // Use parent-provided houses when available (keeps age override in sync with chart highlights)
@@ -159,13 +158,10 @@ export default function ChartSection({
 
   const yearHouse = showBcpHighlights ? bcp.activeYearHouse : 0;
   const monthHouse = showBcpHighlights ? bcp.activeMonthHouse : 0;
-  const avMode: AvMode = chartDisplaySettings.avMode ?? 'off';
-  const ashtakavargaOverlay = avMode !== 'off' ? getAshtakavargaOverlay(chart, avMode) : [];
-  const avOverlayLabel = avMode === 'sav' ? 'SAV' : avMode !== 'off' ? `${avMode} BAV` : undefined;
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
 
-  const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'drishti') =>
+  const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti') =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
 
   return (
@@ -183,6 +179,7 @@ export default function ChartSection({
             <button type="button" onClick={() => setView('chart')} className={tabClass('chart')}>Chart</button>
             <button type="button" onClick={() => setView('varga')} className={tabClass('varga')}>Varga</button>
             <button type="button" onClick={() => setView('nadi')} className={tabClass('nadi')}>Nāḍī</button>
+            <button type="button" onClick={() => setView('ashtakavarga')} className={tabClass('ashtakavarga')}>Aṣṭakavarga</button>
             <button type="button" onClick={() => setView('drishti')} className={tabClass('drishti')}>Dṛṣṭi</button>
           </div>
         </div>
@@ -192,6 +189,8 @@ export default function ChartSection({
         <div className="min-w-0 overflow-x-auto"><VargaMatrix chart={chart} /></div>
       ) : view === 'nadi' ? (
         <div className="min-w-0 overflow-x-auto"><NadiAmsaPanel chart={chart} /></div>
+      ) : view === 'ashtakavarga' ? (
+        <div className="min-w-0 overflow-x-auto"><AshtakavargaPanel chart={chart} /></div>
       ) : view === 'drishti' ? (
         <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} showGrahaDrishti={chartDisplaySettings.showGrahaDrishti ?? true} showRashiDrishti={chartDisplaySettings.showRashiDrishti ?? true} /></div>
       ) : chartStyle === 'south' ? (
@@ -202,8 +201,6 @@ export default function ChartSection({
           planets={chart.planets}
           specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
-          ashtakavargaOverlay={ashtakavargaOverlay}
-          avOverlayLabel={avOverlayLabel}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
           showTransitPlanets={chartDisplaySettings.showTransitPlanets}
@@ -225,8 +222,6 @@ export default function ChartSection({
           planets={chart.planets}
           specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
-          ashtakavargaOverlay={ashtakavargaOverlay}
-          avOverlayLabel={avOverlayLabel}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
           showTransitPlanets={chartDisplaySettings.showTransitPlanets}
