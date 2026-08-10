@@ -2,6 +2,11 @@ import { SIGN_NAMES } from '@/lib/varga/index';
 
 export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu';
 
+export type NadiParayaHouseActivation = {
+  body: ParayaBody;
+  house: number;
+};
+
 export type ParayaPeriod = {
   body: ParayaBody;
   signIndex: number;

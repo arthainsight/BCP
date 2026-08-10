@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.73',
+    date: '2026-08-10',
+    title: 'Nadi paraya chart highlights',
+    changes: [
+      'Added Jupiter, Saturn, Rahu and Ketu paraya activations directly to North and South Indian charts.',
+      'Active houses use the same gold, blue, violet and orange colors as the paraya cards.',
+      'Multiple paraya activations in one house remain visible side by side instead of covering each other.',
+    ],
+  },
+  {
     version: 'v1.72',
     date: '2026-08-10',
     title: 'Nadi paraya colors',

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
+import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -13,6 +14,10 @@ const BNN_MAJOR_LIGHT = '#ea580c';
 const BNN_MAJOR_DARK  = '#f97316';
 const BNN_MINOR_LIGHT = '#7c3aed';
 const BNN_MINOR_DARK  = '#a78bfa';
+const PARAYA_COLORS: Record<ParayaBody, string> = {
+  Jupiter: '#d97706', Saturn: '#2563eb', Rahu: '#7c3aed', Ketu: '#ea580c',
+};
+const PARAYA_CODES: Record<ParayaBody, string> = { Jupiter: 'Ju', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke' };
 
 interface Props {
   activeYearHouse: number;
@@ -33,6 +38,7 @@ interface Props {
   nakshatraAdjust?: number;
   bnnMajorHouse?: number;
   bnnMinorHouse?: number;
+  nadiParayaHouses?: NadiParayaHouseActivation[];
   legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
 }
 
@@ -120,6 +126,7 @@ export default function SouthIndianChart({
   nakshatraAdjust = 0,
   bnnMajorHouse = 0,
   bnnMinorHouse = 0,
+  nadiParayaHouses = [],
   legendLayers,
 }: Props) {
   const { resolvedTheme } = useTheme();
@@ -159,6 +166,7 @@ export default function SouthIndianChart({
   }
 
   const hasBnn = bnnMajorHouse > 0 || bnnMinorHouse > 0;
+  const hasParaya = nadiParayaHouses.length > 0;
 
   return (
     <div className="w-full max-w-[520px] mx-auto">
@@ -180,6 +188,7 @@ export default function SouthIndianChart({
 
           const isBnnMaj = bnnMajorHouse > 0 && house === bnnMajorHouse;
           const isBnnMin = bnnMinorHouse > 0 && house === bnnMinorHouse;
+          const parayaHere = nadiParayaHouses.filter(activation => activation.house === house);
 
           // BNN background tint — only when BCP is not active on this house
           const isBcpActive = house === activeYearHouse || house === activeMonthHouse;
@@ -214,6 +223,19 @@ export default function SouthIndianChart({
                   className="absolute inset-0 rounded-md pointer-events-none"
                   style={{ border: `2px dashed ${bnnMinColor}`, zIndex: 11 }}
                 />
+              )}
+              {parayaHere.length > 0 && (
+                <div className="absolute inset-x-1 bottom-1 flex gap-0.5 pointer-events-none" style={{ zIndex: 12 }}>
+                  {parayaHere.map(activation => (
+                    <span
+                      key={activation.body}
+                      className="flex-1 rounded-sm text-center text-[8px] leading-3 font-bold text-white"
+                      style={{ backgroundColor: PARAYA_COLORS[activation.body] }}
+                    >
+                      {PARAYA_CODES[activation.body]}
+                    </span>
+                  ))}
+                </div>
               )}
 
               <div className="flex items-start justify-between gap-1 text-[10px] leading-none text-zinc-500 dark:text-zinc-400">
@@ -271,7 +293,7 @@ export default function SouthIndianChart({
         })}
       </div>
 
-      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || hasBnn) && (
+      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {(activeYearHouse > 0 || activeMonthHouse > 0) && legendLayers?.bcp !== false && (
             <>
@@ -282,6 +304,7 @@ export default function SouthIndianChart({
           )}
           {bnnMajorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: bnnMajColor }} className="font-semibold">■ BNN Major</span>}
           {bnnMinorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: bnnMinColor }} className="font-semibold">╌ BNN Minor</span>}
+          {hasParaya && <span className="font-semibold"><span style={{ color: PARAYA_COLORS.Jupiter }}>Ju</span> <span style={{ color: PARAYA_COLORS.Saturn }}>Sa</span> <span style={{ color: PARAYA_COLORS.Rahu }}>Ra</span> <span style={{ color: PARAYA_COLORS.Ketu }}>Ke</span> Paraya</span>}
           {showTransitPlanets && legendLayers?.transit !== false && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
         </div>

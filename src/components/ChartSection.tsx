@@ -12,6 +12,7 @@ import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import TransitDateControls from './TransitDateControls';
 import BCPAgeControls from './BCPAgeControls';
 import NadiAmsaPanel from './NadiAmsaPanel';
+import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 
 function parseBirthDt(dt: string): Date | null {
   const m = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
@@ -42,6 +43,7 @@ export interface ChartSectionProps {
   targetDate?: string;
   bnnMajorHouseFromParent?: number;
   bnnMinorHouseFromParent?: number;
+  nadiParayaHousesFromParent?: NadiParayaHouseActivation[];
   bcpEnabled?: boolean;
   useManualBcpMode?: boolean;
   onUseManualBcpModeChange?: (v: boolean) => void;
@@ -77,6 +79,7 @@ export default function ChartSection({
   targetDate,
   bnnMajorHouseFromParent,
   bnnMinorHouseFromParent,
+  nadiParayaHousesFromParent = [],
   bcpEnabled,
   useManualBcpMode,
   onUseManualBcpModeChange,
@@ -213,6 +216,7 @@ export default function ChartSection({
           nakshatraAdjust={nakshatraAdjust}
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
+          nadiParayaHouses={nadiParayaHousesFromParent}
         />
       ) : (
         <NorthIndianChart
@@ -235,6 +239,7 @@ export default function ChartSection({
           nakshatraAdjust={nakshatraAdjust}
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
+          nadiParayaHouses={nadiParayaHousesFromParent}
         />
       )}
 

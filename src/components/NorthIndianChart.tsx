@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
+import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -13,6 +14,10 @@ const BNN_MAJOR_LIGHT = '#ea580c';
 const BNN_MAJOR_DARK  = '#f97316';
 const BNN_MINOR_LIGHT = '#7c3aed';
 const BNN_MINOR_DARK  = '#a78bfa';
+const PARAYA_COLORS: Record<ParayaBody, string> = {
+  Jupiter: '#d97706', Saturn: '#2563eb', Rahu: '#7c3aed', Ketu: '#ea580c',
+};
+const PARAYA_CODES: Record<ParayaBody, string> = { Jupiter: 'Ju', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke' };
 
 interface Props {
   activeYearHouse: number;
@@ -35,6 +40,7 @@ interface Props {
   nakshatraAdjust?: number;
   bnnMajorHouse?: number;
   bnnMinorHouse?: number;
+  nadiParayaHouses?: NadiParayaHouseActivation[];
   legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
 }
 
@@ -165,6 +171,7 @@ export default function NorthIndianChart({
   nakshatraAdjust = 0,
   bnnMajorHouse = 0,
   bnnMinorHouse = 0,
+  nadiParayaHouses = [],
   legendLayers,
 }: Props) {
   const { resolvedTheme } = useTheme();
@@ -182,6 +189,7 @@ export default function NorthIndianChart({
   const bnnMinColor = isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT;
 
   const hasBnn = bnnMajorHouse > 0 || bnnMinorHouse > 0;
+  const hasParaya = nadiParayaHouses.length > 0;
 
   return (
     <div className="w-full max-w-[620px] mx-auto">
@@ -210,6 +218,7 @@ export default function NorthIndianChart({
           const isBnnMin = bnnMinorHouse > 0 && item.house === bnnMinorHouse;
           const bnnLabel = (isBnnMaj && isBnnMin) ? 'BNN Maj+Min' : isBnnMaj ? 'BNN Maj' : isBnnMin ? 'BNN Min' : null;
           const bnnLabelColor = (isBnnMaj && isBnnMin) ? (isDark ? '#e879f9' : '#a21caf') : isBnnMaj ? bnnMajColor : bnnMinColor;
+          const parayaHere = nadiParayaHouses.filter(activation => activation.house === item.house);
 
           return (
             <g key={item.house}>
@@ -238,6 +247,17 @@ export default function NorthIndianChart({
                   strokeDasharray="8,5"
                 />
               )}
+              {parayaHere.map((activation, index) => (
+                <polygon
+                  key={`paraya-border-${activation.body}`}
+                  points={item.points}
+                  fill="none"
+                  stroke={PARAYA_COLORS[activation.body]}
+                  strokeWidth="4"
+                  strokeDasharray="12,36"
+                  strokeDashoffset={String(index * -12)}
+                />
+              ))}
               {showSigns && (
                 <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize="13" fontWeight="600" fill={signFill}>
                   {SIGN_ABBR[sign]}
@@ -260,6 +280,22 @@ export default function NorthIndianChart({
                   fill={bnnLabelColor}
                 >
                   {bnnLabel}
+                </text>
+              )}
+              {parayaHere.length > 0 && (
+                <text
+                  x={item.sign.x}
+                  y={item.sign.y + (showSigns ? 24 : 10)}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="8"
+                  fontWeight="800"
+                >
+                  {parayaHere.map((activation, index) => (
+                    <tspan key={activation.body} fill={PARAYA_COLORS[activation.body]} dx={index === 0 ? 0 : 4}>
+                      {PARAYA_CODES[activation.body]}
+                    </tspan>
+                  ))}
                 </text>
               )}
               {allPlanets.map((planet, index) => {
@@ -312,13 +348,14 @@ export default function NorthIndianChart({
         })}
       </svg>
 
-      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || hasBnn) && (
+      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ BCP Year</span>}
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ BCP Month</span>}
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-purple-600 dark:text-purple-400 font-semibold">■ BCP Both</span>}
           {bnnMajorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: isDark ? BNN_MAJOR_DARK : BNN_MAJOR_LIGHT }} className="font-semibold">■ BNN Major</span>}
           {bnnMinorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT }} className="font-semibold">╌ BNN Minor</span>}
+          {hasParaya && <span className="font-semibold"><span style={{ color: PARAYA_COLORS.Jupiter }}>Ju</span> <span style={{ color: PARAYA_COLORS.Saturn }}>Sa</span> <span style={{ color: PARAYA_COLORS.Rahu }}>Ra</span> <span style={{ color: PARAYA_COLORS.Ketu }}>Ke</span> Paraya</span>}
           {showTransitPlanets && legendLayers?.transit !== false && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
         </div>
