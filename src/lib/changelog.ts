@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.68',
+    date: '2026-08-10',
+    title: 'Sahams',
+    changes: [
+      'Added a separate expandable table of 36 Tajika Sahams under Grahas.',
+      'Shows exact position, nakshatra/pada, whole-sign house, meaning and formula.',
+      'Uses local sunrise/sunset for day/night formulas and applies the classical 30° correction.',
+    ],
+  },
+  {
     version: 'v1.67',
     date: '2026-08-10',
     title: 'Planetary Avasthas',
