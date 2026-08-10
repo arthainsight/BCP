@@ -5,6 +5,7 @@ import BcpSummary from '@/components/BcpSummary';
 import VimshottariPanel from '@/components/VimshottariPanel';
 import VdsPanel from '@/components/VdsPanel';
 import CharaCleanPanel from '@/components/CharaCleanPanel';
+import KalachakraPanel from '@/components/KalachakraPanel';
 
 export type DashaRendererContext = {
   bcp: BcpResult;
@@ -26,6 +27,9 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
   ),
   chara: ({ planets, ascendant, birthDatetime, charaOptions }) => (
     <CharaCleanPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} settings={charaOptions} />
+  ),
+  kalachakra: ({ planets, birthDatetime }) => (
+    <KalachakraPanel planets={planets} birthDatetime={birthDatetime} />
   ),
 };
 

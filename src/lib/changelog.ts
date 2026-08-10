@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.63',
+    date: '2026-08-10',
+    title: 'Kālachakra Daśā',
+    changes: [
+      'Added the Moon-pāda based Kālachakra rāśi-daśā using the classical savya/apasavya tables.',
+      'Shows birth balance, mahādaśā and drill-down antardaśā dates, plus Deha and Jīva signs.',
+      'Removed the duplicate Kaal Chakra/Kalachakra placeholders from settings.',
+    ],
+  },
+  {
     version: 'v1.62',
     date: '2026-08-10',
     title: 'Parāśara and Varāhamihira Aṣṭakavarga',
