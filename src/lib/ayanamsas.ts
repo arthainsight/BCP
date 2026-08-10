@@ -1,5 +1,6 @@
 export const AYANAMSA_OPTIONS = [
   { value: 'tropical', label: 'Tropical (Sāyana)', shortLabel: 'Tropical', mode: null, group: 'Zodiac' },
+  { value: 'custom-lahiri', label: 'Custom Lahiri (± adjustment)', shortLabel: 'Custom Lahiri', mode: 1, group: 'Custom' },
 
   { value: 'lahiri', label: 'Lahiri / Chitrapaksha', shortLabel: 'Lahiri', mode: 1, group: 'Common' },
   { value: 'raman', label: 'B.V. Raman', shortLabel: 'Raman', mode: 3, group: 'Common' },
@@ -34,4 +35,15 @@ export function ayanamsaModeNumber(value: AyanamsaMode): number | null {
 export function ayanamsaLabel(value: string, short = false): string {
   const option = BY_VALUE.get(value) ?? BY_VALUE.get('lahiri')!;
   return short ? option.shortLabel : option.label;
+}
+
+export function normalizeAyanamsaOffset(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(-180, Math.min(180, Math.round(value * 1_000_000) / 1_000_000));
+}
+
+export function applyAyanamsaOffset(baseAyanamsa: number, mode: AyanamsaMode, offsetDegrees: number): number {
+  if (mode !== 'custom-lahiri') return baseAyanamsa;
+  const adjusted = baseAyanamsa + normalizeAyanamsaOffset(offsetDegrees);
+  return ((adjusted % 360) + 360) % 360;
 }
