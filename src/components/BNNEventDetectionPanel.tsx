@@ -6,6 +6,7 @@ import { SIGN_NAMES } from '@/lib/varga/index';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import { detectBNNEventWindows, type BNNEventWindow } from '@/lib/bnn/eventDetection';
+import { calculateNadiParaya, type ParayaPeriod } from '@/lib/bnn/nadiParaya';
 
 const SIGN_ABBR: Record<number, string> = {
   1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
@@ -151,6 +152,22 @@ function EventGroup({
   );
 }
 
+function ParayaCard({ symbol, period, retrograde }: { symbol: string; period: ParayaPeriod; retrograde?: boolean }) {
+  return (
+    <div className="rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 px-2.5 py-2">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+          {symbol} {period.body}{retrograde ? ' ℞' : ''}
+        </span>
+        <span className="text-xs font-mono font-semibold text-violet-600 dark:text-violet-400">{period.signName}</span>
+      </div>
+      <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+        age {period.startAge}–{period.endAge} · {period.durationYears}y · cycle {period.cycleNumber}
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 interface Props {
@@ -167,6 +184,8 @@ const INPUT =
 
 export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDate, bnnOverrideStr, onBnnOverrideStrChange }: Props) {
   const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
+  const natalSaturn = chart.planets.find(p => p.name === 'Saturn');
+  const natalRahu = chart.planets.find(p => p.name === 'Rahu');
   const natalJupiterSignIndex = natalJupiter ? natalJupiter.sign - 1 : 0;
   const natalJupiterDegree = natalJupiter ? natalJupiter.degree : 0;
 
@@ -219,6 +238,15 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
     () => detectBNNEventWindows({ roundsResult, minorProgression, natalPlanets }),
     [roundsResult, minorProgression, natalPlanets],
   );
+
+  const nadiParaya = useMemo(() => calculateNadiParaya({
+    ageYears: effectiveAge,
+    natalJupiterSignIndex,
+    natalSaturnSignIndex: (natalSaturn?.sign ?? 1) - 1,
+    natalRahuSignIndex: (natalRahu?.sign ?? 1) - 1,
+    jupiterRetrograde: Boolean(natalJupiter?.isRetrograde),
+    saturnRetrograde: Boolean(natalSaturn?.isRetrograde),
+  }), [effectiveAge, natalJupiterSignIndex, natalJupiter?.isRetrograde, natalSaturn?.sign, natalSaturn?.isRetrograde, natalRahu?.sign]);
 
   // All hooks above — early return after
   if (!natalJupiter) {
@@ -337,6 +365,22 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Nadi paraya progressions */}
+          <div className="space-y-2">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+              Nadi Paraya Progressions
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <ParayaCard symbol="♃" period={nadiParaya.jupiter} retrograde={Boolean(natalJupiter.isRetrograde)} />
+              <ParayaCard symbol="♄" period={nadiParaya.saturn} retrograde={Boolean(natalSaturn?.isRetrograde)} />
+              <ParayaCard symbol="☊" period={nadiParaya.rahu} />
+              <ParayaCard symbol="☋" period={nadiParaya.ketu} />
+            </div>
+            <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600 leading-relaxed">
+              Jupiter: 1y/sign forward · Saturn: 3–2 forward · Rahu/Ketu: 2–1 backward. Retrograde Jupiter or Saturn starts one sign earlier.
+            </p>
           </div>
 
           {/* Strong event windows */}
