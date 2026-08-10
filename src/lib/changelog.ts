@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.76',
+    date: '2026-08-10',
+    title: 'Paraya house alignment',
+    changes: [
+      'Added a dedicated safe label anchor and stacking direction for every North Indian chart house.',
+      'Corrected Jupiter positioning in house 11 and Ketu positioning in house 2.',
+      'Paraya labels now remain inside triangular and diamond-shaped house boundaries.',
+    ],
+  },
+  {
     version: 'v1.75',
     date: '2026-08-10',
     title: 'Clearer paraya chart labels',
