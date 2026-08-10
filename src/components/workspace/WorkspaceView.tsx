@@ -9,6 +9,7 @@ import NorthIndianChart from '../NorthIndianChart';
 import SouthIndianChart from '../SouthIndianChart';
 import TransitDateControls from '../TransitDateControls';
 import BNNEventDetectionPanel from '../BNNEventDetectionPanel';
+import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 import BCPAgeControls from '../BCPAgeControls';
 import GrahasPanel from '../GrahasPanel';
 import DashaPanel from '../DashaPanel';
@@ -137,6 +138,7 @@ export interface WorkspaceViewProps {
   nakshatraAdjust: number;
   dashaSettings: DashaSettings;
   effectiveBnnHouses: { major: number; minor: number };
+  effectiveNadiParayaHouses: NadiParayaHouseActivation[];
   bnnOverrideStr: string;
   onBnnOverrideStrChange: (v: string) => void;
   bcpEnabled: boolean;
@@ -157,6 +159,7 @@ export default function WorkspaceView({
   karakaByPlanet,
   nakshatraAdjust,
   effectiveBnnHouses,
+  effectiveNadiParayaHouses,
   bnnOverrideStr,
   onBnnOverrideStrChange,
   bcpEnabled,
@@ -232,6 +235,7 @@ export default function WorkspaceView({
       activeMonthHouse: monthHouse,
       bnnMajorHouse: bnnMaj,
       bnnMinorHouse: bnnMin,
+      nadiParayaHouses: effectiveNadiParayaHouses,
       transitPlanets: showTransit ? transitPlanets : [],
       showTransitPlanets: showTransit,
       legendLayers,
