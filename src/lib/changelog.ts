@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.60',
+    date: '2026-08-10',
+    title: 'Separate Aṣṭakavarga table',
+    changes: [
+      'Moved Bhinna and Sarva Aṣṭakavarga values into their own chart tab.',
+      'Removed the AV overlay and its setting from natal charts.',
+      'Aligned house-based bindu values to fixed zodiac-sign columns; cells now show numbers only.',
+    ],
+  },
+  {
     version: 'v1.59',
     changes: [
       'Added selectable Chara Karaka ranking: classical highest degree or highest minute',
