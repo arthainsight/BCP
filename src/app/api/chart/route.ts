@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
   const lat = parseFloat(searchParams.get("lat") || "0");
   const lng = parseFloat(searchParams.get("lng") || "0");
   const tz = parseFloat(searchParams.get("tz") || "0");
+  const ayanamsaOffset = parseFloat(searchParams.get("ayanamsaOffset") || "0");
 
   // NEW: fallback to cookies if query params missing
   const ayanamsa =
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const chart = await calculateChart(year, month, day, hour, minute, second, lat, lng, tz, ayanamsa, nodeMode);
+    const chart = await calculateChart(year, month, day, hour, minute, second, lat, lng, tz, ayanamsa, nodeMode, ayanamsaOffset);
     return NextResponse.json(chart);
   } catch (error) {
     console.error("Chart calculation error:", error);
