@@ -4,12 +4,10 @@ import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
-import type { AshtakavargaOverlayCell } from '@/lib/ashtakavarga';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
 const TRANSIT_COLOR = '#f43f5e';
-const ASHTAKAVARGA_COLOR = '#06b6d4';
 
 const BNN_MAJOR_LIGHT = '#ea580c';
 const BNN_MAJOR_DARK  = '#f97316';
@@ -23,7 +21,6 @@ interface Props {
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
   transitPlanets?: PlanetData[];
-  ashtakavargaOverlay?: AshtakavargaOverlayCell[];
   showNatalPlanets?: boolean;
   showTransitPlanets?: boolean;
   showSigns?: boolean;
@@ -38,7 +35,6 @@ interface Props {
   nakshatraAdjust?: number;
   bnnMajorHouse?: number;
   bnnMinorHouse?: number;
-  avOverlayLabel?: string;
   legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
 }
 
@@ -155,7 +151,6 @@ export default function NorthIndianChart({
   planets,
   specialLagnas = [],
   transitPlanets = [],
-  ashtakavargaOverlay = [],
   showNatalPlanets = true,
   showTransitPlanets = false,
   showSigns = true,
@@ -170,7 +165,6 @@ export default function NorthIndianChart({
   nakshatraAdjust = 0,
   bnnMajorHouse = 0,
   bnnMinorHouse = 0,
-  avOverlayLabel,
   legendLayers,
 }: Props) {
   const { resolvedTheme } = useTheme();
@@ -194,7 +188,6 @@ export default function NorthIndianChart({
       <svg viewBox="-25 -25 550 550" className="w-full h-auto overflow-visible" role="img" aria-label="North Indian Jyotish chart">
         {HOUSES.map((item) => {
           const sign = getSignForHouse(ascendantSign, item.house);
-          const avCell = ashtakavargaOverlay.find((cell) => cell.house === item.house);
           type MergedPlanet = PlanetData & { isTransit: boolean };
 
           const natalInHouse: MergedPlanet[] = showNatalPlanets
@@ -253,19 +246,6 @@ export default function NorthIndianChart({
               {showHouseNumbers && (
                 <text x={item.sign.x} y={item.sign.y + 14} textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="600" fill={hNumFill}>
                   H{item.house}
-                </text>
-              )}
-              {avCell && (
-                <text
-                  x={item.sign.x}
-                  y={item.sign.y - 16}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="11"
-                  fontWeight="800"
-                  fill={ASHTAKAVARGA_COLOR}
-                >
-                  AV {avCell.bindu}
                 </text>
               )}
               {/* BNN label — sits below the sign abbreviation */}
@@ -332,7 +312,7 @@ export default function NorthIndianChart({
         })}
       </svg>
 
-      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || ashtakavargaOverlay.length > 0 || hasBnn) && (
+      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || hasBnn) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ BCP Year</span>}
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ BCP Month</span>}
@@ -341,7 +321,6 @@ export default function NorthIndianChart({
           {bnnMinorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT }} className="font-semibold">╌ BNN Minor</span>}
           {showTransitPlanets && legendLayers?.transit !== false && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
-          {ashtakavargaOverlay.length > 0 && <span style={{ color: ASHTAKAVARGA_COLOR }} className="font-semibold">AV / {avOverlayLabel ?? 'Ashtakavarga'}</span>}
         </div>
       )}
     </div>

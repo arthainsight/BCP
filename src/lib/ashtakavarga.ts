@@ -221,6 +221,15 @@ export function buildAshtakavarga(chart: AshtakavargaChartLike): AshtakavargaRes
   return { bav, sav };
 }
 
+/** Convert a house-indexed AV row (H1..H12) to fixed zodiac order (Aries..Pisces). */
+export function mapAshtakavargaHousesToSigns(houses: number[], ascendantSign: number): number[] {
+  return Array.from({ length: 12 }, (_, signIndex) => {
+    const sign = signIndex + 1;
+    const house = ((sign - ascendantSign + 12) % 12) + 1;
+    return houses[house - 1] ?? 0;
+  });
+}
+
 function bavRowToOverlayCells(chart: AshtakavargaChartLike, row: BhinnaAshtakavargaRow): AshtakavargaOverlayCell[] {
   return row.houses.map((bindu, index) => {
     const house = index + 1;
