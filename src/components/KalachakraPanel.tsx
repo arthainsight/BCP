@@ -54,7 +54,7 @@ export default function KalachakraPanel({ planets, birthDatetime }: { planets: P
           );
         })}
       </div>
-      <p className="text-[9px] font-mono leading-relaxed text-zinc-400 dark:text-zinc-600">Moon-pāda PVR/BPHS table method. Kālachakra is highly birth-time sensitive.</p>
+      <p className="text-[9px] font-mono leading-relaxed text-zinc-400 dark:text-zinc-600">Moon-pāda PVR/BPHS table method. Birth balance is the unelapsed portion of the first rāśi period.</p>
     </div>
   );
 }
