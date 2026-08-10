@@ -880,7 +880,7 @@ export default function Home() {
             {desktopTab === 'grahas' && (
               <>
                 {chartData
-                  ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} />
+                  ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} />
                   : <EmptyState message="Calculate a chart to see graha positions" />
                 }
                 {uiMode !== 'simple' && chartData?.debug && (
@@ -999,7 +999,7 @@ export default function Home() {
         {activeTab === 'grahas' && (
           <Panel>
             {chartData
-              ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} />
+              ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} />
               : <EmptyState message="Calculate a chart in Data to see graha positions" />
             }
             {uiMode !== 'simple' && chartData?.debug && (
