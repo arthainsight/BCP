@@ -3,6 +3,7 @@ import JyotishGrahaTable from './JyotishGrahaTable';
 import DrishtiPanel from './DrishtiPanel';
 import YogaTable from './YogaTable';
 import AvasthaPanel from './AvasthaPanel';
+import SahamPanel from './SahamPanel';
 
 interface Props {
   chart: ChartData;
@@ -49,6 +50,7 @@ export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySetting
         />
       )}
       <AvasthaPanel chart={chart} birthDatetime={birthDatetime} />
+      <SahamPanel chart={chart} birthDatetime={birthDatetime} />
       <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3">
         <YogaTable chart={chart} />
       </div>
