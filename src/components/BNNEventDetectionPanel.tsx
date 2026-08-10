@@ -183,7 +183,7 @@ function ParayaCard({ symbol, period, retrograde }: { symbol: string; period: Pa
         <span className={`text-[10px] font-mono font-medium ${color.label}`}>
           {symbol} {period.body}{retrograde ? ' ℞' : ''}
         </span>
-        <span className={`text-xs font-mono font-semibold ${color.sign}`}>{period.signName}</span>
+        <span className={`text-xs font-mono font-semibold ${color.sign}`}>{period.signName} {period.degree.toFixed(2)}°</span>
       </div>
       <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
         age {period.startAge}–{period.endAge} · {period.durationYears}y · cycle {period.cycleNumber}
