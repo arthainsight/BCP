@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.75',
+    date: '2026-08-10',
+    title: 'Clearer paraya chart labels',
+    changes: [
+      'Improved Jupiter and Ketu contrast in active-house chart markers.',
+      'Increased paraya marker font size and added a theme-aware outline behind North Indian chart labels.',
+      'Stacked simultaneous activations and enlarged South Indian chart badges to prevent overlap.',
+    ],
+  },
+  {
     version: 'v1.74',
     date: '2026-08-10',
     title: 'Nadi paraya degrees',

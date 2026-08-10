@@ -15,7 +15,7 @@ const BNN_MAJOR_DARK  = '#f97316';
 const BNN_MINOR_LIGHT = '#7c3aed';
 const BNN_MINOR_DARK  = '#a78bfa';
 const PARAYA_COLORS: Record<ParayaBody, string> = {
-  Jupiter: '#d97706', Saturn: '#2563eb', Rahu: '#7c3aed', Ketu: '#ea580c',
+  Jupiter: '#92400e', Saturn: '#1d4ed8', Rahu: '#6d28d9', Ketu: '#c2410c',
 };
 const PARAYA_CODES: Record<ParayaBody, string> = { Jupiter: 'Ju', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke' };
 
@@ -225,12 +225,12 @@ export default function SouthIndianChart({
                 />
               )}
               {parayaHere.length > 0 && (
-                <div className="absolute inset-x-1 bottom-1 flex gap-0.5 pointer-events-none" style={{ zIndex: 12 }}>
+                <div className="absolute inset-x-1 bottom-1 flex flex-wrap justify-center gap-0.5 pointer-events-none" style={{ zIndex: 12 }}>
                   {parayaHere.map(activation => (
                     <span
                       key={activation.body}
-                      className="flex-1 rounded-sm text-center text-[8px] leading-3 font-bold text-white"
-                      style={{ backgroundColor: PARAYA_COLORS[activation.body] }}
+                      className="rounded-sm px-1 text-center text-[9px] leading-4 font-black text-white shadow-sm"
+                      style={{ backgroundColor: PARAYA_COLORS[activation.body], textShadow: '0 1px 1px rgba(0,0,0,0.45)' }}
                     >
                       {PARAYA_CODES[activation.body]} {activation.degree.toFixed(1)}°
                     </span>
