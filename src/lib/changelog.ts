@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v1.61',
+    date: '2026-08-10',
+    title: 'North Indian Aṣṭakavarga chart',
+    changes: [
+      'Added a North Indian chart view inside the separate Aṣṭakavarga section.',
+      'SAV or an individual planet BAV can be selected; houses display point numbers only.',
+    ],
+  },
+  {
     version: 'v1.60',
     date: '2026-08-10',
     title: 'Separate Aṣṭakavarga table',
