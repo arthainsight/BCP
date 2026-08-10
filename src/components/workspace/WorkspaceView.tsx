@@ -5,7 +5,6 @@ import type {
   ChartData, BcpResult, PlanetData, ChartDisplaySettings,
   DashaSettings, WorkspacePanel, WorkspacePanelType,
 } from '@/types';
-import { getAshtakavargaOverlay } from '@/lib/ashtakavarga';
 import NorthIndianChart from '../NorthIndianChart';
 import SouthIndianChart from '../SouthIndianChart';
 import TransitDateControls from '../TransitDateControls';
@@ -198,9 +197,6 @@ export default function WorkspaceView({
 
   // ── Chart rendering helper ──
   const chartStyle = chartDisplaySettings.chartStyle ?? 'north';
-  const avMode = chartDisplaySettings.avMode ?? 'off';
-  const ashtakavargaOverlay = avMode !== 'off' ? getAshtakavargaOverlay(chart, avMode) : [];
-  const avOverlayLabel = avMode === 'sav' ? 'SAV' : avMode !== 'off' ? `${avMode} BAV` : undefined;
 
   function renderChart(opts: {
     yearHouse?: number;
@@ -238,8 +234,6 @@ export default function WorkspaceView({
       bnnMinorHouse: bnnMin,
       transitPlanets: showTransit ? transitPlanets : [],
       showTransitPlanets: showTransit,
-      ashtakavargaOverlay,
-      avOverlayLabel,
       legendLayers,
     };
 
