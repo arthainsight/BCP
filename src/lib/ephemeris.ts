@@ -5,6 +5,7 @@ import {
   SE_MEAN_NODE, SE_TRUE_NODE,
   sweJulday, sweGetAyanamsa, sweCalcUt, sweGetAscendant,
 } from "./ephemerisAdapter";
+import { resolveAyanamsaMode } from './ayanamsas';
 
 const PLANET_NAMES: Record<number, string> = {
   [SE_SUN]: "Sun",
@@ -26,11 +27,6 @@ const PLANET_IDS = [
 
 function normalize(value: number): number {
   return ((value % 360) + 360) % 360;
-}
-
-function resolveAyanamsaMode(value: string): 'tropical' | 'lahiri' | 'raman' | 'krishnamurti' {
-  if (value === 'tropical' || value === 'raman' || value === 'krishnamurti') return value;
-  return 'lahiri';
 }
 
 function resolveNodeMode(value: string): 'mean' | 'true' {
