@@ -164,6 +164,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
 
 export interface CalculationSettings {
   ayanamsa: string;
+  ayanamsaOffsetDegrees: number;
   nodeMode: string;
   nakshatraMode: 'sidereal' | 'tropical';
   charaKarakaRankMode: 'degree' | 'minute';
@@ -171,6 +172,7 @@ export interface CalculationSettings {
 
 export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   ayanamsa: 'lahiri',
+  ayanamsaOffsetDegrees: 0,
   nodeMode: 'mean',
   nakshatraMode: 'sidereal',
   charaKarakaRankMode: 'degree',

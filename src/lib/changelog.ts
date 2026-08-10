@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.70',
+    date: '2026-08-10',
+    title: 'Custom Lahiri ayanamsa',
+    changes: [
+      'Added a Custom Lahiri choice with a signed degree adjustment: negative subtracts and positive adds.',
+      'The adjustment is saved in calculation settings and applies to natal and transit planets, nodes and Lagna.',
+      'The active adjustment is shown in the chart summary and exported report.',
+    ],
+  },
+  {
     version: 'v1.69',
     date: '2026-08-10',
     title: 'Expanded ayanamsas',
