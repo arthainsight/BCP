@@ -1,5 +1,35 @@
 import { buildDashaSubPeriods, buildDashaTimeline, type NakshatraDashaEntry } from './nakshatraDasha';
 
+type EligibilityPlanet = { name: string; sign: number };
+const SIGN_LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'] as const;
+
+export interface AshtottariEligibility {
+  eligible: boolean;
+  method: 'BPHS/PVR Rahu condition';
+  ascendantSign: number;
+  lagnaLord: string;
+  lagnaLordSign: number | null;
+  rahuSign: number | null;
+  relativeHouse: number | null;
+  reasons: string[];
+}
+
+export function evaluateAshtottariEligibility(planets: EligibilityPlanet[], ascendantSign: number): AshtottariEligibility {
+  const ascIndex = ((ascendantSign - 1) % 12 + 12) % 12;
+  const lagnaLord = SIGN_LORDS[ascIndex];
+  const lagnaLordSign = planets.find(planet => planet.name === lagnaLord)?.sign ?? null;
+  const rahuSign = planets.find(planet => planet.name === 'Rahu')?.sign ?? null;
+  const relativeHouse = lagnaLordSign && rahuSign ? ((rahuSign - lagnaLordSign + 12) % 12) + 1 : null;
+  const rahuOutsideLagna = rahuSign != null && rahuSign !== ascendantSign;
+  const kendraOrTrikona = relativeHouse != null && [1, 4, 5, 7, 9, 10].includes(relativeHouse);
+  const reasons = [
+    rahuSign == null ? 'Rahu position unavailable' : rahuOutsideLagna ? `Rahu is outside Lagna (sign ${rahuSign})` : 'Rahu occupies Lagna',
+    lagnaLordSign == null ? `${lagnaLord} position unavailable` : relativeHouse == null ? 'Relative house unavailable' : `Rahu is ${relativeHouse}H from Lagna lord ${lagnaLord}`,
+    kendraOrTrikona ? 'Kendra/trikona condition is met' : 'Kendra/trikona condition is not met',
+  ];
+  return { eligible: rahuOutsideLagna && kendraOrTrikona, method: 'BPHS/PVR Rahu condition', ascendantSign, lagnaLord, lagnaLordSign, rahuSign, relativeHouse, reasons };
+}
+
 export const ASHTOTTARI_DEFINITIONS = [
   { key: 'sun', name: 'Sun', lord: 'Sun', years: 6 },
   { key: 'moon', name: 'Moon', lord: 'Moon', years: 15 },
