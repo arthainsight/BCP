@@ -25,7 +25,7 @@ export default function TransitDateControls({
   return (
     <div className="space-y-1.5">
       <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
-        transit datetime
+        transit datetime · updates automatically
       </div>
       <div className="flex gap-1.5 items-center min-w-0">
         <input

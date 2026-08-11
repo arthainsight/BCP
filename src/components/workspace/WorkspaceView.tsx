@@ -8,12 +8,9 @@ import type {
 import NorthIndianChart from '../NorthIndianChart';
 import SouthIndianChart from '../SouthIndianChart';
 import TransitDateControls from '../TransitDateControls';
-import BNNEventDetectionPanel from '../BNNEventDetectionPanel';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
-import BCPAgeControls from '../BCPAgeControls';
 import GrahasPanel from '../GrahasPanel';
 import DashaPanel from '../DashaPanel';
-import BcpSummary from '../BcpSummary';
 import YogaTable from '../YogaTable';
 import { VargaMatrixCard, VargaStrengthCard, ShadbalaCard, BhavaBalaCard } from '@/pages/VargaMatrix';
 
@@ -22,8 +19,6 @@ import { VargaMatrixCard, VargaStrengthCard, ShadbalaCard, BhavaBalaCard } from 
 const PANEL_OPTIONS: { value: WorkspacePanelType; label: string }[] = [
   { value: 'natal',          label: 'Natal Chart' },
   { value: 'natal-transit',  label: 'Natal + Transit' },
-  { value: 'bcp',            label: 'BCP' },
-  { value: 'bnn',            label: 'BNN' },
   { value: 'vimshottari',    label: 'Vimshottari' },
   { value: 'graha-table',    label: 'Graha Table' },
   { value: 'yoga-table',     label: 'Yoga Table' },
@@ -48,9 +43,9 @@ const PANEL_TITLES: Record<WorkspacePanelType, string> = {
 };
 
 const DEFAULT_PANELS: WorkspacePanel[] = [
-  { id: 'ws-1', title: 'BNN',            type: 'bnn' },
-  { id: 'ws-2', title: 'BCP',            type: 'bcp' },
-  { id: 'ws-3', title: 'Natal + Transit', type: 'natal-transit' },
+  { id: 'ws-1', title: 'Natal + Transit', type: 'natal-transit' },
+  { id: 'ws-2', title: 'Vimshottari',     type: 'vimshottari' },
+  { id: 'ws-3', title: 'Graha Table',     type: 'graha-table' },
 ];
 
 const VIMSHOTTARI_SETTINGS: DashaSettings = {
@@ -173,7 +168,11 @@ export default function WorkspaceView({
       const raw = localStorage.getItem('workspace_panels');
       if (raw) {
         const parsed = JSON.parse(raw) as WorkspacePanel[];
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed.map((panel) =>
+          panel.type === 'bcp' || panel.type === 'bnn'
+            ? { ...panel, title: 'Natal + Transit', type: 'natal-transit' as const }
+            : panel
+        );
       }
     } catch {}
     return DEFAULT_PANELS;
@@ -182,9 +181,6 @@ export default function WorkspaceView({
   useEffect(() => {
     try { localStorage.setItem('workspace_panels', JSON.stringify(panels)); } catch {}
   }, [panels]);
-
-  // bnnHouses come from parent (already includes age override via effectiveBnnHouses)
-  const bnnHouses = effectiveBnnHouses;
 
   // ── Panel management ──
   const addPanel = useCallback(() => {
@@ -264,56 +260,6 @@ export default function WorkspaceView({
               onCalculateTransit={onCalculateTransit}
               transitLoading={transitLoading}
             />
-          </div>
-        );
-
-      case 'bcp': {
-        const effectiveWorkspaceBcp =
-          bcpManualProps.useManualBcpMode && bcpManualProps.manualBcpResult
-            ? bcpManualProps.manualBcpResult
-            : bcp;
-        return (
-          <div className="space-y-4">
-            {renderChart({
-              yearHouse: effectiveWorkspaceBcp?.activeYearHouse ?? 0,
-              monthHouse: effectiveWorkspaceBcp?.activeMonthHouse ?? 0,
-              legendLayers: { bcp: true, bnn: false, transit: false },
-            })}
-            {bcp && (
-              <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 space-y-3">
-                <BcpSummary bcp={effectiveWorkspaceBcp ?? bcp} planets={chart.planets} ascSign={chart.ascendant.sign} />
-                {bcpEnabled && (
-                  <BCPAgeControls
-                    useManualBcpMode={bcpManualProps.useManualBcpMode}
-                    onUseManualBcpModeChange={bcpManualProps.onUseManualBcpModeChange}
-                    manualBcpAge={bcpManualProps.manualBcpAge}
-                    onManualBcpAgeChange={bcpManualProps.onManualBcpAgeChange}
-                    manualBcpMonth={bcpManualProps.manualBcpMonth}
-                    onManualBcpMonthChange={bcpManualProps.onManualBcpMonthChange}
-                    activeYearHouse={effectiveWorkspaceBcp?.activeYearHouse ?? bcp?.activeYearHouse}
-                    activeMonthHouse={effectiveWorkspaceBcp?.activeMonthHouse ?? bcp?.activeMonthHouse}
-                  />
-                )}
-              </div>
-            )}
-          </div>
-        );
-      }
-
-      case 'bnn':
-        return (
-          <div className="space-y-4">
-            {renderChart({ bnnMaj: bnnHouses.major, bnnMin: bnnHouses.minor, legendLayers: { bcp: false, bnn: true, transit: false } })}
-            <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3">
-              <BNNEventDetectionPanel
-                chart={chart}
-                birthDatetime={birthDatetime}
-                targetDate={targetDate}
-                bnnOverrideStr={bnnOverrideStr}
-                onBnnOverrideStrChange={onBnnOverrideStrChange}
-                onTargetDateChange={onTargetDateChange}
-              />
-            </div>
           </div>
         );
 

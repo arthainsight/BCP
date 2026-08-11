@@ -1,6 +1,6 @@
 'use client';
 
-export type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'bnn' | 'public' | 'settings' | 'workspace';
+export type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'public' | 'settings' | 'workspace';
 
 interface Tab {
   id: TabId;
@@ -12,7 +12,6 @@ const BASE_TABS: Tab[] = [
   { id: 'data',     label: 'Data' },
   { id: 'grahas',   label: 'Grahas' },
   { id: 'dasha',    label: 'Dasha' },
-  { id: 'bnn',      label: 'BNN' },
   { id: 'public',   label: 'Public' },
   { id: 'settings', label: 'Settings' },
 ];
