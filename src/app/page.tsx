@@ -15,6 +15,7 @@ import DataPanel from '@/components/DataPanel';
 import SettingsPanel from '@/components/SettingsPanel';
 import GrahasPanel from '@/components/GrahasPanel';
 import DashaPanel from '@/components/DashaPanel';
+import DashaEventList from '@/components/DashaEventList';
 import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
 import CalculationDebugPanel from '@/components/CalculationDebugPanel';
@@ -923,6 +924,7 @@ export default function Home() {
               effectiveBcpResult && chartData
                 ? <div className="space-y-4">
                     {dashaSettings.dashas.bcp && <BcpManualOverride {...bcpManualProps} />}
+                    <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
                     <DashaPanel
                       bcp={effectiveBcpResult}
                       planets={chartData.planets}
@@ -1048,6 +1050,7 @@ export default function Home() {
             {effectiveBcpResult && chartData
               ? <div className="space-y-4">
                   {dashaSettings.dashas.bcp && <BcpManualOverride {...bcpManualProps} />}
+                  <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
                   <DashaPanel
                     bcp={effectiveBcpResult}
                     planets={chartData.planets}
