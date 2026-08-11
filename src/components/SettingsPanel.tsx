@@ -42,7 +42,6 @@ const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showPanchang', label: 'panchang' },
   { key: 'showGrahaDrishti', label: 'graha dṛṣṭi' },
   { key: 'showRashiDrishti', label: 'rāśi dṛṣṭi' },
-  { key: 'showBnnAlpha', label: 'BNN alpha (research)' },
 ];
 
 const CORE_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Core');
@@ -226,16 +225,6 @@ export default function SettingsPanel(props: Props) {
                   <MiniToggle value={Boolean(chartDisplaySettings[key])} onToggle={() => onToggleChartDisplay(key)} />
                 </div>
               ))}
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">BNN highlight</span>
-                <MiniToggle
-                  value={Boolean(chartDisplaySettings.showBnnMajorHighlight || chartDisplaySettings.showBnnMinorHighlight)}
-                  onToggle={() => {
-                    const next = !(chartDisplaySettings.showBnnMajorHighlight || chartDisplaySettings.showBnnMinorHighlight);
-                    onUpdateChartDisplay?.({ showBnnMajorHighlight: next, showBnnMinorHighlight: next });
-                  }}
-                />
-              </div>
             </div>
             <div className="mt-2 flex items-center justify-between gap-2">
               <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 shrink-0">degrees</span>

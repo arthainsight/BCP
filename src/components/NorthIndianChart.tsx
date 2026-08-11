@@ -256,17 +256,6 @@ export default function NorthIndianChart({
                   strokeDasharray="8,5"
                 />
               )}
-              {parayaHere.map((activation, index) => (
-                <polygon
-                  key={`paraya-border-${activation.body}`}
-                  points={item.points}
-                  fill="none"
-                  stroke={parayaColors[activation.body]}
-                  strokeWidth="4"
-                  strokeDasharray="12,36"
-                  strokeDashoffset={String(index * -12)}
-                />
-              ))}
               {showSigns && (
                 <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize="13" fontWeight="600" fill={signFill}>
                   {SIGN_ABBR[sign]}
