@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v1.81',
+    date: '2026-08-11',
+    title: 'Complete sub-dasha navigation',
+    changes: [
+      'Added MD–AD–PD–SD–PR–DE drill-down navigation to Chara and Kalachakra Dasha, matching both Vimsottari systems.',
+      'Added complete active-now period paths and direct NOW navigation to every calculated Dasha panel.',
+      'Removed the BNN highlight and BNN alpha settings toggles.',
+      'Removed colored Nadi Paraya house-border overlays from the North Indian chart while keeping the Paraya labels.',
+    ],
+  },
+  {
     version: 'v1.80',
     date: '2026-08-11',
     title: 'Automatic transits and streamlined analysis',
