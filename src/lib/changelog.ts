@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.83',
+    date: '2026-08-11',
+    title: 'Simplified settings and Kalachakra placement',
+    changes: [
+      'Removed the separate Advanced settings section.',
+      'Moved its chart overlay controls into the main Display section.',
+      'Moved Kalachakra Dasha to the end of the main Dasha systems list.',
+    ],
+  },
+  {
     version: 'v1.82',
     date: '2026-08-11',
     title: 'Yogini and Ashtottari Dasha',

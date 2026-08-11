@@ -19,7 +19,7 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'chara', label: 'Chara Daśā', group: 'Core', status: 'implemented', renderer: 'chara' },
   { key: 'yogini', label: 'Yoginī Daśā', group: 'Core', status: 'implemented', renderer: 'yogini' },
   { key: 'ashtottari', label: 'Aṣṭottarī Daśā', group: 'Core', status: 'implemented', renderer: 'ashtottari' },
-  { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Experimental', status: 'beta', renderer: 'kalachakra' },
+  { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Core', status: 'implemented', renderer: 'kalachakra' },
 
   { key: 'tara', label: 'Tara Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'shodashottari', label: 'Shodashottari Dasha', group: 'Other systems', status: 'placeholder' },

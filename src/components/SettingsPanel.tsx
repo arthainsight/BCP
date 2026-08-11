@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
@@ -25,16 +25,6 @@ const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showNatalPlanets', label: 'natal' },
   { key: 'showNakshatra', label: 'nakshatra' },
   { key: 'showCharaKaraka', label: 'karaka' },
-];
-
-const PRECISION_OPTIONS: [DegreePrecision, string][] = [
-  ['off', 'Off'],
-  ['degree', '12°'],
-  ['minute', "12°34'"],
-  ['second', "12°34'56\""],
-];
-
-const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showWorkspace', label: 'workspace mode' },
   { key: 'showTransitPlanets', label: 'transit' },
   { key: 'showOuterPlanets', label: 'outer planets' },
@@ -44,9 +34,14 @@ const ADVANCED_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showRashiDrishti', label: 'rāśi dṛṣṭi' },
 ];
 
+const PRECISION_OPTIONS: [DegreePrecision, string][] = [
+  ['off', 'Off'],
+  ['degree', '12°'],
+  ['minute', "12°34'"],
+  ['second', "12°34'56\""],
+];
+
 const CORE_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Core');
-const EXPERIMENTAL_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Experimental');
-const PLACEHOLDER_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Other systems');
 
 function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void }) {
   return (
@@ -82,20 +77,12 @@ export default function SettingsPanel(props: Props) {
   } = props;
 
   const [displayOpen, setDisplayOpen] = useState(true);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [selectedChartStyle, setSelectedChartStyle] = useState<'north' | 'south'>(
-    chartDisplaySettings.chartStyle ?? 'north'
-  );
+  const selectedChartStyle = chartDisplaySettings.chartStyle ?? 'north';
 
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
 
-  useEffect(() => {
-    setSelectedChartStyle(chartDisplaySettings.chartStyle ?? 'north');
-  }, [chartDisplaySettings.chartStyle]);
-
   const updateChartStyle = (chartStyle: 'north' | 'south') => {
-    setSelectedChartStyle(chartStyle);
     onUpdateChartDisplay?.({ chartStyle });
     try {
       localStorage.setItem('chartDisplaySettings', JSON.stringify({ ...chartDisplaySettings, chartStyle }));
@@ -258,54 +245,6 @@ export default function SettingsPanel(props: Props) {
                   <MiniToggle value={Boolean(normalizedDashas[key])} onToggle={() => toggleDasha(key)} />
                 </div>
               ))}
-            </div>
-          </div>
-
-        </div>
-      </Section>
-
-      {/* ── ADVANCED (collapsed by default) ──────────────────── */}
-      <Section label="advanced" open={advancedOpen} onToggle={() => setAdvancedOpen(v => !v)}>
-        <div className="space-y-4">
-
-          <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">
-              chart overlays
-            </div>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-              {ADVANCED_TOGGLES.map(({ key, label }) => (
-                <div key={key} className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{label}</span>
-                  <MiniToggle value={Boolean(chartDisplaySettings[key])} onToggle={() => onToggleChartDisplay(key)} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {EXPERIMENTAL_DASHAS.length > 0 && (
-            <div>
-              <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">
-                experimental dasha systems
-              </div>
-              <div className="space-y-1.5">
-                {EXPERIMENTAL_DASHAS.map(({ key, label, status }) => (
-                  <div key={key} className="flex items-center justify-between gap-3 rounded-md border border-zinc-100 dark:border-zinc-800 px-2 py-2">
-                    <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">
-                      {label}{status === 'beta' ? ' (beta)' : ''}
-                    </span>
-                    <MiniToggle value={Boolean(normalizedDashas[key])} onToggle={() => toggleDasha(key)} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-1">
-              coming soon
-            </div>
-            <div className="text-[10px] font-mono text-zinc-300 dark:text-zinc-700 leading-relaxed">
-              {PLACEHOLDER_DASHAS.map(d => d.label).join(' · ')}
             </div>
           </div>
 
