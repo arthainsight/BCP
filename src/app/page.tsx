@@ -924,7 +924,7 @@ export default function Home() {
             {desktopTab === 'dasha' && (
               effectiveBcpResult && chartData
                 ? <div className="space-y-4">
-                    <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
+                    <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} />
                     <DashaPanel
                       bcp={effectiveBcpResult}
                       planets={chartData.planets}
@@ -1028,7 +1028,7 @@ export default function Home() {
           <Panel>
             {effectiveBcpResult && chartData
               ? <div className="space-y-4">
-                  <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
+                  <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} />
                   <DashaPanel
                     bcp={effectiveBcpResult}
                     planets={chartData.planets}
