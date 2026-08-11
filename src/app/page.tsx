@@ -21,9 +21,6 @@ import PanchangPanel from '@/components/PanchangPanel';
 import CalculationDebugPanel from '@/components/CalculationDebugPanel';
 import { buildReportMarkdown } from '@/lib/exportReport';
 import FileActions, { ChartSnapshot } from '@/components/FileActions';
-import BcpSummary from '@/components/BcpSummary';
-import BcpManualOverride from '@/components/BcpManualOverride';
-import BNNEventDetectionPanel from '@/components/BNNEventDetectionPanel';
 import WorkspaceView from '@/components/workspace/WorkspaceView';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
 import { ayanamsaLabel } from '@/lib/ayanamsas';
@@ -64,6 +61,12 @@ function getTodayString(): string {
   );
 }
 
+function getNowDateTimeString(): string {
+  const d = new Date();
+  const pad = (value: number) => String(value).padStart(2, '0');
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}.${pad(d.getMinutes())}.${pad(d.getSeconds())}`;
+}
+
 function parseTargetDateString(value: string): Date | null {
   const parts = value.split('-');
   if (parts.length !== 3) return null;
@@ -88,7 +91,7 @@ function computeManualBcp(completedAge: number, month: number): BcpResult {
   };
 }
 
-type DesktopTab = 'data' | 'grahas' | 'dasha' | 'bnn' | 'public' | 'workspace' | 'settings';
+type DesktopTab = 'data' | 'grahas' | 'dasha' | 'public' | 'workspace' | 'settings';
 
 type CalculationOptions = {
   preserveCurrentPanel?: boolean;
@@ -478,6 +481,7 @@ export default function Home() {
         } else {
           setChartData(data);
           setTransitPlanets([]);
+          setTransitDatetime((current) => current || getNowDateTimeString());
           if (!options?.preserveCurrentPanel) {
             setActiveTab('chart');
             setDesktopTab('grahas');
@@ -578,6 +582,12 @@ export default function Home() {
       setTransitLoading(false);
     }
   }, [transitDatetime, chartData, manualLat, manualLng, effectiveTzOffset, calculationSettings.ayanamsa, calculationSettings.ayanamsaOffsetDegrees, calculationSettings.nodeMode]);
+
+  useEffect(() => {
+    if (!chartData || !transitDatetime.trim()) return;
+    const timer = window.setTimeout(() => { void handleCalculateTransit(); }, 350);
+    return () => window.clearTimeout(timer);
+  }, [chartData, transitDatetime, handleCalculateTransit]);
 
   const handleExportReport = useCallback(() => {
     const lat = parseFloat(manualLat);
@@ -861,15 +871,6 @@ export default function Home() {
               />
             )}
           </div>
-          {uiMode === 'simple' && dashaSettings.dashas.bcp && effectiveBcpResult && chartData && (
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-              <BcpSummary
-                bcp={effectiveBcpResult}
-                planets={chartData.planets}
-                ascSign={chartData.ascendant.sign}
-              />
-            </div>
-          )}
           {chartDisplaySettings.showPanchang && chartData && (
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
               <PanchangPanel
@@ -886,7 +887,7 @@ export default function Home() {
         {/* Right: tabbed panels */}
         <div className="space-y-3">
           <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1 overflow-x-auto">
-            {(['data', 'grahas', 'dasha', 'bnn', 'public', ...(chartDisplaySettings.showWorkspace ? ['workspace'] : []), 'settings'] as DesktopTab[]).map((tab) => (
+            {(['data', 'grahas', 'dasha', 'public', ...(chartDisplaySettings.showWorkspace ? ['workspace'] : []), 'settings'] as DesktopTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setDesktopTab(tab)}
@@ -923,7 +924,6 @@ export default function Home() {
             {desktopTab === 'dasha' && (
               effectiveBcpResult && chartData
                 ? <div className="space-y-4">
-                    {dashaSettings.dashas.bcp && <BcpManualOverride {...bcpManualProps} />}
                     <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
                     <DashaPanel
                       bcp={effectiveBcpResult}
@@ -934,19 +934,7 @@ export default function Home() {
                       collapsible={uiMode !== 'simple'}
                     />
                   </div>
-                : <EmptyState message="Calculate a chart to see BCP dasha analysis" />
-            )}
-            {desktopTab === 'bnn' && (
-              chartData
-                ? <BNNEventDetectionPanel
-                    chart={chartData}
-                    birthDatetime={birthDatetime}
-                    targetDate={targetDate}
-                    bnnOverrideStr={bnnOverrideStr}
-                    onBnnOverrideStrChange={setBnnOverrideStr}
-                    onTargetDateChange={setTargetDate}
-                  />
-                : <EmptyState message="Calculate a chart to see BNN analysis" />
+                : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
             {desktopTab === 'workspace' && (
@@ -1000,15 +988,6 @@ export default function Home() {
                 />
               )}
             </Panel>
-            {uiMode === 'simple' && dashaSettings.dashas.bcp && effectiveBcpResult && chartData && (
-              <Panel>
-                <BcpSummary
-                  bcp={effectiveBcpResult}
-                  planets={chartData.planets}
-                  ascSign={chartData.ascendant.sign}
-                />
-              </Panel>
-            )}
             {chartDisplaySettings.showPanchang && chartData && (
               <Panel>
                 <PanchangPanel
@@ -1049,7 +1028,6 @@ export default function Home() {
           <Panel>
             {effectiveBcpResult && chartData
               ? <div className="space-y-4">
-                  {dashaSettings.dashas.bcp && <BcpManualOverride {...bcpManualProps} />}
                   <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} />
                   <DashaPanel
                     bcp={effectiveBcpResult}
@@ -1060,23 +1038,7 @@ export default function Home() {
                     collapsible={uiMode !== 'simple'}
                   />
                 </div>
-              : <EmptyState message="Calculate a chart in Data to see BCP dasha analysis" />
-            }
-          </Panel>
-        )}
-
-        {activeTab === 'bnn' && (
-          <Panel>
-            {chartData
-              ? <BNNEventDetectionPanel
-                  chart={chartData}
-                  birthDatetime={birthDatetime}
-                  targetDate={targetDate}
-                  bnnOverrideStr={bnnOverrideStr}
-                  onBnnOverrideStrChange={setBnnOverrideStr}
-                  onTargetDateChange={setTargetDate}
-                />
-              : <EmptyState message="Calculate a chart in Data to see BNN analysis" />
+              : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
             }
           </Panel>
         )}
