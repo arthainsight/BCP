@@ -239,9 +239,9 @@ export default function SettingsPanel(props: Props) {
               dasha systems
             </div>
             <div className="space-y-1.5">
-              {CORE_DASHAS.map(({ key, label }) => (
+              {CORE_DASHAS.map(({ key, label, kind, conditional }) => (
                 <div key={key} className="flex items-center justify-between gap-3 rounded-md border border-zinc-100 dark:border-zinc-800 px-2 py-2">
-                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{label}</span>
+                  <span className="min-w-0 text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{label}{kind && <span className="ml-1.5 text-[9px] uppercase text-zinc-400">{kind === 'rasi' ? 'Rāśi' : kind}</span>}{conditional && <span className="ml-1.5 rounded border border-amber-300 px-1 py-0.5 text-[8px] uppercase text-amber-700 dark:border-amber-700 dark:text-amber-300">Conditional</span>}</span>
                   <MiniToggle value={Boolean(normalizedDashas[key])} onToggle={() => toggleDasha(key)} />
                 </div>
               ))}
