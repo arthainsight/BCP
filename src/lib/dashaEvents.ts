@@ -1,5 +1,4 @@
 import type { CharaOptions, PlanetData } from '@/types';
-import { calculateBcp } from './bcp';
 import { calculateCleanCharaMD, calculateCleanCharaSubDashas, type CleanCharaEntry } from './charaClean';
 import { calculateKalachakra, calculateKalachakraAntardashas, type KalachakraEntry } from './kalachakra';
 import { calculateVds } from './vds';
@@ -7,7 +6,7 @@ import { calculateSubDashas, calculateVimshottari, type MahadashaEntry } from '.
 
 export interface DashaEventLevel { level: string; value: string; }
 export interface DashaEventSnapshot {
-  key: 'bcp' | 'vimshottari' | 'vds' | 'chara' | 'kalaChakra';
+  key: 'vimshottari' | 'vds' | 'chara' | 'kalaChakra';
   label: string;
   levels: DashaEventLevel[];
   note?: string;
@@ -47,7 +46,6 @@ function kalachakraLevels(entries: KalachakraEntry[], cycle: number[], date: Dat
 export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSnapshot[] {
   const { eventDate, birthDate, planets, ascendant, charaOptions } = input;
   if (eventDate < birthDate) return [
-    { key: 'bcp', label: 'BCP', levels: [], note: 'Date is before birth' },
     { key: 'vimshottari', label: 'Vimsottari', levels: [], note: 'Date is before birth' },
     { key: 'vds', label: 'Vimsottari Original', levels: [], note: 'Date is before birth' },
     { key: 'chara', label: 'Chara Dasha', levels: [], note: 'Date is before birth' },
@@ -56,13 +54,7 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
 
   const moon = planets.find((planet) => planet.name === 'Moon');
   const sun = planets.find((planet) => planet.name === 'Sun');
-  const bcp = calculateBcp(birthDate, eventDate);
-  const snapshots: DashaEventSnapshot[] = [{
-    key: 'bcp', label: 'BCP', levels: [
-      { level: 'Year', value: `H${bcp.activeYearHouse}` },
-      { level: 'Month', value: `H${bcp.activeMonthHouse}` },
-    ],
-  }];
+  const snapshots: DashaEventSnapshot[] = [];
 
   snapshots.push(moon ? {
     key: 'vimshottari', label: 'Vimsottari',
