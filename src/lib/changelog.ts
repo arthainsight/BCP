@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v1.86',
+    date: '2026-08-11',
+    title: 'Unified Dasha Timeline',
+    changes: [
+      'Added one shared timeline above the vertically stacked Dasha panels.',
+      'Added a date selector, ±1-year navigation and Today shortcut for comparing active periods.',
+      'Shows active MD–AD–PD paths and MD ranges for every enabled calculated system on a common ±10-year scale.',
+      'Added direct links from timeline rows to the corresponding Dasha panel.',
+      'Conditional Aṣṭottarī non-applicability is shown directly in the timeline.',
+    ],
+  },
+  {
     version: 'v1.85',
     date: '2026-08-11',
     title: 'Dasha validation and conditional eligibility',

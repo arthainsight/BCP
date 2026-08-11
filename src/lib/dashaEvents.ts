@@ -13,6 +13,7 @@ export interface DashaEventSnapshot {
   key: 'vimshottari' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'narayana' | 'moola' | 'sthira';
   label: string;
   levels: DashaEventLevel[];
+  mdRange?: { startDate: Date; endDate: Date };
   note?: string;
 }
 interface SnapshotInput {
@@ -25,6 +26,10 @@ interface SnapshotInput {
 
 function activeEntry<T extends { startDate: Date; endDate: Date }>(entries: T[], date: Date): T | null {
   return entries.find((entry) => date >= entry.startDate && date < entry.endDate) ?? null;
+}
+function activeRange<T extends { startDate: Date; endDate: Date }>(entries: T[], date: Date) {
+  const md = activeEntry(entries, date);
+  return md ? { startDate: md.startDate, endDate: md.endDate } : undefined;
 }
 function vimshottariLevels(entries: MahadashaEntry[], date: Date): DashaEventLevel[] {
   const md = activeEntry(entries, date);
@@ -80,25 +85,25 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
   const sun = planets.find((planet) => planet.name === 'Sun');
   const snapshots: DashaEventSnapshot[] = [];
 
-  snapshots.push(moon ? {
-    key: 'vimshottari', label: 'Vimsottari',
-    levels: vimshottariLevels(calculateVimshottari(moon.longitude, birthDate).entries, eventDate),
+  const vimshottari = moon ? calculateVimshottari(moon.longitude, birthDate).entries : null;
+  snapshots.push(vimshottari ? {
+    key: 'vimshottari', label: 'Vimsottari', levels: vimshottariLevels(vimshottari, eventDate), mdRange: activeRange(vimshottari, eventDate),
   } : { key: 'vimshottari', label: 'Vimsottari', levels: [], note: 'Moon unavailable' });
 
   const planetLongitudes = Object.fromEntries(planets.map((planet) => [planet.name, planet.longitude]));
   const vds = moon && sun ? calculateVds({ moonLongitude: moon.longitude, sunLongitude: sun.longitude, lagnaLongitude: ascendant.longitude, lagnaSign: ascendant.sign, lagnaDegree: ascendant.degree, birthDate, planetLongitudes }) : null;
-  snapshots.push({ key: 'vds', label: 'Vimsottari Original', levels: vds ? vimshottariLevels(vds.entries, eventDate) : [], note: vds ? undefined : 'Calculation unavailable' });
+  snapshots.push({ key: 'vds', label: 'Vimsottari Original', levels: vds ? vimshottariLevels(vds.entries, eventDate) : [], mdRange: vds ? activeRange(vds.entries, eventDate) : undefined, note: vds ? undefined : 'Calculation unavailable' });
 
   const chara = calculateCleanCharaMD(planets, ascendant.sign, birthDate, charaOptions);
-  snapshots.push({ key: 'chara', label: 'Chara Dasha', levels: chara ? charaLevels(chara.entries, eventDate, charaOptions) : [], note: chara ? undefined : 'Calculation unavailable' });
+  snapshots.push({ key: 'chara', label: 'Chara Dasha', levels: chara ? charaLevels(chara.entries, eventDate, charaOptions) : [], mdRange: chara ? activeRange(chara.entries, eventDate) : undefined, note: chara ? undefined : 'Calculation unavailable' });
 
   if (moon) {
     const yogini = calculateYogini(moon.longitude, birthDate);
-    snapshots.push({ key: 'yogini', label: 'Yogini Dasha', levels: nakshatraDashaLevels(yogini.entries, eventDate, calculateYoginiSubDashas) });
+    snapshots.push({ key: 'yogini', label: 'Yogini Dasha', levels: nakshatraDashaLevels(yogini.entries, eventDate, calculateYoginiSubDashas), mdRange: activeRange(yogini.entries, eventDate) });
     const eligibility = evaluateAshtottariEligibility(planets, ascendant.sign);
     const ashtottari = calculateAshtottari(moon.longitude, birthDate);
     snapshots.push(eligibility.eligible
-      ? { key: 'ashtottari', label: 'Ashtottari Dasha', levels: nakshatraDashaLevels(ashtottari.entries, eventDate, calculateAshtottariSubDashas) }
+      ? { key: 'ashtottari', label: 'Ashtottari Dasha', levels: nakshatraDashaLevels(ashtottari.entries, eventDate, calculateAshtottariSubDashas), mdRange: activeRange(ashtottari.entries, eventDate) }
       : { key: 'ashtottari', label: 'Ashtottari Dasha', levels: [], note: `Conditional: not applicable (${eligibility.relativeHouse ?? '?'}H Rahu from Lagna lord)` });
   } else {
     snapshots.push({ key: 'yogini', label: 'Yogini Dasha', levels: [], note: 'Moon unavailable' });
@@ -107,7 +112,7 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
 
   if (moon) {
     const kalachakra = calculateKalachakra(moon.longitude, birthDate);
-    snapshots.push({ key: 'kalaChakra', label: 'Kalachakra Dasha', levels: kalachakraLevels(kalachakra.entries, kalachakra.cycle, eventDate) });
+    snapshots.push({ key: 'kalaChakra', label: 'Kalachakra Dasha', levels: kalachakraLevels(kalachakra.entries, kalachakra.cycle, eventDate), mdRange: activeRange(kalachakra.entries, eventDate) });
   } else snapshots.push({ key: 'kalaChakra', label: 'Kalachakra Dasha', levels: [], note: 'Moon unavailable' });
 
   for (const [system, key, label] of [
@@ -116,7 +121,7 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
     ['sthira', 'sthira', 'Sthira Dasha'],
   ] as const) {
     const result = calculateRasiDasha(system, planets, ascendant.sign, birthDate);
-    snapshots.push({ key, label, levels: rasiLevels(result.entries, eventDate, planets, system) });
+    snapshots.push({ key, label, levels: rasiLevels(result.entries, eventDate, planets, system), mdRange: activeRange(result.entries, eventDate) });
   }
 
   return snapshots.map((snapshot) => snapshot.levels.length || snapshot.note ? snapshot : { ...snapshot, note: 'Date is outside the calculated cycle' });
