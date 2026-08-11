@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { buildParayaTimeline, calculateNadiParaya } from './nadiParaya';
+import { buildParayaTimeline, calculateNadiParaya, findParayaAgesForPosition } from './nadiParaya';
 
 const atBirth = calculateNadiParaya({
   ageYears: 0,
@@ -64,5 +64,26 @@ assert.equal(saturnCycle.length, 12);
 assert.equal(saturnCycle.at(-1)?.endAge, 30);
 assert.equal(rahuCycle.length, 12);
 assert.equal(rahuCycle.at(-1)?.endAge, 18);
+
+const jupiterMatches = findParayaAgesForPosition({
+  body: 'Jupiter', targetSignIndex: 0, degree: 15,
+  natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+  maxAge: 30,
+});
+assert.deepEqual(jupiterMatches.map(match => match.ageYears), [0.5, 12.5, 24.5]);
+
+const rahuMatches = findParayaAgesForPosition({
+  body: 'Rahu', targetSignIndex: 11, degree: 15,
+  natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+  maxAge: 20,
+});
+assert.deepEqual(rahuMatches.map(match => match.ageYears), [1, 19]);
+
+const ketuMatches = findParayaAgesForPosition({
+  body: 'Ketu', targetSignIndex: 5, degree: 15,
+  natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+  maxAge: 20,
+});
+assert.deepEqual(ketuMatches.map(match => match.ageYears), [1, 19]);
 
 console.log('Nadi paraya tests passed');
