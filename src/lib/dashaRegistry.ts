@@ -2,7 +2,7 @@ import { DashaSettings } from '@/types';
 
 export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta' | 'placeholder';
-export type DashaRendererKey = 'vimshottari' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari';
+export type DashaRendererKey = 'vimshottari' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'narayana' | 'moola' | 'sthira';
 
 export type DashaRegistryItem = {
   key: DashaKey;
@@ -10,16 +10,21 @@ export type DashaRegistryItem = {
   group: string;
   status: DashaStatus;
   renderer?: DashaRendererKey;
+  kind?: 'nakshatra' | 'rasi' | 'graha';
+  conditional?: boolean;
 };
 
 export const DASHA_REGISTRY: DashaRegistryItem[] = [
-  { key: 'vimshottari', label: 'Vimsottari', group: 'Core', status: 'implemented', renderer: 'vimshottari' },
-  { key: 'vds', label: 'Vimsottari Original', group: 'Core', status: 'implemented', renderer: 'vds' },
+  { key: 'vimshottari', label: 'Vimsottari', group: 'Core', status: 'implemented', renderer: 'vimshottari', kind: 'nakshatra' },
+  { key: 'vds', label: 'Vimsottari Original', group: 'Core', status: 'implemented', renderer: 'vds', kind: 'nakshatra' },
 
   { key: 'chara', label: 'Chara Daśā', group: 'Core', status: 'implemented', renderer: 'chara' },
   { key: 'yogini', label: 'Yoginī Daśā', group: 'Core', status: 'implemented', renderer: 'yogini' },
-  { key: 'ashtottari', label: 'Aṣṭottarī Daśā', group: 'Core', status: 'implemented', renderer: 'ashtottari' },
+  { key: 'ashtottari', label: 'Aṣṭottarī Daśā', group: 'Core', status: 'implemented', renderer: 'ashtottari', kind: 'nakshatra', conditional: true },
   { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Core', status: 'implemented', renderer: 'kalachakra' },
+  { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'implemented', renderer: 'narayana', kind: 'rasi' },
+  { key: 'moola', label: 'Mūla Daśā', group: 'Core', status: 'implemented', renderer: 'moola', kind: 'rasi' },
+  { key: 'sthira', label: 'Sthira Daśā', group: 'Core', status: 'implemented', renderer: 'sthira', kind: 'rasi' },
 
   { key: 'tara', label: 'Tara Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'shodashottari', label: 'Shodashottari Dasha', group: 'Other systems', status: 'placeholder' },
@@ -31,14 +36,11 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'shashtihayani', label: 'Shashtihayani Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'shattrimshaSama', label: 'Shattrimsha Sama Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'charaBeta', label: 'Chara Dasha old beta', group: 'Other systems', status: 'placeholder' },
-  { key: 'narayana', label: 'Narayana Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'sudarshanaChakra', label: 'Sudarshana Chakra Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'moola', label: 'Moola Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'naisargika', label: 'Naisargika Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'pinda', label: 'Pinda Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'mandooka', label: 'Mandooka Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'manduka', label: 'Manduka Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'sthira', label: 'Sthira Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'brahma', label: 'Brahma Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'drig', label: 'Drig Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'trikona', label: 'Trikona Dasha', group: 'Other systems', status: 'placeholder' },
