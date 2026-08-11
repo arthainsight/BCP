@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v1.87',
+    date: '2026-08-11',
+    title: 'Event List 2.0',
+    changes: [
+      'Added editable event categories and D1/D7/D9/D10/D12/D60 analysis contexts.',
+      'The Event List now shows only enabled Dasha systems and provides additional per-system visibility filters.',
+      'Added CSV and JSON exports containing events and active MD–AD–PD periods.',
+      'Added Set as transit to calculate the existing transit view for an event date and show the resulting transit positions in the event.',
+      'Added calculated natal varga positions and a direct Open Varga Matrix action for every event.',
+      'Existing saved events migrate automatically with Other and D1 defaults.',
+    ],
+  },
+  {
     version: 'v1.86',
     date: '2026-08-11',
     title: 'Unified Dasha Timeline',
