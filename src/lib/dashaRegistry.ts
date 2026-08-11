@@ -2,7 +2,7 @@ import { DashaSettings } from '@/types';
 
 export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta' | 'placeholder';
-export type DashaRendererKey = 'vimshottari' | 'vds' | 'chara' | 'kalachakra';
+export type DashaRendererKey = 'vimshottari' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari';
 
 export type DashaRegistryItem = {
   key: DashaKey;
@@ -17,11 +17,11 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'vds', label: 'Vimsottari Original', group: 'Core', status: 'implemented', renderer: 'vds' },
 
   { key: 'chara', label: 'Chara Daśā', group: 'Core', status: 'implemented', renderer: 'chara' },
+  { key: 'yogini', label: 'Yoginī Daśā', group: 'Core', status: 'implemented', renderer: 'yogini' },
+  { key: 'ashtottari', label: 'Aṣṭottarī Daśā', group: 'Core', status: 'implemented', renderer: 'ashtottari' },
   { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Experimental', status: 'beta', renderer: 'kalachakra' },
 
   { key: 'tara', label: 'Tara Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'yogini', label: 'Yogini Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'ashtottari', label: 'Ashtottari Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'shodashottari', label: 'Shodashottari Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'dwadashottari', label: 'Dwadashottari Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'panchottari', label: 'Panchottari Dasha', group: 'Other systems', status: 'placeholder' },
