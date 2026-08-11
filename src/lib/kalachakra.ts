@@ -110,14 +110,17 @@ export function calculateKalachakra(moonLongitude: number, birthDate: Date): Kal
   };
 }
 
-export function calculateKalachakraAntardashas(parent: KalachakraEntry, cycle: number[]): KalachakraEntry[] {
+export function calculateKalachakraSubDashas(parent: KalachakraEntry, cycle: number[]): KalachakraEntry[] {
   const parentIndex = parent.cycleIndex >= 0 ? parent.cycleIndex : cycle.indexOf(parent.sign - 1);
-  const ordered = parentIndex < 0 ? cycle : [...cycle.slice(parentIndex), ...cycle.slice(0, parentIndex)];
-  const totalWeight = ordered.reduce((sum, sign) => sum + SIGN_YEARS[sign], 0);
+  const indexedCycle = cycle.map((sign, cycleIndex) => ({ sign, cycleIndex }));
+  const ordered = parentIndex < 0
+    ? indexedCycle
+    : [...indexedCycle.slice(parentIndex), ...indexedCycle.slice(0, parentIndex)];
+  const totalWeight = ordered.reduce((sum, item) => sum + SIGN_YEARS[item.sign], 0);
   let cursor = addYears(parent.startDate, -parent.elapsedYears);
-  const fullEntries = ordered.map((sign, index) => {
+  const fullEntries = ordered.map(({ sign, cycleIndex }) => {
     const duration = parent.fullDurationYears * SIGN_YEARS[sign] / totalWeight;
-    const item = entry(sign, cursor, duration, index);
+    const item = entry(sign, cursor, duration, cycleIndex);
     cursor = item.endDate;
     return item;
   });
@@ -130,3 +133,5 @@ export function calculateKalachakraAntardashas(parent: KalachakraEntry, cycle: n
       return entry(item.sign - 1, parent.startDate, durationYears, item.cycleIndex, item.fullDurationYears, item.fullDurationYears - durationYears);
     });
 }
+
+export const calculateKalachakraAntardashas = calculateKalachakraSubDashas;
