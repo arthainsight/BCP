@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v1.82',
+    date: '2026-08-11',
+    title: 'Yogini and Ashtottari Dasha',
+    changes: [
+      'Placed every enabled Dasha panel in one vertical column.',
+      'Added Yogini Dasha with its 36-year cycle, birth balance and MD–AD–PD–SD–PR–DE navigation.',
+      'Added conditional Ashtottari Dasha with its classical 108-year cycle and full sub-dasha navigation.',
+      'Included the Abhijit segment and adjusted Uttara Ashadha and Shravana boundaries in Ashtottari birth-balance calculations.',
+      'Included Yogini and Ashtottari MD–AD–PD periods in the Event List.',
+    ],
+  },
+  {
     version: 'v1.81',
     date: '2026-08-11',
     title: 'Complete sub-dasha navigation',
