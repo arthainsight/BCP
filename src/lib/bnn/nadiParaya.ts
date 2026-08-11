@@ -27,6 +27,14 @@ export type NadiParayaResult = {
   ketu: ParayaPeriod;
 };
 
+export type ParayaPositionMatch = {
+  body: ParayaBody;
+  ageYears: number;
+  signIndex: number;
+  degree: number;
+  cycleNumber: number;
+};
+
 function normalizeSign(signIndex: number): number {
   return ((Math.floor(signIndex) % 12) + 12) % 12;
 }
@@ -142,4 +150,53 @@ export function buildParayaTimeline(params: {
     age = period.endAge;
   }
   return periods;
+}
+
+export function findParayaAgesForPosition(params: {
+  body: ParayaBody;
+  targetSignIndex: number;
+  degree: number;
+  natalJupiterSignIndex: number;
+  natalSaturnSignIndex: number;
+  natalRahuSignIndex: number;
+  jupiterRetrograde?: boolean;
+  saturnRetrograde?: boolean;
+  maxAge?: number;
+}): ParayaPositionMatch[] {
+  const maxAge = params.maxAge ?? 120;
+  const targetSignIndex = normalizeSign(params.targetSignIndex);
+  const degree = Math.max(0, Math.min(29.999999, params.degree));
+  const sourceBody = params.body === 'Ketu' ? 'Rahu' : params.body;
+  const sourceTargetSign = params.body === 'Ketu' ? normalizeSign(targetSignIndex - 6) : targetSignIndex;
+  const natalSignIndex = sourceBody === 'Jupiter'
+    ? params.natalJupiterSignIndex
+    : sourceBody === 'Saturn'
+      ? params.natalSaturnSignIndex
+      : params.natalRahuSignIndex;
+  const retrograde = sourceBody === 'Jupiter'
+    ? params.jupiterRetrograde
+    : sourceBody === 'Saturn'
+      ? params.saturnRetrograde
+      : false;
+  const timeline = buildParayaTimeline({
+    body: sourceBody,
+    natalSignIndex,
+    maxAge,
+    retrograde,
+  });
+  const backward = sourceBody === 'Rahu';
+
+  return timeline
+    .filter(period => period.signIndex === sourceTargetSign)
+    .map(period => {
+      const progress = backward ? (30 - degree) / 30 : degree / 30;
+      return {
+        body: params.body,
+        ageYears: period.startAge + progress * period.durationYears,
+        signIndex: targetSignIndex,
+        degree,
+        cycleNumber: period.cycleNumber,
+      };
+    })
+    .filter(match => match.ageYears <= maxAge);
 }
