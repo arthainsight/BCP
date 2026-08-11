@@ -22,9 +22,9 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'yogini', label: 'Yoginī Daśā', group: 'Core', status: 'implemented', renderer: 'yogini' },
   { key: 'ashtottari', label: 'Aṣṭottarī Daśā', group: 'Core', status: 'implemented', renderer: 'ashtottari', kind: 'nakshatra', conditional: true },
   { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Core', status: 'implemented', renderer: 'kalachakra' },
-  { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'implemented', renderer: 'narayana', kind: 'rasi' },
-  { key: 'moola', label: 'Mūla Daśā', group: 'Core', status: 'implemented', renderer: 'moola', kind: 'rasi' },
-  { key: 'sthira', label: 'Sthira Daśā', group: 'Core', status: 'implemented', renderer: 'sthira', kind: 'rasi' },
+  { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'beta', renderer: 'narayana', kind: 'rasi' },
+  { key: 'moola', label: 'Mūla Daśā', group: 'Core', status: 'beta', renderer: 'moola', kind: 'rasi' },
+  { key: 'sthira', label: 'Sthira Daśā', group: 'Core', status: 'beta', renderer: 'sthira', kind: 'rasi' },
 
   { key: 'tara', label: 'Tara Dasha', group: 'Other systems', status: 'placeholder' },
   { key: 'shodashottari', label: 'Shodashottari Dasha', group: 'Other systems', status: 'placeholder' },
