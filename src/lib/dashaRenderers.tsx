@@ -7,6 +7,7 @@ import CharaCleanPanel from '@/components/CharaCleanPanel';
 import KalachakraPanel from '@/components/KalachakraPanel';
 import YoginiPanel from '@/components/YoginiPanel';
 import AshtottariPanel from '@/components/AshtottariPanel';
+import RasiDashaPanel from '@/components/RasiDashaPanel';
 
 export type DashaRendererContext = {
   bcp: BcpResult;
@@ -35,6 +36,9 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
   ashtottari: ({ planets, birthDatetime }) => (
     <AshtottariPanel planets={planets} birthDatetime={birthDatetime} />
   ),
+  narayana: ({ planets, ascendant, birthDatetime }) => <RasiDashaPanel system="narayana" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
+  moola: ({ planets, ascendant, birthDatetime }) => <RasiDashaPanel system="moola" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
+  sthira: ({ planets, ascendant, birthDatetime }) => <RasiDashaPanel system="sthira" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
 };
 
 export function renderDasha(rendererKey: DashaRendererKey, ctx: DashaRendererContext) {
