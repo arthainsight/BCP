@@ -133,6 +133,7 @@ export interface WorkspaceViewProps {
   transitLoading?: boolean;
   birthDatetime: string;
   targetDate: string;
+  onTargetDateChange: (v: string) => void;
   chartDisplaySettings: ChartDisplaySettings;
   karakaByPlanet: Record<string, string>;
   nakshatraAdjust: number;
@@ -155,6 +156,7 @@ export default function WorkspaceView({
   transitLoading = false,
   birthDatetime,
   targetDate,
+  onTargetDateChange,
   chartDisplaySettings,
   karakaByPlanet,
   nakshatraAdjust,
@@ -309,6 +311,7 @@ export default function WorkspaceView({
                 targetDate={targetDate}
                 bnnOverrideStr={bnnOverrideStr}
                 onBnnOverrideStrChange={onBnnOverrideStrChange}
+                onTargetDateChange={onTargetDateChange}
               />
             </div>
           </div>
