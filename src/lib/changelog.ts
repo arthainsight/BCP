@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v1.85',
+    date: '2026-08-11',
+    title: 'Dasha validation and conditional eligibility',
+    changes: [
+      'Added expandable calculation details to Nārāyaṇa, Mūla and Sthira Daśā, including seed, progression, duration basis and method variant.',
+      'Marked the three new Rāśi systems as Beta until external golden-chart parity is certified.',
+      'Added a chart-specific BPHS/PVR eligibility check to conditional Aṣṭottarī Daśā.',
+      'When the Aṣṭottarī condition is not met, periods stay hidden unless Calculate anyway is selected; the Event List also reports non-applicability.',
+    ],
+  },
+  {
     version: 'v1.84',
     date: '2026-08-11',
     title: 'Narayana, Mula and Sthira Dasha',
