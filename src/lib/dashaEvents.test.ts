@@ -28,6 +28,8 @@ assert.equal(snapshots[2].levels.length, 3);
 assert.equal(snapshots[3].levels.length, 3);
 assert.equal(snapshots[5].levels.length, 2);
 assert.ok(snapshots.slice(6).every((snapshot) => snapshot.levels.length === 3));
+assert.ok(snapshots.filter(snapshot => snapshot.levels.length).every(snapshot => snapshot.mdRange && snapshot.mdRange.startDate < snapshot.mdRange.endDate));
+assert.ok(snapshots.filter(snapshot => snapshot.mdRange).every(snapshot => snapshot.mdRange!.startDate <= new Date(2001, 0, 1, 12) && snapshot.mdRange!.endDate > new Date(2001, 0, 1, 12)));
 
 const beforeBirth = calculateDashaEventSnapshots({
   birthDate: new Date(2000, 0, 1),
