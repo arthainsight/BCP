@@ -5,6 +5,8 @@ import VimshottariPanel from '@/components/VimshottariPanel';
 import VdsPanel from '@/components/VdsPanel';
 import CharaCleanPanel from '@/components/CharaCleanPanel';
 import KalachakraPanel from '@/components/KalachakraPanel';
+import YoginiPanel from '@/components/YoginiPanel';
+import AshtottariPanel from '@/components/AshtottariPanel';
 
 export type DashaRendererContext = {
   bcp: BcpResult;
@@ -26,6 +28,12 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
   ),
   kalachakra: ({ planets, birthDatetime }) => (
     <KalachakraPanel planets={planets} birthDatetime={birthDatetime} />
+  ),
+  yogini: ({ planets, birthDatetime }) => (
+    <YoginiPanel planets={planets} birthDatetime={birthDatetime} />
+  ),
+  ashtottari: ({ planets, birthDatetime }) => (
+    <AshtottariPanel planets={planets} birthDatetime={birthDatetime} />
   ),
 };
 
