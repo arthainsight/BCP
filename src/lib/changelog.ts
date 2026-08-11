@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.79',
+    date: '2026-08-11',
+    title: 'Dasha Event List',
+    changes: [
+      'Added a chart-specific Event List to the Dasha tab with persistent browser storage.',
+      'Each event compares active BCP, Vimsottari, Vimsottari Original, Chara and Kalachakra periods for its date.',
+      'Shows MD–AD–PD for Vimsottari and Chara, MD–AD for Kalachakra, and BCP year/month houses.',
+    ],
+  },
+  {
     version: 'v1.78',
     date: '2026-08-11',
     title: 'Dynamic paraya label layout',
