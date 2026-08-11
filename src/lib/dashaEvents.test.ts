@@ -22,10 +22,12 @@ const snapshots = calculateDashaEventSnapshots({
   charaOptions: DEFAULT_DASHA_SETTINGS.charaOptions,
 });
 
-assert.deepEqual(snapshots.map((snapshot) => snapshot.key), ['vimshottari', 'vds', 'chara', 'kalaChakra']);
+assert.deepEqual(snapshots.map((snapshot) => snapshot.key), ['vimshottari', 'vds', 'chara', 'yogini', 'ashtottari', 'kalaChakra', 'narayana', 'moola', 'sthira']);
 assert.equal(snapshots[0].levels.length, 3);
 assert.equal(snapshots[2].levels.length, 3);
-assert.equal(snapshots[3].levels.length, 2);
+assert.equal(snapshots[3].levels.length, 3);
+assert.equal(snapshots[5].levels.length, 2);
+assert.ok(snapshots.slice(6).every((snapshot) => snapshot.levels.length === 3));
 
 const beforeBirth = calculateDashaEventSnapshots({
   birthDate: new Date(2000, 0, 1),
