@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v1.78',
+    date: '2026-08-11',
+    title: 'Dynamic paraya label layout',
+    changes: [
+      'Moved North Indian paraya labels into the same dynamic content stack as natal planets and special lagnas.',
+      'Upper-house paraya labels appear immediately above planets; lower-house labels appear immediately below them.',
+      'Corrected sign-label overlap in houses 8 and 12 and made spacing adapt to the number of planets in each house.',
+    ],
+  },
+  {
     version: 'v1.77',
     date: '2026-08-11',
     title: 'Interactive Nadi paraya date calculator',
