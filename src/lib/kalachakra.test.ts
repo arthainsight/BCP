@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { calculateKalachakra, calculateKalachakraAntardashas } from './kalachakra';
+import { calculateKalachakra, calculateKalachakraAntardashas, calculateKalachakraSubDashas } from './kalachakra';
 
 const birth = new Date(2000, 0, 1);
 const ashwiniStart = calculateKalachakra(0, birth);
@@ -23,6 +23,13 @@ assert.ok(Math.abs(halfway.entries.reduce((sum, item) => sum + item.durationYear
 const children = calculateKalachakraAntardashas(ashwiniStart.entries[0], ashwiniStart.cycle);
 assert.equal(children.length, 9);
 assert.ok(Math.abs(children.reduce((sum, item) => sum + item.durationYears, 0) - 7) < 1e-10);
+
+const grandchildren = calculateKalachakraSubDashas(children[1], ashwiniStart.cycle);
+assert.equal(grandchildren.length, 9);
+assert.equal(grandchildren[0].signName, children[1].signName);
+assert.equal(grandchildren[0].startDate.getTime(), children[1].startDate.getTime());
+assert.equal(grandchildren.at(-1)!.endDate.getTime(), children[1].endDate.getTime());
+assert.ok(Math.abs(grandchildren.reduce((sum, item) => sum + item.durationYears, 0) - children[1].durationYears) < 1e-10);
 
 const halfwayChildren = calculateKalachakraAntardashas(halfway.entries[0], halfway.cycle);
 assert.ok(halfwayChildren[0].startDate.getTime() === birth.getTime());
