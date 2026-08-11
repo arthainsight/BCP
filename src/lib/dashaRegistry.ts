@@ -2,7 +2,7 @@ import { DashaSettings } from '@/types';
 
 export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta' | 'placeholder';
-export type DashaRendererKey = 'bcp' | 'vimshottari' | 'vds' | 'chara' | 'kalachakra';
+export type DashaRendererKey = 'vimshottari' | 'vds' | 'chara' | 'kalachakra';
 
 export type DashaRegistryItem = {
   key: DashaKey;
@@ -13,7 +13,6 @@ export type DashaRegistryItem = {
 };
 
 export const DASHA_REGISTRY: DashaRegistryItem[] = [
-  { key: 'bcp', label: 'Bhrigu Chakra Paddhati', group: 'Core', status: 'implemented', renderer: 'bcp' },
   { key: 'vimshottari', label: 'Vimsottari', group: 'Core', status: 'implemented', renderer: 'vimshottari' },
   { key: 'vds', label: 'Vimsottari Original', group: 'Core', status: 'implemented', renderer: 'vds' },
 
