@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v1.84',
+    date: '2026-08-11',
+    title: 'Narayana, Mula and Sthira Dasha',
+    changes: [
+      'Added Nārāyaṇa, Mūla (Lagna Kendrādi Rāśi) and Sthira Daśā as full calculated systems.',
+      'Added MD–AD–PD–SD–PR–DE navigation and Event List periods to all three systems.',
+      'Added visible Rāśi/Nakshatra type labels and a Conditional badge for conditional Daśā systems.',
+      'Updated the application version to v1.84.',
+    ],
+  },
+  {
     version: 'v1.83',
     date: '2026-08-11',
     title: 'Simplified settings and Kalachakra placement',
