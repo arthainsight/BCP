@@ -6,10 +6,11 @@ import { calculateSubDashas, calculateVimshottari, type MahadashaEntry } from '.
 import { calculateYogini, calculateYoginiSubDashas } from './yogini';
 import { calculateAshtottari, calculateAshtottariSubDashas } from './ashtottari';
 import type { NakshatraDashaEntry } from './nakshatraDasha';
+import { calculateRasiDasha, calculateRasiSubDashas, type RasiDashaEntry, type RasiDashaSystem } from './rasiDashas';
 
 export interface DashaEventLevel { level: string; value: string; }
 export interface DashaEventSnapshot {
-  key: 'vimshottari' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra';
+  key: 'vimshottari' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'narayana' | 'moola' | 'sthira';
   label: string;
   levels: DashaEventLevel[];
   note?: string;
@@ -53,6 +54,13 @@ function kalachakraLevels(entries: KalachakraEntry[], cycle: number[], date: Dat
   const ad = activeEntry(calculateKalachakraAntardashas(md, cycle), date);
   return [{ level: 'MD', value: md.signName }, ...(ad ? [{ level: 'AD', value: ad.signName }] : [])];
 }
+function rasiLevels(entries: RasiDashaEntry[], date: Date, planets: PlanetData[], system: RasiDashaSystem): DashaEventLevel[] {
+  const md = activeEntry(entries, date);
+  if (!md) return [];
+  const ad = activeEntry(calculateRasiSubDashas(md, planets, system), date);
+  const pd = ad ? activeEntry(calculateRasiSubDashas(ad, planets, system), date) : null;
+  return [{ level: 'MD', value: md.abbr }, ...(ad ? [{ level: 'AD', value: ad.abbr }] : []), ...(pd ? [{ level: 'PD', value: pd.abbr }] : [])];
+}
 
 export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSnapshot[] {
   const { eventDate, birthDate, planets, ascendant, charaOptions } = input;
@@ -63,6 +71,9 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
     { key: 'yogini', label: 'Yogini Dasha', levels: [], note: 'Date is before birth' },
     { key: 'ashtottari', label: 'Ashtottari Dasha', levels: [], note: 'Date is before birth' },
     { key: 'kalaChakra', label: 'Kalachakra Dasha', levels: [], note: 'Date is before birth' },
+    { key: 'narayana', label: 'Narayana Dasha', levels: [], note: 'Date is before birth' },
+    { key: 'moola', label: 'Mula Dasha', levels: [], note: 'Date is before birth' },
+    { key: 'sthira', label: 'Sthira Dasha', levels: [], note: 'Date is before birth' },
   ];
 
   const moon = planets.find((planet) => planet.name === 'Moon');
@@ -95,6 +106,15 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
     const kalachakra = calculateKalachakra(moon.longitude, birthDate);
     snapshots.push({ key: 'kalaChakra', label: 'Kalachakra Dasha', levels: kalachakraLevels(kalachakra.entries, kalachakra.cycle, eventDate) });
   } else snapshots.push({ key: 'kalaChakra', label: 'Kalachakra Dasha', levels: [], note: 'Moon unavailable' });
+
+  for (const [system, key, label] of [
+    ['narayana', 'narayana', 'Nārāyaṇa Dasha'],
+    ['moola', 'moola', 'Mūla Dasha'],
+    ['sthira', 'sthira', 'Sthira Dasha'],
+  ] as const) {
+    const result = calculateRasiDasha(system, planets, ascendant.sign, birthDate);
+    snapshots.push({ key, label, levels: rasiLevels(result.entries, eventDate, planets, system) });
+  }
 
   return snapshots.map((snapshot) => snapshot.levels.length || snapshot.note ? snapshot : { ...snapshot, note: 'Date is outside the calculated cycle' });
 }
