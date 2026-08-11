@@ -82,7 +82,7 @@ type HouseShape = {
 
 const HOUSES: HouseShape[] = [
   { house: 1,  points: '250,0 375,125 250,250 125,125',     planet: { x: 250, y: 115 }, sign: { x: 250, y: 220 }, paraya: { x: 250, y: 205, step: -12 } },
-  { house: 2,  points: '0,0 250,0 125,125',                  planet: { x: 125, y: 70  }, sign: { x: 125, y: 95  }, paraya: { x: 125, y: 105, step: -12 } },
+  { house: 2,  points: '0,0 250,0 125,125',                  planet: { x: 125, y: 70  }, sign: { x: 125, y: 95  }, paraya: { x: 125, y: 25, step: 12 } },
   { house: 3,  points: '0,0 125,125 0,250',                  planet: { x: 55,  y: 130 }, sign: { x: 95,  y: 130 }, paraya: { x: 103, y: 125, step: 12 } },
   { house: 4,  points: '0,250 125,125 250,250 125,375',      planet: { x: 135, y: 250 }, sign: { x: 220, y: 250 }, paraya: { x: 200, y: 250, step: 12 } },
   { house: 5,  points: '0,250 125,375 0,500',                planet: { x: 55,  y: 370 }, sign: { x: 95,  y: 380 }, paraya: { x: 103, y: 375, step: -12 } },
@@ -91,7 +91,7 @@ const HOUSES: HouseShape[] = [
   { house: 8,  points: '250,500 375,375 500,500',            planet: { x: 375, y: 430 }, sign: { x: 375, y: 400 }, paraya: { x: 375, y: 395, step: 12 } },
   { house: 9,  points: '500,500 375,375 500,250',            planet: { x: 445, y: 370 }, sign: { x: 400, y: 380 }, paraya: { x: 397, y: 375, step: -12 } },
   { house: 10, points: '500,250 375,375 250,250 375,125',    planet: { x: 365, y: 250 }, sign: { x: 280, y: 250 }, paraya: { x: 300, y: 250, step: 12 } },
-  { house: 11, points: '500,250 375,125 500,0',              planet: { x: 445, y: 130 }, sign: { x: 400, y: 130 }, paraya: { x: 420, y: 130, step: 12 } },
+  { house: 11, points: '500,250 375,125 500,0',              planet: { x: 445, y: 130 }, sign: { x: 400, y: 130 }, paraya: { x: 465, y: 65, step: 12 } },
   { house: 12, points: '500,0 375,125 250,0',                planet: { x: 375, y: 70  }, sign: { x: 375, y: 95  }, paraya: { x: 375, y: 105, step: -12 } },
 ];
 

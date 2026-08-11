@@ -942,6 +942,7 @@ export default function Home() {
                     targetDate={targetDate}
                     bnnOverrideStr={bnnOverrideStr}
                     onBnnOverrideStrChange={setBnnOverrideStr}
+                    onTargetDateChange={setTargetDate}
                   />
                 : <EmptyState message="Calculate a chart to see BNN analysis" />
             )}
@@ -958,6 +959,7 @@ export default function Home() {
                     transitLoading={transitLoading}
                     birthDatetime={birthDatetime}
                     targetDate={targetDate}
+                    onTargetDateChange={setTargetDate}
                     chartDisplaySettings={chartDisplaySettings}
                     karakaByPlanet={karakaByPlanet}
                     nakshatraAdjust={nakshatraAdjust}
@@ -1069,6 +1071,7 @@ export default function Home() {
                   targetDate={targetDate}
                   bnnOverrideStr={bnnOverrideStr}
                   onBnnOverrideStrChange={setBnnOverrideStr}
+                  onTargetDateChange={setTargetDate}
                 />
               : <EmptyState message="Calculate a chart in Data to see BNN analysis" />
             }
@@ -1092,6 +1095,7 @@ export default function Home() {
                   transitLoading={transitLoading}
                   birthDatetime={birthDatetime}
                   targetDate={targetDate}
+                  onTargetDateChange={setTargetDate}
                   chartDisplaySettings={chartDisplaySettings}
                   karakaByPlanet={karakaByPlanet}
                   nakshatraAdjust={nakshatraAdjust}

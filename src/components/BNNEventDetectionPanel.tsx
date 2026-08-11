@@ -6,7 +6,7 @@ import { SIGN_NAMES } from '@/lib/varga/index';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import { detectBNNEventWindows, type BNNEventWindow } from '@/lib/bnn/eventDetection';
-import { calculateNadiParaya, type ParayaPeriod } from '@/lib/bnn/nadiParaya';
+import { calculateNadiParaya, findParayaAgesForPosition, type ParayaBody, type ParayaPeriod } from '@/lib/bnn/nadiParaya';
 
 const SIGN_ABBR: Record<number, string> = {
   1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
@@ -201,12 +201,13 @@ interface Props {
   /** Controlled override string — when provided, the local state is ignored */
   bnnOverrideStr?: string;
   onBnnOverrideStrChange?: (v: string) => void;
+  onTargetDateChange?: (v: string) => void;
 }
 
 const INPUT =
   'px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 w-24';
 
-export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDate, bnnOverrideStr, onBnnOverrideStrChange }: Props) {
+export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDate, bnnOverrideStr, onBnnOverrideStrChange, onTargetDateChange }: Props) {
   const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
   const natalSaturn = chart.planets.find(p => p.name === 'Saturn');
   const natalRahu = chart.planets.find(p => p.name === 'Rahu');
@@ -214,6 +215,9 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
   const natalJupiterDegree = natalJupiter ? natalJupiter.degree : 0;
 
   const [collapsed, setCollapsed] = useState(false);
+  const [positionBody, setPositionBody] = useState<ParayaBody>('Jupiter');
+  const [positionHouse, setPositionHouse] = useState('1');
+  const [positionDegree, setPositionDegree] = useState('0');
 
   const autoAge = useMemo(() => {
     if (!birthDatetime || !targetDate) return null;
@@ -271,6 +275,31 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
     jupiterRetrograde: Boolean(natalJupiter?.isRetrograde),
     saturnRetrograde: Boolean(natalSaturn?.isRetrograde),
   }), [effectiveAge, natalJupiterSignIndex, natalJupiter?.isRetrograde, natalSaturn?.sign, natalSaturn?.isRetrograde, natalRahu?.sign]);
+
+  const positionMatches = useMemo(() => {
+    const house = Math.max(1, Math.min(12, parseInt(positionHouse) || 1));
+    const degree = Math.max(0, Math.min(29.999999, parseFloat(positionDegree) || 0));
+    const targetSignIndex = (chart.ascendant.sign - 1 + house - 1) % 12;
+    return findParayaAgesForPosition({
+      body: positionBody,
+      targetSignIndex,
+      degree,
+      natalJupiterSignIndex,
+      natalSaturnSignIndex: (natalSaturn?.sign ?? 1) - 1,
+      natalRahuSignIndex: (natalRahu?.sign ?? 1) - 1,
+      jupiterRetrograde: Boolean(natalJupiter?.isRetrograde),
+      saturnRetrograde: Boolean(natalSaturn?.isRetrograde),
+      maxAge: 120,
+    }).sort((a, b) => Math.abs(a.ageYears - effectiveAge) - Math.abs(b.ageYears - effectiveAge));
+  }, [positionBody, positionHouse, positionDegree, chart.ascendant.sign, natalJupiterSignIndex, natalJupiter?.isRetrograde, natalSaturn?.sign, natalSaturn?.isRetrograde, natalRahu?.sign, effectiveAge]);
+
+  const birthForPosition = birthDatetime ? parseBirthDatetime(birthDatetime) : null;
+  const matchDate = (ageYears: number): string | null => {
+    if (!birthForPosition) return null;
+    const date = new Date(birthForPosition.getTime() + ageYears * 365.25 * 24 * 60 * 60 * 1000);
+    const pad = (value: number) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  };
 
   // All hooks above — early return after
   if (!natalJupiter) {
@@ -405,6 +434,53 @@ export default function BNNEventDetectionPanel({ chart, birthDatetime, targetDat
             <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600 leading-relaxed">
               Jupiter: 1y/sign forward · Saturn: 3–2 forward · Rahu/Ketu: 2–1 backward. Retrograde Jupiter or Saturn starts one sign earlier.
             </p>
+
+            <div className="rounded-md border border-zinc-200 dark:border-zinc-700 p-2.5 space-y-3">
+              <div>
+                <label className="block text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-1">date → positions</label>
+                <input
+                  type="date"
+                  value={targetDate ?? ''}
+                  onChange={event => {
+                    setOverrideStr('');
+                    onTargetDateChange?.(event.target.value);
+                  }}
+                  className="w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300"
+                />
+              </div>
+
+              <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2 space-y-2">
+                <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">position → dates</div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  <select value={positionBody} onChange={event => setPositionBody(event.target.value as ParayaBody)} className="min-w-0 px-1.5 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-[10px] font-mono">
+                    <option value="Jupiter">Jupiter</option>
+                    <option value="Saturn">Saturn</option>
+                    <option value="Rahu">Rahu</option>
+                    <option value="Ketu">Ketu</option>
+                  </select>
+                  <select value={positionHouse} onChange={event => setPositionHouse(event.target.value)} className="min-w-0 px-1.5 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-[10px] font-mono">
+                    {Array.from({ length: 12 }, (_, index) => <option key={index + 1} value={index + 1}>H{index + 1}</option>)}
+                  </select>
+                  <div className="relative">
+                    <input type="number" min="0" max="29.999999" step="0.1" value={positionDegree} onChange={event => setPositionDegree(event.target.value)} className="w-full px-1.5 py-1.5 pr-4 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-[10px] font-mono" />
+                    <span className="absolute right-1.5 top-1.5 text-[10px] text-zinc-400">°</span>
+                  </div>
+                </div>
+                <input type="range" min="0" max="29.9" step="0.1" value={Math.max(0, Math.min(29.9, parseFloat(positionDegree) || 0))} onChange={event => setPositionDegree(event.target.value)} className="w-full accent-emerald-600" />
+                <div className="space-y-1">
+                  {positionMatches.slice(0, 5).map(match => {
+                    const date = matchDate(match.ageYears);
+                    if (!date) return null;
+                    return (
+                      <button key={`${match.cycleNumber}-${match.ageYears}`} type="button" onClick={() => { setOverrideStr(''); onTargetDateChange?.(date); }} className="w-full flex items-center justify-between rounded border border-zinc-200 dark:border-zinc-700 px-2 py-1 text-[10px] font-mono hover:border-emerald-400 dark:hover:border-green-700">
+                        <span>{date}</span>
+                        <span className="text-zinc-400">age {match.ageYears.toFixed(2)} · cycle {match.cycleNumber}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Strong event windows */}

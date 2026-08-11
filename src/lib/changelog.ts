@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v1.77',
+    date: '2026-08-11',
+    title: 'Interactive Nadi paraya date calculator',
+    changes: [
+      'Added a date control that updates all Jupiter, Saturn, Rahu and Ketu paraya positions and chart highlights.',
+      'Added an inverse calculator: choose a body, house and degree to see matching dates and apply one to the chart.',
+      'Rahu and Ketu are calculated as an opposite axis, with matches shown across cycles up to age 120.',
+      'Moved North Indian house 2 and house 11 labels away from triangle tips into clear interior positions.',
+    ],
+  },
+  {
     version: 'v1.76',
     date: '2026-08-10',
     title: 'Paraya house alignment',
