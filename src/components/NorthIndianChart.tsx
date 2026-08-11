@@ -213,17 +213,21 @@ export default function NorthIndianChart({
             ? specialLagnas.filter((sl) => getHouseFromSign(sl.sign, ascendantSign) === item.house)
             : [];
           const allPlanets: MergedPlanet[] = [...natalInHouse, ...transitInHouse];
+          const parayaHere = nadiParayaHouses.filter(activation => activation.house === item.house);
+          const parayaBeforePlanets = [1, 2, 3, 11, 12].includes(item.house);
 
-          const totalItems = allPlanets.length + specialInHouse.length;
+          const totalItems = allPlanets.length + specialInHouse.length + parayaHere.length;
           const dynamicLineHeight = totalItems > 6 ? 13 : totalItems > 4 ? 15 : 18;
           const totalHeight = (Math.max(totalItems, 1) - 1) * dynamicLineHeight;
           const startY = item.planet.y - totalHeight / 2;
+          const planetOffset = parayaBeforePlanets ? parayaHere.length : 0;
+          const specialOffset = planetOffset + allPlanets.length;
+          const parayaOffset = parayaBeforePlanets ? 0 : allPlanets.length + specialInHouse.length;
 
           const isBnnMaj = bnnMajorHouse > 0 && item.house === bnnMajorHouse;
           const isBnnMin = bnnMinorHouse > 0 && item.house === bnnMinorHouse;
           const bnnLabel = (isBnnMaj && isBnnMin) ? 'BNN Maj+Min' : isBnnMaj ? 'BNN Maj' : isBnnMin ? 'BNN Min' : null;
           const bnnLabelColor = (isBnnMaj && isBnnMin) ? (isDark ? '#e879f9' : '#a21caf') : isBnnMaj ? bnnMajColor : bnnMinColor;
-          const parayaHere = nadiParayaHouses.filter(activation => activation.house === item.house);
 
           return (
             <g key={item.house}>
@@ -290,8 +294,8 @@ export default function NorthIndianChart({
               {parayaHere.map((activation, index) => (
                 <text
                   key={`paraya-label-${activation.body}`}
-                  x={item.paraya.x}
-                  y={item.paraya.y + index * item.paraya.step}
+                  x={item.planet.x}
+                  y={startY + (parayaOffset + index) * dynamicLineHeight}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fontSize="10"
@@ -323,7 +327,7 @@ export default function NorthIndianChart({
                   <text
                     key={`${planet.isTransit ? 'tr' : 'na'}-${item.house}-${planet.name}-${index}`}
                     x={item.planet.x}
-                    y={startY + index * dynamicLineHeight}
+                    y={startY + (planetOffset + index) * dynamicLineHeight}
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fontSize={fontSize}
@@ -339,7 +343,7 @@ export default function NorthIndianChart({
                 <text
                   key={`sl-${item.house}-${sl.name}-${index}`}
                   x={item.planet.x}
-                  y={startY + (allPlanets.length + index) * dynamicLineHeight}
+                  y={startY + (specialOffset + index) * dynamicLineHeight}
                   textAnchor="middle"
                   dominantBaseline="middle"
                   fontSize="11"
