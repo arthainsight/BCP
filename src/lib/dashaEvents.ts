@@ -4,7 +4,7 @@ import { calculateKalachakra, calculateKalachakraAntardashas, type KalachakraEnt
 import { calculateVds } from './vds';
 import { calculateSubDashas, calculateVimshottari, type MahadashaEntry } from './vimshottari';
 import { calculateYogini, calculateYoginiSubDashas } from './yogini';
-import { calculateAshtottari, calculateAshtottariSubDashas } from './ashtottari';
+import { calculateAshtottari, calculateAshtottariSubDashas, evaluateAshtottariEligibility } from './ashtottari';
 import type { NakshatraDashaEntry } from './nakshatraDasha';
 import { calculateRasiDasha, calculateRasiSubDashas, type RasiDashaEntry, type RasiDashaSystem } from './rasiDashas';
 
@@ -95,8 +95,11 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
   if (moon) {
     const yogini = calculateYogini(moon.longitude, birthDate);
     snapshots.push({ key: 'yogini', label: 'Yogini Dasha', levels: nakshatraDashaLevels(yogini.entries, eventDate, calculateYoginiSubDashas) });
+    const eligibility = evaluateAshtottariEligibility(planets, ascendant.sign);
     const ashtottari = calculateAshtottari(moon.longitude, birthDate);
-    snapshots.push({ key: 'ashtottari', label: 'Ashtottari Dasha', levels: nakshatraDashaLevels(ashtottari.entries, eventDate, calculateAshtottariSubDashas) });
+    snapshots.push(eligibility.eligible
+      ? { key: 'ashtottari', label: 'Ashtottari Dasha', levels: nakshatraDashaLevels(ashtottari.entries, eventDate, calculateAshtottariSubDashas) }
+      : { key: 'ashtottari', label: 'Ashtottari Dasha', levels: [], note: `Conditional: not applicable (${eligibility.relativeHouse ?? '?'}H Rahu from Lagna lord)` });
   } else {
     snapshots.push({ key: 'yogini', label: 'Yogini Dasha', levels: [], note: 'Moon unavailable' });
     snapshots.push({ key: 'ashtottari', label: 'Ashtottari Dasha', levels: [], note: 'Moon unavailable' });
