@@ -30,9 +30,9 @@ const NARAYANA_KETU = [
 export type RasiDashaSystem = 'narayana' | 'moola' | 'sthira';
 export interface RasiDashaEntry {
   sign: number; signName: string; abbr: string; startDate: Date; endDate: Date;
-  durationYears: number; childOrder: number[]; cycle?: number;
+  durationYears: number; childOrder: number[]; cycle?: number; calculation: string;
 }
-export interface RasiDashaResult { system: RasiDashaSystem; seedSign: number; basis: string; entries: RasiDashaEntry[]; }
+export interface RasiDashaResult { system: RasiDashaSystem; seedSign: number; basis: string; method: string; audit: string[]; entries: RasiDashaEntry[]; }
 
 const norm = (n: number) => ((n % 12) + 12) % 12;
 const addYears = (date: Date, years: number) => new Date(date.getTime() + years * YEAR_MS);
@@ -50,15 +50,17 @@ function strongerSign(planets: PlanetData[], first: number, second: number): num
   return degreeOf(planets, LORDS[first]) > degreeOf(planets, LORDS[second]) ? first : second;
 }
 
-function narayanaDuration(planets: PlanetData[], sign: number): number {
+function narayanaDuration(planets: PlanetData[], sign: number): { years: number; explanation: string } {
   const lord = LORDS[sign]; const lordSign = signOf(planets, lord);
-  if (lordSign == null) return 12;
+  if (lordSign == null) return { years: 12, explanation: `${lord} position unavailable → 12 y fallback` };
   let count = EVEN_FOOTED.has(sign) ? norm(sign - lordSign) + 1 : norm(lordSign - sign) + 1;
   count -= 1;
   if (count <= 0) count = 12;
-  if (EXALT[lord] === lordSign) count += 1;
-  else if (DEBIL[lord] === lordSign) count -= 1;
-  return Math.max(1, count);
+  const base = count;
+  const adjustment = EXALT[lord] === lordSign ? 1 : DEBIL[lord] === lordSign ? -1 : 0;
+  count += adjustment;
+  const direction = EVEN_FOOTED.has(sign) ? 'reverse/even-footed' : 'forward/odd-footed';
+  return { years: Math.max(1, count), explanation: `${lord} in ${RASI_NAMES[lordSign]} · ${direction} count ${base}${adjustment ? ` ${adjustment > 0 ? '+' : '−'} 1 dignity` : ''}` };
 }
 
 function narayanaOrder(seed: number, planets: PlanetData[]): number[] {
@@ -88,8 +90,8 @@ function childOrder(system: RasiDashaSystem, sign: number, planets: PlanetData[]
   return sequentialOrder(seed, direction);
 }
 
-function makeEntry(system: RasiDashaSystem, sign: number, startDate: Date, years: number, planets: PlanetData[], cycle?: number): RasiDashaEntry {
-  return { sign, signName: RASI_NAMES[sign], abbr: RASI_ABBR[sign], startDate, endDate: addYears(startDate, years), durationYears: years, childOrder: childOrder(system, sign, planets), cycle };
+function makeEntry(system: RasiDashaSystem, sign: number, startDate: Date, years: number, planets: PlanetData[], cycle?: number, calculation?: string): RasiDashaEntry {
+  return { sign, signName: RASI_NAMES[sign], abbr: RASI_ABBR[sign], startDate, endDate: addYears(startDate, years), durationYears: years, childOrder: childOrder(system, sign, planets), cycle, calculation: calculation ?? `Equal split of parent · ${years.toFixed(6)} y` };
 }
 
 function brahmaSeed(planets: PlanetData[], ascSign: number): { sign: number; planet: string } {
@@ -107,6 +109,8 @@ export function calculateRasiDasha(system: RasiDashaSystem, planets: PlanetData[
   const asc = norm(ascSignOneBased - 1);
   let seed = strongerSign(planets, asc, norm(asc + 6));
   let basis = `stronger of Lagna/7th: ${RASI_NAMES[seed]}`;
+  let method = 'PVR/JHora-compatible rāśi rules';
+  const audit = [`Lagna: ${RASI_NAMES[asc]}`, `7th: ${RASI_NAMES[norm(asc + 6)]}`, `Selected seed: ${RASI_NAMES[seed]}`];
   let order: number[];
   if (system === 'narayana') order = narayanaOrder(seed, planets);
   else if (system === 'moola') {
@@ -116,30 +120,38 @@ export function calculateRasiDasha(system: RasiDashaSystem, planets: PlanetData[
     const offsets = [0,3,6,9,1,4,7,10,2,5,8,11];
     order = offsets.map(offset => norm(seed + direction * offset));
     basis = `Lagna Kendrādi · ${basis}`;
+    method = 'Lagna Kendrādi Rāśi (Mūla) · PVR/JHora variant';
+    audit.push(`Progression direction: ${direction === 1 ? 'forward' : 'reverse'}`, 'Order: kendras → pāṇapharas → apoklimas');
   } else {
     const brahma = brahmaSeed(planets, asc);
     seed = brahma.sign; order = sequentialOrder(seed, 1);
     basis = `Brahma: ${brahma.planet} in ${RASI_NAMES[seed]}`;
+    method = 'Sthira · PVR/JHora Brahma-seed variant';
+    audit.push(`Brahma candidate selected: ${brahma.planet}`, `Brahma sign: ${RASI_NAMES[seed]}`, 'MD order: forward from Brahma sign');
   }
+  if (system === 'narayana') audit.push(`Progression: ${signOf(planets, 'Ketu') === seed ? 'Ketu exception' : signOf(planets, 'Saturn') === seed ? 'Saturn exception' : 'normal table'}`, 'Cycle 2 duration: 12 − cycle 1 duration');
 
   const entries: RasiDashaEntry[] = [];
   let cursor = birthDate;
   if (system === 'sthira') {
     for (const sign of order) {
       const years = MOVABLE.has(sign) ? 7 : FIXED.has(sign) ? 8 : 9;
-      const item = makeEntry(system, sign, cursor, years, planets); entries.push(item); cursor = item.endDate;
+      const modality = MOVABLE.has(sign) ? 'movable' : FIXED.has(sign) ? 'fixed' : 'dual';
+      const item = makeEntry(system, sign, cursor, years, planets, undefined, `${modality} sign → ${years} y`); entries.push(item); cursor = item.endDate;
     }
   } else {
     const firstDurations = order.map(sign => narayanaDuration(planets, sign));
     for (let cycle = 1; cycle <= 2; cycle++) {
       for (let index = 0; index < order.length; index++) {
-        const years = cycle === 1 ? firstDurations[index] : 12 - firstDurations[index];
+        const years = cycle === 1 ? firstDurations[index].years : 12 - firstDurations[index].years;
         if (years <= 0) continue;
-        const item = makeEntry(system, order[index], cursor, years, planets, cycle); entries.push(item); cursor = item.endDate;
+        const explanation = cycle === 1 ? firstDurations[index].explanation : `Cycle 2 complement: 12 − ${firstDurations[index].years} = ${years} y`;
+        const item = makeEntry(system, order[index], cursor, years, planets, cycle, explanation); entries.push(item); cursor = item.endDate;
       }
     }
   }
-  return { system, seedSign: seed, basis, entries };
+  audit.push(`MD order: ${order.map(sign => RASI_ABBR[sign]).join(' → ')}`);
+  return { system, seedSign: seed, basis, method, audit, entries };
 }
 
 export function calculateRasiSubDashas(parent: RasiDashaEntry, planets: PlanetData[], system: RasiDashaSystem): RasiDashaEntry[] {
