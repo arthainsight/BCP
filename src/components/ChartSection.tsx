@@ -10,7 +10,6 @@ import AshtakavargaPanel from '@/components/AshtakavargaPanel';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import TransitDateControls from './TransitDateControls';
-import BCPAgeControls from './BCPAgeControls';
 import NadiAmsaPanel from './NadiAmsaPanel';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 
@@ -53,17 +52,6 @@ export interface ChartSectionProps {
   onManualBcpMonthChange?: (v: string) => void;
 }
 
-function isBcpEnabled(): boolean {
-  try {
-    const raw = localStorage.getItem('dashaSettings');
-    if (!raw) return true;
-    const parsed = JSON.parse(raw);
-    return parsed?.dashas?.bcp !== false;
-  } catch {
-    return true;
-  }
-}
-
 export default function ChartSection({
   bcp,
   chart,
@@ -89,7 +77,6 @@ export default function ChartSection({
   onManualBcpMonthChange,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
-  const [showBcpHighlights, setShowBcpHighlights] = useState<boolean>(isBcpEnabled());
   const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti'>('chart');
 
   const bnnHouses = useMemo(() => {
@@ -129,24 +116,13 @@ export default function ChartSection({
       }
     };
 
-    const handleBcpToggle = (event: Event) => {
-      const customEvent = event as CustomEvent<boolean>;
-      if (typeof customEvent.detail === 'boolean') {
-        setShowBcpHighlights(customEvent.detail);
-        return;
-      }
-      setShowBcpHighlights(isBcpEnabled());
-    };
-
     const handleShowVarga = () => setView('varga');
 
     window.addEventListener('bcp:chart-style-change', handleChartStyleChange);
-    window.addEventListener('bcp:dasha-bcp-toggle', handleBcpToggle);
     window.addEventListener('bcp:show-varga-matrix', handleShowVarga);
 
     return () => {
       window.removeEventListener('bcp:chart-style-change', handleChartStyleChange);
-      window.removeEventListener('bcp:dasha-bcp-toggle', handleBcpToggle);
       window.removeEventListener('bcp:show-varga-matrix', handleShowVarga);
     };
   }, []);
@@ -159,8 +135,8 @@ export default function ChartSection({
     );
   }
 
-  const yearHouse = showBcpHighlights ? bcp.activeYearHouse : 0;
-  const monthHouse = showBcpHighlights ? bcp.activeMonthHouse : 0;
+  const yearHouse = 0;
+  const monthHouse = 0;
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
 
@@ -170,12 +146,7 @@ export default function ChartSection({
   return (
     <div className="space-y-3 min-w-0 overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
-        {showBcpHighlights && view === 'chart' ? (
-          <div className="flex gap-3 text-[11px] sm:text-xs font-mono px-1 min-w-0 whitespace-nowrap overflow-x-auto">
-            <span className="text-cyan-600 dark:text-cyan-400">Y: H{bcp.activeYearHouse}</span>
-            <span className="text-emerald-700 dark:text-green-400">M: H{bcp.activeMonthHouse}</span>
-          </div>
-        ) : <div />}
+        <div />
 
         <div className="w-full sm:w-auto overflow-x-auto">
           <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
@@ -206,7 +177,7 @@ export default function ChartSection({
           transitPlanets={transitPlanets}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
-          showTransitPlanets={chartDisplaySettings.showTransitPlanets}
+          showTransitPlanets={transitPlanets.length > 0}
           degreePrecision={chartDisplaySettings.degreePrecision ?? 'off'}
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
@@ -228,13 +199,13 @@ export default function ChartSection({
           transitPlanets={transitPlanets}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
-          showTransitPlanets={chartDisplaySettings.showTransitPlanets}
+          showTransitPlanets={transitPlanets.length > 0}
           degreePrecision={chartDisplaySettings.degreePrecision ?? 'off'}
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
           showOuterPlanets={chartDisplaySettings.showOuterPlanets}
           showSpecialLagnas={chartDisplaySettings.showSpecialLagnas}
-          showBcpHighlights={showBcpHighlights}
+          showBcpHighlights={false}
           karakaByPlanet={karakaByPlanet}
           nakshatraAdjust={nakshatraAdjust}
           bnnMajorHouse={bnnMajorHouse}
@@ -251,18 +222,6 @@ export default function ChartSection({
             onCalculateTransit={onCalculateTransit}
             transitLoading={transitLoading}
           />
-          {bcpEnabled && manualBcpAge !== undefined && onManualBcpAgeChange && manualBcpMonth !== undefined && onManualBcpMonthChange && (
-            <BCPAgeControls
-              useManualBcpMode={useManualBcpMode ?? false}
-              onUseManualBcpModeChange={onUseManualBcpModeChange ?? (() => {})}
-              manualBcpAge={manualBcpAge}
-              onManualBcpAgeChange={onManualBcpAgeChange}
-              manualBcpMonth={manualBcpMonth}
-              onManualBcpMonthChange={onManualBcpMonthChange}
-              activeYearHouse={bcp?.activeYearHouse}
-              activeMonthHouse={bcp?.activeMonthHouse}
-            />
-          )}
         </div>
       )}
     </div>
