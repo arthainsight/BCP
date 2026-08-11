@@ -33,8 +33,8 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
   yogini: ({ planets, birthDatetime }) => (
     <YoginiPanel planets={planets} birthDatetime={birthDatetime} />
   ),
-  ashtottari: ({ planets, birthDatetime }) => (
-    <AshtottariPanel planets={planets} birthDatetime={birthDatetime} />
+  ashtottari: ({ planets, ascendant, birthDatetime }) => (
+    <AshtottariPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
   ),
   narayana: ({ planets, ascendant, birthDatetime }) => <RasiDashaPanel system="narayana" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
   moola: ({ planets, ascendant, birthDatetime }) => <RasiDashaPanel system="moola" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
