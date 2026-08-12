@@ -50,6 +50,7 @@ export default function DashaEventList({ planets, ascendant, birthDatetime, dash
 
   useEffect(() => { queueMicrotask(() => { try { const stored = localStorage.getItem(storageKey); const parsed: unknown = stored ? JSON.parse(stored) : []; setEvents(Array.isArray(parsed) ? parsed.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object' && typeof (item as Record<string, unknown>).id === 'string' && typeof (item as Record<string, unknown>).name === 'string' && typeof (item as Record<string, unknown>).date === 'string')).map(item => ({ id: String(item.id), name: String(item.name), date: String(item.date), category: (item.category as Category) || 'other', varga: (item.varga as Varga) || 'D1' })) : []); } catch { setEvents([]); } setStorageLoaded(true); }); }, [storageKey]);
   useEffect(() => { if (storageLoaded) localStorage.setItem(storageKey, JSON.stringify(events)); }, [events, storageKey, storageLoaded]);
+  useEffect(() => { const select = (event: Event) => setDate((event as CustomEvent<string>).detail); window.addEventListener('bcp:dasha-date-selected', select); return () => window.removeEventListener('bcp:dasha-date-selected', select); }, []);
 
   const visibleKeys = enabledKeys.filter(key => !hiddenKeys.includes(key));
   function snapshotsFor(item: StoredEvent) { const eventDate = parseEventDate(item.date); return birthDate && eventDate ? calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions }).filter(snapshot => visibleKeys.includes(snapshot.key)) : []; }

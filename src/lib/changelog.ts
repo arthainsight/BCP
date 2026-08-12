@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v1.91',
+    date: '2026-08-12',
+    title: 'Dasha Date Finder',
+    changes: [
+      'Added date-range searches for matching MD, AD and PD periods in every calculated Dasha system.',
+      'Added partial-name matching and combined searches requiring the same criteria in multiple enabled systems.',
+      'Consecutive matching days are grouped into periods instead of shown as duplicate daily rows.',
+      'Finder results can set and open the shared timeline date and prefill the Event List date.',
+      'Searches are capped at five years per run to keep browser-side calculation bounded.',
+      'Updated the application version to v1.91.',
+    ],
+  },
+  {
     version: 'v1.90',
     date: '2026-08-12',
     title: 'Recurring Dasha event patterns',

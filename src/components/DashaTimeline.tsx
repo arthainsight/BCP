@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { CharaOptions, DashaSettings, PlanetData, RasiDashaOptions } from '@/types';
 import { calculateDashaEventSnapshots } from '@/lib/dashaEvents';
 import { parseDateTime } from '@/lib/bcp';
@@ -27,6 +27,7 @@ function fmt(date: Date) { return `${String(date.getDate()).padStart(2, '0')}.${
 
 export default function DashaTimeline({ planets, ascendant, birthDatetime, normalizedDashas, charaOptions, rasiOptions }: Props) {
   const [selectedValue, setSelectedValue] = useState(() => dateValue(new Date()));
+  useEffect(() => { const select = (event: Event) => setSelectedValue((event as CustomEvent<string>).detail); window.addEventListener('bcp:dasha-date-selected', select); return () => window.removeEventListener('bcp:dasha-date-selected', select); }, []);
   const birthDate = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const selectedDate = useMemo(() => parseDate(selectedValue), [selectedValue]);
   const snapshots = useMemo(() => birthDate ? calculateDashaEventSnapshots({ eventDate: selectedDate, birthDate, planets, ascendant, charaOptions, rasiOptions }) : [], [birthDate, selectedDate, planets, ascendant, charaOptions, rasiOptions]);
@@ -36,7 +37,7 @@ export default function DashaTimeline({ planets, ascendant, birthDatetime, norma
   const span = windowEnd.getTime() - windowStart.getTime();
   const moveYears = (years: number) => { const next = new Date(selectedDate); next.setFullYear(next.getFullYear() + years); setSelectedValue(dateValue(next)); };
 
-  return <section className="space-y-3 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-950/40">
+  return <section id="dasha-timeline" className="scroll-mt-4 space-y-3 rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-950/40">
     <div className="flex flex-wrap items-center gap-2"><div className="min-w-0 flex-1"><h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Dasha Timeline</h3><p className="text-[10px] text-zinc-500">Active MD–AD–PD on one date · MD bars share a ±10-year scale.</p></div><button type="button" onClick={() => moveYears(-1)} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono dark:border-zinc-700">−1y</button><input type="date" value={selectedValue} onChange={event => { if (event.target.value) setSelectedValue(event.target.value); }} className="rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-mono dark:border-zinc-700 dark:bg-zinc-900"/><button type="button" onClick={() => moveYears(1)} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono dark:border-zinc-700">+1y</button><button type="button" onClick={() => setSelectedValue(dateValue(new Date()))} className="rounded border border-cyan-300 px-2 py-1 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">Today</button></div>
     <div className="relative ml-[112px] h-4 text-[9px] font-mono text-zinc-400"><span className="absolute left-0">{windowStart.getFullYear()}</span><span className="absolute left-1/2 -translate-x-1/2 text-cyan-600">{selectedDate.getFullYear()}</span><span className="absolute right-0">{windowEnd.getFullYear()}</span></div>
     <div className="space-y-2">{visible.map((snapshot, index) => {
