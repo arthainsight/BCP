@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.11',
+    date: '2026-08-12',
+    title: 'Mobile Pattern Analysis layout',
+    changes: [
+      'Changed Pattern Analysis result cards to a stacked mobile layout so Dasha names, levels and values remain fully readable.',
+      'Moved sample statistics below the pattern details on narrow screens and allowed long labels to wrap instead of truncating.',
+      'Updated the application version to v2.11.',
+    ],
+  },
+  {
     version: 'v2.10',
     date: '2026-08-12',
     title: 'Event intelligence and Dasha comparison',
