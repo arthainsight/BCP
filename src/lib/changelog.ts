@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v2.00',
+    date: '2026-08-12',
+    title: 'Dasha workspace, backups and golden vectors',
+    changes: [
+      'Split Dasha tools into Timeline, Finder, Events, Patterns and Systems tabs.',
+      'Added a full local-data backup and restore workflow covering saved charts, all Event Lists, settings, methods and workspace layout.',
+      'Restore now validates the backup, previews its record count and requires explicit replacement confirmation.',
+      'Aligned Rāśi Daśā dates to the JHora sidereal-year basis of 365.256364 days.',
+      'Added three PyJHora source-derived golden vectors per Nārāyaṇa, Mūla and Sthira system covering seeds, orders, durations, continuity and dates.',
+      'Kept the systems in Beta until direct exports from the JHora desktop application are available as a second independent dataset.',
+      'Updated the application version to v2.00.',
+    ],
+  },
+  {
     version: 'v1.93',
     date: '2026-08-12',
     title: 'PyJHora rule-reference validation',

@@ -32,5 +32,5 @@ assert.equal(lagnaSeed.seedSign, 3);
 assert.match(lagnaSeed.method, /research variant/);
 assert.match(lagnaSeed.basis, /^Lagna:/);
 for (const system of ['narayana', 'moola', 'sthira'] as const) assert.equal(validateRasiDashaRegression(system).passed, true);
-assert.equal(validateRasiDashaRegression('moola').checks, 6);
+assert.ok(validateRasiDashaRegression('moola').checks >= 18);
 console.log('Rasi Dasha tests passed');

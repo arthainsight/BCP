@@ -7,6 +7,7 @@ import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
+import BackupPanel from './BackupPanel';
 
 interface Props {
   chartDisplaySettings: ChartDisplaySettings;
@@ -290,6 +291,8 @@ export default function SettingsPanel(props: Props) {
       </Section>
 
       <UpdatesPanel />
+
+      <BackupPanel />
 
       <Section label="about" open={aboutOpen} onToggle={() => setAboutOpen(v => !v)}>
         <div className="space-y-1.5 pt-1">
