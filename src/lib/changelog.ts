@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v1.92',
+    date: '2026-08-12',
+    title: 'Event List import',
+    changes: [
+      'Added CSV and JSON imports for Event List data, including files exported by BCP.',
+      'Added an import preview showing new, duplicate and rejected event counts before data is saved.',
+      'CSV Dasha rows are collapsed back into unique events and existing duplicates are skipped.',
+      'Added validation for event names, ISO dates, categories, vargas and a 2 MB file-size limit.',
+      'Updated the application version to v1.92.',
+    ],
+  },
+  {
     version: 'v1.91',
     date: '2026-08-12',
     title: 'Dasha Date Finder',

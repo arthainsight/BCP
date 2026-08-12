@@ -7,6 +7,7 @@ import { parseDateTime } from '@/lib/bcp';
 import { calculateDashaEventSnapshots, type DashaEventSnapshot } from '@/lib/dashaEvents';
 import { getVargaSignIndex, SIGN_ABBR } from '@/lib/varga';
 import { analyzeDashaEventPatterns } from '@/lib/dashaEventPatterns';
+import { eventIdentity, parseDashaEventImport, type ImportedEvent } from '@/lib/dashaEventImport';
 
 type Category = 'work' | 'money' | 'relationship' | 'health' | 'home' | 'family' | 'spiritual' | 'other';
 type Varga = 'D1' | 'D7' | 'D9' | 'D10' | 'D12' | 'D60';
@@ -43,6 +44,8 @@ export default function DashaEventList({ planets, ascendant, birthDatetime, dash
   const [hiddenKeys, setHiddenKeys] = useState<SnapshotKey[]>([]);
   const [patternCategory, setPatternCategory] = useState<Category | 'all'>('all');
   const [storageLoaded, setStorageLoaded] = useState(false);
+  const [importPreview, setImportPreview] = useState<{ events: ImportedEvent[]; rejected: number; duplicates: number; format: string } | null>(null);
+  const [importMessage, setImportMessage] = useState('');
   const [name, setName] = useState(''); const [date, setDate] = useState(today); const [category, setCategory] = useState<Category>('work'); const [varga, setVarga] = useState<Varga>('D1');
   const birthDate = parseDateTime(birthDatetime);
   const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
@@ -58,6 +61,22 @@ export default function DashaEventList({ planets, ascendant, birthDatetime, dash
   function updateEvent(id: string, update: Partial<StoredEvent>) { setEvents(current => current.map(item => item.id === id ? { ...item, ...update } : item)); }
   function toggleKey(key: SnapshotKey) { setHiddenKeys(current => current.includes(key) ? current.filter(item => item !== key) : [...current, key]); }
   function openVarga() { if (onOpenVargaMatrix) onOpenVargaMatrix(); else window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')); }
+  async function previewImport(file: File | undefined) {
+    if (!file) return;
+    if (file.size > 2_000_000) { setImportMessage('File is larger than the 2 MB limit.'); return; }
+    try {
+      const result = parseDashaEventImport(await file.text(), file.name);
+      const existing = new Set(events.map(eventIdentity));
+      const fresh = result.events.filter(item => !existing.has(eventIdentity(item)));
+      setImportPreview({ events: fresh, rejected: result.rejected, duplicates: result.events.length - fresh.length, format: result.format });
+      setImportMessage(result.events.length ? '' : 'No valid events found.');
+    } catch { setImportPreview(null); setImportMessage('Could not read this file. Use a BCP CSV or JSON export.'); }
+  }
+  function confirmImport() {
+    if (!importPreview?.events.length) return;
+    setEvents(current => [...current, ...importPreview.events.map(item => ({ ...item, id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}` }))].sort((a, b) => a.date.localeCompare(b.date)));
+    setImportMessage(`Imported ${importPreview.events.length} events.`); setImportPreview(null);
+  }
 
   const patternRecords = events.flatMap(item => snapshotsFor(item).map(snapshot => ({ eventId: item.id, category: item.category, snapshot })));
   const patterns = analyzeDashaEventPatterns(patternRecords, patternCategory).slice(0, 12);
@@ -68,7 +87,8 @@ export default function DashaEventList({ planets, ascendant, birthDatetime, dash
   function exportJson() { download('bhrigu-dasha-events.json', JSON.stringify({ version: 1, birthDatetime, visibleDashas: visibleKeys, events: events.map(item => ({ ...item, dashas: snapshotsFor(item) })) }, null, 2), 'application/json'); }
 
   return <section className="space-y-3 rounded-lg border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-950/40">
-    <div className="flex flex-wrap items-start gap-2"><div className="min-w-0 flex-1"><h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Event List 2.0</h3><p className="text-[11px] text-zinc-500 dark:text-zinc-400">Classify events, compare enabled Dashas, connect transits and export the data.</p></div><button type="button" onClick={exportCsv} disabled={!events.length} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">CSV</button><button type="button" onClick={exportJson} disabled={!events.length} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">JSON</button></div>
+    <div className="flex flex-wrap items-start gap-2"><div className="min-w-0 flex-1"><h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Event List 2.0</h3><p className="text-[11px] text-zinc-500 dark:text-zinc-400">Classify events, compare enabled Dashas, connect transits and import or export the data.</p></div><label className="cursor-pointer rounded border border-cyan-300 px-2 py-1 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">Import<input type="file" accept=".csv,.json,text/csv,application/json" onChange={event => { void previewImport(event.target.files?.[0]); event.target.value = ''; }} className="hidden"/></label><button type="button" onClick={exportCsv} disabled={!events.length} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">CSV</button><button type="button" onClick={exportJson} disabled={!events.length} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">JSON</button></div>
+    {(importPreview || importMessage) && <div className="rounded-md border border-cyan-200 bg-cyan-50/50 p-2 text-[10px] dark:border-cyan-900 dark:bg-cyan-950/10">{importPreview ? <div className="flex flex-wrap items-center gap-2"><span className="min-w-0 flex-1">{importPreview.format}: <strong>{importPreview.events.length}</strong> new · {importPreview.duplicates} duplicates skipped · {importPreview.rejected} invalid rejected</span><button type="button" onClick={() => setImportPreview(null)} className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700">Cancel</button><button type="button" disabled={!importPreview.events.length} onClick={confirmImport} className="rounded bg-cyan-700 px-2 py-1 font-semibold text-white disabled:opacity-40">Import events</button></div> : <div className="flex items-center gap-2"><span className="flex-1">{importMessage}</span><button type="button" onClick={() => setImportMessage('')} className="text-zinc-400">×</button></div>}</div>}
     <form onSubmit={addEvent} className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(150px,1fr)_140px_130px_80px_auto]"><input value={name} onChange={event => setName(event.target.value)} placeholder="Event name" aria-label="Event name" className="min-w-0 rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900"/><input type="date" value={date} onChange={event => setDate(event.target.value)} aria-label="Event date" className="rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900"/><select value={category} onChange={event => setCategory(event.target.value as Category)} aria-label="Event category" className="rounded-md border border-zinc-300 bg-white px-2 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900">{Object.entries(CATEGORY_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select><select value={varga} onChange={event => setVarga(event.target.value as Varga)} aria-label="Event varga" className="rounded-md border border-zinc-300 bg-white px-2 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900">{VARGAS.map(item => <option key={item}>{item}</option>)}</select><button type="submit" disabled={!name.trim() || !date} className="rounded-md bg-emerald-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-40">Add</button></form>
     <div><div className="mb-1 text-[9px] font-mono uppercase tracking-widest text-zinc-400">Visible enabled Dashas</div><div className="flex flex-wrap gap-1">{enabledKeys.map(key => <button type="button" key={key} onClick={() => toggleKey(key)} className={`rounded border px-1.5 py-0.5 text-[9px] font-mono ${visibleKeys.includes(key) ? 'border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' : 'border-zinc-300 text-zinc-400 dark:border-zinc-700'}`}>{key}</button>)}</div></div>
     {events.length >= 2 && <details className="rounded-md border border-cyan-200 bg-cyan-50/40 dark:border-cyan-900 dark:bg-cyan-950/10">
