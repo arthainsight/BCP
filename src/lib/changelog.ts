@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v1.93',
+    date: '2026-08-12',
+    title: 'PyJHora rule-reference validation',
+    changes: [
+      'Compared Nārāyaṇa, Mūla and Sthira progression, exception and duration rules against PyJHora commit 48e57d2.',
+      'Fixed the Mūla Ketu-seed exception: Ketu in the seed sign now always forces reverse progression.',
+      'Added a locked external-reference fixture covering the corrected Mūla Ketu exception.',
+      'Calculation audits now identify the reference revision and distinguish rule parity from full date parity.',
+      'The three systems remain Beta until complete independent golden-chart date comparisons pass.',
+      'Updated the application version to v1.93.',
+    ],
+  },
+  {
     version: 'v1.92',
     date: '2026-08-12',
     title: 'Event List import',
