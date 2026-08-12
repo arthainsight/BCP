@@ -3,6 +3,7 @@ import { RENDERABLE_DASHAS } from '@/lib/dashaRegistry';
 import { renderDasha, DashaRendererContext } from '@/lib/dashaRenderers';
 import CollapsibleCard from './CollapsibleCard';
 import DashaTimeline from './DashaTimeline';
+import DashaDateFinder from './DashaDateFinder';
 
 interface Props {
   bcp: BcpResult;
@@ -32,6 +33,7 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
   if (!collapsible) {
     return (
       <div className="space-y-8">
+        <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />
         <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />
         {activeDashas.map(d => (
           <div key={d.key} id={`dasha-${d.key}`} className="min-w-0 scroll-mt-4">
@@ -44,6 +46,7 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
 
   return (
     <div className="space-y-2">
+      <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />
       <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />
       {activeDashas.map((d, i) => (
         <div key={d.key} id={`dasha-${d.key}`} className="scroll-mt-4"><CollapsibleCard title={d.label} defaultOpen={i === 0}>
