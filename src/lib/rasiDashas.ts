@@ -1,3 +1,4 @@
+import type { RasiDashaOptions } from '../types';
 type PlanetData = { name: string; sign: number; degree: number; longitude: number; house?: number };
 
 const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
@@ -105,14 +106,20 @@ function brahmaSeed(planets: PlanetData[], ascSign: number): { sign: number; pla
   return { sign: signOf(planets, planet) ?? strong, planet };
 }
 
-export function calculateRasiDasha(system: RasiDashaSystem, planets: PlanetData[], ascSignOneBased: number, birthDate: Date): RasiDashaResult {
+export function calculateRasiDasha(system: RasiDashaSystem, planets: PlanetData[], ascSignOneBased: number, birthDate: Date, options: RasiDashaOptions = { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'brahma-pvr' }): RasiDashaResult {
   const asc = norm(ascSignOneBased - 1);
   let seed = strongerSign(planets, asc, norm(asc + 6));
-  let basis = `stronger of Lagna/7th: ${RASI_NAMES[seed]}`;
+  if (system === 'narayana' && options.narayanaSeed === 'lagna') seed = asc;
+  if (system === 'moola' && options.moolaSeed === 'lagna') seed = asc;
+  let basis = `${system === 'sthira' || options[system === 'narayana' ? 'narayanaSeed' : 'moolaSeed'] === 'stronger-lagna-seventh' ? 'stronger of Lagna/7th' : 'Lagna'}: ${RASI_NAMES[seed]}`;
   let method = 'PVR/JHora-compatible rāśi rules';
   const audit = [`Lagna: ${RASI_NAMES[asc]}`, `7th: ${RASI_NAMES[norm(asc + 6)]}`, `Selected seed: ${RASI_NAMES[seed]}`];
   let order: number[];
-  if (system === 'narayana') order = narayanaOrder(seed, planets);
+  if (system === 'narayana') {
+    order = narayanaOrder(seed, planets);
+    method = options.narayanaSeed === 'lagna' ? 'Nārāyaṇa · Lagna-seed research variant' : 'Nārāyaṇa · PVR/JHora stronger Lagna/7th variant';
+    audit.push(`Seed option: ${options.narayanaSeed === 'lagna' ? 'Lagna only' : 'stronger Lagna/7th'}`);
+  }
   else if (system === 'moola') {
     let direction: 1 | -1 = seed % 2 === 0 ? 1 : -1;
     if (signOf(planets, 'Saturn') === seed) direction = 1;
@@ -120,7 +127,8 @@ export function calculateRasiDasha(system: RasiDashaSystem, planets: PlanetData[
     const offsets = [0,3,6,9,1,4,7,10,2,5,8,11];
     order = offsets.map(offset => norm(seed + direction * offset));
     basis = `Lagna Kendrādi · ${basis}`;
-    method = 'Lagna Kendrādi Rāśi (Mūla) · PVR/JHora variant';
+    method = options.moolaSeed === 'lagna' ? 'Lagna Kendrādi Rāśi (Mūla) · Lagna-seed research variant' : 'Lagna Kendrādi Rāśi (Mūla) · PVR/JHora stronger Lagna/7th variant';
+    audit.push(`Seed option: ${options.moolaSeed === 'lagna' ? 'Lagna only' : 'stronger Lagna/7th'}`);
     audit.push(`Progression direction: ${direction === 1 ? 'forward' : 'reverse'}`, 'Order: kendras → pāṇapharas → apoklimas');
   } else {
     const brahma = brahmaSeed(planets, asc);

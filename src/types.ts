@@ -190,6 +190,12 @@ export interface CharaOptions {
   aquariusLord: 'Saturn' | 'Rahu';
 }
 
+export interface RasiDashaOptions {
+  narayanaSeed: 'stronger-lagna-seventh' | 'lagna';
+  moolaSeed: 'stronger-lagna-seventh' | 'lagna';
+  sthiraMethod: 'brahma-pvr';
+}
+
 export interface DashaSettings {
   dashas: {
     bcp: boolean;
@@ -231,6 +237,7 @@ export interface DashaSettings {
     yogaVimshottari?: boolean;
   };
   charaOptions?: CharaOptions;
+  rasiOptions?: RasiDashaOptions;
 }
 
 export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
@@ -283,5 +290,10 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     exaltDebilAdjust: true,
     scorpioLord: 'Ketu',
     aquariusLord: 'Saturn',
+  },
+  rasiOptions: {
+    narayanaSeed: 'stronger-lagna-seventh',
+    moolaSeed: 'stronger-lagna-seventh',
+    sthiraMethod: 'brahma-pvr',
   },
 };

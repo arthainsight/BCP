@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { CharaOptions, DashaSettings, PlanetData } from '@/types';
+import type { CharaOptions, DashaSettings, PlanetData, RasiDashaOptions } from '@/types';
 import { calculateDashaEventSnapshots } from '@/lib/dashaEvents';
 import { parseDateTime } from '@/lib/bcp';
 
@@ -11,6 +11,7 @@ interface Props {
   birthDatetime: string;
   normalizedDashas: DashaSettings['dashas'];
   charaOptions: CharaOptions;
+  rasiOptions: RasiDashaOptions;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -24,11 +25,11 @@ function dateValue(date: Date) { return `${date.getFullYear()}-${String(date.get
 function parseDate(value: string) { const [y, m, d] = value.split('-').map(Number); return new Date(y, m - 1, d, 12); }
 function fmt(date: Date) { return `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`; }
 
-export default function DashaTimeline({ planets, ascendant, birthDatetime, normalizedDashas, charaOptions }: Props) {
+export default function DashaTimeline({ planets, ascendant, birthDatetime, normalizedDashas, charaOptions, rasiOptions }: Props) {
   const [selectedValue, setSelectedValue] = useState(() => dateValue(new Date()));
   const birthDate = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const selectedDate = useMemo(() => parseDate(selectedValue), [selectedValue]);
-  const snapshots = useMemo(() => birthDate ? calculateDashaEventSnapshots({ eventDate: selectedDate, birthDate, planets, ascendant, charaOptions }) : [], [birthDate, selectedDate, planets, ascendant, charaOptions]);
+  const snapshots = useMemo(() => birthDate ? calculateDashaEventSnapshots({ eventDate: selectedDate, birthDate, planets, ascendant, charaOptions, rasiOptions }) : [], [birthDate, selectedDate, planets, ascendant, charaOptions, rasiOptions]);
   const visible = snapshots.filter(snapshot => normalizedDashas[KEY_TO_SETTING[snapshot.key]]);
   const windowStart = new Date(selectedDate.getTime() - 10 * 365.25 * DAY_MS);
   const windowEnd = new Date(selectedDate.getTime() + 10 * 365.25 * DAY_MS);

@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v1.88',
+    date: '2026-08-12',
+    title: 'Dasha method settings',
+    changes: [
+      'Added a dedicated Dasha Methods section without restoring the removed Advanced section.',
+      'Restored working Chara method controls for start sign, direction, subperiod start, duration counting, dignity adjustment and co-lords.',
+      'Added Nārāyaṇa and Mūla seed variants with the PVR/JHora-compatible stronger Lagna/7th method as the default.',
+      'Kept Sthira on the implemented PVR/JHora Brahma-seed method and clearly labelled exploratory Lagna-only variants.',
+      'Method selections now remain synchronized across Dasha panels, the shared timeline and Event List exports.',
+    ],
+  },
+  {
     version: 'v1.87',
     date: '2026-08-11',
     title: 'Event List 2.0',

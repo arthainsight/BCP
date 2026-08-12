@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import type { PlanetData } from '@/types';
+import type { RasiDashaOptions } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { calculateRasiDasha, calculateRasiSubDashas, type RasiDashaEntry, type RasiDashaSystem } from '@/lib/rasiDashas';
 
@@ -18,14 +19,14 @@ function fmt(date: Date, withTime: boolean) {
   return withTime ? `${day} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}` : day;
 }
 
-export default function RasiDashaPanel({ system, planets, ascendant, birthDatetime }: { system: RasiDashaSystem; planets: PlanetData[]; ascendant: { sign: number }; birthDatetime: string }) {
+export default function RasiDashaPanel({ system, planets, ascendant, birthDatetime, options }: { system: RasiDashaSystem; planets: PlanetData[]; ascendant: { sign: number }; birthDatetime: string; options: RasiDashaOptions }) {
   const [level, setLevel] = useState(0);
   const [path, setPath] = useState<RasiDashaEntry[]>([]);
   const now = useMemo(() => new Date(), []);
   const result = useMemo(() => {
     const birth = parseDateTime(birthDatetime);
-    return birth ? calculateRasiDasha(system, planets, ascendant.sign, birth) : null;
-  }, [system, planets, ascendant.sign, birthDatetime]);
+    return birth ? calculateRasiDasha(system, planets, ascendant.sign, birth, options) : null;
+  }, [system, planets, ascendant.sign, birthDatetime, options]);
   if (!result) return <div className="text-xs font-mono text-zinc-400">Valid birth datetime required.</div>;
 
   const children = (entry: RasiDashaEntry) => calculateRasiSubDashas(entry, planets, system);
