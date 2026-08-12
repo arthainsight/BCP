@@ -1,7 +1,9 @@
 import type { RasiDashaOptions } from '../types';
 type PlanetData = { name: string; sign: number; degree: number; longitude: number; house?: number };
 
-const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
+// JHora/PyJHora sidereal-year basis. Keeping this centralized prevents period dates drifting by days over long cycles.
+export const RASI_DASHA_YEAR_DAYS = 365.256364;
+const YEAR_MS = RASI_DASHA_YEAR_DAYS * 24 * 60 * 60 * 1000;
 export const RASI_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'] as const;
 export const RASI_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'] as const;
 const LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'] as const;

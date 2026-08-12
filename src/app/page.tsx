@@ -14,8 +14,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import DataPanel from '@/components/DataPanel';
 import SettingsPanel from '@/components/SettingsPanel';
 import GrahasPanel from '@/components/GrahasPanel';
-import DashaPanel from '@/components/DashaPanel';
-import DashaEventList from '@/components/DashaEventList';
+import DashaWorkspace from '@/components/DashaWorkspace';
 import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
 import CalculationDebugPanel from '@/components/CalculationDebugPanel';
@@ -923,17 +922,7 @@ export default function Home() {
             )}
             {desktopTab === 'dasha' && (
               effectiveBcpResult && chartData
-                ? <div className="space-y-4">
-                    <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} />
-                    <DashaPanel
-                      bcp={effectiveBcpResult}
-                      planets={chartData.planets}
-                      ascendant={chartData.ascendant}
-                      birthDatetime={birthDatetime}
-                      dashaSettings={dashaSettings}
-                      collapsible={uiMode !== 'simple'}
-                    />
-                  </div>
+                ? <DashaWorkspace bcp={effectiveBcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} collapsible={uiMode !== 'simple'} />
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
@@ -1027,17 +1016,7 @@ export default function Home() {
         {activeTab === 'dasha' && (
           <Panel>
             {effectiveBcpResult && chartData
-              ? <div className="space-y-4">
-                  <DashaEventList key={birthDatetime} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} />
-                  <DashaPanel
-                    bcp={effectiveBcpResult}
-                    planets={chartData.planets}
-                    ascendant={chartData.ascendant}
-                    birthDatetime={birthDatetime}
-                    dashaSettings={dashaSettings}
-                    collapsible={uiMode !== 'simple'}
-                  />
-                </div>
+              ? <DashaWorkspace bcp={effectiveBcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} collapsible={uiMode !== 'simple'} />
               : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
             }
           </Panel>
