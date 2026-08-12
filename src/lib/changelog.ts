@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v1.89',
+    date: '2026-08-12',
+    title: 'Rashi Dasha regression validation',
+    changes: [
+      'Added locked seed, period-order, continuity and duration checks for Nārāyaṇa, Mūla and Sthira Daśā.',
+      'Added a visible regression verification result and fixture identifier to each Rāśi Daśā calculation audit.',
+      'Kept the systems in Beta and explicitly separated internal regression coverage from independent JHora golden-chart parity.',
+      'Updated the application version to v1.89.',
+    ],
+  },
+  {
     version: 'v1.88',
     date: '2026-08-12',
     title: 'Dasha method settings',

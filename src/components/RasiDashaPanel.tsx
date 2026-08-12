@@ -5,6 +5,7 @@ import type { PlanetData } from '@/types';
 import type { RasiDashaOptions } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { calculateRasiDasha, calculateRasiSubDashas, type RasiDashaEntry, type RasiDashaSystem } from '@/lib/rasiDashas';
+import { validateRasiDashaRegression } from '@/lib/rasiDashaValidation';
 
 const LEVELS = ['MD', 'AD', 'PD', 'SD', 'PR', 'DE'] as const;
 const TITLES: Record<RasiDashaSystem, string> = { narayana: 'nārāyaṇa daśā', moola: 'mūla daśā', sthira: 'sthira daśā' };
@@ -27,6 +28,7 @@ export default function RasiDashaPanel({ system, planets, ascendant, birthDateti
     const birth = parseDateTime(birthDatetime);
     return birth ? calculateRasiDasha(system, planets, ascendant.sign, birth, options) : null;
   }, [system, planets, ascendant.sign, birthDatetime, options]);
+  const validation = useMemo(() => validateRasiDashaRegression(system), [system]);
   if (!result) return <div className="text-xs font-mono text-zinc-400">Valid birth datetime required.</div>;
 
   const children = (entry: RasiDashaEntry) => calculateRasiSubDashas(entry, planets, system);
@@ -45,8 +47,8 @@ export default function RasiDashaPanel({ system, planets, ascendant, birthDateti
     <div className="flex items-center justify-between gap-2"><div className="font-mono text-xs uppercase tracking-widest text-zinc-500">&gt; {TITLES[system]}</div><button type="button" onClick={openNow} className="rounded border border-cyan-300 px-2 py-1 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">NOW</button></div>
     <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"><div>{result.basis}</div>{activePath.length > 0 && <div className="mt-1 text-cyan-700 dark:text-cyan-300">Now: {activePath.map((entry, i) => `${entry.abbr} ${LEVELS[i]}`).join(' › ')}</div>}</div>
     <details className="rounded-lg border border-zinc-200 bg-white text-[10px] font-mono dark:border-zinc-700 dark:bg-zinc-900">
-      <summary className="cursor-pointer px-3 py-2 text-zinc-600 dark:text-zinc-300">Calculation details · <span className="text-amber-600 dark:text-amber-400">Beta</span></summary>
-      <div className="space-y-1 border-t border-zinc-100 px-3 py-2 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400"><div className="font-semibold text-zinc-700 dark:text-zinc-200">{result.method}</div>{result.audit.map(line => <div key={line}>· {line}</div>)}<p className="pt-1 text-amber-700 dark:text-amber-400">Structural tests pass; external golden-chart parity is not yet certified.</p></div>
+      <summary className="cursor-pointer px-3 py-2 text-zinc-600 dark:text-zinc-300">Calculation details · <span className="text-amber-600 dark:text-amber-400">Beta</span> · <span className={validation.passed ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}>{validation.passed ? 'regression verified' : 'regression failed'}</span></summary>
+      <div className="space-y-1 border-t border-zinc-100 px-3 py-2 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400"><div className="font-semibold text-zinc-700 dark:text-zinc-200">{result.method}</div>{result.audit.map(line => <div key={line}>· {line}</div>)}<p className={validation.passed ? 'pt-1 text-emerald-700 dark:text-emerald-300' : 'pt-1 text-red-700 dark:text-red-300'}>{validation.fixture}: {validation.checks} locked internal regression checks {validation.passed ? 'pass' : 'failed'}.</p><p className="text-amber-700 dark:text-amber-400">This detects accidental calculation changes; independent JHora golden-chart parity is still not certified.</p></div>
     </details>
     <div className="flex items-center justify-between gap-2"><button type="button" onClick={back} disabled={!level} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">← back</button><div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LEVELS[level]} · {rows.length} periods</div></div>
     {path.length > 0 && <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-300">{path.map((entry, i) => `${entry.abbr} ${LEVELS[i]}`).join(' › ')} › {LEVELS[level]}</div>}
