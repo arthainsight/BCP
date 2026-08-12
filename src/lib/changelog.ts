@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v2.13',
+    date: '2026-08-12',
+    title: 'Event Timeline',
+    changes: [
+      'Added a chronological Event Timeline for all saved Event List records.',
+      'Combined saved events with the related Mahadasha change markers from every enabled Dasha system.',
+      'Added category, tag and Dasha-system filters plus an option to hide period changes.',
+      'Event cards now expand to show notes, tags, significance and the complete active MD–AD–PD snapshot.',
+      'Designed the timeline as a touch-friendly vertical view for mobile displays.',
+      'Centralized Event List storage migration so Events and History read older saved data consistently.',
+      'Updated the application version to v2.13.',
+    ],
+  },
+  {
     version: 'v2.12',
     date: '2026-08-12',
     title: 'Dasha workspace mobile optimization',

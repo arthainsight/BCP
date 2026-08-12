@@ -8,9 +8,10 @@ import { calculateDashaEventSnapshots, type DashaEventSnapshot } from '@/lib/das
 import { getVargaSignIndex, SIGN_ABBR } from '@/lib/varga';
 import { analyzeDashaEventPatterns } from '@/lib/dashaEventPatterns';
 import { eventIdentity, parseDashaEventImport, type ImportedEvent } from '@/lib/dashaEventImport';
+import { DASHA_EVENT_CATEGORY_LABELS, DASHA_EVENT_VARGAS, parseStoredDashaEvents, type DashaEventCategory, type DashaEventVarga, type StoredDashaEvent } from '@/lib/dashaEventStore';
 
-type Category = 'work' | 'money' | 'relationship' | 'health' | 'home' | 'family' | 'spiritual' | 'other';
-type Varga = 'D1' | 'D7' | 'D9' | 'D10' | 'D12' | 'D60';
+type Category = DashaEventCategory;
+type Varga = DashaEventVarga;
 type SnapshotKey = DashaEventSnapshot['key'];
 interface Props {
   planets: PlanetData[];
@@ -23,10 +24,10 @@ interface Props {
   onOpenVargaMatrix?: () => void;
   mode?: 'events' | 'patterns';
 }
-interface StoredEvent { id: string; name: string; date: string; category: Category; varga: Varga; notes: string; tags: string[]; significance: number; }
+type StoredEvent = StoredDashaEvent;
 
-const CATEGORY_LABELS: Record<Category, string> = { work: 'Work', money: 'Money', relationship: 'Relationship', health: 'Health', home: 'Home / move', family: 'Family', spiritual: 'Spiritual', other: 'Other' };
-const VARGAS: Varga[] = ['D1', 'D7', 'D9', 'D10', 'D12', 'D60'];
+const CATEGORY_LABELS = DASHA_EVENT_CATEGORY_LABELS;
+const VARGAS = DASHA_EVENT_VARGAS;
 const KEY_TO_SETTING: Record<SnapshotKey, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
 
 function today(): string { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
@@ -53,7 +54,7 @@ export default function DashaEventList({ planets, ascendant, birthDatetime, dash
   const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
   const rasiOptions = { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions };
 
-  useEffect(() => { queueMicrotask(() => { try { const stored = localStorage.getItem(storageKey); const parsed: unknown = stored ? JSON.parse(stored) : []; setEvents(Array.isArray(parsed) ? parsed.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object' && typeof (item as Record<string, unknown>).id === 'string' && typeof (item as Record<string, unknown>).name === 'string' && typeof (item as Record<string, unknown>).date === 'string')).map(item => ({ id: String(item.id), name: String(item.name), date: String(item.date), category: (item.category as Category) || 'other', varga: (item.varga as Varga) || 'D1', notes: String(item.notes ?? ''), tags: Array.isArray(item.tags) ? item.tags.map(String) : [], significance: Math.min(5, Math.max(1, Number(item.significance) || 3)) })) : []); } catch { setEvents([]); } setStorageLoaded(true); }); }, [storageKey]);
+  useEffect(() => { queueMicrotask(() => { try { setEvents(parseStoredDashaEvents(localStorage.getItem(storageKey))); } catch { setEvents([]); } setStorageLoaded(true); }); }, [storageKey]);
   useEffect(() => { if (storageLoaded) localStorage.setItem(storageKey, JSON.stringify(events)); }, [events, storageKey, storageLoaded]);
   useEffect(() => { const select = (event: Event) => setDate((event as CustomEvent<string>).detail); window.addEventListener('bcp:dasha-date-selected', select); return () => window.removeEventListener('bcp:dasha-date-selected', select); }, []);
 
