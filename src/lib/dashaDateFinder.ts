@@ -5,11 +5,17 @@ export interface DashaDateMatch {
   snapshots: DashaEventSnapshot[];
 }
 
-export function snapshotMatches(snapshot: DashaEventSnapshot, filters: { md: string; ad: string; pd: string }): boolean {
+export interface DashaDateFilters { md: string; ad: string; pd: string; any: string; operator: 'and' | 'or'; }
+
+export function snapshotMatches(snapshot: DashaEventSnapshot, filters: DashaDateFilters): boolean {
   const value = (level: string) => snapshot.levels.find(item => item.level === level)?.value.toLocaleLowerCase() ?? '';
-  return (filters.md.trim() === '' || value('MD').includes(filters.md.trim().toLocaleLowerCase()))
-    && (filters.ad.trim() === '' || value('AD').includes(filters.ad.trim().toLocaleLowerCase()))
-    && (filters.pd.trim() === '' || value('PD').includes(filters.pd.trim().toLocaleLowerCase()));
+  const conditions = [
+    filters.md.trim() && value('MD').includes(filters.md.trim().toLocaleLowerCase()),
+    filters.ad.trim() && value('AD').includes(filters.ad.trim().toLocaleLowerCase()),
+    filters.pd.trim() && value('PD').includes(filters.pd.trim().toLocaleLowerCase()),
+    filters.any.trim() && snapshot.levels.some(item => item.value.toLocaleLowerCase().includes(filters.any.trim().toLocaleLowerCase())),
+  ].filter((item): item is boolean => typeof item === 'boolean');
+  return conditions.length > 0 && (filters.operator === 'and' ? conditions.every(Boolean) : conditions.some(Boolean));
 }
 
 export function groupDailyMatches(matches: DashaDateMatch[]): { start: Date; end: Date; snapshots: DashaEventSnapshot[] }[] {

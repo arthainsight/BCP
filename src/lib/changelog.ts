@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.10',
+    date: '2026-08-12',
+    title: 'Event intelligence and Dasha comparison',
+    changes: [
+      'Added notes, tags, significance ratings and search/filter controls to saved events, including import and export support.',
+      'Upgraded Date Finder with any-level searches, AND/OR filter logic and CSV export.',
+      'Added a Dasha Overlap tab comparing shared active values and the MD/AD/PD matrix for every enabled system.',
+      'Upgraded Pattern Analysis with multi-level combinations, derived Rasi rulers, category support rates and sample-size confidence labels.',
+      'Updated the application version to v2.10.',
+    ],
+  },
+  {
     version: 'v2.00',
     date: '2026-08-12',
     title: 'Dasha workspace, backups and golden vectors',

@@ -2,7 +2,7 @@ export const EVENT_CATEGORIES = ['work', 'money', 'relationship', 'health', 'hom
 export const EVENT_VARGAS = ['D1', 'D7', 'D9', 'D10', 'D12', 'D60'] as const;
 export type ImportedCategory = typeof EVENT_CATEGORIES[number];
 export type ImportedVarga = typeof EVENT_VARGAS[number];
-export interface ImportedEvent { name: string; date: string; category: ImportedCategory; varga: ImportedVarga; }
+export interface ImportedEvent { name: string; date: string; category: ImportedCategory; varga: ImportedVarga; notes: string; tags: string[]; significance: number; }
 export interface ImportResult { events: ImportedEvent[]; rejected: number; format: 'CSV' | 'JSON'; }
 
 const CATEGORY_ALIASES: Record<string, ImportedCategory> = { work: 'work', money: 'money', relationship: 'relationship', health: 'health', home: 'home', 'home / move': 'home', family: 'family', spiritual: 'spiritual', other: 'other' };
@@ -13,7 +13,10 @@ const normalize = (item: Record<string, unknown>): ImportedEvent | null => {
   const category = CATEGORY_ALIASES[String(item.category ?? 'other').trim().toLocaleLowerCase()] ?? 'other';
   const candidateVarga = String(item.varga ?? 'D1').trim().toUpperCase();
   const varga = EVENT_VARGAS.includes(candidateVarga as ImportedVarga) ? candidateVarga as ImportedVarga : 'D1';
-  return name && validDate(date) ? { name, date, category, varga } : null;
+  const notes = String(item.notes ?? item.description ?? '').trim();
+  const tags = Array.isArray(item.tags) ? item.tags.map(String).map(tag => tag.trim()).filter(Boolean) : String(item.tags ?? '').split(/[;,]/).map(tag => tag.trim()).filter(Boolean);
+  const rawSignificance = Number(item.significance ?? 3); const significance = Number.isFinite(rawSignificance) ? Math.min(5, Math.max(1, Math.round(rawSignificance))) : 3;
+  return name && validDate(date) ? { name, date, category, varga, notes, tags, significance } : null;
 };
 const unique = (events: ImportedEvent[]) => [...new Map(events.map(item => [`${item.name.toLocaleLowerCase()}|${item.date}|${item.category}|${item.varga}`, item])).values()];
 

@@ -8,7 +8,7 @@ const records: DashaPatternRecord[] = [
   { eventId: '3', category: 'money', snapshot: snapshot('vimshottari', 'Saturn', 'Mercury') },
 ];
 
-assert.deepEqual(analyzeDashaEventPatterns(records).map(pattern => [pattern.level, pattern.value, pattern.count]), [['MD', 'Saturn', 3], ['AD', 'Mercury', 2]]);
+assert.deepEqual(analyzeDashaEventPatterns(records).map(pattern => [pattern.level, pattern.value, pattern.count]), [['MD', 'Saturn', 3], ['AD', 'Mercury', 2], ['MD + AD', 'Saturn › Mercury', 2]]);
 assert.deepEqual(analyzeDashaEventPatterns(records, 'work').map(pattern => [pattern.level, pattern.value, pattern.count]), [['MD', 'Saturn', 2]]);
 assert.deepEqual(analyzeDashaEventPatterns(records, 'health'), []);
 console.log('Dasha event pattern tests passed');

@@ -2,8 +2,9 @@ import assert from 'node:assert/strict';
 import { groupDailyMatches, snapshotMatches } from './dashaDateFinder';
 
 const snapshot = { key: 'vimshottari' as const, label: 'Vimsottari', levels: [{ level: 'MD', value: 'Saturn' }, { level: 'AD', value: 'Mercury' }, { level: 'PD', value: 'Jupiter' }] };
-assert.equal(snapshotMatches(snapshot, { md: 'sat', ad: 'Merc', pd: '' }), true);
-assert.equal(snapshotMatches(snapshot, { md: 'Venus', ad: '', pd: '' }), false);
+assert.equal(snapshotMatches(snapshot, { md: 'sat', ad: 'Merc', pd: '', any: '', operator: 'and' }), true);
+assert.equal(snapshotMatches(snapshot, { md: 'Venus', ad: '', pd: '', any: '', operator: 'and' }), false);
+assert.equal(snapshotMatches(snapshot, { md: 'Venus', ad: '', pd: '', any: 'jup', operator: 'or' }), true);
 const groups = groupDailyMatches([
   { date: new Date(2026, 0, 1, 12), snapshots: [snapshot] },
   { date: new Date(2026, 0, 2, 12), snapshots: [snapshot] },
