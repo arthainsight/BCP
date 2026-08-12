@@ -61,23 +61,23 @@ export default function NakshatraDashaPanel({
     <div className="space-y-3 min-w-0">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">&gt; {title}</div>
-        <button type="button" onClick={openNow} className="rounded border border-cyan-300 px-2 py-1 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">NOW</button>
+        <button type="button" onClick={openNow} className="min-h-11 rounded border border-cyan-300 px-3 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">NOW</button>
       </div>
       <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
         <div>{subtitle}</div>
-        {activePath.length > 0 && <div className="mt-1 text-cyan-700 dark:text-cyan-300">Now: {activePath.map((entry, index) => `${displayName(entry)} ${LABELS[index]}`).join(' › ')}</div>}
+        {activePath.length > 0 && <div className="mt-1 break-words leading-relaxed text-cyan-700 dark:text-cyan-300">Now: {activePath.map((entry, index) => `${displayName(entry)} ${LABELS[index]}`).join(' › ')}</div>}
       </div>
       <div className="flex items-center justify-between gap-2">
-        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">← back</button>
+        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="min-h-11 rounded border border-zinc-300 px-3 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">← back</button>
         <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LABELS[levelIndex]} · {rows.length} periods</div>
       </div>
-      {path.length > 0 && <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-300">{path.map((entry, index) => `${displayName(entry)} ${LABELS[index]}`).join(' › ')} › {LABELS[levelIndex]}</div>}
+      {path.length > 0 && <div className="break-words text-[10px] font-mono leading-relaxed text-emerald-700 dark:text-emerald-300">{path.map((entry, index) => `${displayName(entry)} ${LABELS[index]}`).join(' › ')} › {LABELS[levelIndex]}</div>}
       <div className="space-y-1">
         {rows.map(entry => (
-          <button key={`${entry.key}-${entry.startDate.getTime()}`} type="button" onClick={() => openEntry(entry)} className={`w-full rounded-md border px-3 py-2 text-left font-mono text-xs ${isActive(entry, now) ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-600 dark:bg-cyan-950/30 dark:text-cyan-300' : 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200'}`}>
-            <span className="inline-block min-w-20 font-bold">{displayName(entry)}</span>
-            <span>{fmt(entry.startDate, levelIndex >= 2)}–{fmt(entry.endDate, levelIndex >= 2)}</span>
-            <span className="float-right text-zinc-400">{entry.durationYears.toFixed(2)} y</span>
+          <button key={`${entry.key}-${entry.startDate.getTime()}`} type="button" onClick={() => openEntry(entry)} className={`grid min-h-11 w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-1 rounded-md border px-3 py-2 text-left font-mono text-xs ${isActive(entry, now) ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-600 dark:bg-cyan-950/30 dark:text-cyan-300' : 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200'}`}>
+            <span className="min-w-0 break-words font-bold">{displayName(entry)}</span>
+            <span className="text-zinc-400">{entry.durationYears.toFixed(2)} y</span>
+            <span className="col-span-2 break-words text-[10px] sm:text-xs">{fmt(entry.startDate, levelIndex >= 2)}–{fmt(entry.endDate, levelIndex >= 2)}</span>
           </button>
         ))}
       </div>

@@ -68,27 +68,27 @@ export default function KalachakraPanel({ planets, birthDatetime }: { planets: P
   return (
     <div className="space-y-3 min-w-0">
       <div className="flex items-center justify-between gap-2">
-        <div className="font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">&gt; kālachakra daśā</div>
-        <button type="button" onClick={openNow} className="rounded border border-cyan-300 px-2 py-1 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">NOW</button>
+        <div className="min-w-0 break-words font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">&gt; kālachakra daśā</div>
+        <button type="button" onClick={openNow} className="min-h-11 rounded border border-cyan-300 px-3 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">NOW</button>
       </div>
       <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
         <div>{result.nakshatra} · pada {result.pada} · {result.motion}</div>
         <div>Deha: {ABBR[result.dehaSign]} · Jīva: {ABBR[result.jeevaSign]}</div>
-        {activePath.length > 0 && <div className="mt-1 text-cyan-700 dark:text-cyan-300">Now: {activePath.map((entry, index) => `${ABBR[entry.signName]} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')}</div>}
+        {activePath.length > 0 && <div className="mt-1 break-words leading-relaxed text-cyan-700 dark:text-cyan-300">Now: {activePath.map((entry, index) => `${ABBR[entry.signName]} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')}</div>}
       </div>
       <div className="flex items-center justify-between gap-2">
-        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">← back</button>
+        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="min-h-11 rounded border border-zinc-300 px-3 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">← back</button>
         <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LEVEL_LABEL[currentLevel]} · {rows.length} periods</div>
       </div>
-      {path.length > 0 && <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-300">{path.map((entry, index) => `${ABBR[entry.signName]} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')} › {LEVEL_LABEL[currentLevel]}</div>}
+      {path.length > 0 && <div className="break-words text-[10px] font-mono leading-relaxed text-emerald-700 dark:text-emerald-300">{path.map((entry, index) => `${ABBR[entry.signName]} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')} › {LEVEL_LABEL[currentLevel]}</div>}
       <div className="space-y-1">
         {rows.map((item) => {
           const isNow = active(item, now);
           return (
-            <button key={`${item.sign}-${item.startDate.getTime()}`} type="button" onClick={() => openEntry(item)} className={`w-full rounded-md border px-3 py-2 text-left font-mono text-xs ${isNow ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-600 dark:bg-cyan-950/30 dark:text-cyan-300' : 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200'}`}>
-              <span className="inline-block w-8 font-bold">{ABBR[item.signName]}</span>
-              <span>{fmt(item.startDate, deep)}–{fmt(item.endDate, deep)}</span>
-              <span className="float-right text-zinc-400">{item.durationYears.toFixed(2)} y</span>
+            <button key={`${item.sign}-${item.startDate.getTime()}`} type="button" onClick={() => openEntry(item)} className={`grid min-h-11 w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-1 rounded-md border px-3 py-2 text-left font-mono text-xs ${isNow ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-600 dark:bg-cyan-950/30 dark:text-cyan-300' : 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200'}`}>
+              <span className="row-span-2 font-bold">{ABBR[item.signName]}</span>
+              <span className="break-words text-[10px] sm:text-xs">{fmt(item.startDate, deep)}–{fmt(item.endDate, deep)}</span>
+              <span className="text-[10px] text-zinc-400">{item.durationYears.toFixed(2)} y</span>
             </button>
           );
         })}

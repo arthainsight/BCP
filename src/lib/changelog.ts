@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v2.12',
+    date: '2026-08-12',
+    title: 'Dasha workspace mobile optimization',
+    changes: [
+      'Reworked the Dasha workspace navigation into a phone-friendly two-row grid with larger touch targets.',
+      'Stacked Timeline and Finder controls on narrow screens and allowed result details to wrap without truncation.',
+      'Improved Event List forms, filters, event headers and Dasha snapshots for 360–412 px displays.',
+      'Replaced the mobile Overlap table with readable per-system cards while retaining the desktop table.',
+      'Reformatted Nakshatra, Kalachakra and Rasi Dasha period rows to prevent dates and durations from colliding.',
+      'Updated the application version to v2.12.',
+    ],
+  },
+  {
     version: 'v2.11',
     date: '2026-08-12',
     title: 'Mobile Pattern Analysis layout',

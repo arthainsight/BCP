@@ -201,7 +201,7 @@ export default function CharaDashaPanel({ planets, ascendant, birthDatetime }: P
         <button
           onClick={goBack}
           disabled={level === 'md'}
-          className="px-2 py-1 rounded-md text-[10px] font-mono border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="min-h-11 px-3 py-2 rounded-md text-[10px] font-mono border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
         >
           ← back
         </button>
@@ -220,7 +220,7 @@ export default function CharaDashaPanel({ planets, ascendant, birthDatetime }: P
             <button
               key={key}
               onClick={() => handleRowClick(entry)}
-              className={`w-full min-w-0 text-left flex items-center gap-2 px-2 py-2 rounded-lg border transition-colors group ${
+              className={`min-h-11 w-full min-w-0 text-left flex items-center gap-2 px-2 py-2 rounded-lg border transition-colors group ${
                 active
                   ? 'border-cyan-300 dark:border-cyan-700 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300'
                   : selectedAtLevel
