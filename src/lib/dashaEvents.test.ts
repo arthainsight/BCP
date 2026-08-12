@@ -20,6 +20,7 @@ const snapshots = calculateDashaEventSnapshots({
   planets,
   ascendant: { longitude: 90, sign: 4, degree: 0 },
   charaOptions: DEFAULT_DASHA_SETTINGS.charaOptions,
+  rasiOptions: DEFAULT_DASHA_SETTINGS.rasiOptions,
 });
 
 assert.deepEqual(snapshots.map((snapshot) => snapshot.key), ['vimshottari', 'vds', 'chara', 'yogini', 'ashtottari', 'kalaChakra', 'narayana', 'moola', 'sthira']);
@@ -37,6 +38,7 @@ const beforeBirth = calculateDashaEventSnapshots({
   planets,
   ascendant: { longitude: 90, sign: 4, degree: 0 },
   charaOptions: DEFAULT_DASHA_SETTINGS.charaOptions,
+  rasiOptions: DEFAULT_DASHA_SETTINGS.rasiOptions,
 });
 assert.ok(beforeBirth.every((snapshot) => snapshot.levels.length === 0 && snapshot.note === 'Date is before birth'));
 

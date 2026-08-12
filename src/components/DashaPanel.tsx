@@ -16,6 +16,7 @@ interface Props {
 export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, dashaSettings, collapsible = false }: Props) {
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
   const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
+  const rasiOptions = { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions };
   const activeDashas = RENDERABLE_DASHAS.filter(d => d.renderer && normalizedDashas[d.key]);
 
   if (activeDashas.length === 0) {
@@ -26,12 +27,12 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
     );
   }
 
-  const ctx: DashaRendererContext = { bcp, planets, ascendant, birthDatetime, charaOptions };
+  const ctx: DashaRendererContext = { bcp, planets, ascendant, birthDatetime, charaOptions, rasiOptions };
 
   if (!collapsible) {
     return (
       <div className="space-y-8">
-        <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} />
+        <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />
         {activeDashas.map(d => (
           <div key={d.key} id={`dasha-${d.key}`} className="min-w-0 scroll-mt-4">
             {d.renderer ? renderDasha(d.renderer, ctx) : null}
@@ -43,7 +44,7 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
 
   return (
     <div className="space-y-2">
-      <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} />
+      <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />
       {activeDashas.map((d, i) => (
         <div key={d.key} id={`dasha-${d.key}`} className="scroll-mt-4"><CollapsibleCard title={d.label} defaultOpen={i === 0}>
           {d.renderer ? renderDasha(d.renderer, ctx) : null}

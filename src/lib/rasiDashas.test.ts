@@ -26,4 +26,8 @@ for (const system of ['narayana', 'moola', 'sthira'] as const) {
 }
 const sthira = calculateRasiDasha('sthira', planets, 4, birth);
 assert.deepEqual(sthira.entries.map(entry => entry.durationYears).sort(), [7,7,7,7,8,8,8,8,9,9,9,9]);
+const lagnaSeed = calculateRasiDasha('narayana', planets, 4, birth, { narayanaSeed: 'lagna', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'brahma-pvr' });
+assert.equal(lagnaSeed.seedSign, 3);
+assert.match(lagnaSeed.method, /research variant/);
+assert.match(lagnaSeed.basis, /^Lagna:/);
 console.log('Rasi Dasha tests passed');

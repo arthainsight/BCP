@@ -1,4 +1,4 @@
-import type { CharaOptions, PlanetData } from '@/types';
+import type { CharaOptions, PlanetData, RasiDashaOptions } from '@/types';
 import { calculateCleanCharaMD, calculateCleanCharaSubDashas, type CleanCharaEntry } from './charaClean';
 import { calculateKalachakra, calculateKalachakraAntardashas, type KalachakraEntry } from './kalachakra';
 import { calculateVds } from './vds';
@@ -22,6 +22,7 @@ interface SnapshotInput {
   planets: PlanetData[];
   ascendant: { longitude: number; sign: number; degree: number };
   charaOptions: CharaOptions;
+  rasiOptions: RasiDashaOptions;
 }
 
 function activeEntry<T extends { startDate: Date; endDate: Date }>(entries: T[], date: Date): T | null {
@@ -68,7 +69,7 @@ function rasiLevels(entries: RasiDashaEntry[], date: Date, planets: PlanetData[]
 }
 
 export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSnapshot[] {
-  const { eventDate, birthDate, planets, ascendant, charaOptions } = input;
+  const { eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions } = input;
   if (eventDate < birthDate) return [
     { key: 'vimshottari', label: 'Vimsottari', levels: [], note: 'Date is before birth' },
     { key: 'vds', label: 'Vimsottari Original', levels: [], note: 'Date is before birth' },
@@ -120,7 +121,7 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
     ['moola', 'moola', 'Mūla Dasha'],
     ['sthira', 'sthira', 'Sthira Dasha'],
   ] as const) {
-    const result = calculateRasiDasha(system, planets, ascendant.sign, birthDate);
+    const result = calculateRasiDasha(system, planets, ascendant.sign, birthDate, rasiOptions);
     snapshots.push({ key, label, levels: rasiLevels(result.entries, eventDate, planets, system), mdRange: activeRange(result.entries, eventDate) });
   }
 

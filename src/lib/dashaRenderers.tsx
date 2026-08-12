@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { BcpResult, PlanetData, CharaOptions } from '@/types';
+import { BcpResult, PlanetData, CharaOptions, RasiDashaOptions } from '@/types';
 import { DashaRendererKey } from './dashaRegistry';
 import VimshottariPanel from '@/components/VimshottariPanel';
 import VdsPanel from '@/components/VdsPanel';
@@ -15,6 +15,7 @@ export type DashaRendererContext = {
   ascendant: { longitude: number; sign: number; degree: number };
   birthDatetime: string;
   charaOptions: CharaOptions;
+  rasiOptions: RasiDashaOptions;
 };
 
 const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNode> = {
@@ -36,9 +37,9 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
   ashtottari: ({ planets, ascendant, birthDatetime }) => (
     <AshtottariPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
   ),
-  narayana: ({ planets, ascendant, birthDatetime }) => <RasiDashaPanel system="narayana" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
-  moola: ({ planets, ascendant, birthDatetime }) => <RasiDashaPanel system="moola" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
-  sthira: ({ planets, ascendant, birthDatetime }) => <RasiDashaPanel system="sthira" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
+  narayana: ({ planets, ascendant, birthDatetime, rasiOptions }) => <RasiDashaPanel system="narayana" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} />,
+  moola: ({ planets, ascendant, birthDatetime, rasiOptions }) => <RasiDashaPanel system="moola" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} />,
+  sthira: ({ planets, ascendant, birthDatetime, rasiOptions }) => <RasiDashaPanel system="sthira" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} />,
 };
 
 export function renderDasha(rendererKey: DashaRendererKey, ctx: DashaRendererContext) {

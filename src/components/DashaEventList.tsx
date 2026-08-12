@@ -44,12 +44,13 @@ export default function DashaEventList({ planets, ascendant, birthDatetime, dash
   const [name, setName] = useState(''); const [date, setDate] = useState(today); const [category, setCategory] = useState<Category>('work'); const [varga, setVarga] = useState<Varga>('D1');
   const birthDate = parseDateTime(birthDatetime);
   const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
+  const rasiOptions = { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions };
 
   useEffect(() => { queueMicrotask(() => { try { const stored = localStorage.getItem(storageKey); const parsed: unknown = stored ? JSON.parse(stored) : []; setEvents(Array.isArray(parsed) ? parsed.filter((item): item is Record<string, unknown> => Boolean(item && typeof item === 'object' && typeof (item as Record<string, unknown>).id === 'string' && typeof (item as Record<string, unknown>).name === 'string' && typeof (item as Record<string, unknown>).date === 'string')).map(item => ({ id: String(item.id), name: String(item.name), date: String(item.date), category: (item.category as Category) || 'other', varga: (item.varga as Varga) || 'D1' })) : []); } catch { setEvents([]); } setStorageLoaded(true); }); }, [storageKey]);
   useEffect(() => { if (storageLoaded) localStorage.setItem(storageKey, JSON.stringify(events)); }, [events, storageKey, storageLoaded]);
 
   const visibleKeys = enabledKeys.filter(key => !hiddenKeys.includes(key));
-  function snapshotsFor(item: StoredEvent) { const eventDate = parseEventDate(item.date); return birthDate && eventDate ? calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions }).filter(snapshot => visibleKeys.includes(snapshot.key)) : []; }
+  function snapshotsFor(item: StoredEvent) { const eventDate = parseEventDate(item.date); return birthDate && eventDate ? calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions }).filter(snapshot => visibleKeys.includes(snapshot.key)) : []; }
   function addEvent(event: FormEvent) { event.preventDefault(); if (!name.trim() || !parseEventDate(date)) return; setEvents(current => [...current, { id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`, name: name.trim(), date, category, varga }].sort((a, b) => a.date.localeCompare(b.date))); setName(''); }
   function updateEvent(id: string, update: Partial<StoredEvent>) { setEvents(current => current.map(item => item.id === id ? { ...item, ...update } : item)); }
   function toggleKey(key: SnapshotKey) { setHiddenKeys(current => current.includes(key) ? current.filter(item => item !== key) : [...current, key]); }

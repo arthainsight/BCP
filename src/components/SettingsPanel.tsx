@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
+import { ChartDisplaySettings, CalculationSettings, CharaOptions, DashaSettings, DEFAULT_DASHA_SETTINGS, RasiDashaOptions } from '@/types';
 import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
@@ -77,10 +77,26 @@ export default function SettingsPanel(props: Props) {
   } = props;
 
   const [displayOpen, setDisplayOpen] = useState(true);
+  const [methodsOpen, setMethodsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const selectedChartStyle = chartDisplaySettings.chartStyle ?? 'north';
 
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
+  const charaOptions = { ...DEFAULT_DASHA_SETTINGS.charaOptions, ...dashaSettings.charaOptions };
+  const rasiOptions = { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions };
+
+  const saveDashaSettings = (next: DashaSettings) => {
+    onUpdateDashaSettings(next);
+    try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}
+  };
+
+  const updateCharaOption = <K extends keyof CharaOptions,>(key: K, value: CharaOptions[K]) => {
+    saveDashaSettings({ ...dashaSettings, dashas: normalizedDashas, charaOptions: { ...charaOptions, [key]: value }, rasiOptions });
+  };
+
+  const updateRasiOption = <K extends keyof RasiDashaOptions,>(key: K, value: RasiDashaOptions[K]) => {
+    saveDashaSettings({ ...dashaSettings, dashas: normalizedDashas, charaOptions, rasiOptions: { ...rasiOptions, [key]: value } });
+  };
 
   const updateChartStyle = (chartStyle: 'north' | 'south') => {
     onUpdateChartDisplay?.({ chartStyle });
@@ -96,10 +112,10 @@ export default function SettingsPanel(props: Props) {
     const next: DashaSettings = {
       ...dashaSettings,
       dashas: { ...normalizedDashas, [key]: !normalizedDashas[key] },
-      charaOptions: dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions,
+      charaOptions,
+      rasiOptions,
     };
-    onUpdateDashaSettings(next);
-    try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}
+    saveDashaSettings(next);
     if (key === 'bcp' && typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('bcp:dasha-bcp-toggle', { detail: next.dashas.bcp }));
     }
@@ -248,6 +264,28 @@ export default function SettingsPanel(props: Props) {
             </div>
           </div>
 
+        </div>
+      </Section>
+
+      <Section label="dasha methods" open={methodsOpen} onToggle={() => setMethodsOpen(v => !v)}>
+        <div className="space-y-4">
+          <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">Method choices update Dasha panels, the shared timeline and Event List together.</p>
+          <div className="space-y-2">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">Chara Dasha</div>
+            <label className="block text-xs font-mono text-zinc-500">Start sign<select className={`${SELECT} mt-1`} value={charaOptions.start} onChange={e => updateCharaOption('start', e.target.value as CharaOptions['start'])}><option value="lagna">Lagna</option><option value="ak">Atmakaraka</option></select></label>
+            <label className="block text-xs font-mono text-zinc-500">Mahadasha direction<select className={`${SELECT} mt-1`} value={charaOptions.mahadashaDirection} onChange={e => updateCharaOption('mahadashaDirection', e.target.value as CharaOptions['mahadashaDirection'])}><option value="rashi-type">Rashi type</option><option value="odd-even">Odd / even</option></select></label>
+            <label className="block text-xs font-mono text-zinc-500">Antardasha start<select className={`${SELECT} mt-1`} value={charaOptions.antardashaStart} onChange={e => updateCharaOption('antardashaStart', e.target.value as CharaOptions['antardashaStart'])}><option value="next-dasha-rasi">Next Dasha rashi</option><option value="same-dasha-rasi">Same Dasha rashi</option></select></label>
+            <label className="block text-xs font-mono text-zinc-500">Duration count<select className={`${SELECT} mt-1`} value={charaOptions.durationCount} onChange={e => updateCharaOption('durationCount', e.target.value as CharaOptions['durationCount'])}><option value="inclusive">Inclusive</option><option value="exclusive">Exclusive</option></select></label>
+            <div className="flex items-center justify-between gap-3 rounded border border-zinc-200 px-2 py-2 dark:border-zinc-700"><span className="text-xs font-mono text-zinc-500">Exaltation / debilitation adjustment</span><MiniToggle value={charaOptions.exaltDebilAdjust} onToggle={() => updateCharaOption('exaltDebilAdjust', !charaOptions.exaltDebilAdjust)} /></div>
+            <div className="grid grid-cols-2 gap-2"><label className="text-xs font-mono text-zinc-500">Scorpio lord<select className={`${SELECT} mt-1`} value={charaOptions.scorpioLord} onChange={e => updateCharaOption('scorpioLord', e.target.value as CharaOptions['scorpioLord'])}><option value="Ketu">Ketu</option><option value="Mars">Mars</option></select></label><label className="text-xs font-mono text-zinc-500">Aquarius lord<select className={`${SELECT} mt-1`} value={charaOptions.aquariusLord} onChange={e => updateCharaOption('aquariusLord', e.target.value as CharaOptions['aquariusLord'])}><option value="Saturn">Saturn</option><option value="Rahu">Rahu</option></select></label></div>
+          </div>
+          <div className="space-y-2 border-t border-zinc-200 pt-4 dark:border-zinc-700">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">Rashi Dasha seeds</div>
+            <label className="block text-xs font-mono text-zinc-500">Narayana<select className={`${SELECT} mt-1`} value={rasiOptions.narayanaSeed} onChange={e => updateRasiOption('narayanaSeed', e.target.value as RasiDashaOptions['narayanaSeed'])}><option value="stronger-lagna-seventh">PVR / JHora: stronger Lagna or 7th</option><option value="lagna">Research variant: Lagna only</option></select></label>
+            <label className="block text-xs font-mono text-zinc-500">Mula<select className={`${SELECT} mt-1`} value={rasiOptions.moolaSeed} onChange={e => updateRasiOption('moolaSeed', e.target.value as RasiDashaOptions['moolaSeed'])}><option value="stronger-lagna-seventh">PVR / JHora: stronger Lagna or 7th</option><option value="lagna">Research variant: Lagna only</option></select></label>
+            <label className="block text-xs font-mono text-zinc-500">Sthira<select className={`${SELECT} mt-1 opacity-70`} value={rasiOptions.sthiraMethod} disabled><option value="brahma-pvr">PVR / JHora: Brahma seed</option></select></label>
+            <p className="text-[9px] font-mono text-amber-600 dark:text-amber-400">Research variants are exploratory and are identified in the result audit.</p>
+          </div>
         </div>
       </Section>
 
