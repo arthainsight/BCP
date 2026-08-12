@@ -4,7 +4,8 @@ export type RasiValidationStatus = {
   passed: boolean;
   checks: number;
   fixture: string;
-  scope: 'internal-regression';
+  scope: 'pyjhora-rule-reference';
+  reference: string;
 };
 
 const FIXTURE_PLANETS = [
@@ -36,5 +37,10 @@ export function validateRasiDashaRegression(system: RasiDashaSystem): RasiValida
     firstCycle.every((entry, index) => index === 0 || firstCycle[index - 1].endDate.getTime() === entry.startDate.getTime()),
     expected.durations == null || firstCycle.map(entry => entry.durationYears).join(',') === expected.durations,
   ];
-  return { passed: checks.every(Boolean), checks: checks.length, fixture: 'BCP-RD-001', scope: 'internal-regression' };
+  if (system === 'moola') {
+    const ketuSeedPlanets = FIXTURE_PLANETS.map(planet => planet.name === 'Ketu' ? { ...planet, sign: 6, longitude: 150 } : planet);
+    const ketuResult = calculateRasiDasha('moola', ketuSeedPlanets, 6, new Date('2000-01-01T10:00:00.000Z'), { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'lagna', sthiraMethod: 'brahma-pvr' });
+    checks.push(ketuResult.entries.slice(0, 12).map(entry => entry.abbr).join(',') === 'Vi,Ge,Pi,Sg,Le,Ta,Aq,Sc,Cn,Ar,Cp,Li');
+  }
+  return { passed: checks.every(Boolean), checks: checks.length, fixture: system === 'moola' ? 'BCP-RD-001 + PJH-MOOLA-KETU-001' : 'BCP-RD-001', scope: 'pyjhora-rule-reference', reference: 'PyJHora 48e57d2' };
 }

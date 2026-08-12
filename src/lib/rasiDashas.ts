@@ -123,7 +123,7 @@ export function calculateRasiDasha(system: RasiDashaSystem, planets: PlanetData[
   else if (system === 'moola') {
     let direction: 1 | -1 = seed % 2 === 0 ? 1 : -1;
     if (signOf(planets, 'Saturn') === seed) direction = 1;
-    if (signOf(planets, 'Ketu') === seed) direction = direction === 1 ? -1 : 1;
+    else if (signOf(planets, 'Ketu') === seed) direction = -1;
     const offsets = [0,3,6,9,1,4,7,10,2,5,8,11];
     order = offsets.map(offset => norm(seed + direction * offset));
     basis = `Lagna Kendrādi · ${basis}`;
