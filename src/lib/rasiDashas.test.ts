@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { calculateRasiDasha, calculateRasiSubDashas } from './rasiDashas';
+import { validateRasiDashaRegression } from './rasiDashaValidation';
 
 const planets = [
   { name: 'Sun', sign: 6, house: 3, degree: 20, longitude: 170 },
@@ -30,4 +31,5 @@ const lagnaSeed = calculateRasiDasha('narayana', planets, 4, birth, { narayanaSe
 assert.equal(lagnaSeed.seedSign, 3);
 assert.match(lagnaSeed.method, /research variant/);
 assert.match(lagnaSeed.basis, /^Lagna:/);
+for (const system of ['narayana', 'moola', 'sthira'] as const) assert.equal(validateRasiDashaRegression(system).passed, true);
 console.log('Rasi Dasha tests passed');
