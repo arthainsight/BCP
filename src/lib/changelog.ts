@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v1.90',
+    date: '2026-08-12',
+    title: 'Recurring Dasha event patterns',
+    changes: [
+      'Added automatic detection of recurring MD, AD and PD rulers across saved events.',
+      'Added event-category filters for comparing work, money, relationships, health and other event types.',
+      'Pattern counts follow the currently enabled and visible Dasha systems.',
+      'Added an explicit reminder that repetition is descriptive and does not prove causation.',
+      'Updated the application version to v1.90.',
+    ],
+  },
+  {
     version: 'v1.89',
     date: '2026-08-12',
     title: 'Rashi Dasha regression validation',
