@@ -45,7 +45,9 @@ const VIMSOPAKA_SCHEMES = {
 
 export { getSignIndex, getDegreesInSign };
 export function getVargaSign(longitude, division) { return getVargaSignIndex(longitude, division); }
-function normalizeDegrees(value) { return ((value % 360) + 360) % 360; }
+// See src/lib/varga/utils.ts — the ((x % 360) + 360) % 360 form loses low mantissa
+// bits on values that were already in range.
+function normalizeDegrees(value) { const wrapped = value % 360; return wrapped < 0 ? wrapped + 360 : wrapped; }
 function virupaToRupa(virupa) { return virupa / 60; }
 function formatScore(value) { return Number.isFinite(value) ? value.toFixed(2).replace(/\.00$/, '') : '—'; }
 function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
@@ -176,6 +178,23 @@ export function VargaStrengthCard({ chart }) {
     </div>
   );
 }
+
+// Exported for src/lib/shadbala.test.ts. The Shadbala engine lives in this file
+// rather than in src/lib because the card grew around it; the tests import the
+// pure pieces directly so they exercise the real implementation.
+export {
+  NAISARGIKA_BALA_VIRUPA,
+  SHADBALA_REQUIRED_VIRUPA,
+  DIG_BALA_MAX_HOUSE,
+  buildShadbalaRows,
+  calculateDigBalaVirupa,
+  calculateUcchaBalaVirupa,
+  calculateKendradiBalaVirupa,
+  calculateOjhayugmaBalaVirupa,
+  calculateDrekkanaBalaVirupa,
+  calculateSaptavargajaBalaVirupa,
+  virupaToRupa,
+};
 
 export function ShadbalaCard({ chart }) {
   const [showDebug, setShowDebug] = useState(false);

@@ -382,6 +382,46 @@ function testDigBala(): { pass: number; fail: number } {
 }
 
 // ---------------------------------------------------------------------------
+// Structural invariants across all twelve houses. H1 and H4 above pin down the
+// arithmetic against hand-worked values; this checks the remaining ten follow
+// the same composition rule rather than being assembled some other way.
+// ---------------------------------------------------------------------------
+function testTotalComposition(): { pass: number; fail: number } {
+  let pass = 0, fail = 0;
+  console.log('\n--- Total composition (bhavesha + drig + occupants + kendra) ---');
+
+  const rows = buildClassicalBhavaBala(FIXTURE_CHART, FIXTURE_SHADBALA);
+
+  let ok = rows.length === 12;
+  console.log(`${ok ? '✓' : '✗'} row count: expected 12, got ${rows.length}`);
+  ok ? pass++ : fail++;
+
+  for (const row of rows) {
+    const composed =
+      row.bhavesha + row.drig1 + row.drig2 + row.drig3 + row.drig4 + row.occupantTotal + row.kendra;
+    ok = approxEqual(row.total, composed, 1e-9);
+    console.log(`${ok ? '✓' : '✗'} H${row.house} total ${row.total.toFixed(2)} = components ${composed.toFixed(2)}`);
+    ok ? pass++ : fail++;
+  }
+
+  // Occupant details must reconcile with the reported occupant subtotal.
+  for (const row of rows) {
+    const summed = row.occupants.reduce((total, occupant) => total + occupant.contribution, 0);
+    ok = approxEqual(row.occupantTotal, summed, 1e-9);
+    console.log(`${ok ? '✓' : '✗'} H${row.house} occupant subtotal ${row.occupantTotal.toFixed(2)} = ${row.occupants.length} detail row(s)`);
+    ok ? pass++ : fail++;
+  }
+
+  // Each house carries a distinct sign, and the twelve cover the whole zodiac.
+  const signs = new Set(rows.map((row) => row.sign));
+  ok = signs.size === 12;
+  console.log(`${ok ? '✓' : '✗'} twelve distinct signs across the houses, got ${signs.size}`);
+  ok ? pass++ : fail++;
+
+  return { pass, fail };
+}
+
+// ---------------------------------------------------------------------------
 // Runner
 // ---------------------------------------------------------------------------
 function main(): void {
@@ -391,9 +431,10 @@ function main(): void {
   const all = testAllHouseSigns();
   const occ = testOccupants();
   const dig = testDigBala();
+  const comp = testTotalComposition();
 
-  const total = h1.pass + h4.pass + h12.pass + all.pass + occ.pass + dig.pass;
-  const failed = h1.fail + h4.fail + h12.fail + all.fail + occ.fail + dig.fail;
+  const total = h1.pass + h4.pass + h12.pass + all.pass + occ.pass + dig.pass + comp.pass;
+  const failed = h1.fail + h4.fail + h12.fail + all.fail + occ.fail + dig.fail + comp.fail;
   console.log(`\n${total} passed, ${failed} failed`);
   if (failed > 0) process.exit(1);
 }

@@ -57,7 +57,7 @@ const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = 
     Jupiter:    [5, 6, 9, 11],
     Venus:      [6, 7, 12],
     Saturn:     [1, 2, 4, 7, 8, 9, 10, 11],
-    Ascendant:  [1, 2, 4, 7, 8, 9, 10, 11],
+    Ascendant:  [3, 4, 6, 10, 11, 12],
   },
   Moon: {
     Sun:        [3, 6, 7, 8, 10, 11],
@@ -77,7 +77,7 @@ const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = 
     Jupiter:    [6, 10, 11, 12],
     Venus:      [6, 8, 11, 12],
     Saturn:     [1, 4, 7, 8, 9, 10, 11],
-    Ascendant:  [1, 2, 4, 7, 8, 9, 10, 11],
+    Ascendant:  [1, 3, 6, 10, 11],
   },
   Mercury: {
     Sun:        [5, 6, 9, 11, 12],
@@ -87,7 +87,7 @@ const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = 
     Jupiter:    [6, 8, 11, 12],
     Venus:      [1, 2, 3, 4, 5, 8, 9, 11],
     Saturn:     [1, 2, 4, 7, 8, 9, 10, 11],
-    Ascendant:  [1, 2, 4, 7, 8, 9, 10, 11],
+    Ascendant:  [1, 2, 4, 6, 8, 10, 11],
   },
   Jupiter: {
     Sun:        [1, 2, 3, 4, 7, 8, 9, 10, 11],
@@ -123,11 +123,17 @@ const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = 
 
 // Brihat Jataka IX differs from the Parashara table in the entries below.
 // Unchanged contributor rows intentionally inherit the Parashara values.
+//
+// NOTE: this table previously also overrode the Sun, Mars and Mercury Ascendant
+// rows. Those were in fact the correct *Parashara* values, and PARASHARA_AV had
+// been left holding a placeholder copy of the generic [1,2,4,7,8,9,10,11] row —
+// which inflated the Parashara totals to 50/42/55 (SAV 343) instead of the
+// classical 48/39/54 (SAV 337). The values now live in PARASHARA_AV where they
+// belong. Only the Venus/Mars row below is a genuine Brihat Jataka variant that
+// has been checked; the rest of the Varahamihira table still needs an
+// independent source review before this system can be treated as certified.
 const VARAHAMIHIRA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = {
   ...PARASHARA_AV,
-  Sun: { ...PARASHARA_AV.Sun, Ascendant: [3, 4, 6, 10, 11, 12] },
-  Mars: { ...PARASHARA_AV.Mars, Ascendant: [1, 3, 6, 10, 11] },
-  Mercury: { ...PARASHARA_AV.Mercury, Ascendant: [1, 2, 4, 6, 8, 10, 11] },
   Venus: { ...PARASHARA_AV.Venus, Mars: [3, 5, 6, 9, 11, 12] },
 };
 

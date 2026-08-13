@@ -1,5 +1,20 @@
 export const CHANGELOG = [
   {
+    version: 'v2.14',
+    date: '2026-08-13',
+    title: 'Ashtakavarga correction and a working test suite',
+    changes: [
+      'Fixed the Parāśara Aṣṭakavarga table: the Sun, Mars and Mercury ascendant rows held a placeholder copy of a generic row, inflating their BAV totals to 50/42/55 and every SAV to 343.',
+      'Aṣṭakavarga now matches the classical BPHS totals of 48/49/39/54/56/52/39 with an SAV of 337, so displayed bindu values will change.',
+      'Fixed a rounding fault in longitude normalization that pushed planets sitting exactly on a varga boundary into the previous division.',
+      'The 22 calculation fixtures now actually run: added an npm test script, and a CI workflow covering tests, typecheck and a production build.',
+      'Rewrote the Ṣaḍbala fixture, which previously tested its own local copies of the constants instead of the application code.',
+      'Added chart-independent golden vectors for Aṣṭakavarga and full composition checks for Bhāva Bala.',
+      'Removed the unused BNN alpha, Pro, Jupiterian Rounds, Jupiter Minor and Event Detection panels left behind by earlier refactors.',
+      'Updated the application version to v2.14.',
+    ],
+  },
+  {
     version: 'v2.13',
     date: '2026-08-12',
     title: 'Event Timeline',

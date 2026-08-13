@@ -30,6 +30,7 @@ async function main() {
 
   const lahiri = await calculateChart(2000, 1, 1, 12, 0, 0, 60.1699, 24.9384, 2, 'lahiri', 'mean');
   const custom = await calculateChart(2000, 1, 1, 12, 0, 0, 60.1699, 24.9384, 2, 'custom-lahiri', 'mean', 1);
+  assert.ok(custom.debug && lahiri.debug, 'calculateChart must return debug output');
   assertClose(custom.debug.ayanamsa - lahiri.debug.ayanamsa, 1);
   assertClose(((lahiri.ascendant.longitude - custom.ascendant.longitude) + 360) % 360, 1);
   assertClose(((lahiri.planets[0].longitude - custom.planets[0].longitude) + 360) % 360, 1);
