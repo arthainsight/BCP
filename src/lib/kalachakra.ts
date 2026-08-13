@@ -1,3 +1,4 @@
+import { normalizeDegrees } from './angles';
 const SIGN_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'] as const;
 const SIGN_YEARS = [7, 16, 9, 21, 5, 9, 16, 7, 10, 4, 4, 10] as const;
 const NAKSHATRA_NAMES = [
@@ -72,7 +73,7 @@ function entry(
 }
 
 export function calculateKalachakra(moonLongitude: number, birthDate: Date): KalachakraResult {
-  const longitude = ((moonLongitude % 360) + 360) % 360;
+  const longitude = normalizeDegrees(moonLongitude);
   const nakshatraSpan = 360 / 27;
   const padaSpan = 360 / 108;
   const nakshatraIndex = Math.floor(longitude / nakshatraSpan);

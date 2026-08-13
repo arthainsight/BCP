@@ -7,6 +7,7 @@ import {
 } from "./ephemerisAdapter";
 import { applyAyanamsaOffset, resolveAyanamsaMode } from './ayanamsas';
 import { calculateSunTimes } from './sunTimes';
+import { normalizeDegrees } from './angles';
 
 const PLANET_NAMES: Record<number, string> = {
   [SE_SUN]: "Sun",
@@ -27,7 +28,7 @@ const PLANET_IDS = [
 ];
 
 function normalize(value: number): number {
-  return ((value % 360) + 360) % 360;
+  return normalizeDegrees(value);
 }
 
 function resolveNodeMode(value: string): 'mean' | 'true' {

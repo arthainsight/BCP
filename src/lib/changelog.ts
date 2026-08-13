@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v2.18',
+    date: '2026-08-13',
+    title: 'Boundary rounding fix, and tests for dṛṣṭi, VDS and panchāṅga',
+    changes: [
+      'Fixed a rounding fault that placed a body sitting exactly on a sign or nakṣatra boundary in the previous one. The same fault was corrected for the divisional charts in v2.14; it turned out to be present in fifteen further places, including the ephemeris itself, where it affected the sign of every planet.',
+      'Affected: planet signs and houses, Panchāṅga nakṣatra and pada, Yoginī and Aṣṭottarī Daśā, Nāḍī aṁśa, sahams, and the nakṣatra labels on both chart styles. All longitude normalization now goes through one shared, tested helper.',
+      'Added tests for Dṛṣṭi, which had none: the special graha aspects, and the mutual symmetry of Jaimini rāśi dṛṣṭi across all twelve signs.',
+      'Added tests for Vimśottarī Original (VDS), covering both nakṣatra cycles, the pakṣa and horā selection rule, and the birth balance. Cross-checked against the standard Vimśottarī implementation.',
+      'Added tests for Panchāṅga: tithi, nakṣatra and pada, yoga, karaṇa, vāra and horā.',
+      'Removed the unused BNN module and the superseded Chara Daśā implementation with its two orphaned panels.',
+      'Updated the application version to v2.18.',
+    ],
+  },
+  {
     version: 'v2.17',
     date: '2026-08-13',
     title: 'Divisional charts, and tests for the core calculations',

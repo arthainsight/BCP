@@ -1,5 +1,6 @@
 import type { ChartData } from '@/types';
 import { calcSolarTimes } from './panchang/solar';
+import { normalizeDegrees } from './angles';
 
 const SIGN_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 const SIGN_LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'];
@@ -30,7 +31,7 @@ type Context = {
 
 type Definition = { key: string; name: string; meaning: string; formula: string; calculate: (ctx: Context, values: Record<string, number>) => number };
 
-function norm360(value: number): number { return ((value % 360) + 360) % 360; }
+function norm360(value: number): number { return normalizeDegrees(value); }
 
 // Tajika correction: add 30° when C is not encountered while moving zodiacally
 // from B toward A. The comparison is made by rāśi, as in the classical method.

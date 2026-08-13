@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
+import { normalizeDegrees } from '@/lib/angles';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -308,7 +309,7 @@ export default function NorthIndianChart({
                     const k = karakaByPlanet[planet.name];
                     if (k) parts.push(k);
                   }
-                  if (showNakshatra) parts.push(getNakAbbr(((planet.longitude + nakshatraAdjust) % 360 + 360) % 360));
+                  if (showNakshatra) parts.push(getNakAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
                 }
                 const label = parts.join(' ');
                 const fontSize = planet.isTransit ? '12' : (parts.length > 1 ? '13' : '16');

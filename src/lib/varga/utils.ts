@@ -1,10 +1,6 @@
-// Only wrap when actually out of range. The naive ((x % 360) + 360) % 360 form
-// pushes an already-valid longitude up to ~363 and back, losing the low mantissa
-// bits: 10/3 came back as 3.33333333333331, one ULP-cluster below the exact
-// 3°20′ navamsa boundary, which floors every varga part index one step early.
+import { normalizeDegrees } from '../angles';
 export function normalizeLongitude(longitude: number): number {
-  const wrapped = longitude % 360;
-  return wrapped < 0 ? wrapped + 360 : wrapped;
+  return normalizeDegrees(longitude);
 }
 
 export function getSignIndex(longitude: number): number {

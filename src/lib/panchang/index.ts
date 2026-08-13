@@ -1,5 +1,6 @@
 import { ChartData } from '@/types';
 import { calcSolarTimes } from './solar';
+import { normalizeDegrees } from '../angles';
 
 const NAKSHATRA_NAMES = [
   'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
@@ -40,7 +41,7 @@ const HORA_CYCLE = ['Sun', 'Venus', 'Mercury', 'Moon', 'Saturn', 'Jupiter', 'Mar
 const DAY_TO_HORA_START = [0, 3, 6, 2, 5, 1, 4];
 
 function norm360(deg: number): number {
-  return ((deg % 360) + 360) % 360;
+  return normalizeDegrees(deg);
 }
 
 function degToDMS(deg: number): string {
@@ -137,7 +138,7 @@ export function calculatePanchang(
 
   // ── Nakshatra ─────────────────────────────────────────────────────────
   const nkWidth      = 360 / 27;
-  const moonNakLon   = ((moon.longitude + nakshatraAdjust) % 360 + 360) % 360;
+  const moonNakLon   = normalizeDegrees(moon.longitude + nakshatraAdjust);
   const nkIdx        = Math.floor(moonNakLon / nkWidth);
   const nakshatra    = NAKSHATRA_NAMES[nkIdx] ?? '?';
   const nkFrac       = (moonNakLon % nkWidth) / nkWidth;

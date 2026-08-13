@@ -1,3 +1,4 @@
+import { normalizeDegrees } from './angles';
 export const AYANAMSA_OPTIONS = [
   { value: 'tropical', label: 'Tropical (Sāyana)', shortLabel: 'Tropical', mode: null, group: 'Zodiac' },
   { value: 'custom-lahiri', label: 'Custom Lahiri (± adjustment)', shortLabel: 'Custom Lahiri', mode: 1, group: 'Custom' },
@@ -45,5 +46,5 @@ export function normalizeAyanamsaOffset(value: number): number {
 export function applyAyanamsaOffset(baseAyanamsa: number, mode: AyanamsaMode, offsetDegrees: number): number {
   if (mode !== 'custom-lahiri') return baseAyanamsa;
   const adjusted = baseAyanamsa + normalizeAyanamsaOffset(offsetDegrees);
-  return ((adjusted % 360) + 360) % 360;
+  return normalizeDegrees(adjusted);
 }
