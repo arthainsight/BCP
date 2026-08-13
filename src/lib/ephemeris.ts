@@ -3,9 +3,10 @@ import {
   SE_SUN, SE_MOON, SE_MARS, SE_MERCURY, SE_JUPITER, SE_VENUS, SE_SATURN,
   SE_URANUS, SE_NEPTUNE, SE_PLUTO,
   SE_MEAN_NODE, SE_TRUE_NODE,
-  sweJulday, sweGetAyanamsa, sweCalcUt, sweGetAscendant,
+  sweJulday, sweGetAyanamsa, sweCalcUt, sweCalcUtEquatorial, sweGetAscendant,
 } from "./ephemerisAdapter";
 import { applyAyanamsaOffset, resolveAyanamsaMode } from './ayanamsas';
+import { calculateSunTimes } from './sunTimes';
 
 const PLANET_NAMES: Record<number, string> = {
   [SE_SUN]: "Sun",
@@ -50,6 +51,9 @@ async function calculatePlanetPositions(jd: number, ayanamsa: number, useTropica
 
   for (const planetId of PLANET_IDS) {
     const { longitude: tropicalLon, speed } = await sweCalcUt(jd, planetId);
+    // Declination is frame-independent: the ayanamsa shifts ecliptic longitude
+    // but not the planet's actual position relative to the celestial equator.
+    const { declination } = await sweCalcUtEquatorial(jd, planetId);
     const lon = useTropical ? normalize(tropicalLon) : normalize(tropicalLon - ayanamsa);
     planets.push({
       name: PLANET_NAMES[planetId],
@@ -58,6 +62,8 @@ async function calculatePlanetPositions(jd: number, ayanamsa: number, useTropica
       degree: lon % 30,
       house: 0,
       isRetrograde: speed < 0,
+      speed,
+      declination,
     });
   }
 
@@ -69,10 +75,10 @@ async function addNodes(planets: PlanetData[], jd: number, ayanamsa: number, use
   const { longitude: rahuTropical, speed: nodeSpeed } = await sweCalcUt(jd, nodeId);
   const rahuLon = useTropical ? normalize(rahuTropical) : normalize(rahuTropical - ayanamsa);
   const nodeRetro = nodeSpeed < 0;
-  planets.push({ name: "Rahu", longitude: rahuLon, sign: Math.floor(rahuLon / 30) + 1, degree: rahuLon % 30, house: 0, isRetrograde: nodeRetro });
+  planets.push({ name: "Rahu", longitude: rahuLon, sign: Math.floor(rahuLon / 30) + 1, degree: rahuLon % 30, house: 0, isRetrograde: nodeRetro, speed: nodeSpeed });
 
   const ketuLon = normalize(rahuLon + 180);
-  planets.push({ name: "Ketu", longitude: ketuLon, sign: Math.floor(ketuLon / 30) + 1, degree: ketuLon % 30, house: 0, isRetrograde: nodeRetro });
+  planets.push({ name: "Ketu", longitude: ketuLon, sign: Math.floor(ketuLon / 30) + 1, degree: ketuLon % 30, house: 0, isRetrograde: nodeRetro, speed: nodeSpeed });
 }
 
 export async function calculateChart(
@@ -130,6 +136,14 @@ export async function calculateChart(
     { ...sl(normalize(ascLon + dayFraction * 1440)), name: 'ViL' },
   ];
 
+  // Sunrise and sunset for the birth date, needed by Natonnata and Tribhāga
+  // Bala. Computed from local midnight so the returned hours are local.
+  const utcAtLocalMidnight = toUtcParts(year, month, day, 0, 0, 0, timezoneOffset);
+  const jdLocalMidnight = await sweJulday(
+    utcAtLocalMidnight.year, utcAtLocalMidnight.month, utcAtLocalMidnight.day, utcAtLocalMidnight.totalHours,
+  );
+  const sunTimes = await calculateSunTimes(jdLocalMidnight, lat, lng);
+
   const pad = (n: number) => String(n).padStart(2, '0');
   const debug: DebugInfo = {
     julianDay: jd,
@@ -142,6 +156,9 @@ export async function calculateChart(
     inputDateTime: `${year}-${pad(month)}-${pad(day)} ${pad(hour)}:${pad(minute)}:${pad(second)}`,
     latitude: lat,
     longitude: lng,
+    sunriseLocalHours: sunTimes.sunrise,
+    sunsetLocalHours: sunTimes.sunset,
+    nextSunriseLocalHours: sunTimes.nextSunrise,
   };
 
   return {

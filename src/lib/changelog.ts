@@ -1,5 +1,20 @@
 export const CHANGELOG = [
   {
+    version: 'v2.16',
+    date: '2026-08-13',
+    title: 'Ṣaḍbala: five approximations replaced with real calculations',
+    changes: [
+      'Cheṣṭā Bala now uses the classical eightfold motion (vakra, vikala, mandatara, manda, sama, chara, aticharā) measured from the planet’s real daily speed, which the ephemeris was already computing and discarding. The Sun takes its Ayana Bala and the Moon its Pakṣa Bala, per BPHS.',
+      'Ayana Bala now uses each planet’s true declination from the ephemeris instead of a sine approximation, with the Sun’s value doubled as the classical rule requires.',
+      'Natonnata Bala now uses real sunrise and sunset and varies continuously with distance from true local noon, instead of awarding all or nothing from the Sun’s house.',
+      'Tribhāga Bala now divides the actual day and night into thirds instead of assuming a 6am sunrise.',
+      'Saptavargaja Bala now recognizes Mūlatrikoṇa as its own dignity worth 45 virūpa, separate from an ordinary own sign at 30.',
+      'Added sunrise and sunset calculation, validated against published times for Delhi, Helsinki, Quito and a polar case at Tromsø.',
+      'Ṣaḍbala values will change for every chart. Only Dig and Dṛg Bala remain marked as approximations.',
+      'Updated the application version to v2.16.',
+    ],
+  },
+  {
     version: 'v2.15',
     date: '2026-08-13',
     title: 'Render loop fix and settings that survive reload',
