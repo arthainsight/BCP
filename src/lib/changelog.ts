@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v2.15',
+    date: '2026-08-13',
+    title: 'Render loop fix and settings that survive reload',
+    changes: [
+      'Fixed a render loop that fired "Maximum update depth exceeded" in the browser console on every calculated chart.',
+      'Fixed settings restore: Dasha toggles beyond BCP/Vimśottarī and all Chara and Rāśi method options previously reverted to defaults on every reload.',
+      'Moved the Ṣaḍbala engine from the Varga Matrix page component into a typed calculation module with the other engines.',
+      'Removed the Varāhamihira Aṣṭakavarga selector: after the v2.14 correction it differed from Parāśara by a single unverified row, so the choice was misleading. It returns if the Brihat Jataka table is verified against a primary source.',
+      'Removed 22 never-implemented placeholder Dasha systems from the internal registry.',
+      'Updated the application version to v2.15.',
+    ],
+  },
+  {
     version: 'v2.14',
     date: '2026-08-13',
     title: 'Ashtakavarga correction and a working test suite',

@@ -124,33 +124,9 @@ CONTRIBUTOR_ORDER.forEach((contributor, contributorIndex) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// Varahamihira variant. It shares the Parashara totals; only the Venus/Mars
-// contributor row differs, so per-house distribution can diverge while the
-// totals stay put.
-// ---------------------------------------------------------------------------
-const variantChart = chartWithOffsets(4, [0, 1, 2, 3, 4, 5, 6]);
-const parashara = buildAshtakavarga(variantChart, 'parashara');
-const varahamihira = buildAshtakavarga(variantChart, 'varahamihira');
-
-assert.deepEqual(
-  parashara.bav.map((row) => row.total),
-  Object.values(CLASSICAL_BAV_TOTALS),
-);
-assert.deepEqual(
-  varahamihira.bav.map((row) => row.total),
-  Object.values(CLASSICAL_BAV_TOTALS),
-);
-assert.equal(parashara.sav.total, CLASSICAL_SAV_TOTAL);
-assert.equal(varahamihira.sav.total, CLASSICAL_SAV_TOTAL);
-
-const parasharaVenus = parashara.bav.find((row) => row.planet === 'Venus')!;
-const varahamihiraVenus = varahamihira.bav.find((row) => row.planet === 'Venus')!;
-assert.notDeepEqual(
-  parasharaVenus.houses,
-  varahamihiraVenus.houses,
-  'the Venus/Mars row must actually change the Venus BAV distribution',
-);
+// The Varahamihira system variant was removed in v2.15 — after the v2.14
+// Parashara fix it differed by one unverified row, so the selector implied a
+// sourced Brihat Jataka table that did not exist. See ashtakavarga.ts.
 
 // ---------------------------------------------------------------------------
 // House-to-sign mapping

@@ -196,45 +196,22 @@ export interface RasiDashaOptions {
   sthiraMethod: 'brahma-pvr';
 }
 
+// v2.15 removed the 20+ never-implemented placeholder keys (tara, brahma,
+// drig, …) that only ever existed in this type and in the registry's
+// "Other systems" group. Stored settings containing them still parse:
+// migrateDashaSettings keeps the keys below and drops the rest.
 export interface DashaSettings {
   dashas: {
     bcp: boolean;
     vimshottari: boolean;
     vds: boolean;
-    tara?: boolean;
-    yogini?: boolean;
     chara?: boolean;
-    charaBeta?: boolean;
-    narayana?: boolean;
-    kaalChakra?: boolean;
-    kalaChakra?: boolean;
+    yogini?: boolean;
     ashtottari?: boolean;
-    shodashottari?: boolean;
-    dwadashottari?: boolean;
-    panchottari?: boolean;
-    shatabdika?: boolean;
-    chaturashitiSama?: boolean;
-    dwisaptatiSama?: boolean;
-    shashtihayani?: boolean;
-    shattrimshaSama?: boolean;
-    sudarshanaChakra?: boolean;
+    kalaChakra?: boolean;
+    narayana?: boolean;
     moola?: boolean;
-    naisargika?: boolean;
-    pinda?: boolean;
-    mandooka?: boolean;
-    manduka?: boolean;
     sthira?: boolean;
-    brahma?: boolean;
-    drig?: boolean;
-    trikona?: boolean;
-    kendradi?: boolean;
-    karaka?: boolean;
-    lagnaKendradiRashi?: boolean;
-    atmakarakaKendradiRashi?: boolean;
-    shoola?: boolean;
-    muktashtaka?: boolean;
-    gangadhar?: boolean;
-    yogaVimshottari?: boolean;
   };
   charaOptions?: CharaOptions;
   rasiOptions?: RasiDashaOptions;
@@ -245,40 +222,13 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     bcp: true,
     vimshottari: true,
     vds: false,
-    tara: false,
-    yogini: true,
     chara: false,
-    charaBeta: false,
-    narayana: true,
-    kaalChakra: false,
-    kalaChakra: false,
+    yogini: true,
     ashtottari: true,
-    shodashottari: false,
-    dwadashottari: false,
-    panchottari: false,
-    shatabdika: false,
-    chaturashitiSama: false,
-    dwisaptatiSama: false,
-    shashtihayani: false,
-    shattrimshaSama: false,
-    sudarshanaChakra: false,
+    kalaChakra: false,
+    narayana: true,
     moola: true,
-    naisargika: false,
-    pinda: false,
-    mandooka: false,
-    manduka: false,
     sthira: true,
-    brahma: false,
-    drig: false,
-    trikona: false,
-    kendradi: false,
-    karaka: false,
-    lagnaKendradiRashi: false,
-    atmakarakaKendradiRashi: false,
-    shoola: false,
-    muktashtaka: false,
-    gangadhar: false,
-    yogaVimshottari: false,
   },
   charaOptions: {
     start: 'lagna',
