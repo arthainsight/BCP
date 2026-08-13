@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { ChartData } from '@/types';
 import { buildAshtakavarga, mapAshtakavargaHousesToSigns } from '@/lib/ashtakavarga';
-import type { AshtakavargaPlanet, AshtakavargaSystem } from '@/lib/ashtakavarga';
+import type { AshtakavargaPlanet } from '@/lib/ashtakavarga';
 
 const SIGNS = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const PLANET_ABBR: Record<string, string> = {
@@ -72,9 +72,8 @@ function NorthIndianAvChart({ houses, ascendantSign, label, isSav }: { houses: n
 export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
   const ascendantSign = chart.ascendant.sign;
   const [view, setView] = useState<'table' | 'north'>('table');
-  const [system, setSystem] = useState<AshtakavargaSystem>('parashara');
   const [selection, setSelection] = useState<AvSelection>('SAV');
-  const { bav, sav } = buildAshtakavarga(chart, system);
+  const { bav, sav } = buildAshtakavarga(chart);
   const selectedRow = selection === 'SAV' ? null : bav.find((row) => row.planet === selection);
   const selectedHouses = selectedRow?.houses ?? sav.houses;
 
@@ -91,11 +90,6 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
         </div>
       </div>
 
-      <div className="mb-3 flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
-        <button type="button" onClick={() => setSystem('parashara')} className={`flex-1 rounded px-2.5 py-1.5 text-[10px] font-mono ${system === 'parashara' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>Parāśara</button>
-        <button type="button" onClick={() => setSystem('varahamihira')} className={`flex-1 rounded px-2.5 py-1.5 text-[10px] font-mono ${system === 'varahamihira' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>Varāhamihira</button>
-      </div>
-
       {view === 'north' ? (
         <div>
           <label className="mb-3 block text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
@@ -105,7 +99,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
               {bav.map((row) => <option key={row.planet} value={row.planet}>{row.planet} BAV</option>)}
             </select>
           </label>
-          <NorthIndianAvChart houses={selectedHouses} ascendantSign={ascendantSign} label={`${system === 'parashara' ? 'Parāśara' : 'Varāhamihira'} · ${selection === 'SAV' ? 'SAV' : `${selection} BAV`}`} isSav={selection === 'SAV'} />
+          <NorthIndianAvChart houses={selectedHouses} ascendantSign={ascendantSign} label={`Parāśara · ${selection === 'SAV' ? 'SAV' : `${selection} BAV`}`} isSav={selection === 'SAV'} />
         </div>
       ) : (
       <div className="overflow-x-auto">

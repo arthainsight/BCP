@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
-// These come from the real engine in src/pages/VargaMatrix.jsx. An earlier
-// version of this file declared its own local copies of the constants and its
-// own reimplementations of the percentage/status helpers, so every assertion
+// These come from the real engine in src/lib/shadbala.ts. An earlier version of
+// this file declared its own local copies of the constants and its own
+// reimplementations of the percentage/status helpers, so every assertion
 // compared a literal against itself and the suite could not fail no matter what
 // the application computed.
 import {
-  NAISARGIKA_BALA_VIRUPA as NAISARGIKA_RAW,
-  SHADBALA_REQUIRED_VIRUPA as REQUIRED_RAW,
-  DIG_BALA_MAX_HOUSE as DIG_HOUSE_RAW,
+  NAISARGIKA_BALA_VIRUPA,
+  SHADBALA_REQUIRED_VIRUPA,
+  DIG_BALA_MAX_HOUSE,
   buildShadbalaRows,
   calculateDigBalaVirupa,
   calculateUcchaBalaVirupa,
@@ -16,45 +16,37 @@ import {
   calculateDrekkanaBalaVirupa,
   calculateSaptavargajaBalaVirupa,
   virupaToRupa,
-} from '@/pages/VargaMatrix';
+  type ShadbalaPlanet,
+  type ShadbalaRow,
+} from './shadbala';
 
-// VargaMatrix.jsx is untyped JavaScript, so these arrive as fixed object
-// literals. Widen them to keyed lookups for the loops below.
-const NAISARGIKA_BALA_VIRUPA: Record<string, number> = NAISARGIKA_RAW;
-const SHADBALA_REQUIRED_VIRUPA: Record<string, number> = REQUIRED_RAW;
-const DIG_BALA_MAX_HOUSE: Record<string, number> = DIG_HOUSE_RAW;
-
-const PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'] as const;
+const PLANETS: readonly ShadbalaPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 
 // ---------------------------------------------------------------------------
 // Golden vectors — fixed classical virupa values (BPHS)
 // ---------------------------------------------------------------------------
-const CLASSICAL_NAISARGIKA: Record<string, number> = {
+const CLASSICAL_NAISARGIKA: Record<ShadbalaPlanet, number> = {
   Sun: 60, Moon: 51, Venus: 43, Jupiter: 34, Mercury: 26, Mars: 17, Saturn: 9,
 };
 
-const CLASSICAL_REQUIRED: Record<string, number> = {
+const CLASSICAL_REQUIRED: Record<ShadbalaPlanet, number> = {
   Sun: 390, Moon: 360, Mars: 300, Mercury: 420, Jupiter: 390, Venus: 330, Saturn: 300,
 };
 
 // Dig Bala is full in the direction each planet owns: Sun and Mars in the 10th,
 // Moon and Venus in the 4th, Jupiter and Mercury in the 1st, Saturn in the 7th.
-const CLASSICAL_DIG_HOUSE: Record<string, number> = {
+const CLASSICAL_DIG_HOUSE: Record<ShadbalaPlanet, number> = {
   Sun: 10, Mars: 10, Moon: 4, Venus: 4, Jupiter: 1, Mercury: 1, Saturn: 7,
 };
 
-for (const [planet, virupa] of Object.entries(CLASSICAL_NAISARGIKA)) {
-  assert.equal(NAISARGIKA_BALA_VIRUPA[planet], virupa, `Naisargika Bala for ${planet}`);
-}
-for (const [planet, virupa] of Object.entries(CLASSICAL_REQUIRED)) {
-  assert.equal(SHADBALA_REQUIRED_VIRUPA[planet], virupa, `required Shadbala for ${planet}`);
-}
-for (const [planet, house] of Object.entries(CLASSICAL_DIG_HOUSE)) {
-  assert.equal(DIG_BALA_MAX_HOUSE[planet], house, `Dig Bala best house for ${planet}`);
+for (const planet of PLANETS) {
+  assert.equal(NAISARGIKA_BALA_VIRUPA[planet], CLASSICAL_NAISARGIKA[planet], `Naisargika Bala for ${planet}`);
+  assert.equal(SHADBALA_REQUIRED_VIRUPA[planet], CLASSICAL_REQUIRED[planet], `required Shadbala for ${planet}`);
+  assert.equal(DIG_BALA_MAX_HOUSE[planet], CLASSICAL_DIG_HOUSE[planet], `Dig Bala best house for ${planet}`);
 }
 
 // Naisargika strictly descends Sun → Moon → Venus → Jupiter → Mercury → Mars → Saturn.
-const NAISARGIKA_ORDER = ['Sun', 'Moon', 'Venus', 'Jupiter', 'Mercury', 'Mars', 'Saturn'];
+const NAISARGIKA_ORDER: readonly ShadbalaPlanet[] = ['Sun', 'Moon', 'Venus', 'Jupiter', 'Mercury', 'Mars', 'Saturn'];
 for (let index = 0; index < NAISARGIKA_ORDER.length - 1; index += 1) {
   const stronger = NAISARGIKA_BALA_VIRUPA[NAISARGIKA_ORDER[index]];
   const weaker = NAISARGIKA_BALA_VIRUPA[NAISARGIKA_ORDER[index + 1]];
@@ -120,21 +112,7 @@ const chart = {
   ],
 };
 
-type ShadbalaRow = {
-  planet: string;
-  sthanaBreakdown: { uccha: number; saptavargaja: number; ojhayugma: number; kendradi: number; drekkana: number; total: number };
-  kalaBreakdown: { natonnata: number; paksha: number; tribhaaga: number; varsheshadi: number; ayana: number; total: number };
-  digVirupa: number;
-  cheshtaVirupa: number;
-  naisargikaVirupa: number;
-  drikVirupa: number;
-  totalVirupa: number;
-  total: number;
-  requiredVirupa: number;
-  ratio: number;
-};
-
-const rows = buildShadbalaRows(chart) as ShadbalaRow[];
+const rows: ShadbalaRow[] = buildShadbalaRows(chart);
 assert.equal(rows.length, 7, 'every classical planet must produce a row');
 
 for (const row of rows) {

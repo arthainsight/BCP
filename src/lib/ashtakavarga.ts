@@ -1,5 +1,4 @@
 export type AshtakavargaPlanet = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
-export type AshtakavargaSystem = 'parashara' | 'varahamihira';
 export type AvMode = 'off' | 'sav' | AshtakavargaPlanet;
 
 export type AshtakavargaChartPlanet = {
@@ -121,21 +120,13 @@ const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = 
   },
 };
 
-// Brihat Jataka IX differs from the Parashara table in the entries below.
-// Unchanged contributor rows intentionally inherit the Parashara values.
-//
-// NOTE: this table previously also overrode the Sun, Mars and Mercury Ascendant
-// rows. Those were in fact the correct *Parashara* values, and PARASHARA_AV had
-// been left holding a placeholder copy of the generic [1,2,4,7,8,9,10,11] row —
-// which inflated the Parashara totals to 50/42/55 (SAV 343) instead of the
-// classical 48/39/54 (SAV 337). The values now live in PARASHARA_AV where they
-// belong. Only the Venus/Mars row below is a genuine Brihat Jataka variant that
-// has been checked; the rest of the Varahamihira table still needs an
-// independent source review before this system can be treated as certified.
-const VARAHAMIHIRA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = {
-  ...PARASHARA_AV,
-  Venus: { ...PARASHARA_AV.Venus, Mars: [3, 5, 6, 9, 11, 12] },
-};
+// A "Varahamihira" system variant was removed in v2.15. After the v2.14
+// Parashara fix its table differed from PARASHARA_AV by a single row — Venus
+// from Mars as [3,5,6,9,11,12] instead of [3,4,6,9,11,12] — which made the UI
+// selector suggest a fully independent Brihat Jataka table that did not exist.
+// Re-add the system only once the complete Brihat Jataka IX table has been
+// verified against a primary source; the one-row delta above is preserved here
+// so that work does not start from zero.
 
 function getPlanet(chart: AshtakavargaChartLike, name: string): AshtakavargaChartPlanet | undefined {
   return chart.planets?.find((planet) => planet.name === name);
@@ -172,13 +163,9 @@ function getSavStrength(bindu: number): AshtakavargaOverlayCell['strength'] {
   return 'low';
 }
 
-export function buildBhinnaAshtakavarga(
-  chart: AshtakavargaChartLike,
-  system: AshtakavargaSystem = 'parashara',
-): BhinnaAshtakavargaRow[] {
-  const ruleSet = system === 'varahamihira' ? VARAHAMIHIRA_AV : PARASHARA_AV;
+export function buildBhinnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAshtakavargaRow[] {
   return PLANETS.map((planetName) => {
-    const rules = ruleSet[planetName];
+    const rules = PARASHARA_AV[planetName];
 
     const houses = Array.from({ length: 12 }, (_, index) => {
       const house = index + 1;
@@ -236,11 +223,8 @@ export function buildSarvaAshtakavarga(chart: AshtakavargaChartLike, bav: Bhinna
   };
 }
 
-export function buildAshtakavarga(
-  chart: AshtakavargaChartLike,
-  system: AshtakavargaSystem = 'parashara',
-): AshtakavargaResult {
-  const bav = buildBhinnaAshtakavarga(chart, system);
+export function buildAshtakavarga(chart: AshtakavargaChartLike): AshtakavargaResult {
+  const bav = buildBhinnaAshtakavarga(chart);
   const sav = buildSarvaAshtakavarga(chart, bav);
   return { bav, sav };
 }

@@ -1,7 +1,7 @@
 import { DashaSettings } from '@/types';
 
 export type DashaKey = keyof DashaSettings['dashas'];
-export type DashaStatus = 'implemented' | 'beta' | 'placeholder';
+export type DashaStatus = 'implemented' | 'beta';
 export type DashaRendererKey = 'vimshottari' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'narayana' | 'moola' | 'sthira';
 
 export type DashaRegistryItem = {
@@ -25,30 +25,12 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'beta', renderer: 'narayana', kind: 'rasi' },
   { key: 'moola', label: 'Mūla Daśā', group: 'Core', status: 'beta', renderer: 'moola', kind: 'rasi' },
   { key: 'sthira', label: 'Sthira Daśā', group: 'Core', status: 'beta', renderer: 'sthira', kind: 'rasi' },
-
-  { key: 'tara', label: 'Tara Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'shodashottari', label: 'Shodashottari Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'dwadashottari', label: 'Dwadashottari Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'panchottari', label: 'Panchottari Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'shatabdika', label: 'Shatabdika Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'chaturashitiSama', label: 'Chaturashiti Sama Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'dwisaptatiSama', label: 'Dwisaptati Sama Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'shashtihayani', label: 'Shashtihayani Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'shattrimshaSama', label: 'Shattrimsha Sama Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'charaBeta', label: 'Chara Dasha old beta', group: 'Other systems', status: 'placeholder' },
-  { key: 'sudarshanaChakra', label: 'Sudarshana Chakra Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'naisargika', label: 'Naisargika Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'pinda', label: 'Pinda Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'mandooka', label: 'Mandooka Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'manduka', label: 'Manduka Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'brahma', label: 'Brahma Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'drig', label: 'Drig Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'trikona', label: 'Trikona Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'kendradi', label: 'Kendradi Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'karaka', label: 'Karaka Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'lagnaKendradiRashi', label: 'Lagna Kendradi Rashi Dasha', group: 'Other systems', status: 'placeholder' },
-  { key: 'atmakarakaKendradiRashi', label: 'Atmakaraka Kendradi Rashi Dasha', group: 'Other systems', status: 'placeholder' },
 ];
+// v2.15: dropped the 22 "Other systems" placeholder rows (Tara, Brahma, Drig,
+// Shodashottari, …). They had no renderer, rendered nowhere (SettingsPanel
+// filters group === 'Core'), and each one cost a dead key in DashaSettings.
+// When a new system is actually implemented, add its row here with a renderer
+// and its key to DashaSettings in the same commit.
 
 export const DASHA_GROUPS = DASHA_REGISTRY.reduce<{ title: string; items: DashaRegistryItem[] }[]>((groups, item) => {
   const group = groups.find((g) => g.title === item.group);
