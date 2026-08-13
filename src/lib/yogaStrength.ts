@@ -17,7 +17,10 @@ export interface YogaStrengthBreakdown {
 }
 
 export interface YogaStrengthResult extends YogaResult {
+  /** Summed score across every participating planet. */
   strength: number | null;
+  /** The same score divided by the participating planets. Drives classification. */
+  strengthPerPlanet: number | null;
   classification: StrengthClassification | null;
   breakdown: YogaStrengthBreakdown | null;
 }
@@ -189,7 +192,7 @@ export function classify(strength: number): StrengthClassification {
 export function qualifyYogas(yogas: YogaResult[], planets: PlanetData[]): YogaStrengthResult[] {
   return yogas.map(yoga => {
     if (yoga.status !== 'active') {
-      return { ...yoga, strength: null, classification: null, breakdown: null };
+      return { ...yoga, strength: null, strengthPerPlanet: null, classification: null, breakdown: null };
     }
 
     if (yoga.planetsInvolved.length === 0) {
@@ -197,7 +200,7 @@ export function qualifyYogas(yogas: YogaResult[], planets: PlanetData[]): YogaSt
         rasi: 0, dignity: 0, navamsa: 0, vargottama: 0,
         conjunctions: 0, aspects: 0, kartari: 0,
       };
-      return { ...yoga, strength: 0, classification: 'Moderate', breakdown: zeros };
+      return { ...yoga, strength: 0, strengthPerPlanet: 0, classification: 'Moderate', breakdown: zeros };
     }
 
     const totals: YogaStrengthBreakdown = {
@@ -219,6 +222,25 @@ export function qualifyYogas(yogas: YogaResult[], planets: PlanetData[]): YogaSt
     }
 
     const strength = Object.values(totals).reduce((a, b) => a + b, 0);
-    return { ...yoga, strength, classification: classify(strength), breakdown: totals };
+
+    // Classify on the average per participating planet, not on the sum.
+    //
+    // The sum legitimately scales with how many planets a yoga names, but the
+    // classify() thresholds are absolute, so before this the same per-planet
+    // quality read very differently depending on the yoga's size: a
+    // three-planet Raja yoga of ordinary planets landed at -540 and read
+    // "Weak" while a two-planet Vosi at +60 read "Moderate". Averaging makes
+    // the label mean "these planets are individually strong", which is
+    // comparable across yogas. The displayed strength stays the sum.
+    const scored = yoga.planetsInvolved.filter((name) => planets.some((planet) => planet.name === name)).length;
+    const strengthPerPlanet = scored > 0 ? strength / scored : 0;
+
+    return {
+      ...yoga,
+      strength,
+      strengthPerPlanet,
+      classification: classify(strengthPerPlanet),
+      breakdown: totals,
+    };
   });
 }

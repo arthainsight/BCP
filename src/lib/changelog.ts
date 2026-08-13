@@ -1,5 +1,21 @@
 export const CHANGELOG = [
   {
+    version: 'v2.17',
+    date: '2026-08-13',
+    title: 'Divisional charts, and tests for the core calculations',
+    changes: [
+      'Added divisional chart drawing: every varga from D1 to D60 can now be viewed as a North or South Indian chart, not just as a table. Houses are counted from the divisional ascendant and degrees show the position within the divisional sign.',
+      'The Varga tab now has a Charts view alongside the existing Matrix & Bala table.',
+      'Added tests for Vimśottarī, which had none: the nine lords summing to exactly 120 years, the 27 nakṣatra to lord mapping, birth balance and sub-period proportionality at every level.',
+      'Added tests for the BCP progression, the application namesake, which also had none.',
+      'Added coverage for D40, D45 and D60 across all twelve signs and every part; the varga fixtures previously stopped at D30 even though all three feed Viṁśopaka Bala.',
+      'Added tests for the yoga engine, which had none across its 818 lines.',
+      'Yoga strength is now classified per participating planet rather than on the raw sum, so the label no longer depends on how many planets a yoga happens to name. A three-planet yoga of ordinary planets previously read Weak while a two-planet yoga of the same quality read Moderate. The displayed number is unchanged.',
+      'Cleared the remaining lint errors and made lint a blocking check, so new violations now fail the build.',
+      'Updated the application version to v2.17.',
+    ],
+  },
+  {
     version: 'v2.16',
     date: '2026-08-13',
     title: 'Ṣaḍbala: five approximations replaced with real calculations',

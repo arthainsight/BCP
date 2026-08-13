@@ -86,7 +86,7 @@ export default function HouseAnalysisDisplay({ yearHouse, monthHouse, planets, a
 
       {yearHouse === monthHouse && (
         <div className="bg-zinc-100 dark:bg-zinc-800 border border-purple-300 dark:border-purple-900 rounded p-3">
-          <span className="font-mono text-xs text-purple-600 dark:text-purple-400">// double activation — </span>
+          <span className="font-mono text-xs text-purple-600 dark:text-purple-400">{'// double activation — '}</span>
           <span className="text-zinc-500 dark:text-zinc-400 text-xs font-mono">H{yearHouse} is active for both year and month.</span>
         </div>
       )}

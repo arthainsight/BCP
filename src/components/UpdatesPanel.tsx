@@ -11,6 +11,8 @@ export default function UpdatesPanel() {
   const [hasNew, setHasNew] = useState(false);
 
   useEffect(() => {
+    // localStorage is unreadable during the server render, so this genuinely has to happen after mount. It runs once with an empty dependency list and cannot cascade.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHasNew(localStorage.getItem(STORAGE_KEY) !== APP_VERSION);
   }, []);
 

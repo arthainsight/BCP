@@ -75,7 +75,7 @@ function durationFor(sign: number, planets: PlanetData[], options: CharaOptions)
   if (!lordSign) {
     return { lord, lordSign, direction: direction === 1 ? 'forward' : 'reverse', countMode: options.durationCount, baseCount: 12, exaltDebilAdjustment: 0, years: 12 };
   }
-  let baseCount = sign === lordSign ? 12 : countSigns(sign, lordSign, direction, options.durationCount);
+  const baseCount = sign === lordSign ? 12 : countSigns(sign, lordSign, direction, options.durationCount);
   let exaltDebilAdjustment = 0;
   if (options.exaltDebilAdjust) {
     if (lordSign === EXALT[lord]) exaltDebilAdjustment = 1;
