@@ -9,6 +9,15 @@ assert.equal(csvResult.events[0].category, 'work');
 assert.equal(csvResult.rejected, 1);
 
 const jsonResult = parseDashaEventImport(JSON.stringify({ version: 1, events: [{ name: 'Move', date: '2026-02-03', category: 'home', varga: 'D1', dashas: [] }] }), 'events.json');
-assert.deepEqual(jsonResult.events[0], { name: 'Move', date: '2026-02-03', category: 'home', varga: 'D1' });
+// v2.10 added notes, tags and significance to every imported event.
+assert.deepEqual(jsonResult.events[0], {
+  name: 'Move',
+  date: '2026-02-03',
+  category: 'home',
+  varga: 'D1',
+  notes: '',
+  tags: [],
+  significance: 3,
+});
 assert.throws(() => parseDashaEventImport('{', 'broken.json'));
 console.log('Dasha event import tests passed');
