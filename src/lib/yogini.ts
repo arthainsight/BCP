@@ -1,4 +1,5 @@
 import { buildDashaSubPeriods, buildDashaTimeline, type NakshatraDashaEntry } from './nakshatraDasha';
+import { normalizeDegrees } from './angles';
 
 export const YOGINI_DEFINITIONS = [
   { key: 'mangala', name: 'Mangala', lord: 'Moon', years: 1 },
@@ -14,7 +15,7 @@ export const YOGINI_DEFINITIONS = [
 const NAKSHATRA_SPAN = 360 / 27;
 
 export function calculateYogini(moonLongitude: number, birthDate: Date) {
-  const longitude = ((moonLongitude % 360) + 360) % 360;
+  const longitude = normalizeDegrees(moonLongitude);
   const nakshatraIndex = Math.floor(longitude / NAKSHATRA_SPAN);
   const fractionRemaining = 1 - (longitude - nakshatraIndex * NAKSHATRA_SPAN) / NAKSHATRA_SPAN;
   const startIndex = (nakshatraIndex + 3) % YOGINI_DEFINITIONS.length;

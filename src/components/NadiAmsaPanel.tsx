@@ -3,11 +3,12 @@
 import type { ChartData } from '@/types';
 import { SIGN_ABBR } from '@/lib/varga';
 import { calculateDevaKeralamNadiAmsa, calculateSiddharNadiAmsa } from '@/lib/nadiAmsa';
+import { normalizeDegrees } from '@/lib/angles';
 
 const BODY_ORDER = ['Lagna', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 
 function formatLongitude(longitude: number): string {
-  const normalized = ((longitude % 360) + 360) % 360;
+  const normalized = normalizeDegrees(longitude);
   const signIndex = Math.floor(normalized / 30);
   const degrees = normalized % 30;
   const wholeDegrees = Math.floor(degrees);

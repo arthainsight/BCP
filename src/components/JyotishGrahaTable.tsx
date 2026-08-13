@@ -1,5 +1,6 @@
 import { ChartData, PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
+import { normalizeDegrees } from '@/lib/angles';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 
@@ -58,7 +59,7 @@ function tableFormatDeg(deg: number, precision: DegreePrecision): string {
 }
 
 function normalizeLongitude(longitude: number): number {
-  return ((longitude % 360) + 360) % 360;
+  return normalizeDegrees(longitude);
 }
 
 function getNakshatra(longitude: number) {
@@ -125,7 +126,7 @@ export default function JyotishGrahaTable({
   showNakshatra = true,
   nakshatraAdjust = 0,
 }: Props) {
-  const adjLon = (lon: number) => ((lon + nakshatraAdjust) % 360 + 360) % 360;
+  const adjLon = (lon: number) => normalizeDegrees(lon + nakshatraAdjust);
   const ascNak = getNakshatra(adjLon(chart.ascendant.longitude));
   const ascD108 = getD108(chart.ascendant.longitude);
 

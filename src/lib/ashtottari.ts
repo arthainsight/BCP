@@ -1,4 +1,5 @@
 import { buildDashaSubPeriods, buildDashaTimeline, type NakshatraDashaEntry } from './nakshatraDasha';
+import { normalizeDegrees } from './angles';
 
 type EligibilityPlanet = { name: string; sign: number };
 const SIGN_LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'] as const;
@@ -88,7 +89,7 @@ function buildSegments(): Segment[] {
 const SEGMENTS = buildSegments();
 
 export function calculateAshtottari(moonLongitude: number, birthDate: Date) {
-  const longitude = ((moonLongitude % 360) + 360) % 360;
+  const longitude = normalizeDegrees(moonLongitude);
   const segment = SEGMENTS.find(item => longitude >= item.start && longitude < item.end) ?? SEGMENTS.at(-1)!;
   const fractionRemaining = (segment.end - longitude) / (segment.end - segment.start);
   const definition = ASHTOTTARI_DEFINITIONS[segment.lordIndex];

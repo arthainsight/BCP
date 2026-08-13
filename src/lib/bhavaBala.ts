@@ -1,3 +1,4 @@
+import { normalizeDegrees } from './angles';
 export type OccupantDetail = {
   name: string;
   nature: 'benefic' | 'malefic';
@@ -73,9 +74,6 @@ const SHADBALA_REQUIRED_VIRUPA: Record<string, number> = {
   Sun: 390, Moon: 360, Mars: 300, Mercury: 420, Jupiter: 390, Venus: 330, Saturn: 300,
 };
 
-function normalizeDegrees(value: number): number {
-  return ((value % 360) + 360) % 360;
-}
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));

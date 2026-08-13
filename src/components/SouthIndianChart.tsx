@@ -6,6 +6,7 @@ import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
+import { normalizeDegrees } from '@/lib/angles';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -103,7 +104,7 @@ function getPlanetLabel(
       const karaka = karakaByPlanet[planet.name];
       if (karaka) parts.push(karaka);
     }
-    if (showNakshatra) parts.push(getNakAbbr(((planet.longitude + nakshatraAdjust) % 360 + 360) % 360));
+    if (showNakshatra) parts.push(getNakAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
   }
   return parts.join(' ');
 }

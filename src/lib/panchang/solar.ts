@@ -1,3 +1,4 @@
+import { normalizeDegrees } from '../angles';
 // NOAA/USNO sunrise-sunset algorithm (after Meeus, Astronomical Algorithms)
 // Returns times as decimal UTC hours. Polar day/night yields null.
 
@@ -13,7 +14,7 @@ function julianDay(year: number, month: number, day: number): number {
 
 function geomMeanLongSun(t: number): number {
   const l = 280.46646 + t * (36000.76983 + t * 0.0003032);
-  return ((l % 360) + 360) % 360;
+  return normalizeDegrees(l);
 }
 
 function geomMeanAnomalySun(t: number): number {
