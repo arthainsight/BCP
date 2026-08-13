@@ -15,6 +15,8 @@ import {
   calculateOjhayugmaBalaVirupa,
   calculateDrekkanaBalaVirupa,
   calculateSaptavargajaBalaVirupa,
+  classifyMotion,
+  getDignity,
   virupaToRupa,
   type ShadbalaPlanet,
   type ShadbalaRow,
@@ -100,15 +102,21 @@ assert.equal(virupaToRupa(60), 1, 'sixty virupa make one rupa');
 // ---------------------------------------------------------------------------
 const chart = {
   ascendant: { sign: 1, longitude: 5 },
-  debug: { inputDateTime: '2000-01-01 12:00:00', ayanamsa: 23.85 },
+  debug: {
+    inputDateTime: '2000-01-01 12:00:00',
+    ayanamsa: 23.85,
+    sunriseLocalHours: 6.5,
+    sunsetLocalHours: 18.25,
+    nextSunriseLocalHours: 30.5,
+  },
   planets: [
-    { name: 'Sun', sign: 10, house: 10, degree: 15, longitude: 285 },
-    { name: 'Moon', sign: 4, house: 4, degree: 3, longitude: 93 },
-    { name: 'Mars', sign: 8, house: 8, degree: 22, longitude: 232 },
-    { name: 'Mercury', sign: 9, house: 9, degree: 8, longitude: 248 },
-    { name: 'Jupiter', sign: 2, house: 2, degree: 27, longitude: 57 },
-    { name: 'Venus', sign: 11, house: 11, degree: 12, longitude: 312 },
-    { name: 'Saturn', sign: 2, house: 2, degree: 4, longitude: 34 },
+    { name: 'Sun', sign: 10, house: 10, degree: 15, longitude: 285, speed: 1.019, declination: -23.0 },
+    { name: 'Moon', sign: 4, house: 4, degree: 3, longitude: 93, speed: 12.4, declination: 18.2 },
+    { name: 'Mars', sign: 8, house: 8, degree: 22, longitude: 232, speed: 0.72, declination: -14.5 },
+    { name: 'Mercury', sign: 9, house: 9, degree: 8, longitude: 248, speed: -0.5, declination: -20.1, isRetrograde: true },
+    { name: 'Jupiter', sign: 2, house: 2, degree: 27, longitude: 57, speed: 0.04, declination: 16.4 },
+    { name: 'Venus', sign: 11, house: 11, degree: 12, longitude: 312, speed: 1.21, declination: -19.8 },
+    { name: 'Saturn', sign: 2, house: 2, degree: 4, longitude: 34, speed: 0.001, declination: 11.9 },
   ],
 };
 
@@ -157,5 +165,164 @@ const sun = rows.find((row) => row.planet === 'Sun')!;
 const moon = rows.find((row) => row.planet === 'Moon')!;
 assert.equal(sun.digVirupa, 60, 'Sun in the 10th has full Dig Bala');
 assert.equal(moon.digVirupa, 60, 'Moon in the 4th has full Dig Bala');
+
+// ---------------------------------------------------------------------------
+// Ayana Bala — true declination (v2.16)
+// ---------------------------------------------------------------------------
+const declinationChart = (planet: string, declination: number) => ({
+  ascendant: { sign: 1 },
+  debug: { inputDateTime: '2000-01-01 12:00:00' },
+  planets: [{ name: planet, sign: 1, house: 1, degree: 0, longitude: 0, declination, speed: 1 }],
+});
+const ayanaOf = (planet: string, declination: number) =>
+  buildShadbalaRows(declinationChart(planet, declination))[0].kalaBreakdown.ayana;
+
+// North-strong planets peak at +24° and bottom out at −24°; the Sun is doubled.
+for (const planet of ['Mars', 'Jupiter', 'Venus'] as const) {
+  assert.ok(Math.abs(ayanaOf(planet, 24) - 60) < 1e-9, `${planet} Ayana peaks at +24 deg`);
+  assert.ok(Math.abs(ayanaOf(planet, -24)) < 1e-9, `${planet} Ayana bottoms at -24 deg`);
+  assert.ok(Math.abs(ayanaOf(planet, 0) - 30) < 1e-9, `${planet} Ayana is half on the equator`);
+}
+assert.ok(Math.abs(ayanaOf('Sun', 24) - 120) < 1e-9, 'the Sun Ayana Bala is doubled');
+assert.ok(Math.abs(ayanaOf('Sun', 0) - 60) < 1e-9, 'the doubled Sun is 60 on the equator');
+
+// South-strong planets are the mirror image.
+for (const planet of ['Moon', 'Saturn'] as const) {
+  assert.ok(Math.abs(ayanaOf(planet, -24) - 60) < 1e-9, `${planet} Ayana peaks at -24 deg`);
+  assert.ok(Math.abs(ayanaOf(planet, 24)) < 1e-9, `${planet} Ayana bottoms at +24 deg`);
+}
+
+// Mercury is strong in either direction, so it is symmetric and never below 30.
+assert.ok(Math.abs(ayanaOf('Mercury', 20) - ayanaOf('Mercury', -20)) < 1e-9, 'Mercury Ayana is symmetric');
+assert.ok(ayanaOf('Mercury', 0) >= 30, 'Mercury Ayana never drops below half');
+
+// Declinations beyond the traditional obliquity stay inside the scale.
+assert.ok(ayanaOf('Moon', -28.5) <= 60, 'a lunar extreme declination stays clamped');
+assert.ok(ayanaOf('Moon', 28.5) >= 0, 'the opposite extreme stays non-negative');
+
+// ---------------------------------------------------------------------------
+// Cheshta Bala — eightfold motion from real speed (v2.16)
+// ---------------------------------------------------------------------------
+const MEAN_MOTION: Record<string, number> = { Mars: 0.5240, Mercury: 0.9856, Jupiter: 0.0831, Venus: 0.9856, Saturn: 0.0335 };
+
+for (const planet of ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'] as const) {
+  const mean = MEAN_MOTION[planet];
+  assert.equal(classifyMotion(planet, -mean), 'vakra', `${planet} retrograde is vakra`);
+  assert.equal(classifyMotion(planet, mean * 0.001), 'vikala', `${planet} stationary is vikala`);
+  assert.equal(classifyMotion(planet, mean * 0.1), 'mandatara', `${planet} far slow is mandatara`);
+  assert.equal(classifyMotion(planet, mean * 0.5), 'manda', `${planet} slow is manda`);
+  assert.equal(classifyMotion(planet, mean), 'sama', `${planet} at mean is sama`);
+  assert.equal(classifyMotion(planet, mean * 1.3), 'chara', `${planet} fast is chara`);
+  assert.equal(classifyMotion(planet, mean * 3), 'atichara', `${planet} far fast is atichara`);
+}
+
+// Retrograde must outscore every direct state — the classical point of Vakra.
+const cheshtaOf = (planet: string, speed: number) => {
+  const built = buildShadbalaRows({
+    ascendant: { sign: 1 },
+    debug: { inputDateTime: '2000-01-01 12:00:00' },
+    planets: [{ name: planet, sign: 1, house: 1, degree: 0, longitude: 0, speed, declination: 0 }],
+  });
+  return built[0].cheshtaVirupa;
+};
+assert.equal(cheshtaOf('Saturn', -0.02), 60, 'retrograde Saturn scores the full 60');
+assert.ok(cheshtaOf('Saturn', -0.02) > cheshtaOf('Saturn', 0.0335 * 3), 'vakra beats atichara');
+
+// The luminaries borrow from Kala rather than from motion.
+const sunRow = rows.find((row) => row.planet === 'Sun')!;
+const moonRow = rows.find((row) => row.planet === 'Moon')!;
+assert.ok(Math.abs(sunRow.cheshtaVirupa - sunRow.kalaBreakdown.ayana) < 1e-9, 'Sun Cheshta equals its Ayana Bala');
+assert.ok(Math.abs(moonRow.cheshtaVirupa - moonRow.kalaBreakdown.paksha) < 1e-9, 'Moon Cheshta equals its Paksha Bala');
+
+// ---------------------------------------------------------------------------
+// Natonnata and Tribhaga — real sunrise and sunset (v2.16)
+// ---------------------------------------------------------------------------
+// Sunrise 06:30, sunset 18:15, so local noon falls at 12:22:30.
+const atHour = (hour: number) => {
+  const h = Math.floor(hour), m = Math.floor((hour - h) * 60), s = Math.round((((hour - h) * 60) - m) * 60);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return {
+    ascendant: { sign: 1 },
+    debug: {
+      inputDateTime: `2000-01-01 ${pad(h)}:${pad(m)}:${pad(s)}`,
+      sunriseLocalHours: 6.5,
+      sunsetLocalHours: 18.25,
+      nextSunriseLocalHours: 30.5,
+    },
+    planets: [
+      { name: 'Sun', sign: 1, house: 1, degree: 0, longitude: 0, speed: 1, declination: 0 },
+      { name: 'Moon', sign: 1, house: 1, degree: 0, longitude: 0, speed: 13, declination: 0 },
+      { name: 'Mars', sign: 1, house: 1, degree: 0, longitude: 0, speed: 0.5, declination: 0 },
+      { name: 'Mercury', sign: 1, house: 1, degree: 0, longitude: 0, speed: 1, declination: 0 },
+      { name: 'Jupiter', sign: 1, house: 1, degree: 0, longitude: 0, speed: 0.08, declination: 0 },
+      { name: 'Venus', sign: 1, house: 1, degree: 0, longitude: 0, speed: 1, declination: 0 },
+      { name: 'Saturn', sign: 1, house: 1, degree: 0, longitude: 0, speed: 0.03, declination: 0 },
+    ],
+  };
+};
+const kalaAt = (hour: number, planet: string) =>
+  buildShadbalaRows(atHour(hour)).find((row) => row.planet === planet)!.kalaBreakdown;
+
+const solarNoon = (6.5 + 18.25) / 2;
+
+// Day-strong and night-strong planets are complements that always sum to 60.
+for (const hour of [0, 3, 6.5, 9, solarNoon, 15, 18.25, 21, 23.5]) {
+  const day = kalaAt(hour, 'Sun').natonnata;
+  const night = kalaAt(hour, 'Saturn').natonnata;
+  assert.ok(Math.abs(day + night - 60) < 1e-9, `Natonnata pair must sum to 60 at ${hour} h`);
+  assert.ok(day >= 0 && day <= 60, `Natonnata stays in range at ${hour} h`);
+}
+assert.ok(Math.abs(kalaAt(solarNoon, 'Sun').natonnata - 60) < 1e-9, 'a day planet is full at true local noon');
+assert.ok(Math.abs(kalaAt(solarNoon, 'Saturn').natonnata) < 1e-9, 'a night planet is empty at true local noon');
+assert.equal(kalaAt(9, 'Mercury').natonnata, 60, 'Mercury always takes the full Natonnata');
+// True noon is 12:22:30, not clock noon — the old 6am/6pm assumption would tie these.
+assert.ok(
+  kalaAt(solarNoon, 'Sun').natonnata > kalaAt(12, 'Sun').natonnata,
+  'strength peaks at true local noon rather than at 12:00',
+);
+
+// Tribhaga: the day splits sunrise→sunset in three, the night sunset→sunrise.
+const dayThird = (18.25 - 6.5) / 3;
+assert.equal(kalaAt(6.5 + dayThird * 0.5, 'Sun').tribhagaLord, 'Mercury', 'first day third is Mercury');
+assert.equal(kalaAt(6.5 + dayThird * 1.5, 'Sun').tribhagaLord, 'Sun', 'second day third is the Sun');
+assert.equal(kalaAt(6.5 + dayThird * 2.5, 'Sun').tribhagaLord, 'Saturn', 'third day third is Saturn');
+
+const nightThird = (30.5 - 18.25) / 3;
+assert.equal(kalaAt(18.25 + nightThird * 0.5, 'Sun').tribhagaLord, 'Moon', 'first night third is the Moon');
+assert.equal(kalaAt(18.25 + nightThird * 1.5, 'Sun').tribhagaLord, 'Venus', 'second night third is Venus');
+// Before sunrise belongs to the previous night, whose last third is Mars.
+assert.equal(kalaAt(5.5, 'Sun').tribhagaLord, 'Mars', 'the small hours fall in the last night third');
+
+// The ruling planet takes 60, others nothing, and Jupiter always takes 60.
+const middayLord = kalaAt(6.5 + dayThird * 1.5, 'Sun');
+assert.equal(middayLord.tribhaaga, 60, 'the ruling planet of the third scores 60');
+assert.equal(kalaAt(6.5 + dayThird * 1.5, 'Venus').tribhaaga, 0, 'a non-ruling planet scores nothing');
+assert.equal(kalaAt(6.5 + dayThird * 1.5, 'Jupiter').tribhaaga, 60, 'Jupiter is strong in every third');
+
+// Charts saved before sunrise data existed must still calculate.
+const legacy = buildShadbalaRows({
+  ascendant: { sign: 1 },
+  debug: { inputDateTime: '2000-01-01 09:00:00' },
+  planets: [{ name: 'Saturn', sign: 1, house: 1, degree: 0, longitude: 0, speed: 0.03, declination: 5 }],
+});
+assert.equal(legacy.length, 1, 'a chart without sun times still produces rows');
+assert.ok(Number.isFinite(legacy[0].totalVirupa), 'and a finite total');
+
+// ---------------------------------------------------------------------------
+// Moolatrikona (v2.16)
+// ---------------------------------------------------------------------------
+// Leo 0–20° is the Sun's Moolatrikona; the rest of Leo is merely its own sign.
+assert.equal(getDignity('Sun', 4, 10), 'moolatrikona', 'Leo 10 deg is the Sun Moolatrikona');
+assert.equal(getDignity('Sun', 4, 25), 'own', 'Leo 25 deg is only own sign');
+assert.equal(getDignity('Sun', 4), 'own', 'without a degree it falls back to own');
+// Moon: exalted below Taurus 4°, Moolatrikona above it.
+assert.equal(getDignity('Moon', 1, 2), 'exalted', 'Taurus 2 deg is lunar exaltation');
+assert.equal(getDignity('Moon', 1, 10), 'moolatrikona', 'Taurus 10 deg is lunar Moolatrikona');
+// Debilitation still wins over everything.
+assert.equal(getDignity('Sun', 6, 5), 'debilitated', 'Libra keeps the Sun debilitated');
+// Moolatrikona must actually raise Saptavargaja above a plain own sign.
+const moolatrikonaScore = calculateSaptavargajaBalaVirupa('Sun', 4 * 30 + 10);
+const ownScore = calculateSaptavargajaBalaVirupa('Sun', 4 * 30 + 25);
+assert.ok(moolatrikonaScore > ownScore, 'Moolatrikona outscores a plain own sign');
 
 console.log('Shadbala tests passed');

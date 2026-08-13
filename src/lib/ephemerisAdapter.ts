@@ -7,8 +7,16 @@ interface SweInstance {
   get_ayanamsa_ut(jd: number): number;
   calc_ut(jd: number, planet: number, flags: number): Float64Array;
   houses(jd: number, lat: number, lng: number, hsys: string): { ascmc: Record<number, number> };
+  /** Greenwich mean sidereal time in hours. */
+  sidtime(jd: number): number;
   readonly SE_SIDM_LAHIRI: number;
 }
+
+// swe_calc_ut flag combinations. SEFLG_SWIEPH(2) selects the Swiss ephemeris,
+// SEFLG_SPEED(256) populates the speed slots, SEFLG_EQUATORIAL(2048) switches
+// the output from ecliptic longitude/latitude to right ascension/declination.
+const FLAGS_ECLIPTIC = 2 | 256;
+const FLAGS_EQUATORIAL = 2 | 256 | 2048;
 
 let _swe: SweInstance | null = null;
 let _initPromise: Promise<void> | null = null;
@@ -66,9 +74,18 @@ export function sweGetAyanamsa(jd: number, ayanamsa: AyanamsaMode = 'lahiri'): P
 }
 
 export async function sweCalcUt(jd: number, planetId: number): Promise<{ longitude: number; speed: number }> {
-  // 258 = SEFLG_SWIEPH(2) | SEFLG_SPEED(256) — speed is only populated when SEFLG_SPEED is set
-  const r = (await getSwe()).calc_ut(jd, planetId, 258);
+  const r = (await getSwe()).calc_ut(jd, planetId, FLAGS_ECLIPTIC);
   return { longitude: r[0], speed: r[3] };
+}
+
+/** Right ascension and declination in degrees. */
+export async function sweCalcUtEquatorial(jd: number, planetId: number): Promise<{ rightAscension: number; declination: number }> {
+  const r = (await getSwe()).calc_ut(jd, planetId, FLAGS_EQUATORIAL);
+  return { rightAscension: r[0], declination: r[1] };
+}
+
+export async function sweSidtime(jd: number): Promise<number> {
+  return (await getSwe()).sidtime(jd);
 }
 
 export async function sweGetAscendant(jd: number, lat: number, lng: number): Promise<number> {

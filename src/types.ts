@@ -30,6 +30,10 @@ export interface PlanetData {
   degree: number;
   house: number;
   isRetrograde?: boolean;
+  /** Apparent geocentric motion in degrees per day; negative when retrograde. Drives Cheṣṭā Bala. */
+  speed?: number;
+  /** True equatorial declination in degrees. Drives Ayana Bala. */
+  declination?: number;
 }
 
 export interface DebugInfo {
@@ -43,6 +47,15 @@ export interface DebugInfo {
   inputDateTime: string;
   latitude: number;
   longitude: number;
+  /**
+   * Sunrise and sunset for the birth date, and the following sunrise, as local
+   * decimal hours measured from midnight of the birth date. The next sunrise
+   * exceeds 24 and can be undefined in polar cases where the Sun never crosses
+   * the horizon. Natonnata and Tribhāga Bala read these.
+   */
+  sunriseLocalHours?: number;
+  sunsetLocalHours?: number;
+  nextSunriseLocalHours?: number;
 }
 
 export interface SpecialLagna {
