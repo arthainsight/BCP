@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useHydrated } from '@/lib/useHydrated';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
@@ -179,9 +180,8 @@ export default function NorthIndianChart({
   legendLayers,
 }: Props) {
   const { resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const isDark = !mounted || resolvedTheme === 'dark';
+  const hydrated = useHydrated();
+  const isDark = !hydrated || resolvedTheme === 'dark';
 
   const visiblePlanets = filterOuterPlanets(planets, showOuterPlanets);
   const visibleTransitPlanets = filterOuterPlanets(transitPlanets, showOuterPlanets);

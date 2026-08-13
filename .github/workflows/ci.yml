@@ -24,12 +24,8 @@ jobs:
 
       - run: npm ci
 
-      # Non-blocking for now: main carries 11 pre-existing errors, mostly
-      # react-hooks/set-state-in-effect. Flip this to a hard gate once they are
-      # cleared, so new violations start failing the build.
       - name: Lint
         run: npm run lint
-        continue-on-error: true
 
       - name: Typecheck
         run: npm run typecheck

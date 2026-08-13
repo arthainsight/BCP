@@ -4,7 +4,7 @@
 // Expected output verified against classical Parashara rules.
 // Cross-check D5 against JHora before trusting in production.
 
-import { calculateVargaMatrix, calcD9, SIGN_ABBR } from './index';
+import { calculateVargaMatrix, calcD9, calcD40, calcD45, calcD60, SIGN_ABBR } from './index';
 
 // ---------------------------------------------------------------------------
 // D9 sanity checks (movable / fixed / dual sign coverage)
@@ -56,6 +56,9 @@ const MATRIX_EXPECTED: Record<string, string> = {
   D24: 'Cp', // even, start=Cn(3), part 18 → (3+18)%12=9
   D27: 'Pi', // Earth, start=Cn(3), part 20 → (3+20)%12=11
   D30: 'Cp', // even, 23° in Saturn bracket (20–25°) → Capricorn
+  D40: 'Ar', // even, start=Li(6), part=⌊23/0.75⌋=30 → (6+30)%12=0
+  D45: 'Ge', // Fixed, start=Le(4), part=⌊23/(30/45)⌋=34 → (4+34)%12=2
+  D60: 'Pi', // same sign start=Ta(1), part=⌊23/0.5⌋=46 → (1+46)%12=11
 };
 
 function runMatrixTests(): { pass: number; fail: number } {
@@ -72,13 +75,88 @@ function runMatrixTests(): { pass: number; fail: number } {
 }
 
 // ---------------------------------------------------------------------------
+// D40, D45 and D60 — the high divisions.
+//
+// These had no coverage at all until now, even though all three carry weight in
+// the Ṣoḍaśavarga scheme and therefore feed Viṁśopaka Bala.
+// ---------------------------------------------------------------------------
+const HIGH_DIVISIONS: Array<{
+  key: string;
+  calc: (longitude: number) => number;
+  parts: number;
+  // The sign each part sequence starts from, given a natal sign index.
+  startSign: (signIndex: number) => number;
+}> = [
+  // Odd signs start from Aries, even signs from Libra.
+  { key: 'D40', calc: calcD40, parts: 40, startSign: (s) => (s % 2 === 0 ? 0 : 6) },
+  // Movable from Aries, fixed from Leo, dual from Sagittarius.
+  { key: 'D45', calc: calcD45, parts: 45, startSign: (s) => (s % 3 === 0 ? 0 : s % 3 === 1 ? 4 : 8) },
+  // Always from the natal sign itself.
+  { key: 'D60', calc: calcD60, parts: 60, startSign: (s) => s },
+];
+
+function runHighDivisionTests(): { pass: number; fail: number } {
+  let pass = 0, fail = 0;
+  console.log('\n--- D40 / D45 / D60 ---');
+
+  for (const { key, calc, parts, startSign } of HIGH_DIVISIONS) {
+    const partSize = 30 / parts;
+    let divisionOk = true;
+
+    for (let signIndex = 0; signIndex < 12; signIndex += 1) {
+      const expectedStart = startSign(signIndex);
+
+      // The first part of every sign lands on that sign's start.
+      if (calc(signIndex * 30) !== expectedStart) {
+        console.log(`✗ ${key}: sign ${signIndex} part 0 should start at ${SIGN_ABBR[expectedStart]}, got ${SIGN_ABBR[calc(signIndex * 30)]}`);
+        divisionOk = false;
+      }
+
+      for (let part = 0; part < parts; part += 1) {
+        // Sample the middle of each part so no boundary rounding is involved.
+        const longitude = signIndex * 30 + (part + 0.5) * partSize;
+        const actual = calc(longitude);
+        const expected = (expectedStart + part) % 12;
+        if (actual !== expected) {
+          console.log(`✗ ${key}: sign ${signIndex} part ${part} expected ${SIGN_ABBR[expected]}, got ${SIGN_ABBR[actual]}`);
+          divisionOk = false;
+        }
+        if (!Number.isInteger(actual) || actual < 0 || actual > 11) {
+          console.log(`✗ ${key}: sign ${signIndex} part ${part} produced an out-of-range index ${actual}`);
+          divisionOk = false;
+        }
+      }
+
+      // The very top of the sign must stay inside the last part, not spill over.
+      const lastPart = calc(signIndex * 30 + 30 - 1e-9);
+      if (lastPart !== (expectedStart + parts - 1) % 12) {
+        console.log(`✗ ${key}: sign ${signIndex} top of sign should be part ${parts - 1}, got ${SIGN_ABBR[lastPart]}`);
+        divisionOk = false;
+      }
+    }
+
+    console.log(`${divisionOk ? '✓' : '✗'} ${key}: all 12 signs × ${parts} parts follow the documented rule`);
+    divisionOk ? pass++ : fail++;
+  }
+
+  // D60 walks all twelve signs five times over one sign, so every sign appears.
+  const d60Signs = new Set(Array.from({ length: 60 }, (_, part) => calcD60((part + 0.5) * 0.5)));
+  const d60Ok = d60Signs.size === 12;
+  console.log(`${d60Ok ? '✓' : '✗'} D60 covers all twelve signs within one rāśi, got ${d60Signs.size}`);
+  d60Ok ? pass++ : fail++;
+
+  return { pass, fail };
+}
+
+// ---------------------------------------------------------------------------
 // Runner
 // ---------------------------------------------------------------------------
 function main() {
   const d9 = runD9Tests();
   const mat = runMatrixTests();
-  const total = d9.pass + mat.pass;
-  const failed = d9.fail + mat.fail;
+  const high = runHighDivisionTests();
+  const total = d9.pass + mat.pass + high.pass;
+  const failed = d9.fail + mat.fail + high.fail;
   console.log(`\n${total} passed, ${failed} failed`);
   if (failed > 0) process.exit(1);
 }

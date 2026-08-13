@@ -47,6 +47,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
   useEffect(() => {
     const id = getActiveSavedChartId();
+    // localStorage is unreadable during the server render, so this genuinely has to happen after mount. It runs once with an empty dependency list and cannot cascade.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveId(id);
     if (id && onActiveNameChange) {
       const chart = loadSavedCharts().find((c) => c.id === id);

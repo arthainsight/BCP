@@ -5,6 +5,7 @@ import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } fr
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import VargaMatrix from '@/pages/VargaMatrix';
+import VargaChartPanel from './VargaChartPanel';
 import DrishtiPanel from '@/components/DrishtiPanel';
 import AshtakavargaPanel from '@/components/AshtakavargaPanel';
 import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
@@ -78,6 +79,7 @@ export default function ChartSection({
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti'>('chart');
+  const [vargaView, setVargaView] = useState<'chart' | 'table'>('chart');
 
   const bnnHouses = useMemo(() => {
     // Use parent-provided houses when available (keeps age override in sync with chart highlights)
@@ -103,9 +105,15 @@ export default function ChartSection({
     };
   }, [chart, birthDatetime, targetDate, bnnMajorHouseFromParent, bnnMinorHouseFromParent]);
 
-  useEffect(() => {
+  // Follow the setting when it changes, while still allowing the local toggle
+  // and the bcp:set-chart-style event to override it in between. Adjusting
+  // state during render is React's documented alternative to mirroring a prop
+  // into state from an effect, and it avoids the extra render pass.
+  const [lastStyleSetting, setLastStyleSetting] = useState(chartDisplaySettings.chartStyle);
+  if (chartDisplaySettings.chartStyle !== lastStyleSetting) {
+    setLastStyleSetting(chartDisplaySettings.chartStyle);
     setChartStyle(chartDisplaySettings.chartStyle ?? 'north');
-  }, [chartDisplaySettings.chartStyle]);
+  }
 
   useEffect(() => {
     const handleChartStyleChange = (event: Event) => {
@@ -160,7 +168,35 @@ export default function ChartSection({
       </div>
 
       {view === 'varga' ? (
-        <div className="min-w-0 overflow-x-auto"><VargaMatrix chart={chart} /></div>
+        <div className="min-w-0 space-y-4">
+          <div className="inline-flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50">
+            <button
+              type="button"
+              onClick={() => setVargaView('chart')}
+              className={`rounded-md px-2.5 py-1 text-[10px] font-mono ${vargaView === 'chart' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'}`}
+            >
+              Charts
+            </button>
+            <button
+              type="button"
+              onClick={() => setVargaView('table')}
+              className={`rounded-md px-2.5 py-1 text-[10px] font-mono ${vargaView === 'table' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'}`}
+            >
+              Matrix &amp; Bala
+            </button>
+          </div>
+          {vargaView === 'chart' ? (
+            <VargaChartPanel
+              chart={chart}
+              chartStyle={chartStyle}
+              chartDisplaySettings={chartDisplaySettings}
+              karakaByPlanet={karakaByPlanet}
+              nakshatraAdjust={nakshatraAdjust}
+            />
+          ) : (
+            <div className="overflow-x-auto"><VargaMatrix chart={chart} /></div>
+          )}
+        </div>
       ) : view === 'nadi' ? (
         <div className="min-w-0 overflow-x-auto"><NadiAmsaPanel chart={chart} /></div>
       ) : view === 'ashtakavarga' ? (

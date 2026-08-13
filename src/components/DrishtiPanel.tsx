@@ -1,6 +1,6 @@
 'use client';
 
-import { PlanetData } from '@/types';
+import { ChartData, PlanetData } from '@/types';
 import { buildDrishti, calculateGrahaDrishti, calculateRashiDrishti } from '@/lib/drishti';
 import CollapsibleCard from './CollapsibleCard';
 
@@ -19,7 +19,7 @@ function code(name: string): string {
 }
 
 interface Props {
-  chart?: any;
+  chart?: ChartData;
   planets?: PlanetData[];
   ascendantSign?: number;
   showGrahaDrishti?: boolean;

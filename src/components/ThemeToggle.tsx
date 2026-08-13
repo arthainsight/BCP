@@ -2,13 +2,13 @@
 
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import { useHydrated } from '@/lib/useHydrated';
 
 export default function ThemeToggle({ className, icon }: { className?: string; icon?: boolean }) {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const hydrated = useHydrated();
 
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
+  if (!hydrated) return null;
 
   const isDark = resolvedTheme === 'dark';
 

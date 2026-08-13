@@ -338,10 +338,16 @@ export default function Home() {
     const birthDate = parseDateTime(birthDatetime);
     const target = parseTargetDateString(targetDate);
     if (!birthDate || !target) return;
+    // The functional update reads the previous result without depending on it, so
+    // this cannot re-trigger itself. The rule flags the shape, not the behaviour.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBcpResult((previous) => (previous ? calculateBcp(birthDate, target) : previous));
   }, [targetDate, birthDatetime, useManualBcpMode]);
 
   // Restore persisted display/calculation/dasha settings on mount
+  // localStorage cannot be read during the server render, so restoring has to
+  // happen after mount. This runs once with an empty dependency list.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     try {
       const ds = localStorage.getItem('chartDisplaySettings');
@@ -360,6 +366,7 @@ export default function Home() {
     } catch {}
     setSettingsRestored(true);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
 
   // --- Handlers ---
