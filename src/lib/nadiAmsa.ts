@@ -35,8 +35,8 @@ export interface DevaKeralamNadiAmsa {
   offsetDegrees: number;
 }
 
-export interface SiddharNadiAmsa {
-  system: 'siddhar';
+export interface NadiD150 {
+  system: 'nadi-d150';
   rawDivision: number;
   signIndex: number;
   half: NadiHalf;
@@ -96,23 +96,46 @@ export function calculateDevaKeralamNadiAmsa(longitude: number): DevaKeralamNadi
 }
 
 /**
- * Siddhar/Tamil equal D150 harmonic placement.
+ * Nāḍī D150 placement by rāśi modality.
  *
- * The 150th harmonic maps each 0°12′ division cyclically into a D150 sign.
- * Every division is also exposed as its 0°06′ purva/para half (300 half-nadis).
+ * Movable: count forward from the natal sign.
+ * Fixed: count backward from the fifth sign from the natal sign.
+ * Dual divisions 1–75: count forward from the next sign.
+ * Dual divisions 76–150: count forward from the eleventh sign using n − 76.
+ *
+ * Counting is inclusive, matching the supplied worked examples. Every 0°12′
+ * division is also exposed as its 0°06′ pūrva/para half (300 half-nāḍīs).
  */
-export function calculateSiddharNadiAmsa(longitude: number): SiddharNadiAmsa {
+export function calculateNadiD150(longitude: number): NadiD150 {
   const normalized = normalizeLongitude(longitude);
   const signIndex = getSignIndex(normalized);
   const degrees = getDegreesInSign(normalized);
   const rawDivision = getRawDivision(normalized);
+  const nadiNumber = rawDivision + 1;
   const offsetDegrees = degrees - rawDivision * NADI_AMSA_SIZE_DEGREES;
   const halfIndex = offsetDegrees + 1e-10 >= NADI_HALF_SIZE_DEGREES ? 1 : 0;
 
+  let d150SignIndex: number;
+  if (isFixedSign(signIndex)) {
+    const fifthSign = (signIndex + 4) % 12;
+    d150SignIndex = (fifthSign - (nadiNumber - 1) + 1200) % 12;
+  } else if (isDualSign(signIndex)) {
+    if (nadiNumber <= 75) {
+      const nextSign = (signIndex + 1) % 12;
+      d150SignIndex = (nextSign + (nadiNumber - 1)) % 12;
+    } else {
+      const eleventhSign = (signIndex + 10) % 12;
+      const count = nadiNumber - 76;
+      d150SignIndex = (eleventhSign + (count - 1) + 1200) % 12;
+    }
+  } else {
+    d150SignIndex = (signIndex + (nadiNumber - 1)) % 12;
+  }
+
   return {
-    system: 'siddhar',
-    rawDivision: rawDivision + 1,
-    signIndex: (signIndex * NADI_AMSA_COUNT + rawDivision) % 12,
+    system: 'nadi-d150',
+    rawDivision: nadiNumber,
+    signIndex: d150SignIndex,
     half: halfIndex === 0 ? 'purva' : 'para',
     halfNumber: rawDivision * 2 + halfIndex + 1,
     offsetDegrees,
