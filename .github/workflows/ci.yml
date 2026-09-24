@@ -10,7 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Node 22: the test runner's glob patterns for --test need 22.6+.
   check:
     name: Lint, typecheck and test
     runs-on: ubuntu-latest
@@ -19,7 +18,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 22.x
+          node-version: 24.x
           cache: npm
 
       - run: npm ci
@@ -33,7 +32,7 @@ jobs:
       - name: Test
         run: npm test
 
-  # Node 20 matches the engines field, and therefore the Vercel build.
+  # Node 24 matches the engines field, and therefore the Vercel build.
   build:
     name: Production build
     runs-on: ubuntu-latest
@@ -42,7 +41,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 20.x
+          node-version: 24.x
           cache: npm
 
       - run: npm ci
