@@ -104,10 +104,20 @@ function previousDate(year: number, month: number, day: number) {
   return { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1, day: date.getUTCDate() };
 }
 
-function ghatiAtBirth(chart: ChartData, birthDatetime: string): number | null {
+export function ghatiAtBirth(chart: ChartData, birthDatetime: string): number | null {
   const birth = parseBirth(birthDatetime);
   const debug = chart.debug;
   if (!birth || !debug) return null;
+  // Ghaṭīs run from sunrise; a birth before it counts from the previous one.
+  // Prefer the ephemeris times the chart carries (local hours).
+  if (debug.sunriseLocalHours !== undefined) {
+    let elapsed = birth.hours - debug.sunriseLocalHours;
+    if (elapsed < 0) {
+      if (debug.previousSunriseLocalHours === undefined) return null;
+      elapsed = birth.hours - debug.previousSunriseLocalHours;
+    }
+    return Math.max(1, Math.min(60, Math.floor(elapsed * 2.5) + 1));
+  }
   const offset = debug.utcOffset;
   let sunrise = calcSolarTimes(birth.year, birth.month, birth.day, debug.latitude, debug.longitude).sunrise;
   if (sunrise === null) return null;
