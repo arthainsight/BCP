@@ -25,8 +25,9 @@
 // does not depend on it. The ayanamsa only matters for naming the lunar month.
 
 import {
-  SIDEREAL_YEAR,
   SYNODIC_MONTH,
+  annualYearAt,
+  anniversaryJd,
   elongationAt,
   findElongation,
   findSolarLongitude,
@@ -34,7 +35,6 @@ import {
   newMoonBefore,
   siderealSun,
   signedDelta,
-  yearOfJd,
 } from './lunisolar';
 
 export { jdFromLocal, localPartsFromJd, newMoonBefore, vedicDayAt, type VedicDay } from './lunisolar';
@@ -69,11 +69,6 @@ export interface TithiPravesaResult {
   birthInAdhikaMasa: boolean;
   /** Start of the lunar month in which the Tithi Praveśa falls (UT JD). Only for 'lunar-month'. */
   monthStartJd?: number;
-}
-
-/** Julian day (UT) of the given year's anniversary of the birth date and time. */
-function anniversaryJd(birthJd: number, year: number): number {
-  return birthJd + (year - yearOfJd(birthJd)) * SIDEREAL_YEAR;
 }
 
 export async function calculateTithiPravesa(input: TithiPravesaInput): Promise<TithiPravesaResult> {
@@ -146,17 +141,6 @@ export async function calculateTithiPravesa(input: TithiPravesaInput): Promise<T
 export async function tithiPravesaYearAt(
   input: Omit<TithiPravesaInput, 'year'> & { targetJd: number },
 ): Promise<{ current: TithiPravesaResult; next: TithiPravesaResult }> {
-  // A birthday near New Year can put a year's Tithi Praveśa in the neighbouring
-  // Gregorian year, so step in whichever direction is needed rather than
-  // trusting the calendar year of the target.
-  let current = await calculateTithiPravesa({ ...input, year: yearOfJd(input.targetJd) });
-  while (current.jd > input.targetJd) {
-    current = await calculateTithiPravesa({ ...input, year: current.year - 1 });
-  }
-  let next = await calculateTithiPravesa({ ...input, year: current.year + 1 });
-  while (next.jd <= input.targetJd) {
-    current = next;
-    next = await calculateTithiPravesa({ ...input, year: current.year + 1 });
-  }
+  const { current, next } = await annualYearAt((year) => calculateTithiPravesa({ ...input, year }), input.targetJd);
   return { current, next };
 }

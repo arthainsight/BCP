@@ -88,6 +88,11 @@ export async function findSolarLongitude(target: number, guessJd: number, ayanam
 }
 
 
+/** Julian day (UT) of the birth moment carried forward to the given Gregorian year, by whole sidereal years. */
+export function anniversaryJd(birthJd: number, year: number): number {
+  return birthJd + (year - yearOfJd(birthJd)) * SIDEREAL_YEAR;
+}
+
 /** Gregorian year containing `jd` (UT). */
 export function yearOfJd(jd: number): number {
   // JD 2440587.5 is 1970-01-01T00:00Z.
@@ -190,4 +195,35 @@ export async function lunarMonthAt(jd: number, ayanamsa = 'lahiri', offset = 0):
   const masaIndex = await masaOfNewMoon(startJd, ayanamsa, offset);
   const adhika = (await masaOfNewMoon(endJd, ayanamsa, offset)) === masaIndex;
   return { masaIndex, adhika, startJd, endJd };
+}
+
+/**
+ * The sidereal solar return for a given Gregorian year: the moment the Sun
+ * regains its natal sidereal longitude, nearest the anniversary of birth.
+ */
+export async function solarReturnJd(birthJd: number, year: number, ayanamsa = 'lahiri', offset = 0): Promise<number> {
+  const natalSun = await siderealSun(birthJd, ayanamsa, offset);
+  return findSolarLongitude(natalSun, anniversaryJd(birthJd, year), ayanamsa, offset);
+}
+
+/**
+ * The annual year in force at `targetJd` for any yearly event: the latest
+ * occurrence at or before it and the next one. `occurrence(year)` gives the
+ * event for a Gregorian year; birthdays near New Year can put it in the
+ * neighbouring calendar year, so the search steps rather than trusting it.
+ */
+export async function annualYearAt<T extends { jd: number }>(
+  occurrence: (year: number) => Promise<T>,
+  targetJd: number,
+): Promise<{ year: number; current: T; next: T }> {
+  let year = yearOfJd(targetJd);
+  let current = await occurrence(year);
+  while (current.jd > targetJd) current = await occurrence(--year);
+  let next = await occurrence(year + 1);
+  while (next.jd <= targetJd) {
+    current = next;
+    year += 1;
+    next = await occurrence(year + 1);
+  }
+  return { year, current, next };
 }

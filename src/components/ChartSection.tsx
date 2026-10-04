@@ -13,6 +13,8 @@ import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import TransitDateControls from './TransitDateControls';
 import NadiAmsaPanel from './NadiAmsaPanel';
 import TithiPravesaPanel from './TithiPravesaPanel';
+import VarshaphalaPanel from './VarshaphalaPanel';
+import type { AnnualPlace } from './annualShared';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 
 function parseBirthDt(dt: string): Date | null {
@@ -83,8 +85,10 @@ export default function ChartSection({
   ianaTimezone,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
-  const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi'>('chart');
+  const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha'>('chart');
   const [vargaView, setVargaView] = useState<'chart' | 'table'>('chart');
+  // Residence for the annual charts, shared by Tithi Praveśa and Varṣaphala.
+  const [annualPlace, setAnnualPlace] = useState<AnnualPlace>(null);
 
   const bnnHouses = useMemo(() => {
     // Use parent-provided houses when available (keeps age override in sync with chart highlights)
@@ -153,7 +157,7 @@ export default function ChartSection({
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
 
-  const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi') =>
+  const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha') =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
 
   return (
@@ -169,6 +173,7 @@ export default function ChartSection({
             <button type="button" onClick={() => setView('ashtakavarga')} className={tabClass('ashtakavarga')}>Aṣṭakavarga</button>
             <button type="button" onClick={() => setView('drishti')} className={tabClass('drishti')}>Dṛṣṭi</button>
             <button type="button" onClick={() => setView('tithi')} className={tabClass('tithi')}>Tithi Praveśa</button>
+            <button type="button" onClick={() => setView('varsha')} className={tabClass('varsha')}>Varṣaphala</button>
           </div>
         </div>
       </div>
@@ -219,6 +224,21 @@ export default function ChartSection({
           chartStyle={chartStyle}
           chartDisplaySettings={chartDisplaySettings}
           nakshatraAdjust={nakshatraAdjust}
+          place={annualPlace}
+          onPlaceChange={setAnnualPlace}
+        />
+      ) : view === 'varsha' ? (
+        <VarshaphalaPanel
+          chart={chart}
+          birthDatetime={birthDatetime ?? ''}
+          targetDate={targetDate}
+          ianaTimezone={ianaTimezone}
+          calculationSettings={calculationSettings}
+          chartStyle={chartStyle}
+          chartDisplaySettings={chartDisplaySettings}
+          nakshatraAdjust={nakshatraAdjust}
+          place={annualPlace}
+          onPlaceChange={setAnnualPlace}
         />
       ) : chartStyle === 'south' ? (
         <SouthIndianChart

@@ -85,6 +85,20 @@ async function main() {
     assert.ok(span.current.jd <= t && span.next.jd > t, `New Year birth brackets ${y}-${m}-${d}`);
   }
 
+  // --- PyJHora / JHora reference ------------------------------------------
+  // PyJHora's tithi_pravesha_tests: born 7 Dec 1996 10:34 IST in Chennai.
+  // Expected 27 Nov 2024 ≈ 11:22 and 9 Dec 2023 ≈ 13:38 IST. PyJHora
+  // interpolates the tithi linearly while this solves the elongation exactly,
+  // so a couple of minutes' difference is expected.
+  const chennaiBirth = await jdFromLocal(1996, 12, 7, 10, 34, 0, 5.5);
+  for (const [year, month, day, minutes] of [[2024, 11, 27, 11 * 60 + 22], [2023, 12, 9, 13 * 60 + 38]]) {
+    const tp = await calculateTithiPravesa({ birthJd: chennaiBirth, year });
+    const p = localPartsFromJd(tp.jd, 5.5);
+    assert.deepEqual([p.year, p.month, p.day], [year, month, day], `${year}: same date as PyJHora`);
+    const delta = Math.abs(p.hour * 60 + p.minute - minutes);
+    assert.ok(delta <= 3, `${year}: within three minutes of PyJHora, off by ${delta}`);
+  }
+
   // --- Vāra and horā -----------------------------------------------------
   // Monday 8 April 2024 in Delhi. Sunrise is about 06:03 IST.
   const delhi = { lat: 28.6139, lng: 77.209 };
