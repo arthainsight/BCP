@@ -40,7 +40,8 @@ This is not meant to replace traditional study — it's meant to **accelerate it
 * Ashtakavarga overlay (SAV and per-planet BAV)
 * Selectable ayanamsa, including a signed custom offset from Lahiri
 * Transits with automatic recalculation
-* Tithi Praveśa annual chart (lunar month or nearest solar return)
+* Tithi Praveśa annual chart with Tithi Aṣṭottarī daśā
+* Tājika Varṣaphala: Muntha, year lord, Pañcavargīya Bala and Mudda daśā
 
 ### Daśā
 

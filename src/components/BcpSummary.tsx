@@ -31,7 +31,7 @@ function getHouseSign(ascSign: number, house: number): number {
   return ((ascSign - 1 + house - 1) % 12) + 1;
 }
 
-export default function BcpSummary({ bcp, planets: _planets, ascSign }: Props) {
+export default function BcpSummary({ bcp, ascSign }: Props) {
   const yearSign  = getHouseSign(ascSign, bcp.activeYearHouse);
   const monthSign = getHouseSign(ascSign, bcp.activeMonthHouse);
   const yearTheme  = HOUSE_THEMES[bcp.activeYearHouse]  ?? '';

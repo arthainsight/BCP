@@ -64,6 +64,10 @@ export function isNightBirth(chart: ChartData, birthDatetime: string): boolean {
     const sun = chart.planets.find((planet) => planet.name === 'Sun');
     return sun ? sun.house < 7 : false;
   }
+  // Prefer the ephemeris sunrise and sunset the chart carries (local hours).
+  if (debug.sunriseLocalHours !== undefined && debug.sunsetLocalHours !== undefined) {
+    return birth.hours < debug.sunriseLocalHours || birth.hours >= debug.sunsetLocalHours;
+  }
   const solar = calcSolarTimes(birth.year, birth.month, birth.day, debug.latitude, debug.longitude);
   if (solar.sunrise === null || solar.sunset === null) {
     const sun = chart.planets.find((planet) => planet.name === 'Sun');

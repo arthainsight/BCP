@@ -18,7 +18,6 @@ import DashaWorkspace from '@/components/DashaWorkspace';
 import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
 import CalculationDebugPanel from '@/components/CalculationDebugPanel';
-import { buildReportMarkdown } from '@/lib/exportReport';
 import FileActions, { ChartSnapshot } from '@/components/FileActions';
 import WorkspaceView from '@/components/workspace/WorkspaceView';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
@@ -617,32 +616,6 @@ export default function Home() {
     const timer = window.setTimeout(() => { void handleCalculateTransit(); }, 350);
     return () => window.clearTimeout(timer);
   }, [chartData, transitDatetime, handleCalculateTransit]);
-
-  const handleExportReport = useCallback(() => {
-    const lat = parseFloat(manualLat);
-    const lng = parseFloat(manualLng);
-    const markdown = buildReportMarkdown({
-      birthDatetime,
-      city: selectedGeo ? `${selectedGeo.name}, ${selectedGeo.country}` : city,
-      ianaTimezone,
-      effectiveTzOffset,
-      latitude: isNaN(lat) ? 0 : lat,
-      longitude: isNaN(lng) ? 0 : lng,
-      chart: chartData,
-      charaKarakas,
-      bcp: effectiveBcpResult,
-      calculationSettings,
-    });
-    const blob = new Blob([markdown], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'bhrigu-code-report.md';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, [birthDatetime, city, selectedGeo, ianaTimezone, effectiveTzOffset, manualLat, manualLng, chartData, charaKarakas, effectiveBcpResult, calculationSettings]);
 
   const handleExportCharts = useCallback(() => {
     const raw = localStorage.getItem('bcp_saved_charts');

@@ -1,81 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
-import { calculateChart } from "@/lib/ephemeris";
-import {
-  calculateTithiPravesa,
-  jdFromLocal,
-  localPartsFromJd,
-  tithiPravesaYearAt,
-  vedicDayAt,
-  type TithiPravesaMethod,
-} from "@/lib/tithiPravesha";
-import { getUtcOffsetHours } from "@/lib/timezone";
+import { calculateTithiPravesa, tithiPravesaYearAt, vedicDayAt } from "@/lib/tithiPravesha";
+import { localPartsFromJd } from "@/lib/lunisolar";
+import { castAt, localizePeriods, offsetAt, parseAnnualRequest } from "@/lib/annualRequest";
+import { ASHTOTTARI_CYCLE, buildAnnualDasha, tithiAshtottariFirstLord } from "@/lib/annualDasha";
+import type { TithiPravesaMethod } from "@/lib/tithiPravesha";
 
 // Returns the Tithi Praveśa in force at `target` (yyyy-mm-dd, local noon), or
-// the one for `year` when that is given instead, together with its chart.
-// The chart is cast for the given place; by tradition that is where the native
-// lives during the year, which defaults to the birthplace in the client.
+// the one for `tpYear`, with its chart and the Tithi Aṣṭottarī daśā of the
+// year. The chart is cast at `lat`/`lng`: the birthplace by default, or the
+// place of residence that year when the client sends one.
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const num = (key: string) => parseFloat(searchParams.get(key) || "0");
-
-  const birth = {
-    year: num("year"), month: num("month"), day: num("day"),
-    hour: num("hour"), minute: num("minute"), second: num("second"),
-  };
-  const birthTz = num("tz");
-  const lat = num("lat");
-  const lng = num("lng");
-  const iana = searchParams.get("iana") || "";
-  const ayanamsa = searchParams.get("ayanamsa") || "lahiri";
-  const ayanamsaOffsetDegrees = num("ayanamsaOffset");
-  const nodeMode = searchParams.get("nodeMode") || "mean";
+  const req = await parseAnnualRequest(searchParams);
+  if ("error" in req) return NextResponse.json({ error: req.error }, { status: 400 });
   const method: TithiPravesaMethod = searchParams.get("method") === "solar-return" ? "solar-return" : "lunar-month";
-  const target = searchParams.get("target");
-  const requestedYear = parseInt(searchParams.get("tpYear") || "0");
-
-  if (!birth.year || !birth.month || !birth.day) {
-    return NextResponse.json({ error: "Missing required parameters: year, month, day" }, { status: 400 });
-  }
-
-  // Offset at a given moment: the IANA zone resolves daylight saving for the
-  // Tithi Praveśa date itself, which may differ from the birth offset.
-  const offsetAt = (jd: number) =>
-    iana ? getUtcOffsetHours(iana, new Date((jd - 2440587.5) * 86400000)) : birthTz;
 
   try {
-    const birthJd = await jdFromLocal(birth.year, birth.month, birth.day, birth.hour, birth.minute, birth.second, birthTz);
-    const options = { birthJd, method, ayanamsa, ayanamsaOffsetDegrees };
+    const options = { birthJd: req.birthJd, method, ayanamsa: req.ayanamsa, ayanamsaOffsetDegrees: req.ayanamsaOffsetDegrees };
+    const { current, next } = req.year !== null
+      ? {
+          current: await calculateTithiPravesa({ ...options, year: req.year }),
+          next: await calculateTithiPravesa({ ...options, year: req.year + 1 }),
+        }
+      : await tithiPravesaYearAt({ ...options, targetJd: req.targetJd });
 
-    let current, next;
-    if (requestedYear) {
-      current = await calculateTithiPravesa({ ...options, year: requestedYear });
-      next = await calculateTithiPravesa({ ...options, year: requestedYear + 1 });
-    } else {
-      const match = (target || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (!match) {
-        return NextResponse.json({ error: "Provide tpYear or target as yyyy-mm-dd" }, { status: 400 });
-      }
-      const [, y, m, d] = match.map(Number);
-      const targetJd = await jdFromLocal(y, m, d, 12, 0, 0, birthTz);
-      ({ current, next } = await tithiPravesaYearAt({ ...options, targetJd }));
-    }
+    const { local, tzOffset, chart } = await castAt(req, current.jd);
+    const vedicDay = await vedicDayAt(current.jd, req.lat, req.lng, tzOffset);
+    const nextTz = offsetAt(req, next.jd);
 
-    const tzOffset = offsetAt(current.jd);
-    const local = localPartsFromJd(current.jd, tzOffset);
-    const chart = await calculateChart(
-      local.year, local.month, local.day, local.hour, local.minute, local.second,
-      lat, lng, tzOffset, ayanamsa, nodeMode, ayanamsaOffsetDegrees,
-    );
-    const day = await vedicDayAt(current.jd, lat, lng, tzOffset);
-    const nextTz = offsetAt(next.jd);
+    // The tithi and its spent fraction at Tithi Praveśa equal those at birth.
+    const dasha = buildAnnualDasha(
+      ASHTOTTARI_CYCLE,
+      tithiAshtottariFirstLord(current.tithiIndex + 1),
+      (current.natalElongation % 12) / 12,
+      current.jd,
+      next.jd - current.jd,
+    ).map((md) => ({ ...md, antardashas: localizePeriods(req, md.antardashas) }));
 
     return NextResponse.json({
       tithiPravesa: current,
       local,
       tzOffset,
-      completedAge: current.year - birth.year,
-      vedicDay: day,
+      completedAge: current.year - req.birth.year,
+      vedicDay,
       next: { ...next, local: localPartsFromJd(next.jd, nextTz), tzOffset: nextTz },
+      dasha: localizePeriods(req, dasha),
       chart,
     });
   } catch (error) {

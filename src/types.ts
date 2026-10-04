@@ -56,6 +56,12 @@ export interface DebugInfo {
   sunriseLocalHours?: number;
   sunsetLocalHours?: number;
   nextSunriseLocalHours?: number;
+  /**
+   * The previous evening's sunset on the same scale, so it is negative. A
+   * birth before sunrise belongs to the previous Vedic day, whose night horās
+   * run from this sunset to the birth-date sunrise.
+   */
+  previousSunsetLocalHours?: number;
 }
 
 export interface SpecialLagna {
@@ -73,6 +79,12 @@ export interface ChartData {
   };
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
+  /** The amānta lunar month running at the chart moment. */
+  lunarMonth?: {
+    /** 0 = Chaitra … 11 = Phālguna. */
+    masaIndex: number;
+    adhika: boolean;
+  };
   debug?: DebugInfo;
 }
 

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ChartData } from '@/types';
 import { calculateYogas, YogaCategory } from '@/lib/yogas';
-import { qualifyYogas, classify, type StrengthClassification } from '@/lib/yogaStrength';
+import { qualifyYogas, type StrengthClassification } from '@/lib/yogaStrength';
 
 const CATEGORY_LABELS: Record<YogaCategory, string> = {
   solar:                'Solar',

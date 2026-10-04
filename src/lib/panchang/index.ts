@@ -74,8 +74,8 @@ function toLocalHours(utcHours: number, utcOffset: number): number {
   return ((utcHours + utcOffset) % 24 + 24) % 24;
 }
 
-function fmtTime(utcHours: number, utcOffset: number): string {
-  const local = toLocalHours(utcHours, utcOffset);
+function fmtLocalHours(hours: number): string {
+  const local = ((hours % 24) + 24) % 24;
   const h = Math.floor(local);
   const mf = (local - h) * 60;
   const mi = Math.floor(mf);
@@ -86,6 +86,8 @@ function fmtTime(utcHours: number, utcOffset: number): string {
 export interface PanchangResult {
   vara: string;
   varaLord: string;
+  /** True when the birth precedes sunrise, so the vāra is the previous weekday's. */
+  beforeSunrise: boolean;
   tithi: string;
   tithiNumber: number;
   paksha: 'Shukla' | 'Krishna';
@@ -117,15 +119,45 @@ export function calculatePanchang(
   const { year, month, day, localHours: localBirth } = parsed
     ?? { year: 2000, month: 1, day: 1, localHours: 12 };
 
-  // Solar times for birth date and the previous day (for pre-sunrise hora)
-  const solar     = calcSolarTimes(year, month, day, lat, lng);
-  const prevDate  = shiftDate(year, month, day, -1);
-  const solarPrev = calcSolarTimes(prevDate.year, prevDate.month, prevDate.day, lat, lng);
+  // ── Sunrise and sunset ───────────────────────────────────────────────
+  // Local decimal hours from midnight of the birth date. The chart carries
+  // ephemeris-based times (sunTimes.ts); the NOAA approximation is only a
+  // fallback for charts built without them.
+  const dbg = chart.debug;
+  let sunTimes: { sunrise: number | null; sunset: number | null; nextSunrise: number | null; previousSunset: number | null; solarNoon: number | null };
+  if (dbg?.sunriseLocalHours !== undefined || dbg?.sunsetLocalHours !== undefined) {
+    sunTimes = {
+      sunrise: dbg.sunriseLocalHours ?? null,
+      sunset: dbg.sunsetLocalHours ?? null,
+      nextSunrise: dbg.nextSunriseLocalHours ?? null,
+      previousSunset: dbg.previousSunsetLocalHours ?? null,
+      solarNoon: dbg.sunriseLocalHours !== undefined && dbg.sunsetLocalHours !== undefined
+        ? (dbg.sunriseLocalHours + dbg.sunsetLocalHours) / 2
+        : null,
+    };
+  } else {
+    const solar = calcSolarTimes(year, month, day, lat, lng);
+    const prevDate = shiftDate(year, month, day, -1);
+    const solarPrev = calcSolarTimes(prevDate.year, prevDate.month, prevDate.day, lat, lng);
+    const local = (utc: number | null) => (utc === null ? null : toLocalHours(utc, utcOffsetHours));
+    const sunrise = local(solar.sunrise);
+    const sunset = local(solar.sunset);
+    const prevSunset = local(solarPrev.sunset);
+    sunTimes = {
+      sunrise,
+      sunset,
+      nextSunrise: sunrise === null ? null : sunrise + 24,
+      previousSunset: prevSunset === null ? null : prevSunset - 24,
+      solarNoon: local(solar.solarNoon),
+    };
+  }
 
   // ── Vara ─────────────────────────────────────────────────────────────
-  // Use the local calendar date, which is already given by the birthDatetime fields.
-  const jsDate   = new Date(Date.UTC(year, month - 1, day));
-  const dayOfWeek = jsDate.getUTCDay(); // 0=Sun…6=Sat
+  // The Vedic day runs from sunrise to sunrise, so a birth before sunrise
+  // still belongs to the previous weekday.
+  const calendarWeekday = new Date(Date.UTC(year, month - 1, day)).getUTCDay(); // 0=Sun…6=Sat
+  const beforeSunrise = sunTimes.sunrise !== null && localBirth < sunTimes.sunrise;
+  const dayOfWeek = beforeSunrise ? (calendarWeekday + 6) % 7 : calendarWeekday;
   const vara      = VARA_NAMES[dayOfWeek];
   const varaLord  = VARA_LORDS[dayOfWeek];
 
@@ -160,42 +192,36 @@ export function calculatePanchang(
   const yoga    = YOGA_NAMES[yogaIdx];
 
   // ── Hora ──────────────────────────────────────────────────────────────
-  let hora = varaLord; // safe fallback
-  const localSunrise = solar.sunrise  !== null ? toLocalHours(solar.sunrise,  utcOffsetHours) : null;
-  const localSunset  = solar.sunset   !== null ? toLocalHours(solar.sunset,   utcOffsetHours) : null;
-
-  if (localSunrise !== null && localSunset !== null) {
-    const dayLen     = localSunset - localSunrise;
-    const nightLen   = 24 - dayLen;
-    const dayHora    = dayLen  / 12;
-    const nightHora  = nightLen / 12;
-    const startIdx   = DAY_TO_HORA_START[dayOfWeek];
-
-    let horaIndex: number;
-    if (localBirth >= localSunrise && localBirth < localSunset) {
-      // daytime
-      horaIndex = Math.min(Math.floor((localBirth - localSunrise) / dayHora), 11);
-    } else if (localBirth >= localSunset) {
-      // after sunset, same night
-      horaIndex = 12 + Math.min(Math.floor((localBirth - localSunset) / nightHora), 11);
-    } else {
-      // before sunrise — count from previous day's sunset
-      const prevSunset = solarPrev.sunset !== null
-        ? toLocalHours(solarPrev.sunset, utcOffsetHours)
-        : localSunset - 24; // fallback approximation
-      const prevNightLen  = (localSunrise + 24 - prevSunset) % 24 || 12;
-      const prevNightHora = prevNightLen / 12;
-      horaIndex = 12 + Math.min(Math.floor((localBirth + 24 - prevSunset) / prevNightHora), 11);
+  // Twelve unequal horās by day and twelve by night, the first belonging to
+  // the lord of the Vedic day.
+  let hora = varaLord; // fallback when the Sun does not rise or set
+  const { sunrise, sunset, nextSunrise, previousSunset } = sunTimes;
+  let horaIndex: number | null = null;
+  if (sunrise !== null && sunset !== null) {
+    if (beforeSunrise) {
+      if (previousSunset !== null) {
+        horaIndex = 12 + Math.floor(((localBirth - previousSunset) / (sunrise - previousSunset)) * 12);
+      }
+    } else if (localBirth < sunset) {
+      horaIndex = Math.floor(((localBirth - sunrise) / (sunset - sunrise)) * 12);
+    } else if (nextSunrise !== null) {
+      horaIndex = 12 + Math.floor(((localBirth - sunset) / (nextSunrise - sunset)) * 12);
     }
+  }
+  if (horaIndex !== null) {
     horaIndex = Math.max(0, Math.min(horaIndex, 23));
-    hora = HORA_CYCLE[(startIdx + horaIndex) % 7];
+    hora = HORA_CYCLE[(DAY_TO_HORA_START[dayOfWeek] + horaIndex) % 7];
   }
 
   // ── Ayanamsa ──────────────────────────────────────────────────────────
   const ayanamsa = `${degToDMS(chart.debug?.ayanamsa ?? 0)} (${ayanamsaName})`;
 
   // ── Masa ──────────────────────────────────────────────────────────────
-  const masa = `${MASA_NAMES[Math.floor(sun.longitude / 30)]} (exp.)`;
+  // Amānta month from the ephemeris new moon when the chart carries it; the
+  // Sun's current sign is only a rough stand-in otherwise.
+  const masa = chart.lunarMonth
+    ? `${chart.lunarMonth.adhika ? 'Adhika ' : ''}${MASA_NAMES[chart.lunarMonth.masaIndex]} (amānta)`
+    : `${MASA_NAMES[(Math.floor(sun.longitude / 30) + 1) % 12]} (approx.)`;
 
   return {
     vara,
@@ -208,9 +234,10 @@ export function calculatePanchang(
     karana,
     yoga,
     hora,
-    sunrise:   solar.sunrise  !== null ? fmtTime(solar.sunrise,  utcOffsetHours) : null,
-    sunset:    solar.sunset   !== null ? fmtTime(solar.sunset,   utcOffsetHours) : null,
-    solarNoon: solar.solarNoon !== null ? fmtTime(solar.solarNoon, utcOffsetHours) : null,
+    beforeSunrise,
+    sunrise:   sunrise !== null ? fmtLocalHours(sunrise) : null,
+    sunset:    sunset !== null ? fmtLocalHours(sunset) : null,
+    solarNoon: sunTimes.solarNoon !== null ? fmtLocalHours(sunTimes.solarNoon) : null,
     ayanamsa,
     masa,
   };

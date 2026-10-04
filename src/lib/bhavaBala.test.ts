@@ -117,40 +117,40 @@ function testHouse1(): { pass: number; fail: number } {
 
   let ok = h1.sign === 'Ar' && h1.lord === 'Mars';
   console.log(`${ok ? '✓' : '✗'} H1: sign=Ar lord=Mars, got sign=${h1.sign} lord=${h1.lord}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = h1.bhavesha === 350;
   console.log(`${ok ? '✓' : '✗'} H1 bhavesha: expected 350 vp (Mars), got ${h1.bhavesha}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = approxEqual(h1.drig1, 180.0);
   console.log(`${ok ? '✓' : '✗'} H1 drig1 (Venus full 7th): expected 180.0, got ${h1.drig1.toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = approxEqual(h1.drig2, 47.62);
   console.log(`${ok ? '✓' : '✗'} H1 drig2 (Mercury+Jupiter weak): expected ~47.62, got ${h1.drig2.toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = approxEqual(h1.drig3, 0, 0.01);
   console.log(`${ok ? '✓' : '✗'} H1 drig3 (no strong malefic): expected 0, got ${h1.drig3.toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = approxEqual(h1.drig4, -28.57);
   console.log(`${ok ? '✓' : '✗'} H1 drig4 (Mars+Saturn weak): expected ~−28.57, got ${h1.drig4.toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = h1.occupants.length === 0 && h1.occupantTotal === 0;
   console.log(`${ok ? '✓' : '✗'} H1 occupants: expected none, got ${h1.occupants.length}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = h1.kendra === 15;
   console.log(`${ok ? '✓' : '✗'} H1 ~Dig: expected +15 vp (kendra), got ${h1.kendra}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   // 180.0 + 47.62 + 0 + (−28.57) + 350 + 0 + 15 = 564.05
   ok = approxEqual(h1.total, 564.05, 1.5);
   console.log(`${ok ? '✓' : '✗'} H1 total: expected ~564.05, got ${h1.total.toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   return { pass, fail };
 }
@@ -205,41 +205,41 @@ function testHouse4(): { pass: number; fail: number } {
 
   let ok = h4.sign === 'Cn' && h4.lord === 'Moon';
   console.log(`${ok ? '✓' : '✗'} H4: sign=Cn lord=Moon, got sign=${h4.sign} lord=${h4.lord}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = h4.bhavesha === 420;
   console.log(`${ok ? '✓' : '✗'} H4 bhavesha: expected 420 vp (Moon), got ${h4.bhavesha}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = approxEqual(h4.drig3, -90.0);
   console.log(`${ok ? '✓' : '✗'} H4 drig3 (Saturn full 7th): expected −90.0, got ${h4.drig3.toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = approxEqual(h4.drig4, -8.57);
   console.log(`${ok ? '✓' : '✗'} H4 drig4 (Mars special 4th): expected ~−8.57, got ${h4.drig4.toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = approxEqual(h4.drig1 + h4.drig2, 0, 0.01);
   console.log(`${ok ? '✓' : '✗'} H4 drig+ (no benefic aspects): expected 0, got ${(h4.drig1 + h4.drig2).toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = h4.occupants.length === 1 && h4.occupants[0].name === 'Jupiter';
   console.log(`${ok ? '✓' : '✗'} H4 occupant: expected Jupiter, got ${h4.occupants.map((o) => o.name).join(',') || 'none'}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   // +45 × min(520/390, 2.0) = 45 × 1.333 = 60.0
   ok = approxEqual(h4.occupantTotal, 60.0, 1.0);
   console.log(`${ok ? '✓' : '✗'} H4 occupantTotal: expected ~60.0 (+45×1.333), got ${h4.occupantTotal.toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = h4.kendra === 15;
   console.log(`${ok ? '✓' : '✗'} H4 ~Dig: expected +15 vp (kendra), got ${h4.kendra}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   // 0 + 0 + (−90.0) + (−8.57) + 420 + 60.0 + 15 = 396.43
   ok = approxEqual(h4.total, 396.43, 1.5);
   console.log(`${ok ? '✓' : '✗'} H4 total: expected ~396.43 (0+0−90−8.57+420+60+15), got ${h4.total.toFixed(2)}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   return { pass, fail };
 }
@@ -256,21 +256,21 @@ function testHouse12(): { pass: number; fail: number } {
 
   let ok = h12.sign === 'Pi' && h12.lord === 'Jupiter';
   console.log(`${ok ? '✓' : '✗'} H12: sign=Pi lord=Jupiter, got sign=${h12.sign} lord=${h12.lord}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = h12.bhavesha === 520;
   console.log(`${ok ? '✓' : '✗'} H12 bhavesha: expected 520 vp (Jupiter), got ${h12.bhavesha}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   // H12 is apoklima (cadent) → kendra/Dig = 0
   ok = h12.kendra === 0;
   console.log(`${ok ? '✓' : '✗'} H12 ~Dig: expected 0 (apoklima/cadent), got ${h12.kendra}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   // Jupiter is in H4, not H12
   ok = h12.occupants.length === 0;
   console.log(`${ok ? '✓' : '✗'} H12 occupants: expected none (Jupiter is in H4), got ${h12.occupants.length}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   return { pass, fail };
 }
@@ -304,7 +304,7 @@ function testAllHouseSigns(): { pass: number; fail: number } {
   for (let i = 0; i < 12; i++) {
     const ok = rows[i].sign === EXPECTED[i].sign && rows[i].lord === EXPECTED[i].lord;
     console.log(`${ok ? '✓' : '✗'} H${i + 1}: expected ${EXPECTED[i].sign}/${EXPECTED[i].lord}, got ${rows[i].sign}/${rows[i].lord}`);
-    ok ? pass++ : fail++;
+    if (ok) pass++; else fail++;
   }
 
   return { pass, fail };
@@ -323,28 +323,28 @@ function testOccupants(): { pass: number; fail: number } {
   const h10 = rows[9];
   let ok = h10.occupants.length === 1 && h10.occupants[0].name === 'Saturn';
   console.log(`${ok ? '✓' : '✗'} H10 occupant: expected Saturn, got ${h10.occupants.map((o) => o.name).join(',') || 'none'}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   // Saturn is malefic: contribution = −30 × min(310/300, 2) = −30 × 1.033 = −31.0
   ok = h10.occupants[0].nature === 'malefic' && h10.occupants[0].contribution < 0;
   console.log(`${ok ? '✓' : '✗'} H10 Saturn: malefic with negative contribution (${h10.occupants[0]?.contribution?.toFixed(1)})`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   // Venus (benefic) in H7
   const h7 = rows[6];
   ok = h7.occupants.length === 1 && h7.occupants[0].name === 'Venus';
   console.log(`${ok ? '✓' : '✗'} H7 occupant: expected Venus, got ${h7.occupants.map((o) => o.name).join(',') || 'none'}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   ok = h7.occupants[0].nature === 'benefic' && h7.occupants[0].contribution > 0;
   console.log(`${ok ? '✓' : '✗'} H7 Venus: benefic with positive contribution (${h7.occupants[0]?.contribution?.toFixed(1)})`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   // Empty houses should have no occupants
   const h1 = rows[0];
   ok = h1.occupants.length === 0;
   console.log(`${ok ? '✓' : '✗'} H1 (no occupants): expected 0, got ${h1.occupants.length}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   return { pass, fail };
 }
@@ -365,17 +365,17 @@ function testDigBala(): { pass: number; fail: number } {
   for (const h of kendraHouses) {
     const ok = rows[h - 1].kendra === 15;
     console.log(`${ok ? '✓' : '✗'} H${h} kendra: expected 15, got ${rows[h - 1].kendra}`);
-    ok ? pass++ : fail++;
+    if (ok) pass++; else fail++;
   }
   for (const h of panaparaHouses) {
     const ok = rows[h - 1].kendra === 7.5;
     console.log(`${ok ? '✓' : '✗'} H${h} panapara: expected 7.5, got ${rows[h - 1].kendra}`);
-    ok ? pass++ : fail++;
+    if (ok) pass++; else fail++;
   }
   for (const h of apoklimaHouses) {
     const ok = rows[h - 1].kendra === 0;
     console.log(`${ok ? '✓' : '✗'} H${h} apoklima: expected 0, got ${rows[h - 1].kendra}`);
-    ok ? pass++ : fail++;
+    if (ok) pass++; else fail++;
   }
 
   return { pass, fail };
@@ -394,14 +394,14 @@ function testTotalComposition(): { pass: number; fail: number } {
 
   let ok = rows.length === 12;
   console.log(`${ok ? '✓' : '✗'} row count: expected 12, got ${rows.length}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   for (const row of rows) {
     const composed =
       row.bhavesha + row.drig1 + row.drig2 + row.drig3 + row.drig4 + row.occupantTotal + row.kendra;
     ok = approxEqual(row.total, composed, 1e-9);
     console.log(`${ok ? '✓' : '✗'} H${row.house} total ${row.total.toFixed(2)} = components ${composed.toFixed(2)}`);
-    ok ? pass++ : fail++;
+    if (ok) pass++; else fail++;
   }
 
   // Occupant details must reconcile with the reported occupant subtotal.
@@ -409,14 +409,14 @@ function testTotalComposition(): { pass: number; fail: number } {
     const summed = row.occupants.reduce((total, occupant) => total + occupant.contribution, 0);
     ok = approxEqual(row.occupantTotal, summed, 1e-9);
     console.log(`${ok ? '✓' : '✗'} H${row.house} occupant subtotal ${row.occupantTotal.toFixed(2)} = ${row.occupants.length} detail row(s)`);
-    ok ? pass++ : fail++;
+    if (ok) pass++; else fail++;
   }
 
   // Each house carries a distinct sign, and the twelve cover the whole zodiac.
   const signs = new Set(rows.map((row) => row.sign));
   ok = signs.size === 12;
   console.log(`${ok ? '✓' : '✗'} twelve distinct signs across the houses, got ${signs.size}`);
-  ok ? pass++ : fail++;
+  if (ok) pass++; else fail++;
 
   return { pass, fail };
 }

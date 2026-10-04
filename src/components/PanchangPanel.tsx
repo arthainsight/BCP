@@ -28,7 +28,7 @@ function renderRows(p: PanchangResult) {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Row label="vara"      value={`${p.vara} · ${p.varaLord}`} />
+        <Row label="vara"      value={`${p.vara} · ${p.varaLord}${p.beforeSunrise ? ' (before sunrise)' : ''}`} />
         <Row label="tithi"     value={`${p.tithi} (${p.tithiNumber}) · ${p.paksha}`} />
         <Row label="nakshatra" value={`${p.nakshatra} · Pada ${p.nakshatraPada}`} />
         <Row label="karana"    value={p.karana} />
@@ -66,7 +66,7 @@ export default function PanchangPanel({ chart, birthDatetime, utcOffsetHours, ay
       <div>
         <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; panchang</div>
         <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
-          times shown in local birth timezone · masa is approximate
+          times shown in local birth timezone · vāra and horā counted from sunrise
         </div>
       </div>
       {renderRows(p)}
