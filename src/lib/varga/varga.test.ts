@@ -31,7 +31,7 @@ function runD9Tests(): { pass: number; fail: number } {
     const actual = SIGN_ABBR[calcD9(lon)];
     const ok = actual === expected;
     console.log(`${ok ? '✓' : '✗'} D9 ${label}: expected ${expected}, got ${actual}`);
-    ok ? pass++ : fail++;
+    if (ok) pass++; else fail++;
   }
   return { pass, fail };
 }
@@ -69,7 +69,7 @@ function runMatrixTests(): { pass: number; fail: number } {
     const actual = SIGN_ABBR[(row as unknown as Record<string, number>)[key]];
     const ok = actual === expected;
     console.log(`${ok ? '✓' : '✗'} ${key}: expected ${expected}, got ${actual}`);
-    ok ? pass++ : fail++;
+    if (ok) pass++; else fail++;
   }
   return { pass, fail };
 }
@@ -136,14 +136,14 @@ function runHighDivisionTests(): { pass: number; fail: number } {
     }
 
     console.log(`${divisionOk ? '✓' : '✗'} ${key}: all 12 signs × ${parts} parts follow the documented rule`);
-    divisionOk ? pass++ : fail++;
+    if (divisionOk) pass++; else fail++;
   }
 
   // D60 walks all twelve signs five times over one sign, so every sign appears.
   const d60Signs = new Set(Array.from({ length: 60 }, (_, part) => calcD60((part + 0.5) * 0.5)));
   const d60Ok = d60Signs.size === 12;
   console.log(`${d60Ok ? '✓' : '✗'} D60 covers all twelve signs within one rāśi, got ${d60Signs.size}`);
-  d60Ok ? pass++ : fail++;
+  if (d60Ok) pass++; else fail++;
 
   return { pass, fail };
 }

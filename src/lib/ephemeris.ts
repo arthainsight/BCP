@@ -180,35 +180,3 @@ export async function calculateChart(
   };
 }
 
-export async function calculateTransits(
-  year: number,
-  month: number,
-  day: number,
-  hour: number,
-  minute: number,
-  second: number,
-  timezoneOffset: number,
-  natalAscSignIndex: number,
-  ayanamsaSetting: string = 'lahiri',
-  nodeModeSetting: string = 'mean',
-  ayanamsaOffsetDegrees: number = 0
-): Promise<PlanetData[]> {
-  const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
-  const nodeMode = resolveNodeMode(nodeModeSetting);
-  const utc = toUtcParts(year, month, day, hour, minute, second, timezoneOffset);
-
-  const jd = await sweJulday(utc.year, utc.month, utc.day, utc.totalHours);
-  const baseAyanamsa = await sweGetAyanamsa(jd, ayanamsaMode);
-  const ayanamsa = applyAyanamsaOffset(baseAyanamsa, ayanamsaMode, ayanamsaOffsetDegrees);
-  const useTropical = ayanamsaMode === 'tropical';
-
-  const planets = await calculatePlanetPositions(jd, ayanamsa, useTropical);
-  await addNodes(planets, jd, ayanamsa, useTropical, nodeMode);
-
-  for (const p of planets) {
-    const signIndex = Math.floor(p.longitude / 30);
-    p.house = ((signIndex - natalAscSignIndex + 12) % 12) + 1;
-  }
-
-  return planets;
-}

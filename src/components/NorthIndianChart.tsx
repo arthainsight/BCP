@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useHydrated } from '@/lib/useHydrated';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';

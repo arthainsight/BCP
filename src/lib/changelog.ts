@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v2.20',
+    date: '2026-10-04',
+    title: 'Varṣaphala, annual daśās, and Pañcāṅga from sunrise',
+    changes: [
+      'Added Tājika Varṣaphala as a new view: the chart for the Sun’s sidereal return, with day or night year, Muntha, the five office bearers and their Tājika aspects on the annual lagna, Pañcavargīya Bala, the lord of the year, and the Mudda (Varṣa Vimśottarī) daśā. Rules follow P.V.R. Narasimha Rao, chapters 28–30, and are tested against the book’s worked examples.',
+      'Tithi Praveśa now shows its Tithi Aṣṭottarī daśā for the year (beta), and both annual charts can be cast for the place of residence that year instead of the birthplace.',
+      'Tithi Praveśa is now checked against PyJHora: the same dates, within three minutes.',
+      'Fixed the Pañcāṅga vāra and horā for births before sunrise, which belong to the previous weekday. Both are now counted from the ephemeris sunrise and sunset.',
+      'The Pañcāṅga māsa is now the real amānta lunar month, with adhika months labelled, instead of an estimate from the Sun’s sign. Saham day and night births also use the ephemeris sunrise and sunset.',
+      'Cleared all 64 lint warnings and made any new warning fail the check. Removed the unused transits endpoint, an empty script, and an unwired report-export handler.',
+      'Updated the application version to v2.20.',
+    ],
+  },
+  {
     version: 'v2.19',
     date: '2026-10-04',
     title: 'Tithi Praveśa annual chart',

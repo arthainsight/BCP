@@ -74,13 +74,6 @@ export default function ChartSection({
   bnnMajorHouseFromParent,
   bnnMinorHouseFromParent,
   nadiParayaHousesFromParent = [],
-  bcpEnabled,
-  useManualBcpMode,
-  onUseManualBcpModeChange,
-  manualBcpAge,
-  onManualBcpAgeChange,
-  manualBcpMonth,
-  onManualBcpMonthChange,
   calculationSettings,
   ianaTimezone,
 }: ChartSectionProps) {

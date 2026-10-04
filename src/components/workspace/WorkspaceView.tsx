@@ -150,17 +150,10 @@ export default function WorkspaceView({
   onCalculateTransit,
   transitLoading = false,
   birthDatetime,
-  targetDate,
-  onTargetDateChange,
   chartDisplaySettings,
   karakaByPlanet,
   nakshatraAdjust,
-  effectiveBnnHouses,
   effectiveNadiParayaHouses,
-  bnnOverrideStr,
-  onBnnOverrideStrChange,
-  bcpEnabled,
-  bcpManualProps,
 }: WorkspaceViewProps) {
   // ── Panel state ──
   const [panels, setPanels] = useState<WorkspacePanel[]>(() => {

@@ -82,10 +82,6 @@ const SPECIAL_GRAHA_ASPECTS: Record<string, number[]> = {
   Ketu: [5, 7, 9],
 };
 
-function normalizeSign(sign: number): number {
-  return ((sign - 1 + 12) % 12) + 1;
-}
-
 function getHouseFromSign(sign: number, ascendantSign: number | undefined): number | null {
   if (typeof ascendantSign !== 'number') return null;
   return ((sign - ascendantSign + 12) % 12) + 1;

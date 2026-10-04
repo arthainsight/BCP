@@ -1,2 +1,2 @@
 export const APP_NAME = 'bhrigu.code';
-export const APP_VERSION = 'v2.19';
+export const APP_VERSION = 'v2.20';

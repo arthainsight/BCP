@@ -1,7 +1,6 @@
 'use client';
 
 import { useTheme } from 'next-themes';
-import { useEffect, useState } from 'react';
 import { useHydrated } from '@/lib/useHydrated';
 
 export default function ThemeToggle({ className, icon }: { className?: string; icon?: boolean }) {

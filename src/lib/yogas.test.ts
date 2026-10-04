@@ -12,12 +12,6 @@ function planet(name: string, sign: number, degree = 15): PlanetData {
 }
 
 const ALL_NAMES = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
-/** Park every planet in a sign far from the Sun so no yoga fires by accident. */
-function quietChart(overrides: Record<string, number> = {}): PlanetData[] {
-  return ALL_NAMES.map((name, index) =>
-    planet(name, overrides[name] ?? ((index % 2 === 0 ? 5 : 6) + (name === 'Sun' ? -4 : 0))),
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Relative-sign helper — the basis of most solar and lunar yogas
