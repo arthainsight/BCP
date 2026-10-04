@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { ChartData, PlanetData } from '@/types';
-import { calculateAvasthas, calculateBaladi, calculateJagratadi } from './avasthas';
+import { calculateAvasthas, calculateBaladi, calculateJagratadi, ghatiAtBirth } from './avasthas';
 
 function planet(sign: number, degree: number): PlanetData {
   return { name: 'Mars', sign, degree, longitude: (sign - 1) * 30 + degree, house: 1 };
@@ -35,3 +35,15 @@ assert.equal(results.find((row) => row.planet === 'Mercury')?.deeptadi, 'Vikala'
 assert.notEqual(results.find((row) => row.planet === 'Jupiter')?.sayanadi, '—');
 
 console.log('Planetary Avastha tests passed');
+
+// Ghaṭī at birth counts 2.5 per hour from sunrise, using the chart's own
+// ephemeris sunrise; a pre-dawn birth counts from the previous sunrise.
+const withSun = (birth: string): ChartData => ({
+  ...chart,
+  debug: { ...chart.debug!, inputDateTime: birth, sunriseLocalHours: 6, previousSunriseLocalHours: -18 + 0.1 },
+});
+assert.equal(ghatiAtBirth(withSun('2000-01-01T06:00'), '2000-01-01T06:00'), 1, 'sunrise opens the first ghaṭī');
+assert.equal(ghatiAtBirth(withSun('2000-01-01T06:30'), '2000-01-01T06:30'), 2, 'twenty-four minutes make a ghaṭī');
+assert.equal(ghatiAtBirth(withSun('2000-01-01T12:00'), '2000-01-01T12:00'), 16, 'six hours after sunrise is the 16th');
+assert.equal(ghatiAtBirth(withSun('2000-01-01T05:00'), '2000-01-01T05:00'), 58, 'before sunrise the previous day is still counting');
+

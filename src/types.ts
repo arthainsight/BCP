@@ -62,6 +62,8 @@ export interface DebugInfo {
    * run from this sunset to the birth-date sunrise.
    */
   previousSunsetLocalHours?: number;
+  /** The previous morning's sunrise on the same scale (negative). Ghaṭī for a pre-dawn birth count from it. */
+  previousSunriseLocalHours?: number;
 }
 
 export interface SpecialLagna {

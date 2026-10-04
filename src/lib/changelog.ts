@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v2.21',
+    date: '2026-10-04',
+    title: 'Rāśi daśās checked against PyJHora and the book',
+    changes: [
+      'Nārāyaṇa, Lagna Kendrādi (Mūla) and Sthira Daśā now agree with PyJHora on every one of the fixture charts, and Nārāyaṇa reproduces both worked examples in P.V.R. Narasimha Rao’s book. Before this release one of the two book examples came out wrong.',
+      'Fixed: Uranus, Neptune and Pluto were counted as occupants when deciding the stronger of lagna and 7th, which could pick the wrong starting sign for all three daśās.',
+      'Fixed: Scorpio and Aquarius now use the stronger of their two lords (Mars or Ketu, Saturn or Rahu) for the period length, as the book requires. Scorpio and Aquarius periods could previously be several years off.',
+      'The stronger-sign test now applies all six rules, adding Jupiter, Mercury and the lord joining or aspecting the sign, and the lord’s parity. Brahma for Sthira Daśā now follows PyJHora’s selection.',
+      'Two of the earlier hand-derived regression charts disagreed with PyJHora and were replaced with PyJHora’s own output.',
+      'Avasthā ghaṭīs now count from the ephemeris sunrise, like the Pañcāṅga.',
+      'Updated the application version to v2.21.',
+    ],
+  },
+  {
     version: 'v2.20',
     date: '2026-10-04',
     title: 'Varṣaphala, annual daśās, and Pañcāṅga from sunrise',

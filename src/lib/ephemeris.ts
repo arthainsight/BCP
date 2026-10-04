@@ -147,6 +147,7 @@ export async function calculateChart(
   const sunTimes = await calculateSunTimes(jdLocalMidnight, lat, lng);
   const previousDay = await calculateSunTimes(jdLocalMidnight - 1, lat, lng);
   const previousSunset = previousDay.sunset !== undefined ? previousDay.sunset - 24 : undefined;
+  const previousSunrise = previousDay.sunrise !== undefined ? previousDay.sunrise - 24 : undefined;
   const lunarMonth = await lunarMonthAt(jd, ayanamsaSetting, ayanamsaOffsetDegrees);
 
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -165,6 +166,7 @@ export async function calculateChart(
     sunsetLocalHours: sunTimes.sunset,
     nextSunriseLocalHours: sunTimes.nextSunrise,
     previousSunsetLocalHours: previousSunset,
+    previousSunriseLocalHours: previousSunrise,
   };
 
   return {

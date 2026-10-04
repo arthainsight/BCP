@@ -34,21 +34,26 @@ const VARIANT_PLANETS = [
   FIXTURE_PLANETS.map((planet, index) => { const sign = (planet.sign + index * 3 + 4) % 12 + 1; return { ...planet, sign, longitude: (sign - 1) * 30 + planet.degree }; }),
 ];
 const ASCENDANTS = [4, 1, 9];
+// Seeds, orders and durations below are the output of PyJHora 4.8.7 itself,
+// run on these planet positions (narayana._dhasa_duration, house.brahma,
+// house.stronger_rasi_from_planet_positions). Earlier hand-derived values for
+// the second and third variants disagreed with PyJHora and were replaced in
+// v2.21. Ends follow from the durations on the 365.256364-day year.
 const GOLDEN: Record<RasiDashaSystem, { seed: number; order: string; durations: string; ends: string }[]> = {
   narayana: [
     { seed: 9, order: 'Cp,Sg,Sc,Li,Vi,Le,Cn,Ge,Ta,Ar,Pi,Aq', durations: '2,4,10,12,11,11,1,4,5,5,11,3', ends: '2001-12-31T22:18:19.699Z,2005-12-31T22:54:59.097Z,2016-01-01T12:26:37.593Z' },
     { seed: 0, order: 'Ar,Ta,Ge,Cn,Le,Vi,Li,Sc,Sg,Cp,Aq,Pi', durations: '10,3,10,11,11,5,10,3,12,2,3,3', ends: '2009-12-31T23:31:38.496Z,2012-12-31T17:59:08.044Z,2023-01-01T07:30:46.540Z' },
-    { seed: 2, order: 'Ge,Aq,Li,Vi,Ta,Cp,Sg,Le,Ar,Pi,Sc,Cn', durations: '6,5,8,9,1,4,9,6,4,6,9,5', ends: '2005-12-31T22:54:59.097Z,2011-01-01T05:40:48.345Z,2019-01-01T06:54:07.141Z' },
+    { seed: 8, order: 'Sg,Le,Ar,Pi,Sc,Cn,Ge,Aq,Li,Vi,Ta,Cp', durations: '9,6,4,6,3,5,6,10,8,9,1,4', ends: '2008-12-31T17:22:28.646Z,2015-01-01T06:17:27.743Z,2019-01-01T06:54:07.141Z' },
   ],
   moola: [
     { seed: 9, order: 'Cp,Li,Cn,Ar,Sg,Vi,Ge,Pi,Sc,Le,Ta,Aq', durations: '2,12,1,5,4,11,4,11,10,11,5,3', ends: '2001-12-31T22:18:19.699Z,2014-01-01T00:08:17.894Z,2015-01-01T06:17:27.743Z' },
     { seed: 0, order: 'Ar,Cn,Li,Cp,Ta,Le,Sc,Aq,Ge,Vi,Sg,Pi', durations: '10,11,10,2,3,11,3,3,10,5,12,3', ends: '2009-12-31T23:31:38.496Z,2020-12-31T19:12:26.841Z,2031-01-01T08:44:05.337Z' },
-    { seed: 2, order: 'Ge,Vi,Sg,Pi,Cn,Li,Cp,Ar,Le,Sc,Aq,Ta', durations: '6,9,9,6,5,8,4,4,6,9,5,1', ends: '2005-12-31T22:54:59.097Z,2015-01-01T06:17:27.743Z,2024-01-01T13:39:56.389Z' },
+    { seed: 8, order: 'Sg,Pi,Ge,Vi,Cp,Ar,Cn,Li,Aq,Ta,Le,Sc', durations: '9,6,6,9,4,4,5,8,10,1,6,3', ends: '2008-12-31T17:22:28.646Z,2015-01-01T06:17:27.743Z,2020-12-31T19:12:26.840Z' },
   ],
   sthira: [
     { seed: 6, order: 'Li,Sc,Sg,Cp,Aq,Pi,Ar,Ta,Ge,Cn,Le,Vi', durations: '7,8,9,7,8,9,7,8,9,7,8,9', ends: '2007-01-01T05:04:08.947Z,2015-01-01T06:17:27.743Z,2024-01-01T13:39:56.389Z' },
-    { seed: 9, order: 'Cp,Aq,Pi,Ar,Ta,Ge,Cn,Le,Vi,Li,Sc,Sg', durations: '7,8,9,7,8,9,7,8,9,7,8,9', ends: '2007-01-01T05:04:08.947Z,2015-01-01T06:17:27.743Z,2024-01-01T13:39:56.389Z' },
-    { seed: 6, order: 'Li,Sc,Sg,Cp,Aq,Pi,Ar,Ta,Ge,Cn,Le,Vi', durations: '7,8,9,7,8,9,7,8,9,7,8,9', ends: '2007-01-01T05:04:08.947Z,2015-01-01T06:17:27.743Z,2024-01-01T13:39:56.389Z' },
+    { seed: 0, order: 'Ar,Ta,Ge,Cn,Le,Vi,Li,Sc,Sg,Cp,Aq,Pi', durations: '7,8,9,7,8,9,7,8,9,7,8,9', ends: '2007-01-01T05:04:08.947Z,2015-01-01T06:17:27.743Z,2024-01-01T13:39:56.389Z' },
+    { seed: 10, order: 'Aq,Pi,Ar,Ta,Ge,Cn,Le,Vi,Li,Sc,Sg,Cp', durations: '8,9,7,8,9,7,8,9,7,8,9,7', ends: '2008-01-01T11:13:18.796Z,2016-12-31T18:35:47.442Z,2024-01-01T13:39:56.389Z' },
   ],
 };
 
@@ -73,5 +78,5 @@ export function validateRasiDashaRegression(system: RasiDashaSystem): RasiValida
     const ketuResult = calculateRasiDasha('moola', ketuSeedPlanets, 6, new Date('2000-01-01T10:00:00.000Z'), { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'lagna', sthiraMethod: 'brahma-pvr' });
     checks.push(ketuResult.entries.slice(0, 12).map(entry => entry.abbr).join(',') === 'Vi,Ge,Pi,Sg,Le,Ta,Aq,Sc,Cn,Ar,Cp,Li');
   }
-  return { passed: checks.every(Boolean), checks: checks.length, fixture: 'PJH-GOLDEN-001…003', scope: 'pyjhora-rule-reference', reference: 'PyJHora 48e57d2 · sidereal year 365.256364 d', goldenCharts: 3, dateParity: checks.every(Boolean) };
+  return { passed: checks.every(Boolean), checks: checks.length, fixture: 'PJH-GOLDEN-001…003', scope: 'pyjhora-rule-reference', reference: 'PyJHora 4.8.7 output · sidereal year 365.256364 d', goldenCharts: 3, dateParity: checks.every(Boolean) };
 }
