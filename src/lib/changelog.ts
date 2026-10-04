@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v2.19',
+    date: '2026-10-04',
+    title: 'Tithi Praveśa annual chart',
+    changes: [
+      'Added Tithi Praveśa, the Vedic annual chart, as a new view beside Varga, Nāḍī, Aṣṭakavarga and Dṛṣṭi. It is cast for the moment the Moon returns to its natal distance from the Sun — the birth tithi to the arc-second — in the lunar month of birth.',
+      'The lunar month is amānta and named by the Sun’s sidereal sign at the opening new moon. In an adhika year the nija month is taken, as tradition prescribes. A second method, the repetition nearest the solar return, is available as a toggle.',
+      'Shows the start and end of the year with their own daylight-saving offsets, completed age, the natal tithi and māsa, the vāra counted from sunrise with its lord as lord of the year, and the running horā.',
+      'The chart is drawn in the selected North or South Indian style with an optional natal overlay, plus a table giving each graha’s house in both the annual and the natal chart. Step through the years with the arrows, or return to the year in force at the target date.',
+      'Added tests: the new moon finder against the 8 April 2024 eclipse, the elongation repeating across thirteen years, year lengths of twelve or thirteen lunations, the adhika Śrāvaṇa of 2023, New Year birthdays, and vāra and horā around sunrise.',
+      'Updated the application version to v2.19.',
+    ],
+  },
+  {
     version: 'v2.18',
     date: '2026-08-13',
     title: 'Boundary rounding fix, and tests for dṛṣṭi, VDS and panchāṅga',

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
+import { BcpResult, CalculationSettings, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import VargaMatrix from '@/pages/VargaMatrix';
@@ -12,6 +12,7 @@ import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
 import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import TransitDateControls from './TransitDateControls';
 import NadiAmsaPanel from './NadiAmsaPanel';
+import TithiPravesaPanel from './TithiPravesaPanel';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 
 function parseBirthDt(dt: string): Date | null {
@@ -51,6 +52,8 @@ export interface ChartSectionProps {
   onManualBcpAgeChange?: (v: string) => void;
   manualBcpMonth?: string;
   onManualBcpMonthChange?: (v: string) => void;
+  calculationSettings?: CalculationSettings;
+  ianaTimezone?: string;
 }
 
 export default function ChartSection({
@@ -76,9 +79,11 @@ export default function ChartSection({
   onManualBcpAgeChange,
   manualBcpMonth,
   onManualBcpMonthChange,
+  calculationSettings,
+  ianaTimezone,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
-  const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti'>('chart');
+  const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi'>('chart');
   const [vargaView, setVargaView] = useState<'chart' | 'table'>('chart');
 
   const bnnHouses = useMemo(() => {
@@ -148,7 +153,7 @@ export default function ChartSection({
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
 
-  const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti') =>
+  const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi') =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
 
   return (
@@ -163,6 +168,7 @@ export default function ChartSection({
             <button type="button" onClick={() => setView('nadi')} className={tabClass('nadi')}>Nāḍī</button>
             <button type="button" onClick={() => setView('ashtakavarga')} className={tabClass('ashtakavarga')}>Aṣṭakavarga</button>
             <button type="button" onClick={() => setView('drishti')} className={tabClass('drishti')}>Dṛṣṭi</button>
+            <button type="button" onClick={() => setView('tithi')} className={tabClass('tithi')}>Tithi Praveśa</button>
           </div>
         </div>
       </div>
@@ -203,6 +209,17 @@ export default function ChartSection({
         <div className="min-w-0 overflow-x-auto"><AshtakavargaPanel chart={chart} /></div>
       ) : view === 'drishti' ? (
         <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} showGrahaDrishti={chartDisplaySettings.showGrahaDrishti ?? true} showRashiDrishti={chartDisplaySettings.showRashiDrishti ?? true} /></div>
+      ) : view === 'tithi' ? (
+        <TithiPravesaPanel
+          chart={chart}
+          birthDatetime={birthDatetime ?? ''}
+          targetDate={targetDate}
+          ianaTimezone={ianaTimezone}
+          calculationSettings={calculationSettings}
+          chartStyle={chartStyle}
+          chartDisplaySettings={chartDisplaySettings}
+          nakshatraAdjust={nakshatraAdjust}
+        />
       ) : chartStyle === 'south' ? (
         <SouthIndianChart
           activeYearHouse={yearHouse}

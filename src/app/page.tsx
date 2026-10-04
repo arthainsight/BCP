@@ -781,6 +781,8 @@ export default function Home() {
     onManualBcpAgeChange: setManualBcpAge,
     manualBcpMonth,
     onManualBcpMonthChange: setManualBcpMonth,
+    calculationSettings,
+    ianaTimezone: ianaTimezone || undefined,
   };
 
   const dataProps = {
