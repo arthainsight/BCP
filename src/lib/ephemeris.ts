@@ -8,6 +8,7 @@ import {
 import { applyAyanamsaOffset, resolveAyanamsaMode } from './ayanamsas';
 import { calculateSunTimes } from './sunTimes';
 import { normalizeDegrees } from './angles';
+import { lunarMonthAt } from './lunisolar';
 
 const PLANET_NAMES: Record<number, string> = {
   [SE_SUN]: "Sun",
@@ -144,6 +145,9 @@ export async function calculateChart(
     utcAtLocalMidnight.year, utcAtLocalMidnight.month, utcAtLocalMidnight.day, utcAtLocalMidnight.totalHours,
   );
   const sunTimes = await calculateSunTimes(jdLocalMidnight, lat, lng);
+  const previousDay = await calculateSunTimes(jdLocalMidnight - 1, lat, lng);
+  const previousSunset = previousDay.sunset !== undefined ? previousDay.sunset - 24 : undefined;
+  const lunarMonth = await lunarMonthAt(jd, ayanamsaSetting, ayanamsaOffsetDegrees);
 
   const pad = (n: number) => String(n).padStart(2, '0');
   const debug: DebugInfo = {
@@ -160,6 +164,7 @@ export async function calculateChart(
     sunriseLocalHours: sunTimes.sunrise,
     sunsetLocalHours: sunTimes.sunset,
     nextSunriseLocalHours: sunTimes.nextSunrise,
+    previousSunsetLocalHours: previousSunset,
   };
 
   return {
@@ -170,6 +175,7 @@ export async function calculateChart(
     },
     planets,
     specialLagnas,
+    lunarMonth: { masaIndex: lunarMonth.masaIndex, adhika: lunarMonth.adhika },
     debug,
   };
 }

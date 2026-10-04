@@ -160,4 +160,59 @@ assert.ok(LORDS.includes(polar.hora), 'and the hora falls back to a real lord');
 const badInput = calculatePanchang(chartWith(0, 0), 'not a date', 5.5, 'Lahiri');
 assert.ok(badInput.vara.length > 0, 'a malformed datetime still yields a result');
 
+// ---------------------------------------------------------------------------
+// Vedic day from sunrise, using the ephemeris times the chart carries.
+// ---------------------------------------------------------------------------
+function chartWithSun(sunrise: number, sunset: number, nextSunrise: number, previousSunset: number): ChartData {
+  const chart = chartWith(0, 0);
+  chart.debug = {
+    ...chart.debug!,
+    sunriseLocalHours: sunrise,
+    sunsetLocalHours: sunset,
+    nextSunriseLocalHours: nextSunrise,
+    previousSunsetLocalHours: previousSunset,
+  };
+  return chart;
+}
+// Sunrise 06:00, sunset 18:00, so every horā is exactly an hour.
+const even = chartWithSun(6, 18, 30, -6);
+const evenRun = (when: string) => calculatePanchang(even, when, 5.5, 'Lahiri');
+
+// 3 January 2000 was a Monday. At 04:00 Sunday's night is still running.
+const preDawn = evenRun('03.01.2000 04.00.00');
+assert.equal(preDawn.vara, 'Sunday', 'before sunrise the vāra is the previous weekday');
+assert.equal(preDawn.varaLord, 'Sun');
+assert.equal(preDawn.beforeSunrise, true);
+// Sunday's horās from sunrise: Su Ve Me Mo Sa Ju Ma, repeating. 04:00 is the
+// 23rd horā (index 22): 22 mod 7 = 1 → Venus.
+assert.equal(preDawn.hora, 'Venus', 'the hora counts on through the previous night');
+
+const morning = evenRun('03.01.2000 06.30.00');
+assert.equal(morning.vara, 'Monday');
+assert.equal(morning.beforeSunrise, false);
+assert.equal(morning.hora, 'Moon', 'first horā of Monday is the Moon');
+assert.equal(evenRun('03.01.2000 07.30.00').hora, 'Saturn', 'then Saturn');
+assert.equal(evenRun('03.01.2000 18.30.00').hora, 'Venus', 'the thirteenth horā opens the night: Mo Sa Ju Ma Su Ve Me Mo Sa Ju Ma Su → Ve');
+
+// Unequal horās: a 15-hour day makes each day horā 75 minutes.
+const summer = calculatePanchang(chartWithSun(4, 19, 28.5, -4.5), '03.01.2000 05.14.00', 5.5, 'Lahiri');
+assert.equal(summer.hora, 'Moon', 'still the first horā 74 minutes after sunrise');
+const summerSecond = calculatePanchang(chartWithSun(4, 19, 28.5, -4.5), '03.01.2000 05.16.00', 5.5, 'Lahiri');
+assert.equal(summerSecond.hora, 'Saturn', 'the second begins at 75 minutes');
+
+// Sunrise, sunset and noon are shown from the chart's own times.
+assert.equal(morning.sunrise, '06:00:00');
+assert.equal(morning.sunset, '18:00:00');
+assert.equal(morning.solarNoon, '12:00:00');
+
+// ---------------------------------------------------------------------------
+// Masa — the chart's amānta month when it carries one.
+// ---------------------------------------------------------------------------
+const withMonth = chartWith(0, 0);
+withMonth.lunarMonth = { masaIndex: 4, adhika: true };
+assert.equal(calculatePanchang(withMonth, '01.01.2000 12.00.00', 5.5, 'Lahiri').masa, 'Adhika Shravana (amānta)');
+withMonth.lunarMonth = { masaIndex: 0, adhika: false };
+assert.equal(calculatePanchang(withMonth, '01.01.2000 12.00.00', 5.5, 'Lahiri').masa, 'Chaitra (amānta)');
+assert.match(run(0, 0).masa, /\(approx\.\)$/, 'without the chart month the sign-based estimate is labelled');
+
 console.log('Panchang tests passed');
