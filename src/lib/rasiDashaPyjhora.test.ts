@@ -57,7 +57,7 @@ async function main() {
     assert.equal(sequence('narayana', chart.planets, chart.ascendant.sign), example.narayana, `${example.label} Nārāyaṇa`);
   }
 
-  assert.ok(fixtures.length >= 8, 'fixture set is present');
+  assert.ok(fixtures.length >= 50, 'fixture set is present');
   fixtures.forEach((f, index) => {
     const planets = f.planets.map(([sign, degree], i) => ({ name: NAMES[i], sign: sign + 1, degree, longitude: sign * 30 + degree }));
     const asc = f.asc + 1;
