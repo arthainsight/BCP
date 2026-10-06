@@ -8,6 +8,8 @@ export interface SavedChartData {
   ianaTimezone: string;
   tzOverride: string;
   targetDate: string;
+  /** Time of the target moment, HH:MM; older saves have none and mean noon. */
+  targetTime?: string;
   showCoords: boolean;
   calculationSettings?: CalculationSettings;
   chartDisplaySettings?: ChartDisplaySettings;

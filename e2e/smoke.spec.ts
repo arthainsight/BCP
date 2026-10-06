@@ -51,6 +51,14 @@ test('calculates a chart and opens every main view', async ({ page }) => {
   await visible(page, page.getByRole('button', { name: 'Back one year' })).click();
   await expect(dateField).not.toHaveValue(before);
 
+  // The transits follow the target moment: stepping an hour recalculates them.
+  const timeField = visible(page, page.locator('input[type="time"]'));
+  await timeField.fill('23:30');
+  const transitRequest = page.waitForRequest(request => request.url().includes('/api/chart?') && request.url().includes('hour=00'));
+  await visible(page, page.getByRole('button', { name: 'Forward one hour' })).click();
+  await transitRequest;
+  await expect(timeField).toHaveValue('00:30');
+
   // Transit hits load for the twelve months after the target date.
   await visible(page, page.getByRole('button', { name: /transit hits/ })).click();
   await expect(visible(page, page.getByText(/over natal/))).toBeVisible({ timeout: 30_000 });

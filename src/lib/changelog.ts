@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.32',
+    date: '2026-10-06',
+    title: 'One target moment, transits included',
+    changes: [
+      'The target is now a moment, a date and a time, and the transits follow it too. Step it by an hour, day, month or year, type a date and time, or press “now”. The separate transit date field below the chart is gone.',
+      'BCP, BNN, Paraya and the daśā lords read the target date; the transits are calculated for the exact date and time. While they recalculate, the bar shows “transits…”.',
+      '“Set as target” in the Dasha event list, and “set transit” in the transit hits, move the whole target moment. Saved charts remember the target time.',
+      'Layers that are switched off no longer appear in the chart legend; switch them back on under Settings → chart layers.',
+      'Updated the application version to v2.32.',
+    ],
+  },
+  {
     version: 'v2.31',
     date: '2026-10-06',
     title: 'Target date controls, transit hits, Finnish',

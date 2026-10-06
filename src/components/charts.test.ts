@@ -52,8 +52,8 @@ for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianC
   const withControls = renderToStaticMarkup(createElement(Chart, {
     ...base, transitPlanets: transits, showTransitPlanets: true, layerControls: controls,
   }));
-  assert.equal(withControls.match(/<button/g)?.length, 2, `${name}: one button per layer`);
-  assert.match(withControls, /aria-pressed="false"[^>]*>(?:(?!<\/button>).)*Paraya/, `${name}: Paraya is off`);
+  assert.equal(withControls.match(/<button/g)?.length, 1, `${name}: one button, for the layer that is on`);
+  assert.doesNotMatch(text(withControls), /Paraya/, `${name}: a layer that is off is left out of the legend`);
   assert.match(withControls, /aria-pressed="true"[^>]*>(?:(?!<\/button>).)*Transit/, `${name}: transit is on`);
   assert.doesNotMatch(text(withControls), /Ju 4\.3°/, `${name}: an off layer is not drawn`);
   controls?.forEach(c => c.onToggle());
