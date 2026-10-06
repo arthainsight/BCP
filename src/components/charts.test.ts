@@ -5,6 +5,7 @@ import type { PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import { buildLayerControls } from './chartLayers';
+import { ChartFillContext } from './chartFill';
 import { DEFAULT_CHART_DISPLAY } from '@/types';
 
 // ---------------------------------------------------------------------------
@@ -72,4 +73,13 @@ for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianC
   const highlighted = renderToStaticMarkup(createElement(Chart, { ...base, highlightPlanet: 'Moon', onPlanetClick: () => {} }));
   assert.equal(highlighted.match(/underline/g)?.length, 1, `${name}: only the followed planet is highlighted`);
   assert.match(highlighted, /underline[^>]*>Mo</, `${name}: the Moon is the highlighted label`);
+}
+
+// --- Full screen: charts drop their usual width cap and fit the screen --------
+for (const [name, Chart, cap] of [['North', NorthIndianChart, 'max-w-[620px]'], ['South', SouthIndianChart, 'max-w-[520px]']] as const) {
+  const normal = renderToStaticMarkup(createElement(Chart, base));
+  assert.ok(normal.includes(cap), `${name}: capped width normally`);
+  const filled = renderToStaticMarkup(createElement(ChartFillContext.Provider, { value: true }, createElement(Chart, base)));
+  assert.ok(!filled.includes(cap), `${name}: no width cap in full screen`);
+  assert.match(filled, /max-width:min\(100%, calc\(100dvh - 9rem\)\)/, `${name}: fits the screen height in full screen`);
 }

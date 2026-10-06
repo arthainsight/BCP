@@ -11,6 +11,7 @@ import DrishtiPanel from '@/components/DrishtiPanel';
 import AshtakavargaPanel from '@/components/AshtakavargaPanel';
 import TransitDateControls from './TransitDateControls';
 import { buildLayerControls } from './chartLayers';
+import { ChartFillContext } from './chartFill';
 import NadiAmsaPanel from './NadiAmsaPanel';
 import TithiPravesaPanel from './TithiPravesaPanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
@@ -71,6 +72,31 @@ export default function ChartSection({
   const [vargaView, setVargaView] = useState<'chart' | 'table'>('chart');
   // Residence for the annual charts, shared by Tithi Praveśa and Varṣaphala.
   const [annualPlace, setAnnualPlace] = useState<AnnualPlace>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  // Full screen is an overlay over the whole app, plus the browser's own full
+  // screen where it is available (not on iPhone). Esc, the close button or
+  // leaving browser full screen all close it.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') setFullscreen(false); };
+    const onFullscreenChange = () => { if (!document.fullscreenElement) setFullscreen(false); };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.body.style.overflow = previousOverflow;
+      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    };
+  }, [fullscreen]);
+
+  const enterFullscreen = () => {
+    setFullscreen(true);
+    document.documentElement.requestFullscreen?.().catch(() => {});
+  };
 
   const bnnHouses = { major: bnnMajorHouseFromParent, minor: bnnMinorHouseFromParent };
 
@@ -129,11 +155,17 @@ export default function ChartSection({
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
 
   return (
-    <div className="space-y-3 min-w-0 overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 min-w-0">
-        <div />
-
-        <div className="w-full sm:w-auto overflow-x-auto">
+    <ChartFillContext.Provider value={fullscreen}>
+    <div
+      className={fullscreen
+        ? 'fixed inset-0 z-[60] space-y-3 overflow-y-auto overflow-x-hidden bg-white p-3 sm:p-6 dark:bg-zinc-950'
+        : 'space-y-3 min-w-0 overflow-x-hidden'}
+      role={fullscreen ? 'dialog' : undefined}
+      aria-modal={fullscreen || undefined}
+      aria-label={fullscreen ? 'Charts in full screen' : undefined}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="min-w-0 flex-1 overflow-x-auto">
           <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
             <button type="button" onClick={() => setView('chart')} className={tabClass('chart')}>Chart</button>
             <button type="button" onClick={() => setView('varga')} className={tabClass('varga')}>Varga</button>
@@ -145,6 +177,15 @@ export default function ChartSection({
             <button type="button" onClick={() => setView('varsha')} className={tabClass('varsha')}>Varṣaphala</button>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={fullscreen ? () => setFullscreen(false) : enterFullscreen}
+          title={fullscreen ? 'Close full screen (Esc)' : 'Full screen'}
+          aria-label={fullscreen ? 'Close full screen' : 'Full screen'}
+          className="shrink-0 rounded-md border border-zinc-200 px-2 py-1.5 text-[10px] font-mono text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100"
+        >
+          {fullscreen ? '✕ close' : '⤢ full'}
+        </button>
       </div>
 
       {view === 'varga' ? (
@@ -273,5 +314,6 @@ export default function ChartSection({
         </div>
       )}
     </div>
+    </ChartFillContext.Provider>
   );
 }

@@ -7,6 +7,7 @@ import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 import { normalizeDegrees } from '@/lib/angles';
+import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { LegendEntry, type ChartLayerControl, type ChartLayerKey } from './chartLayers';
 import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 
@@ -187,6 +188,7 @@ export default function SouthIndianChart({
 }: Props) {
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
+  const fill = useChartFill();
   const isDark = !hydrated || resolvedTheme === 'dark';
 
   const gridRef = useRef<HTMLDivElement>(null);
@@ -241,7 +243,7 @@ export default function SouthIndianChart({
   const contentHeight = cellSize - 2 * padding - (compact ? COMPACT_CELL_HEADER : CELL_HEADER);
 
   return (
-    <div className="w-full max-w-[520px] mx-auto">
+    <div className={fill ? 'w-full mx-auto' : 'w-full max-w-[520px] mx-auto'} style={fill ? { maxWidth: FILL_MAX_WIDTH } : undefined}>
       <div
         ref={gridRef}
         className="grid gap-1 aspect-square"
