@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.28',
+    date: '2026-10-06',
+    title: 'Workspace removed, Varga fixes',
+    changes: [
+      'Removed the workspace (the WS tab and the “workspace mode” setting). The Varga view with full screen now covers the side-by-side use. Saved workspace layouts are cleared and are no longer part of backups.',
+      '“Open Varga Matrix” in the Dasha event list now opens Matrix & Bala; it used to open the charts.',
+      'Small South Indian charts in the Varga view use one column on a phone, so their cells are large enough to read. Wider screens still show several per row.',
+      'Updated the application version to v2.28.',
+    ],
+  },
+  {
     version: 'v2.27',
     date: '2026-10-06',
     title: 'One Varga view',

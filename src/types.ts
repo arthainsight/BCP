@@ -117,25 +117,6 @@ export interface CharaKaraka {
 
 export type ChartStyle = 'north' | 'south';
 
-export type WorkspacePanelType =
-  | 'natal'
-  | 'natal-transit'
-  | 'bcp'
-  | 'bnn'
-  | 'vimshottari'
-  | 'graha-table'
-  | 'yoga-table'
-  | 'varga-matrix'
-  | 'varga-strength'
-  | 'shadbala'
-  | 'bhava-bala';
-
-export type WorkspacePanel = {
-  id: string;
-  title: string;
-  type: WorkspacePanelType;
-};
-
 export interface ChartDisplaySettings {
   chartStyle: ChartStyle;
   showSigns: boolean;
@@ -154,7 +135,6 @@ export interface ChartDisplaySettings {
   showBnnMinorHighlight: boolean;
   showTransitOverlay: boolean;
   showNadiParaya: boolean;
-  showWorkspace: boolean;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -175,7 +155,6 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showBnnMinorHighlight: true,
   showTransitOverlay: true,
   showNadiParaya: true,
-  showWorkspace: false,
 };
 
 export interface CalculationSettings {

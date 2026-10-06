@@ -18,7 +18,6 @@ import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
 import CalculationDebugPanel from '@/components/CalculationDebugPanel';
 import FileActions, { ChartSnapshot } from '@/components/FileActions';
-import WorkspaceView from '@/components/workspace/WorkspaceView';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
 import { ayanamsaLabel } from '@/lib/ayanamsas';
 
@@ -63,7 +62,7 @@ function computeManualBcp(completedAge: number, month: number): BcpResult {
   };
 }
 
-type DesktopTab = 'data' | 'grahas' | 'dasha' | 'public' | 'workspace' | 'settings';
+type DesktopTab = 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
 
 type CalculationOptions = {
   preserveCurrentPanel?: boolean;
@@ -186,7 +185,6 @@ export default function Home() {
   const [manualBcpMonth, setManualBcpMonth] = useState('');
 
   // BNN age override — lifted here so chart highlights + event panel stay in sync
-  const [bnnOverrideStr, setBnnOverrideStr] = useState('');
 
   // Active saved chart name (null = no saved chart active)
   const [activeChartName, setActiveChartName] = useState<string | null>(null);
@@ -242,25 +240,16 @@ export default function Home() {
     return mainAyanamsa - siderealAyanamsa;
   }, [chartData?.debug, calculationSettings.nakshatraMode]);
 
-  // BNN: effective age (override or auto-computed from birth + target dates)
-  const bnnAutoAge = useMemo(() => {
+  // BNN: age at the target date
+  const bnnAge = useMemo(() => {
     const birth = parseDateTime(birthDatetime);
     const target = parseTargetDateString(targetDate);
     if (!birth || !target) return 0;
     return Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
   }, [birthDatetime, targetDate]);
 
-  const effectiveBnnAge = useMemo(() => {
-    const trimmed = bnnOverrideStr.trim();
-    if (trimmed) {
-      const n = parseFloat(trimmed);
-      if (!isNaN(n) && n >= 0) return n;
-    }
-    return bnnAutoAge;
-  }, [bnnOverrideStr, bnnAutoAge]);
-
-  const effectiveBnnHouses = useMemo(() => calculateBnnHouses(chartData, effectiveBnnAge), [chartData, effectiveBnnAge]);
-  const effectiveNadiParayaHouses = useMemo(() => calculateParayaHouses(chartData, effectiveBnnAge), [chartData, effectiveBnnAge]);
+  const effectiveBnnHouses = useMemo(() => calculateBnnHouses(chartData, bnnAge), [chartData, bnnAge]);
+  const effectiveNadiParayaHouses = useMemo(() => calculateParayaHouses(chartData, bnnAge), [chartData, bnnAge]);
 
   // Recompute BCP when the target or birth date changes, but only if a chart
   // has already produced a result. The previous version had bcpResult in the
@@ -293,8 +282,9 @@ export default function Home() {
       if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
       const dash = localStorage.getItem('dashaSettings');
       if (dash) setDashaSettings(migrateDashaSettings(JSON.parse(dash)));
-      // The simple / research / debug switcher was removed in v2.25.
+      // The simple / research / debug switcher (v2.25) and the workspace (v2.28) were removed.
       localStorage.removeItem('uiMode');
+      localStorage.removeItem('workspace_panels');
     } catch {}
     setSettingsRestored(true);
   }, []);
@@ -701,12 +691,6 @@ export default function Home() {
     loading, error, canCalculate,
   };
 
-  const bcpManualProps = {
-    useManualBcpMode, onUseManualBcpModeChange: setUseManualBcpMode,
-    manualBcpAge, onManualBcpAgeChange: setManualBcpAge,
-    manualBcpMonth, onManualBcpMonthChange: setManualBcpMonth,
-    manualBcpResult,
-  };
 
   const settingsProps = {
     chartDisplaySettings,
@@ -780,10 +764,10 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ── DESKTOP: 2-column grid (or full-width workspace) ────────── */}
-      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'workspace' || desktopTab === 'public' ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
-        {/* Left: Chart + optional BCP summary + optional Panchang (hidden in workspace mode) */}
-        <div className={`space-y-3 ${desktopTab === 'workspace' || desktopTab === 'public' ? 'hidden' : ''}`}>
+      {/* ── DESKTOP: 2-column grid (full width for Public) ────────── */}
+      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'public' ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
+        {/* Left: Chart + optional BCP summary + optional Panchang (hidden on Public) */}
+        <div className={`space-y-3 ${desktopTab === 'public' ? 'hidden' : ''}`}>
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
             <ChartSection {...chartSectionProps} />
             {chartData && (
@@ -811,7 +795,7 @@ export default function Home() {
         {/* Right: tabbed panels */}
         <div className="space-y-3">
           <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1 overflow-x-auto">
-            {(['data', 'grahas', 'dasha', 'public', ...(chartDisplaySettings.showWorkspace ? ['workspace'] : []), 'settings'] as DesktopTab[]).map((tab) => (
+            {(['data', 'grahas', 'dasha', 'public', 'settings'] as DesktopTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setDesktopTab(tab)}
@@ -850,33 +834,6 @@ export default function Home() {
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
-            {desktopTab === 'workspace' && (
-              chartData && bcpResult
-                ? <WorkspaceView
-                    chart={chartData}
-                    bcp={bcpResult}
-                    transitPlanets={transitPlanets}
-                    transitDatetime={transitDatetime}
-                    onTransitDatetimeChange={setTransitDatetime}
-                    onCalculateTransit={handleCalculateTransit}
-                    transitLoading={transitLoading}
-                    birthDatetime={birthDatetime}
-                    targetDate={targetDate}
-                    onTargetDateChange={setTargetDate}
-                    chartDisplaySettings={chartDisplaySettings}
-                    onToggleChartDisplay={toggleChartDisplay}
-                    karakaByPlanet={karakaByPlanet}
-                    nakshatraAdjust={nakshatraAdjust}
-                    dashaSettings={dashaSettings}
-                    effectiveBnnHouses={effectiveBnnHouses}
-                    effectiveNadiParayaHouses={effectiveNadiParayaHouses}
-                    bnnOverrideStr={bnnOverrideStr}
-                    onBnnOverrideStrChange={setBnnOverrideStr}
-                    bcpEnabled={dashaSettings.dashas.bcp}
-                    bcpManualProps={bcpManualProps}
-                  />
-                : <EmptyState message="Calculate a chart to use workspace mode" />
-            )}
             {desktopTab === 'settings' && (
               <SettingsPanel {...settingsProps} />
             )}
@@ -947,37 +904,6 @@ export default function Home() {
           <Panel><PublicChartsPanel /></Panel>
         )}
 
-        {activeTab === 'workspace' && (
-          <Panel>
-            {chartData && bcpResult
-              ? <WorkspaceView
-                  chart={chartData}
-                  bcp={bcpResult}
-                  transitPlanets={transitPlanets}
-                  transitDatetime={transitDatetime}
-                  onTransitDatetimeChange={setTransitDatetime}
-                  onCalculateTransit={handleCalculateTransit}
-                  transitLoading={transitLoading}
-                  birthDatetime={birthDatetime}
-                  targetDate={targetDate}
-                  onTargetDateChange={setTargetDate}
-                  chartDisplaySettings={chartDisplaySettings}
-                  onToggleChartDisplay={toggleChartDisplay}
-                  karakaByPlanet={karakaByPlanet}
-                  nakshatraAdjust={nakshatraAdjust}
-                  dashaSettings={dashaSettings}
-                  effectiveBnnHouses={effectiveBnnHouses}
-                  effectiveNadiParayaHouses={effectiveNadiParayaHouses}
-                  bnnOverrideStr={bnnOverrideStr}
-                  onBnnOverrideStrChange={setBnnOverrideStr}
-                  bcpEnabled={dashaSettings.dashas.bcp}
-                  bcpManualProps={bcpManualProps}
-                />
-              : <EmptyState message="Calculate a chart in Data to use workspace mode" />
-            }
-          </Panel>
-        )}
-
         {activeTab === 'settings' && (
           <Panel>
             <SettingsPanel {...settingsProps} />
@@ -987,11 +913,7 @@ export default function Home() {
 
       {/* Mobile bottom nav */}
       <div className="lg:hidden">
-        <BottomNav
-          activeTab={activeTab}
-          onChange={setActiveTab}
-          showWorkspace={chartDisplaySettings.showWorkspace}
-        />
+        <BottomNav activeTab={activeTab} onChange={setActiveTab} />
       </div>
 
       {/* Footer (desktop only) */}

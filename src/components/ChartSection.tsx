@@ -118,14 +118,18 @@ export default function ChartSection({
       }
     };
 
-    const handleShowVarga = () => setView('varga');
+    // "Open Varga Matrix" in the Dasha event list.
+    const handleShowVargaMatrix = () => {
+      setView('varga');
+      setVargaView('table');
+    };
 
     window.addEventListener('bcp:chart-style-change', handleChartStyleChange);
-    window.addEventListener('bcp:show-varga-matrix', handleShowVarga);
+    window.addEventListener('bcp:show-varga-matrix', handleShowVargaMatrix);
 
     return () => {
       window.removeEventListener('bcp:chart-style-change', handleChartStyleChange);
-      window.removeEventListener('bcp:show-varga-matrix', handleShowVarga);
+      window.removeEventListener('bcp:show-varga-matrix', handleShowVargaMatrix);
     };
   }, []);
 
