@@ -8,10 +8,10 @@ import {
   VARGA_GRID_MAX,
   VARGA_GRID_MIN,
   VARGA_GRID_PRESETS,
+  VARGA_GRID_PRESET_ORDER,
   readVargaGridSelection,
   toggleCustomDivision,
   vargaGridDivisions,
-  type VargaGridPreset,
   type VargaGridSelection,
 } from '@/lib/vargaGrid';
 import NorthIndianChart from './NorthIndianChart';
@@ -88,7 +88,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
 
       <div className="overflow-x-auto">
         <div className="inline-flex min-w-max gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50">
-          {(['shadvarga', 'saptavarga', 'custom'] as VargaGridPreset[]).map(preset => (
+          {VARGA_GRID_PRESET_ORDER.map(preset => (
             <button
               key={preset}
               type="button"
@@ -163,7 +163,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
       )}
 
       <div className="@container">
-        <div className="grid grid-cols-2 gap-2 @xl:grid-cols-3 @3xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 @xl:grid-cols-3 @3xl:grid-cols-4 @5xl:grid-cols-5 @7xl:grid-cols-6">
           {divisions.map(division => (
             <div
               key={division}

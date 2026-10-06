@@ -7,6 +7,7 @@ import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 import { normalizeDegrees } from '@/lib/angles';
+import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { LegendEntry, type ChartLayerControl, type ChartLayerKey } from './chartLayers';
 import { layoutHouseLabels, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
 
@@ -203,6 +204,7 @@ export default function NorthIndianChart({
 }: Props) {
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
+  const fill = useChartFill();
   const isDark = !hydrated || resolvedTheme === 'dark';
 
   const visiblePlanets = filterOuterPlanets(planets, showOuterPlanets);
@@ -233,7 +235,7 @@ export default function NorthIndianChart({
   };
 
   return (
-    <div className="w-full max-w-[620px] mx-auto">
+    <div className={fill ? 'w-full mx-auto' : 'w-full max-w-[620px] mx-auto'} style={fill ? { maxWidth: FILL_MAX_WIDTH } : undefined}>
       <svg viewBox="-25 -25 550 550" className="w-full h-auto overflow-visible" role="img" aria-label="North Indian Jyotish chart">
         {HOUSES.map((item) => {
           const sign = getSignForHouse(ascendantSign, item.house);

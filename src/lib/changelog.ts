@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.26',
+    date: '2026-10-06',
+    title: 'Full screen, sixteen vargas',
+    changes: [
+      'The chart views (Chart, Varga, Vargas, Nāḍī and the rest) can be opened full screen with the “full” button beside their tabs. Charts grow to fill the screen. Close with the button or Esc; on a computer the browser’s own full screen is used too.',
+      'Vargas now shows up to sixteen charts at once. Added the Daśavarga (ten charts) and Ṣoḍaśavarga (all sixteen) groups, and a custom selection can hold four to sixteen. Wide screens show five or six charts per row.',
+      'Updated the application version to v2.26.',
+    ],
+  },
+  {
     version: 'v2.25',
     date: '2026-10-06',
     title: 'One mode',
