@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.25',
+    date: '2026-10-06',
+    title: 'One mode',
+    changes: [
+      'Removed the simple / research / debug switcher from the header. The app now always works as simple mode did.',
+      'The calculation details (Julian day, ayanamsa, ascendant degree, coordinates) are still there: the collapsed “calculation details” line under the graha table opens them.',
+      'Updated the application version to v2.25.',
+    ],
+  },
+  {
     version: 'v2.24',
     date: '2026-10-06',
     title: 'Vargas: divisional charts side by side',

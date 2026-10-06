@@ -282,7 +282,6 @@ export default function WorkspaceView({
             ascendant={chart.ascendant}
             birthDatetime={birthDatetime}
             dashaSettings={VIMSHOTTARI_SETTINGS}
-            collapsible={false}
           />
         );
 
