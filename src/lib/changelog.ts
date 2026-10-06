@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.27',
+    date: '2026-10-06',
+    title: 'One Varga view',
+    changes: [
+      'Merged Varga and Vargas into one Varga view. It opens on the divisional charts side by side; Matrix & Bala is beside it as before.',
+      'A chart’s title opens it full size with everything the old single-chart view had: special lagnas, karakas, degrees, nakṣatras in D1, the divisional lagna and what the chart is read for.',
+      'Updated the application version to v2.27.',
+    ],
+  },
+  {
     version: 'v2.26',
     date: '2026-10-06',
     title: 'Full screen, sixteen vargas',

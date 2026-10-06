@@ -27,13 +27,17 @@ type Props = {
   chart: ChartData;
   chartStyle: 'north' | 'south';
   chartDisplaySettings: ChartDisplaySettings;
+  karakaByPlanet?: Record<string, string>;
+  nakshatraAdjust?: number;
 };
+
+const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 
 const PILL = 'shrink-0 rounded-md px-2 py-1.5 text-[10px] font-mono';
 const PILL_ON = 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400';
 const PILL_OFF = 'text-zinc-500 dark:text-zinc-400';
 
-export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings }: Props) {
+export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0 }: Props) {
   const [selection, setSelection] = useState<VargaGridSelection>(DEFAULT_VARGA_GRID);
   const [highlight, setHighlight] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -67,8 +71,14 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
       showOuterPlanets: chartDisplaySettings.showOuterPlanets,
       showBcpHighlights: false,
       // Small charts show planet codes only; the enlarged chart follows the settings.
+      // BCP highlights and transits are rāśi concepts, so they stay off here.
       degreePrecision: compact ? 'off' as const : chartDisplaySettings.degreePrecision ?? 'off',
       showCharaKaraka: compact ? false : chartDisplaySettings.showCharaKaraka,
+      karakaByPlanet,
+      showNakshatra: !compact && division === 1 && chartDisplaySettings.showNakshatra,
+      nakshatraAdjust,
+      specialLagnas: varga.specialLagnas,
+      showSpecialLagnas: !compact && chartDisplaySettings.showSpecialLagnas,
       compact,
       highlightPlanet: highlight,
       onPlanetClick: toggleHighlight,
@@ -83,7 +93,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
   return (
     <div className="min-w-0 space-y-3">
       <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-        Divisional charts side by side. Tap a planet to follow it through every chart; tap a chart title to enlarge it.
+        Divisional charts side by side. Tap a planet to follow it through every chart; tap a chart’s title to see it full size with your display settings.
       </div>
 
       <div className="overflow-x-auto">
@@ -152,7 +162,11 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
           <div className="mb-2 flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">D{expanded} {VARGA_NAMES[expanded]}</div>
-              <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{VARGA_SIGNIFICATIONS[expanded]}</div>
+              <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
+                {VARGA_SIGNIFICATIONS[expanded]}. Houses are counted from the D{expanded} ascendant
+                ({SIGN_ABBR[buildVargaChart(chart, expanded).ascendantSign - 1]}).
+                {expanded !== 1 && ' Degrees show the position within the divisional sign.'}
+              </div>
             </div>
             <button type="button" onClick={() => setExpanded(null)} className="shrink-0 rounded border border-zinc-200 px-2 py-1 text-[10px] font-mono text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
               Close
