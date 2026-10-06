@@ -1,6 +1,6 @@
 export interface BcpBackup { format: 'bhrigu-code-backup'; version: 1; createdAt: string; entries: Record<string, string>; }
 
-const KNOWN_KEYS = new Set(['chartDisplaySettings', 'calculationSettings', 'dashaSettings', 'workspace_panels', 'bcp_saved_charts', 'bcp_active_chart']);
+const KNOWN_KEYS = new Set(['chartDisplaySettings', 'calculationSettings', 'dashaSettings', 'bcp_saved_charts', 'bcp_active_chart']);
 export function isBcpStorageKey(key: string): boolean { return KNOWN_KEYS.has(key) || key.startsWith('bhrigu:') || key.startsWith('bcp_'); }
 export function createBcpBackup(storage: Pick<Storage, 'length' | 'key' | 'getItem'>): BcpBackup {
   const entries: Record<string, string> = {};

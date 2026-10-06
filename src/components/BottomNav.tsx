@@ -1,6 +1,6 @@
 'use client';
 
-export type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'public' | 'settings' | 'workspace';
+export type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
 
 interface Tab {
   id: TabId;
@@ -16,23 +16,17 @@ const BASE_TABS: Tab[] = [
   { id: 'settings', label: 'Settings' },
 ];
 
-const WORKSPACE_TAB: Tab = { id: 'workspace', label: 'WS' };
-
 interface Props {
   activeTab: TabId;
   onChange: (tab: TabId) => void;
-  showWorkspace?: boolean;
 }
 
-export default function BottomNav({ activeTab, onChange, showWorkspace = false }: Props) {
-  const tabs = showWorkspace
-    ? [...BASE_TABS.slice(0, -1), WORKSPACE_TAB, BASE_TABS[BASE_TABS.length - 1]]
-    : BASE_TABS;
+export default function BottomNav({ activeTab, onChange }: Props) {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 safe-bottom">
       <div className="flex overflow-x-auto">
-        {tabs.map((tab) => (
+        {BASE_TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => onChange(tab.id)}

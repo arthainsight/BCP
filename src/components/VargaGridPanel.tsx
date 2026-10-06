@@ -177,7 +177,11 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
       )}
 
       <div className="@container">
-        <div className="grid grid-cols-2 gap-2 @xl:grid-cols-3 @3xl:grid-cols-4 @5xl:grid-cols-5 @7xl:grid-cols-6">
+        <div className={`grid gap-2 ${chartStyle === 'south'
+          // South Indian cells are a quarter of the chart wide, so small South
+          // charts need a full phone width to stay readable.
+          ? 'grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 @7xl:grid-cols-5'
+          : 'grid-cols-2 @xl:grid-cols-3 @3xl:grid-cols-4 @5xl:grid-cols-5 @7xl:grid-cols-6'}`}>
           {divisions.map(division => (
             <div
               key={division}

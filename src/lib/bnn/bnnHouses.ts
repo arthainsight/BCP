@@ -4,8 +4,8 @@ import { calculateMinorProgression } from './jupiterMinorProgression';
 import { calculateNadiParaya, type NadiParayaHouseActivation } from './nadiParaya';
 
 // Where the BNN progressions and the Nāḍī Paraya points fall in a natal chart,
-// as houses counted from the ascendant. The chart highlights, the workspace
-// and the legend all read these, so they are worked out here once.
+// as houses counted from the ascendant. The chart highlights and the legend
+// both read these, so they are worked out here once.
 
 export interface BnnHouses {
   /** House of the Jupiterian round (BNN Major), or 0 when there is none. */
