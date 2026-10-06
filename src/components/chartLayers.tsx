@@ -3,9 +3,11 @@ import type { ChartDisplaySettings } from '@/types';
 
 // The coloured chart layers a viewer can switch on and off, from the Settings
 // panel or by clicking their entry in the chart legend.
-export type ChartLayerKey = 'transit' | 'bnnMajor' | 'bnnMinor' | 'paraya';
+export type ChartLayerKey = 'bcp' | 'dasha' | 'transit' | 'bnnMajor' | 'bnnMinor' | 'paraya';
 
 export const CHART_LAYER_SETTINGS: Record<ChartLayerKey, keyof ChartDisplaySettings> = {
+  bcp: 'showBcpHighlight',
+  dasha: 'showDashaLords',
   transit: 'showTransitOverlay',
   bnnMajor: 'showBnnMajorHighlight',
   bnnMinor: 'showBnnMinorHighlight',
@@ -13,11 +15,25 @@ export const CHART_LAYER_SETTINGS: Record<ChartLayerKey, keyof ChartDisplaySetti
 };
 
 export const CHART_LAYER_LABELS: Record<ChartLayerKey, string> = {
+  bcp: 'BCP year/month',
+  dasha: 'dasha lords',
   transit: 'transit',
   bnnMajor: 'BNN major',
   bnnMinor: 'BNN minor',
   paraya: 'paraya Ju Sa Ke Ra',
 };
+
+/** Running Vimshottari lords, marked on the natal planets. */
+export interface DashaLordMarks {
+  md: string;
+  ad: string;
+}
+
+/** Superscript after a natal planet: ᴹ for the mahadasha lord, ᴬ for the antardasha lord. */
+export function dashaMark(planet: string, lords?: DashaLordMarks | null): string {
+  if (!lords) return '';
+  return (lords.md === planet ? 'ᴹ' : '') + (lords.ad === planet ? 'ᴬ' : '');
+}
 
 export interface ChartLayerControl {
   key: ChartLayerKey;
@@ -45,8 +61,8 @@ export function buildLayerControls(
 }
 
 /** A legend entry: a toggle button when a control is given, plain text otherwise. */
-export function LegendEntry({ control, style, children }: { control?: ChartLayerControl; style?: CSSProperties; children: ReactNode }) {
-  if (!control) return <span style={style} className="font-semibold">{children}</span>;
+export function LegendEntry({ control, style, className = '', children }: { control?: ChartLayerControl; style?: CSSProperties; className?: string; children: ReactNode }) {
+  if (!control) return <span style={style} className={`font-semibold ${className}`}>{children}</span>;
   return (
     <button
       type="button"
@@ -54,7 +70,7 @@ export function LegendEntry({ control, style, children }: { control?: ChartLayer
       aria-pressed={control.on}
       title={control.on ? 'Hide this layer' : 'Show this layer'}
       style={style}
-      className={`font-semibold rounded px-1 -mx-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 ${control.on ? '' : 'opacity-40 line-through'}`}
+      className={`font-semibold rounded px-1 -mx-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 ${className} ${control.on ? '' : 'opacity-40 line-through'}`}
     >
       {children}
     </button>

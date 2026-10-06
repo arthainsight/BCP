@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { BcpResult, CalculationSettings, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
@@ -9,7 +9,8 @@ import VargaGridPanel from './VargaGridPanel';
 import DrishtiPanel from '@/components/DrishtiPanel';
 import AshtakavargaPanel from '@/components/AshtakavargaPanel';
 import TransitDateControls from './TransitDateControls';
-import { buildLayerControls } from './chartLayers';
+import ChartExportButtons from './ChartExportButtons';
+import { buildLayerControls, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import NadiAmsaPanel from './NadiAmsaPanel';
 import TithiPravesaPanel from './TithiPravesaPanel';
@@ -34,6 +35,8 @@ export interface ChartSectionProps {
   bnnMajorHouseFromParent?: number;
   bnnMinorHouseFromParent?: number;
   nadiParayaHousesFromParent?: NadiParayaHouseActivation[];
+  /** Vimshottari lords running at the target date. */
+  dashaLordsFromParent?: DashaLordMarks | null;
   calculationSettings?: CalculationSettings;
   ianaTimezone?: string;
   onToggleChartDisplay?: (key: keyof ChartDisplaySettings) => void;
@@ -55,6 +58,7 @@ export default function ChartSection({
   bnnMajorHouseFromParent = 0,
   bnnMinorHouseFromParent = 0,
   nadiParayaHousesFromParent = [],
+  dashaLordsFromParent = null,
   calculationSettings,
   ianaTimezone,
   onToggleChartDisplay,
@@ -65,6 +69,7 @@ export default function ChartSection({
   // Residence for the annual charts, shared by Tithi Praveśa and Varṣaphala.
   const [annualPlace, setAnnualPlace] = useState<AnnualPlace>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
 
   // Full screen is an overlay over the whole app, plus the browser's own full
   // screen where it is available (not on iPhone). Esc, the close button or
@@ -134,13 +139,17 @@ export default function ChartSection({
     );
   }
 
-  const yearHouse = 0;
-  const monthHouse = 0;
+  const showBcp = chartDisplaySettings.showBcpHighlight === true;
+  const dashaLords = chartDisplaySettings.showDashaLords !== false ? dashaLordsFromParent : null;
+  const yearHouse = showBcp ? bcp.activeYearHouse : 0;
+  const monthHouse = showBcp ? bcp.activeMonthHouse : 0;
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
   const showTransit = chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0;
   const parayaHouses = chartDisplaySettings.showNadiParaya !== false ? nadiParayaHousesFromParent : [];
   const layerControls = buildLayerControls(chartDisplaySettings, {
+    bcp: true,
+    dasha: dashaLordsFromParent !== null,
     transit: transitPlanets.length > 0,
     bnnMajor: bnnHouses.major > 0,
     bnnMinor: bnnHouses.minor > 0,
@@ -204,6 +213,7 @@ export default function ChartSection({
           {vargaView === 'chart' ? (
             <VargaGridPanel
               chart={chart}
+              dashaLords={dashaLords}
               chartStyle={chartStyle}
               chartDisplaySettings={chartDisplaySettings}
               karakaByPlanet={karakaByPlanet}
@@ -245,7 +255,10 @@ export default function ChartSection({
           place={annualPlace}
           onPlaceChange={setAnnualPlace}
         />
-      ) : chartStyle === 'south' ? (
+      ) : (
+        <div ref={chartRef} className="space-y-2">
+        <ChartExportButtons targetRef={chartRef} fileName="chart-d1" />
+        {chartStyle === 'south' ? (
         <SouthIndianChart
           activeYearHouse={yearHouse}
           activeMonthHouse={monthHouse}
@@ -268,8 +281,9 @@ export default function ChartSection({
           bnnMinorHouse={bnnMinorHouse}
           nadiParayaHouses={parayaHouses}
           layerControls={layerControls}
+          dashaLords={dashaLords}
         />
-      ) : (
+        ) : (
         <NorthIndianChart
           activeYearHouse={yearHouse}
           activeMonthHouse={monthHouse}
@@ -286,14 +300,17 @@ export default function ChartSection({
           showNakshatra={chartDisplaySettings.showNakshatra}
           showOuterPlanets={chartDisplaySettings.showOuterPlanets}
           showSpecialLagnas={chartDisplaySettings.showSpecialLagnas}
-          showBcpHighlights={false}
+          showBcpHighlights={showBcp}
           karakaByPlanet={karakaByPlanet}
           nakshatraAdjust={nakshatraAdjust}
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
           nadiParayaHouses={parayaHouses}
           layerControls={layerControls}
+          dashaLords={dashaLords}
         />
+        )}
+        </div>
       )}
 
       {view === 'chart' && transitDatetime !== undefined && onTransitDatetimeChange && onCalculateTransit && (

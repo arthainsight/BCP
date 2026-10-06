@@ -83,3 +83,14 @@ for (const [name, Chart, cap] of [['North', NorthIndianChart, 'max-w-[620px]'], 
   assert.ok(!filled.includes(cap), `${name}: no width cap in full screen`);
   assert.match(filled, /max-width:min\(100%, calc\(100dvh - 9rem\)\)/, `${name}: fits the screen height in full screen`);
 }
+
+// --- Running dasha lords are marked on the natal planets -----------------------
+for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianChart]] as const) {
+  const marked = text(renderToStaticMarkup(createElement(Chart, { ...base, dashaLords: { md: 'Sun', ad: 'Moon' } })));
+  assert.match(marked, /Suᴹ/, `${name}: mahadasha lord marked`);
+  assert.match(marked, /Moᴬ/, `${name}: antardasha lord marked`);
+  assert.match(marked, /ᴹᴬ Su–Mo/, `${name}: legend names the running lords`);
+  const same = text(renderToStaticMarkup(createElement(Chart, { ...base, dashaLords: { md: 'Moon', ad: 'Moon' } })));
+  assert.match(same, /Moᴹᴬ/, `${name}: one lord can hold both`);
+  assert.doesNotMatch(text(renderToStaticMarkup(createElement(Chart, base))), /ᴹ|ᴬ/, `${name}: no marks without lords`);
+}

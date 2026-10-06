@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ChartData, ChartDisplaySettings } from '@/types';
 import { VARGA_DIVISIONS, VARGA_NAMES, VARGA_SIGNIFICATIONS, buildVargaChart } from '@/lib/vargaChart';
 import {
@@ -14,6 +14,9 @@ import {
   vargaGridDivisions,
   type VargaGridSelection,
 } from '@/lib/vargaGrid';
+import { followPlanet } from '@/lib/vargaFollow';
+import type { DashaLordMarks } from './chartLayers';
+import ChartExportButtons from './ChartExportButtons';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 
@@ -29,6 +32,7 @@ type Props = {
   chartDisplaySettings: ChartDisplaySettings;
   karakaByPlanet?: Record<string, string>;
   nakshatraAdjust?: number;
+  dashaLords?: DashaLordMarks | null;
 };
 
 const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
@@ -37,10 +41,11 @@ const PILL = 'shrink-0 rounded-md px-2 py-1.5 text-[10px] font-mono';
 const PILL_ON = 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400';
 const PILL_OFF = 'text-zinc-500 dark:text-zinc-400';
 
-export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0 }: Props) {
+export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null }: Props) {
   const [selection, setSelection] = useState<VargaGridSelection>(DEFAULT_VARGA_GRID);
   const [highlight, setHighlight] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const expandedRef = useRef<HTMLDivElement>(null);
 
   // localStorage is only readable after mount.
   useEffect(() => {
@@ -79,6 +84,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
       nakshatraAdjust,
       specialLagnas: varga.specialLagnas,
       showSpecialLagnas: !compact && chartDisplaySettings.showSpecialLagnas,
+      dashaLords,
       compact,
       highlightPlanet: highlight,
       onPlanetClick: toggleHighlight,
@@ -157,6 +163,33 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
         ))}
       </div>
 
+      {highlight && (
+        <div className="space-y-1">
+          <div className="flex flex-wrap gap-1">
+            {followPlanet(chart, highlight, divisions).map(place => (
+              <span
+                key={place.division}
+                title={[
+                  `${highlight} in ${SIGN_ABBR[place.sign - 1]} in D${place.division}`,
+                  place.dignity && `${place.dignity === 'own' ? 'own sign' : place.dignity}`,
+                  place.sameAsRasi && 'same sign as in D1',
+                ].filter(Boolean).join(' · ')}
+                className={`rounded border px-1.5 py-0.5 text-[10px] font-mono ${place.sameAsRasi ? 'font-bold underline' : ''} ${
+                  place.dignity === 'exalted' ? 'border-emerald-400 text-emerald-700 dark:border-green-700 dark:text-green-400'
+                  : place.dignity === 'own' ? 'border-sky-400 text-sky-700 dark:border-sky-700 dark:text-sky-300'
+                  : place.dignity === 'debilitated' ? 'border-rose-400 text-rose-700 dark:border-rose-800 dark:text-rose-400'
+                  : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400'}`}
+              >
+                D{place.division} {SIGN_ABBR[place.sign - 1]}{place.dignity === 'exalted' ? ' ↑' : place.dignity === 'debilitated' ? ' ↓' : place.dignity === 'own' ? ' ◆' : ''}
+              </span>
+            ))}
+          </div>
+          <div className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+            ↑ exalted · ◆ own sign · ↓ debilitated · <span className="font-bold underline">underlined</span> = same sign as D1
+          </div>
+        </div>
+      )}
+
       {expanded !== null && (
         <div className="rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
           <div className="mb-2 flex items-start justify-between gap-2">
@@ -172,7 +205,10 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
               Close
             </button>
           </div>
-          {renderChart(expanded, false)}
+          <div ref={expandedRef} className="space-y-2">
+            <ChartExportButtons targetRef={expandedRef} fileName={`chart-d${expanded}`} />
+            {renderChart(expanded, false)}
+          </div>
         </div>
       )}
 

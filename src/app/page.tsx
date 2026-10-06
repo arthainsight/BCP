@@ -5,6 +5,7 @@ import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, Calc
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { migrateChartDisplaySettings } from '@/lib/chartDisplaySettings';
 import { calculateBnnHouses, calculateParayaHouses } from '@/lib/bnn/bnnHouses';
+import { runningVimshottariLords } from '@/lib/vimshottari';
 import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
@@ -223,6 +224,15 @@ export default function Home() {
 
   const effectiveBnnHouses = useMemo(() => calculateBnnHouses(chartData, bnnAge), [chartData, bnnAge]);
   const effectiveNadiParayaHouses = useMemo(() => calculateParayaHouses(chartData, bnnAge), [chartData, bnnAge]);
+
+  // Vimshottari lords running at the target date, marked on the charts.
+  const dashaLords = useMemo(() => {
+    const moon = chartData?.planets.find(p => p.name === 'Moon');
+    const birth = parseDateTime(birthDatetime);
+    const target = parseTargetDateString(targetDate);
+    if (!moon || !birth || !target) return null;
+    return runningVimshottariLords(moon.longitude, birth, target);
+  }, [chartData, birthDatetime, targetDate]);
 
   // Recompute BCP when the target or birth date changes, but only if a chart
   // has already produced a result. The previous version had bcpResult in the
@@ -635,6 +645,7 @@ export default function Home() {
     bnnMajorHouseFromParent: effectiveBnnHouses.major,
     bnnMinorHouseFromParent: effectiveBnnHouses.minor,
     nadiParayaHousesFromParent: effectiveNadiParayaHouses,
+    dashaLordsFromParent: dashaLords,
     calculationSettings,
     ianaTimezone: ianaTimezone || undefined,
     onToggleChartDisplay: toggleChartDisplay,

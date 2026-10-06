@@ -135,6 +135,10 @@ export interface ChartDisplaySettings {
   showBnnMinorHighlight: boolean;
   showTransitOverlay: boolean;
   showNadiParaya: boolean;
+  /** BCP running year and month houses; off by default since v1.80 removed them from the chart. */
+  showBcpHighlight: boolean;
+  /** Marks the running Vimshottari mahadasha and antardasha lords. */
+  showDashaLords: boolean;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -155,6 +159,8 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showBnnMinorHighlight: true,
   showTransitOverlay: true,
   showNadiParaya: true,
+  showBcpHighlight: false,
+  showDashaLords: true,
 };
 
 export interface CalculationSettings {
