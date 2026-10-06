@@ -10,6 +10,7 @@ export const CHANGELOG = [
       'The chart and a full-size Varga chart can be downloaded as PNG or SVG.',
       'Settings → display now opens on the calculation settings only; chart style, overlays, layers and daśā systems are collapsed until opened.',
       'Added a browser test that calculates a chart and opens every main view on a phone and a desktop screen; it runs on every pull request.',
+      'Split the main page: settings storage and the values worked out from the chart now live in their own hooks, and the header, date helpers and daśā-settings migration in their own files. Nothing changes in use.',
       'Updated the application version to v2.30.',
     ],
   },

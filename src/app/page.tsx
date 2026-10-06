@@ -1,16 +1,11 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DashaSettings, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS, DEFAULT_DASHA_SETTINGS } from '@/types';
+import { GeoResult, BcpResult, ChartData, PlanetData } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
-import { migrateChartDisplaySettings } from '@/lib/chartDisplaySettings';
-import { calculateBnnHouses, calculateParayaHouses } from '@/lib/bnn/bnnHouses';
-import { runningVimshottariLords } from '@/lib/vimshottari';
-import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import BottomNav, { TabId } from '@/components/BottomNav';
-import ThemeToggle from '@/components/ThemeToggle';
 import DataPanel from '@/components/DataPanel';
 import SettingsPanel from '@/components/SettingsPanel';
 import GrahasPanel from '@/components/GrahasPanel';
@@ -18,36 +13,14 @@ import DashaWorkspace from '@/components/DashaWorkspace';
 import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
 import CalculationDebugPanel from '@/components/CalculationDebugPanel';
-import FileActions, { ChartSnapshot } from '@/components/FileActions';
+import type { ChartSnapshot } from '@/components/FileActions';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
-import { ayanamsaLabel } from '@/lib/ayanamsas';
+import { CalcSummaryBar, EmptyState, Panel } from '@/components/PageParts';
+import AppHeader from '@/components/AppHeader';
+import { getNowDateTimeString, getTodayString, parseTargetDateString } from '@/lib/dateInput';
+import { useStoredSettings } from '@/hooks/useStoredSettings';
+import { useChartDerived } from '@/hooks/useChartDerived';
 
-function getTodayString(): string {
-  const d = new Date();
-  return (
-    d.getFullYear() +
-    '-' +
-    String(d.getMonth() + 1).padStart(2, '0') +
-    '-' +
-    String(d.getDate()).padStart(2, '0')
-  );
-}
-
-function getNowDateTimeString(): string {
-  const d = new Date();
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}.${pad(d.getMinutes())}.${pad(d.getSeconds())}`;
-}
-
-function parseTargetDateString(value: string): Date | null {
-  const parts = value.split('-');
-  if (parts.length !== 3) return null;
-  const year = parseInt(parts[0]);
-  const month = parseInt(parts[1]);
-  const day = parseInt(parts[2]);
-  if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
-  return new Date(year, month - 1, day, 12, 0, 0);
-}
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
 
@@ -55,80 +28,7 @@ type CalculationOptions = {
   preserveCurrentPanel?: boolean;
 };
 
-// Handles both the new { dashas: {...} } format and the old
-// { showBcp, showVimshottari, dashaSystem } format from localStorage / saved charts.
-//
-// Two properties matter here:
-// - Every key still present in DashaSettings survives a reload. The previous
-//   version rebuilt the object from bcp/vimshottari/vds only, so the toggles
-//   for all other systems — and charaOptions/rasiOptions entirely — silently
-//   reverted to defaults every time the app started.
-// - Keys removed from DashaSettings (the v2.15 placeholder cleanup) are
-//   dropped, because the copy iterates the default's own keys.
-function migrateDashaSettings(raw: unknown): DashaSettings {
-  if (!raw || typeof raw !== 'object') return DEFAULT_DASHA_SETTINGS;
-  const obj = raw as Record<string, unknown>;
 
-  if (obj.dashas && typeof obj.dashas === 'object') {
-    const stored = obj.dashas as Record<string, unknown>;
-    const dashas = { ...DEFAULT_DASHA_SETTINGS.dashas };
-    for (const key of Object.keys(dashas) as (keyof DashaSettings['dashas'])[]) {
-      const value = stored[key];
-      if (typeof value === 'boolean') dashas[key] = value;
-    }
-    return {
-      dashas,
-      charaOptions: obj.charaOptions && typeof obj.charaOptions === 'object'
-        ? { ...DEFAULT_DASHA_SETTINGS.charaOptions, ...(obj.charaOptions as DashaSettings['charaOptions']) }
-        : DEFAULT_DASHA_SETTINGS.charaOptions,
-      rasiOptions: obj.rasiOptions && typeof obj.rasiOptions === 'object'
-        ? { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...(obj.rasiOptions as DashaSettings['rasiOptions']) }
-        : DEFAULT_DASHA_SETTINGS.rasiOptions,
-    };
-  }
-
-  // Old format: showBcp / showVimshottari / dashaSystem
-  return {
-    ...DEFAULT_DASHA_SETTINGS,
-    dashas: {
-      ...DEFAULT_DASHA_SETTINGS.dashas,
-      bcp:         obj.showBcp !== false,
-      vimshottari: obj.showVimshottari !== false,
-      vds:         obj.dashaSystem === 'vds',
-    },
-  };
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">
-      {message}
-    </div>
-  );
-}
-
-function Panel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-      {children}
-    </div>
-  );
-}
-
-function CalcSummaryBar({ ayanamsa, ayanamsaOffsetDegrees, nodeMode, ianaTimezone }: {
-  ayanamsa: string;
-  ayanamsaOffsetDegrees: number;
-  nodeMode: string;
-  ianaTimezone?: string;
-}) {
-  return (
-    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex flex-wrap gap-x-4 gap-y-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
-      <span>{ayanamsaLabel(ayanamsa, true)}{ayanamsa === 'custom-lahiri' ? ` (${ayanamsaOffsetDegrees >= 0 ? '+' : ''}${ayanamsaOffsetDegrees}°)` : ''} ayanamsa</span>
-      <span>{nodeMode === 'true' ? 'true node' : 'mean node'}</span>
-      {ianaTimezone && <span>{ianaTimezone}</span>}
-    </div>
-  );
-}
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('data');
@@ -159,16 +59,11 @@ export default function Home() {
   const [transitLoading, setTransitLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Chart display settings
-  const [chartDisplaySettings, setChartDisplaySettings] = useState<ChartDisplaySettings>(DEFAULT_CHART_DISPLAY);
-  const [calculationSettings, setCalculationSettings] = useState<CalculationSettings>(DEFAULT_CALCULATION_SETTINGS);
-  const [dashaSettings, setDashaSettings] = useState<DashaSettings>(DEFAULT_DASHA_SETTINGS);
-  const [settingsRestored, setSettingsRestored] = useState(false);
+  const {
+    chartDisplaySettings, calculationSettings, dashaSettings, settingsRestored,
+    toggleChartDisplay, updateChartDisplay, updateCalculationSettings, updateDashaSettings,
+  } = useStoredSettings();
   const previousCalculationKeyRef = useRef('');
-
-  // Manual BCP
-
-  // BNN age override — lifted here so chart highlights + event panel stay in sync
 
   // Active saved chart name (null = no saved chart active)
   const [activeChartName, setActiveChartName] = useState<string | null>(null);
@@ -194,45 +89,9 @@ export default function Home() {
   const canCalculate =
     !!birthDatetime && showCoords && !!manualLat && !!manualLng && effectiveTzOffset !== null;
 
-  const charaKarakas: CharaKaraka[] = useMemo(
-    () => (chartData ? calculateCharaKarakas(chartData.planets, calculationSettings.charaKarakaRankMode) : []),
-    [chartData, calculationSettings.charaKarakaRankMode]
-  );
+  const { karakaByPlanet, nakshatraAdjust, effectiveBnnHouses, effectiveNadiParayaHouses, dashaLords } =
+    useChartDerived(chartData, birthDatetime, targetDate, calculationSettings);
 
-  const karakaByPlanet = useMemo(() => {
-    const map: Record<string, string> = {};
-    charaKarakas.forEach((k) => { map[k.planet] = k.karaka; });
-    return map;
-  }, [charaKarakas]);
-
-  // Nakshatra longitude adjustment: converts stored planet longitude to effective nakshatra longitude.
-  // Formula: tropicalLon = lon + mainAyanamsa; siderealLon (Lahiri) = tropicalLon - siderealAyanamsa
-  const nakshatraAdjust = useMemo(() => {
-    const mainAyanamsa = chartData?.debug?.ayanamsa ?? 0;
-    const siderealAyanamsa = chartData?.debug?.siderealAyanamsa ?? mainAyanamsa;
-    if (calculationSettings.nakshatraMode === 'tropical') return mainAyanamsa;
-    return mainAyanamsa - siderealAyanamsa;
-  }, [chartData?.debug, calculationSettings.nakshatraMode]);
-
-  // BNN: age at the target date
-  const bnnAge = useMemo(() => {
-    const birth = parseDateTime(birthDatetime);
-    const target = parseTargetDateString(targetDate);
-    if (!birth || !target) return 0;
-    return Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-  }, [birthDatetime, targetDate]);
-
-  const effectiveBnnHouses = useMemo(() => calculateBnnHouses(chartData, bnnAge), [chartData, bnnAge]);
-  const effectiveNadiParayaHouses = useMemo(() => calculateParayaHouses(chartData, bnnAge), [chartData, bnnAge]);
-
-  // Vimshottari lords running at the target date, marked on the charts.
-  const dashaLords = useMemo(() => {
-    const moon = chartData?.planets.find(p => p.name === 'Moon');
-    const birth = parseDateTime(birthDatetime);
-    const target = parseTargetDateString(targetDate);
-    if (!moon || !birth || !target) return null;
-    return runningVimshottariLords(moon.longitude, birth, target);
-  }, [chartData, birthDatetime, targetDate]);
 
   // Recompute BCP when the target or birth date changes, but only if a chart
   // has already produced a result. The previous version had bcpResult in the
@@ -250,62 +109,10 @@ export default function Home() {
     setBcpResult((previous) => (previous ? calculateBcp(birthDate, target) : previous));
   }, [targetDate, birthDatetime]);
 
-  // Restore persisted display/calculation/dasha settings on mount
-  // localStorage cannot be read during the server render, so restoring has to
-  // happen after mount. This runs once with an empty dependency list.
-  /* eslint-disable react-hooks/set-state-in-effect */
-  useEffect(() => {
-    try {
-      const ds = localStorage.getItem('chartDisplaySettings');
-      if (ds) {
-        setChartDisplaySettings(migrateChartDisplaySettings(JSON.parse(ds)));
-      }
-      const cs = localStorage.getItem('calculationSettings');
-      if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
-      const dash = localStorage.getItem('dashaSettings');
-      if (dash) setDashaSettings(migrateDashaSettings(JSON.parse(dash)));
-      // The simple / research / debug switcher (v2.25) and the workspace (v2.28) were removed.
-      localStorage.removeItem('uiMode');
-      localStorage.removeItem('workspace_panels');
-    } catch {}
-    setSettingsRestored(true);
-  }, []);
-  /* eslint-enable react-hooks/set-state-in-effect */
 
 
   // --- Handlers ---
 
-  const toggleChartDisplay = useCallback((key: keyof ChartDisplaySettings) => {
-    setChartDisplaySettings((prev) => {
-      const next = { ...prev, [key]: !prev[key] };
-      try { localStorage.setItem('chartDisplaySettings', JSON.stringify(next)); } catch {}
-      return next;
-    });
-  }, []);
-
-  const updateChartDisplay = useCallback((update: Partial<ChartDisplaySettings>) => {
-    setChartDisplaySettings((prev) => {
-      const next = { ...prev, ...update };
-      try { localStorage.setItem('chartDisplaySettings', JSON.stringify(next)); } catch {}
-      return next;
-    });
-  }, []);
-
-  const updateCalculationSettings = useCallback((update: Partial<CalculationSettings>) => {
-    setCalculationSettings((prev) => {
-      const next = { ...prev, ...update };
-      try { localStorage.setItem('calculationSettings', JSON.stringify(next)); } catch {}
-      return next;
-    });
-  }, []);
-
-  const updateDashaSettings = useCallback((update: Partial<DashaSettings>) => {
-    setDashaSettings((prev) => {
-      const next = { ...prev, ...update };
-      try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}
-      return next;
-    });
-  }, []);
 
 
   const handleNewChart = useCallback(() => {
@@ -677,65 +484,19 @@ export default function Home() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
-      {/* Desktop header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 hidden lg:flex items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
-          <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
-            <span className="text-zinc-300 dark:text-zinc-600">chart:</span>{' '}
-            <span className={activeChartName ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-300 dark:text-zinc-600 italic'}>
-              {displayChartName}
-            </span>
-          </span>
-          <FileActions
-            snapshot={chartSnapshot}
-            hasChart={hasChart}
-            onNew={handleNewChart}
-            onLoad={handleLoadChartSnapshot}
-            onExport={handleExportCharts}
-            onImport={handleImportCharts}
-            onActiveNameChange={setActiveChartName}
-          />
-          <ThemeToggle />
-        </div>
-      </header>
-
-      {/* Mobile header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 lg:hidden">
-        {/* Row 1: app name + theme icon */}
-        <div className="flex items-center justify-between px-4 pt-2.5 pb-1">
-          <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-emerald-700 dark:text-green-400 tracking-tight">{APP_NAME}</span>
-            <span className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{APP_VERSION}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle icon />
-          </div>
-        </div>
-        {/* Row 2: chart title + actions */}
-        <div className="pb-2.5 px-4">
-          <div className="inline-flex max-w-full min-w-0 items-center gap-1 whitespace-nowrap">
-            {displayChartName !== 'None' && (
-              <span className="min-w-0 max-w-[calc(100vw-110px)] truncate text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mr-0.5">
-                {displayChartName}
-              </span>
-            )}
-            <FileActions
-              snapshot={chartSnapshot}
-              hasChart={hasChart}
-              onNew={handleNewChart}
-              onLoad={handleLoadChartSnapshot}
-              onExport={handleExportCharts}
-              onImport={handleImportCharts}
-              onActiveNameChange={setActiveChartName}
-              compact
-            />
-          </div>
-        </div>
-      </header>
+      <AppHeader
+        activeChartName={activeChartName}
+        displayChartName={displayChartName}
+        fileActions={{
+          snapshot: chartSnapshot,
+          hasChart,
+          onNew: handleNewChart,
+          onLoad: handleLoadChartSnapshot,
+          onExport: handleExportCharts,
+          onImport: handleImportCharts,
+          onActiveNameChange: setActiveChartName,
+        }}
+      />
 
       {/* ── DESKTOP: 2-column grid (full width for Public) ────────── */}
       <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'public' ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
