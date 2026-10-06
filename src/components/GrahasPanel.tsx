@@ -1,4 +1,5 @@
 import { ChartData, ChartDisplaySettings, DEFAULT_CHART_DISPLAY } from '@/types';
+import { migrateChartDisplaySettings } from '@/lib/chartDisplaySettings';
 import JyotishGrahaTable from './JyotishGrahaTable';
 import DrishtiPanel from './DrishtiPanel';
 import YogaTable from './YogaTable';
@@ -18,7 +19,7 @@ function readChartDisplaySettings(fallback?: ChartDisplaySettings): ChartDisplay
   if (typeof window === 'undefined') return DEFAULT_CHART_DISPLAY;
   try {
     const raw = localStorage.getItem('chartDisplaySettings');
-    return raw ? { ...DEFAULT_CHART_DISPLAY, ...JSON.parse(raw) } : DEFAULT_CHART_DISPLAY;
+    return raw ? migrateChartDisplaySettings(JSON.parse(raw)) : DEFAULT_CHART_DISPLAY;
   } catch {
     return DEFAULT_CHART_DISPLAY;
   }

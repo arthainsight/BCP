@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v2.23',
+    date: '2026-10-06',
+    title: 'Crowded houses fit, legend switches',
+    changes: [
+      'Labels in a crowded house no longer run over its edges or get cut off. In the North Indian chart they flow into rows that follow the shape of the house, and the font shrinks only as far as that house needs. Short transit codes share a row (Mo Ma Ju). The South Indian chart fits each cell the same way, sized to the cell as drawn on screen.',
+      'The Transit, BNN Major, BNN Minor and Paraya entries in the chart legend are now switches: click one to hide that layer, click again to bring it back. A hidden layer stays in the legend, dimmed and struck through.',
+      'Removed display settings that nothing used: the four old BNN switches, Sanskrit names, and the old transit switch. They are dropped from saved settings when the app loads.',
+      'BNN Major, BNN Minor and the Paraya points are now worked out in one place, so the chart and the workspace always agree, including with an age override.',
+      'Added tests for the label layout, the North and South Indian charts (ascendant degree, legend switches, hidden layers), the saved-settings migration, the BNN houses, and a check that every display setting is actually used.',
+      'Updated the application version to v2.23.',
+    ],
+  },
+  {
     version: 'v2.22',
     date: '2026-10-06',
     title: 'Chart layer switches and ascendant degree',

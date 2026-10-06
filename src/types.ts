@@ -141,24 +141,16 @@ export interface ChartDisplaySettings {
   chartStyle: ChartStyle;
   showSigns: boolean;
   showNatalPlanets: boolean;
-  /** Unused since v2.22; the chart transit layer follows showTransitOverlay. */
-  showTransitPlanets: boolean;
-  showDegrees: boolean;
   degreePrecision: DegreePrecision;
   showNakshatra: boolean;
   showNakshatraPada: boolean;
   showD108: boolean;
   showCharaKaraka: boolean;
-  showSanskrit: boolean;
   showOuterPlanets: boolean;
   showSpecialLagnas: boolean;
   showPanchang: boolean;
   showGrahaDrishti: boolean;
   showRashiDrishti: boolean;
-  showBnnAlpha: boolean;
-  showBnnJupiterianRounds: boolean;
-  showBnnJupiterMinor: boolean;
-  showBnnEventDetection: boolean;
   showBnnMajorHighlight: boolean;
   showBnnMinorHighlight: boolean;
   showTransitOverlay: boolean;
@@ -170,23 +162,16 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   chartStyle: 'north',
   showSigns: true,
   showNatalPlanets: true,
-  showTransitPlanets: false,
-  showDegrees: false,
   degreePrecision: 'off',
   showNakshatra: true,
   showNakshatraPada: true,
   showD108: false,
   showCharaKaraka: false,
-  showSanskrit: false,
   showOuterPlanets: false,
   showSpecialLagnas: true,
   showPanchang: false,
   showGrahaDrishti: false,
   showRashiDrishti: false,
-  showBnnAlpha: false,
-  showBnnJupiterianRounds: false,
-  showBnnJupiterMinor: false,
-  showBnnEventDetection: true,
   showBnnMajorHighlight: true,
   showBnnMinorHighlight: true,
   showTransitOverlay: true,

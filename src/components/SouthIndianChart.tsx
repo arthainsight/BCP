@@ -1,11 +1,14 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import { useHydrated } from '@/lib/useHydrated';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 import { normalizeDegrees } from '@/lib/angles';
+import { LegendEntry, type ChartLayerControl, type ChartLayerKey } from './chartLayers';
+import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -43,7 +46,17 @@ interface Props {
   bnnMinorHouse?: number;
   nadiParayaHouses?: NadiParayaHouseActivation[];
   legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
+  /** Makes the layer entries in the legend clickable switches. */
+  layerControls?: ChartLayerControl[];
 }
+
+// Grid gap (gap-1), cell padding (p-1.5) and the sign / house header plus its
+// margin, in px. Labels are fitted to what is left of each cell.
+const GRID_GAP = 4;
+const CELL_PADDING = 6;
+const CELL_HEADER = 14;
+// Grid width before it is measured: a 360px phone.
+const DEFAULT_GRID_WIDTH = 328;
 
 const SIGN_NAMES = ['', 'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const PLANET_CODES: Record<string, string> = {
@@ -132,10 +145,21 @@ export default function SouthIndianChart({
   bnnMinorHouse = 0,
   nadiParayaHouses = [],
   legendLayers,
+  layerControls,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
   const isDark = !hydrated || resolvedTheme === 'dark';
+
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [gridWidth, setGridWidth] = useState(DEFAULT_GRID_WIDTH);
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (!grid || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(entries => setGridWidth(entries[0].contentRect.width));
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, []);
 
   const bnnMajColor = isDark ? BNN_MAJOR_DARK : BNN_MAJOR_LIGHT;
   const bnnMinColor = isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT;
@@ -170,10 +194,17 @@ export default function SouthIndianChart({
 
   const hasBnn = bnnMajorHouse > 0 || bnnMinorHouse > 0;
   const hasParaya = nadiParayaHouses.length > 0;
+  const control = (key: ChartLayerKey) => layerControls?.find(c => c.key === key);
+  const hasControls = (layerControls?.length ?? 0) > 0;
+
+  const cellSize = (gridWidth - 3 * GRID_GAP) / 4;
+  const contentWidth = cellSize - 2 * CELL_PADDING;
+  const contentHeight = cellSize - 2 * CELL_PADDING - CELL_HEADER;
 
   return (
     <div className="w-full max-w-[520px] mx-auto">
       <div
+        ref={gridRef}
         className="grid gap-1 aspect-square"
         style={{
           gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
@@ -192,6 +223,25 @@ export default function SouthIndianChart({
           const isBnnMaj = bnnMajorHouse > 0 && house === bnnMajorHouse;
           const isBnnMin = bnnMinorHouse > 0 && house === bnnMinorHouse;
           const parayaHere = nadiParayaHouses.filter(activation => activation.house === house);
+
+          const tokens: LabelToken[] = [];
+          if (sign === ascendantSign) {
+            tokens.push({ key: 'asc', group: 'asc', text: ascendantDegree !== undefined ? `ASC ${formatDegree(ascendantDegree, degreePrecision === 'off' ? 'minute' : degreePrecision)}` : 'ASC' });
+          }
+          parayaHere.forEach(activation => tokens.push({ key: `paraya-${activation.body}`, group: 'paraya', text: `${PARAYA_CODES[activation.body]} ${activation.degree.toFixed(1)}°` }));
+          planetsHere.forEach((p, index) => tokens.push({
+            key: `${p.isTransit ? 'tr' : 'na'}-${p.name}-${index}`,
+            group: p.isTransit ? 'transit' : 'natal',
+            text: getPlanetLabel(p, p.isTransit, degreePrecision, showNakshatra, showCharaKaraka, karakaByPlanet, nakshatraAdjust),
+          }));
+          specialHere.forEach((sl, index) => tokens.push({ key: `sl-${sl.name}-${index}`, group: 'special', text: sl.name }));
+          const hasBnnLabel = (bnnMajorHouse > 0 && house === bnnMajorHouse) || (bnnMinorHouse > 0 && house === bnnMinorHouse);
+          const cellHeight = contentHeight - (hasBnnLabel ? 10 : 0);
+          const layout = layoutHouseLabels(
+            tokens,
+            { polygon: [[0, 0], [contentWidth, 0], [contentWidth, cellHeight], [0, cellHeight]], anchorY: 0 },
+            { maxFontSize: 11, minFontSize: 6, padding: 0 },
+          );
 
           // BNN background tint — only when BCP is not active on this house
           const isBcpActive = house === activeYearHouse || house === activeMonthHouse;
@@ -227,49 +277,35 @@ export default function SouthIndianChart({
                   style={{ border: `2px dashed ${bnnMinColor}`, zIndex: 11 }}
                 />
               )}
-              {parayaHere.length > 0 && (
-                <div className="absolute inset-x-1 bottom-1 flex flex-wrap justify-center gap-0.5 pointer-events-none" style={{ zIndex: 12 }}>
-                  {parayaHere.map(activation => (
-                    <span
-                      key={activation.body}
-                      className="rounded-sm px-1 text-center text-[9px] leading-4 font-black text-white shadow-sm"
-                      style={{ backgroundColor: PARAYA_COLORS[activation.body], textShadow: '0 1px 1px rgba(0,0,0,0.45)' }}
-                    >
-                      {PARAYA_CODES[activation.body]} {activation.degree.toFixed(1)}°
-                    </span>
-                  ))}
-                </div>
-              )}
-
               <div className="flex items-start justify-between gap-1 text-[10px] leading-none text-zinc-500 dark:text-zinc-400">
                 <span>{showSigns ? SIGN_NAMES[sign] : ''}</span>
                 <span className="text-zinc-400 dark:text-zinc-600">H{house}</span>
               </div>
 
-              <div className="mt-1 flex items-center justify-between gap-1 text-[10px] leading-none">
-                {sign === ascendantSign ? (
-                  <span className="font-bold text-emerald-700 dark:text-green-400">ASC{ascendantDegree !== undefined && ` ${formatDegree(ascendantDegree, degreePrecision === 'off' ? 'minute' : degreePrecision)}`}</span>
-                ) : <span />}
-              </div>
-
-              <div className="mt-1 flex flex-col gap-0.5 text-[11px] leading-tight font-bold text-zinc-800 dark:text-zinc-100">
-                {planetsHere.map((p, index) => (
-                  <span
-                    key={`${p.isTransit ? 'tr' : 'na'}-${p.name}-${index}`}
-                    className="truncate"
-                    style={p.isTransit ? { color: TRANSIT_COLOR } : undefined}
-                  >
-                    {getPlanetLabel(p, p.isTransit, degreePrecision, showNakshatra, showCharaKaraka, karakaByPlanet, nakshatraAdjust)}
-                  </span>
-                ))}
-                {specialHere.map((sl, index) => (
-                  <span
-                    key={`sl-${sl.name}-${index}`}
-                    className="truncate text-[10px] leading-tight font-semibold"
-                    style={{ color: SPECIAL_LAGNA_COLOR, opacity: 0.85 }}
-                  >
-                    {sl.name}
-                  </span>
+              <div className="mt-1 font-bold leading-[1.2] text-zinc-800 dark:text-zinc-100">
+                {layout.rows.map((row, rowIndex) => (
+                  <div key={rowIndex} className="whitespace-nowrap" style={{ fontSize: `${row.fontSize}px` }}>
+                    {row.tokens.map((token, index) => (
+                      <span key={token.key}>
+                        {index > 0 ? ' ' : ''}
+                        {token.group === 'paraya' ? (
+                          <span
+                            className="rounded-sm px-0.5 font-black text-white"
+                            style={{ backgroundColor: PARAYA_COLORS[token.key.slice('paraya-'.length) as ParayaBody], textShadow: '0 1px 1px rgba(0,0,0,0.45)' }}
+                          >
+                            {token.text}
+                          </span>
+                        ) : (
+                          <span
+                            className={token.group === 'asc' ? 'text-emerald-700 dark:text-green-400' : token.group === 'special' ? 'font-semibold' : undefined}
+                            style={token.group === 'transit' ? { color: TRANSIT_COLOR } : token.group === 'special' ? { color: SPECIAL_LAGNA_COLOR, opacity: 0.85 } : undefined}
+                          >
+                            {token.text}
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
                 ))}
                 {/* BNN labels */}
                 {bnnBothLabel ? (
@@ -296,7 +332,7 @@ export default function SouthIndianChart({
         })}
       </div>
 
-      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya) && (
+      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya || hasControls) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {(activeYearHouse > 0 || activeMonthHouse > 0) && legendLayers?.bcp !== false && (
             <>
@@ -305,10 +341,10 @@ export default function SouthIndianChart({
               <span className="text-purple-600 dark:text-purple-400 font-semibold">■ BCP Both</span>
             </>
           )}
-          {bnnMajorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: bnnMajColor }} className="font-semibold">■ BNN Major</span>}
-          {bnnMinorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: bnnMinColor }} className="font-semibold">╌ BNN Minor</span>}
-          {hasParaya && <span className="font-semibold"><span style={{ color: PARAYA_COLORS.Jupiter }}>Ju</span> <span style={{ color: PARAYA_COLORS.Saturn }}>Sa</span> <span style={{ color: PARAYA_COLORS.Rahu }}>Ra</span> <span style={{ color: PARAYA_COLORS.Ketu }}>Ke</span> Paraya</span>}
-          {showTransitPlanets && legendLayers?.transit !== false && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
+          {(control('bnnMajor') || (bnnMajorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMajor')} style={{ color: bnnMajColor }}>■ BNN Major</LegendEntry>}
+          {(control('bnnMinor') || (bnnMinorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMinor')} style={{ color: bnnMinColor }}>╌ BNN Minor</LegendEntry>}
+          {(control('paraya') || hasParaya) && <LegendEntry control={control('paraya')}><span style={{ color: PARAYA_COLORS.Jupiter }}>Ju</span> <span style={{ color: PARAYA_COLORS.Saturn }}>Sa</span> <span style={{ color: PARAYA_COLORS.Rahu }}>Ra</span> <span style={{ color: PARAYA_COLORS.Ketu }}>Ke</span> Paraya</LegendEntry>}
+          {(control('transit') || (showTransitPlanets && legendLayers?.transit !== false)) && <LegendEntry control={control('transit')} style={{ color: TRANSIT_COLOR }}>■ Transit</LegendEntry>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
         </div>
       )}

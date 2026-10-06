@@ -8,6 +8,7 @@ import type {
 import NorthIndianChart from '../NorthIndianChart';
 import SouthIndianChart from '../SouthIndianChart';
 import TransitDateControls from '../TransitDateControls';
+import { buildLayerControls, type ChartLayerKey } from '@/components/chartLayers';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 import GrahasPanel from '../GrahasPanel';
 import DashaPanel from '../DashaPanel';
@@ -139,6 +140,7 @@ export interface WorkspaceViewProps {
   onBnnOverrideStrChange: (v: string) => void;
   bcpEnabled: boolean;
   bcpManualProps: BcpManualProps;
+  onToggleChartDisplay?: (key: keyof ChartDisplaySettings) => void;
 }
 
 export default function WorkspaceView({
@@ -154,6 +156,7 @@ export default function WorkspaceView({
   karakaByPlanet,
   nakshatraAdjust,
   effectiveNadiParayaHouses,
+  onToggleChartDisplay,
 }: WorkspaceViewProps) {
   // ── Panel state ──
   const [panels, setPanels] = useState<WorkspacePanel[]>(() => {
@@ -199,6 +202,8 @@ export default function WorkspaceView({
     bnnMin?: number;
     showTransit?: boolean;
     legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
+    /** Layers whose legend entries act as switches. */
+    layers?: ChartLayerKey[];
   }) {
     const {
       yearHouse = 0,
@@ -207,6 +212,7 @@ export default function WorkspaceView({
       bnnMin = 0,
       showTransit = false,
       legendLayers,
+      layers = [],
     } = opts;
 
     const shared = {
@@ -231,6 +237,10 @@ export default function WorkspaceView({
       transitPlanets: showTransit ? transitPlanets : [],
       showTransitPlanets: showTransit,
       legendLayers,
+      layerControls: buildLayerControls(chartDisplaySettings, {
+        transit: layers.includes('transit') && transitPlanets.length > 0,
+        paraya: layers.includes('paraya') && effectiveNadiParayaHouses.length > 0,
+      }, onToggleChartDisplay),
     };
 
     return chartStyle === 'south'
@@ -242,12 +252,12 @@ export default function WorkspaceView({
   function renderContent(panel: WorkspacePanel) {
     switch (panel.type) {
       case 'natal':
-        return renderChart({ legendLayers: { bcp: false, bnn: false, transit: false } });
+        return renderChart({ legendLayers: { bcp: false, bnn: false, transit: false }, layers: ['paraya'] });
 
       case 'natal-transit':
         return (
           <div className="space-y-2">
-            {renderChart({ showTransit: chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0, legendLayers: { bcp: false, bnn: false, transit: true } })}
+            {renderChart({ showTransit: chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0, legendLayers: { bcp: false, bnn: false, transit: true }, layers: ['transit', 'paraya'] })}
             <TransitDateControls
               transitDatetime={transitDatetime}
               onTransitDatetimeChange={onTransitDatetimeChange}

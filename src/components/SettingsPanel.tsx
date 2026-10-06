@@ -8,6 +8,7 @@ import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
 import BackupPanel from './BackupPanel';
+import { CHART_LAYER_LABELS, CHART_LAYER_SETTINGS, type ChartLayerKey } from './chartLayers';
 
 interface Props {
   chartDisplaySettings: ChartDisplaySettings;
@@ -35,12 +36,10 @@ const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
 ];
 
 // The coloured layers listed in the chart legend.
-const LAYER_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
-  { key: 'showTransitOverlay', label: 'transit' },
-  { key: 'showBnnMajorHighlight', label: 'BNN major' },
-  { key: 'showBnnMinorHighlight', label: 'BNN minor' },
-  { key: 'showNadiParaya', label: 'paraya Ju Sa Ke Ra' },
-];
+const LAYER_TOGGLES = (Object.keys(CHART_LAYER_SETTINGS) as ChartLayerKey[]).map(layer => ({
+  key: CHART_LAYER_SETTINGS[layer],
+  label: CHART_LAYER_LABELS[layer],
+}));
 
 const PRECISION_OPTIONS: [DegreePrecision, string][] = [
   ['off', 'Off'],

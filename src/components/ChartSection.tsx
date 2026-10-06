@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BcpResult, CalculationSettings, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
@@ -8,28 +8,13 @@ import VargaMatrix from '@/pages/VargaMatrix';
 import VargaChartPanel from './VargaChartPanel';
 import DrishtiPanel from '@/components/DrishtiPanel';
 import AshtakavargaPanel from '@/components/AshtakavargaPanel';
-import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
-import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
 import TransitDateControls from './TransitDateControls';
+import { buildLayerControls } from './chartLayers';
 import NadiAmsaPanel from './NadiAmsaPanel';
 import TithiPravesaPanel from './TithiPravesaPanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
 import type { AnnualPlace } from './annualShared';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
-
-function parseBirthDt(dt: string): Date | null {
-  const m = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
-  if (!m) return null;
-  return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]), parseInt(m[4]), parseInt(m[5]), parseInt(m[6]));
-}
-
-function parseTargetDt(td: string): Date | null {
-  const p = td.split('-');
-  if (p.length !== 3) return null;
-  const [y, mo, d] = p.map(Number);
-  if (isNaN(y) || isNaN(mo) || isNaN(d)) return null;
-  return new Date(y, mo - 1, d, 12, 0, 0);
-}
 
 export interface ChartSectionProps {
   bcp: BcpResult | null;
@@ -44,6 +29,7 @@ export interface ChartSectionProps {
   nakshatraAdjust?: number;
   birthDatetime?: string;
   targetDate?: string;
+  /** BNN houses from calculateBnnHouses; 0 hides the highlight. */
   bnnMajorHouseFromParent?: number;
   bnnMinorHouseFromParent?: number;
   nadiParayaHousesFromParent?: NadiParayaHouseActivation[];
@@ -56,6 +42,7 @@ export interface ChartSectionProps {
   onManualBcpMonthChange?: (v: string) => void;
   calculationSettings?: CalculationSettings;
   ianaTimezone?: string;
+  onToggleChartDisplay?: (key: keyof ChartDisplaySettings) => void;
 }
 
 export default function ChartSection({
@@ -71,11 +58,12 @@ export default function ChartSection({
   nakshatraAdjust = 0,
   birthDatetime,
   targetDate,
-  bnnMajorHouseFromParent,
-  bnnMinorHouseFromParent,
+  bnnMajorHouseFromParent = 0,
+  bnnMinorHouseFromParent = 0,
   nadiParayaHousesFromParent = [],
   calculationSettings,
   ianaTimezone,
+  onToggleChartDisplay,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha'>('chart');
@@ -83,29 +71,7 @@ export default function ChartSection({
   // Residence for the annual charts, shared by Tithi Praveśa and Varṣaphala.
   const [annualPlace, setAnnualPlace] = useState<AnnualPlace>(null);
 
-  const bnnHouses = useMemo(() => {
-    // Use parent-provided houses when available (keeps age override in sync with chart highlights)
-    if (bnnMajorHouseFromParent !== undefined || bnnMinorHouseFromParent !== undefined) {
-      return { major: bnnMajorHouseFromParent ?? 0, minor: bnnMinorHouseFromParent ?? 0 };
-    }
-    if (!chart || !birthDatetime || !targetDate) return { major: 0, minor: 0 };
-    const birth = parseBirthDt(birthDatetime);
-    const target = parseTargetDt(targetDate);
-    if (!birth || !target) return { major: 0, minor: 0 };
-    const ageYears = Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
-    const natalJupiter = chart.planets.find(p => p.name === 'Jupiter');
-    if (!natalJupiter) return { major: 0, minor: 0 };
-    const natalJupiterSignIndex = natalJupiter.sign - 1;
-    const natalJupiterDegree = natalJupiter.degree;
-    const planets = chart.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 }));
-    const roundsResult = calculateJupiterianRounds({ natalJupiterSignIndex, natalJupiterDegree, ageYears });
-    const minorResult = calculateMinorProgression({ natalJupiterSignIndex, ageYears, planets });
-    const asc = chart.ascendant.sign;
-    return {
-      major: roundsResult.currentRound ? ((roundsResult.currentRound.activeSignIndex + 1 - asc + 12) % 12) + 1 : 0,
-      minor: ((minorResult.minorSignIndex + 1 - asc + 12) % 12) + 1,
-    };
-  }, [chart, birthDatetime, targetDate, bnnMajorHouseFromParent, bnnMinorHouseFromParent]);
+  const bnnHouses = { major: bnnMajorHouseFromParent, minor: bnnMinorHouseFromParent };
 
   // Follow the setting when it changes, while still allowing the local toggle
   // and the bcp:set-chart-style event to override it in between. Adjusting
@@ -151,6 +117,12 @@ export default function ChartSection({
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
   const showTransit = chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0;
   const parayaHouses = chartDisplaySettings.showNadiParaya !== false ? nadiParayaHousesFromParent : [];
+  const layerControls = buildLayerControls(chartDisplaySettings, {
+    transit: transitPlanets.length > 0,
+    bnnMajor: bnnHouses.major > 0,
+    bnnMinor: bnnHouses.minor > 0,
+    paraya: nadiParayaHousesFromParent.length > 0,
+  }, onToggleChartDisplay);
 
   const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha') =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
@@ -257,6 +229,7 @@ export default function ChartSection({
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
           nadiParayaHouses={parayaHouses}
+          layerControls={layerControls}
         />
       ) : (
         <NorthIndianChart
@@ -281,6 +254,7 @@ export default function ChartSection({
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
           nadiParayaHouses={parayaHouses}
+          layerControls={layerControls}
         />
       )}
 
