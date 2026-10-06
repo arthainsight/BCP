@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.24',
+    date: '2026-10-06',
+    title: 'Vargas: divisional charts side by side',
+    changes: [
+      'Added a Vargas view next to Varga that shows several divisional charts side by side: two columns on a phone, three or four on wider screens.',
+      'Choose Ṣaḍvarga (D1 D2 D3 D9 D12 D30, the default), Saptavarga (adds D7), or any four to eight charts of your own. The choice is remembered.',
+      'Tap a planet, in a chart or in the row of planet buttons, to follow it through every chart. Tap a chart’s title to see it full size with the usual degree and karaka settings.',
+      'The small charts show planet codes only, in larger type, and work in both North and South Indian style.',
+      'Updated the application version to v2.24.',
+    ],
+  },
+  {
     version: 'v2.23',
     date: '2026-10-06',
     title: 'Crowded houses fit, legend switches',

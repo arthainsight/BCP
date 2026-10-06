@@ -48,6 +48,12 @@ interface Props {
   legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
   /** Makes the layer entries in the legend clickable switches. */
   layerControls?: ChartLayerControl[];
+  /** Small-chart mode for side-by-side grids: tighter cells, no legend. */
+  compact?: boolean;
+  /** Natal planet drawn highlighted, by name. */
+  highlightPlanet?: string | null;
+  /** Called with a natal planet's name when its label is clicked. */
+  onPlanetClick?: (name: string) => void;
 }
 
 // Grid gap (gap-1), cell padding (p-1.5) and the sign / house header plus its
@@ -55,6 +61,8 @@ interface Props {
 const GRID_GAP = 4;
 const CELL_PADDING = 6;
 const CELL_HEADER = 14;
+const COMPACT_CELL_PADDING = 2;
+const COMPACT_CELL_HEADER = 9;
 // Grid width before it is measured: a 360px phone.
 const DEFAULT_GRID_WIDTH = 328;
 
@@ -123,6 +131,33 @@ function getPlanetLabel(
   return parts.join(' ');
 }
 
+function PlanetSpan({ token, highlightPlanet, onPlanetClick }: {
+  token: LabelToken;
+  highlightPlanet: string | null;
+  onPlanetClick?: (name: string) => void;
+}) {
+  const planetName = token.group === 'natal' ? token.key.split('-')[1] : null;
+  const highlighted = planetName !== null && planetName === highlightPlanet;
+  const clickable = planetName !== null && onPlanetClick !== undefined;
+  const className = highlighted ? 'text-cyan-600 dark:text-cyan-400 underline'
+    : token.group === 'asc' ? 'text-emerald-700 dark:text-green-400'
+    : token.group === 'special' ? 'font-semibold'
+    : undefined;
+  const style = highlighted ? undefined
+    : token.group === 'transit' ? { color: TRANSIT_COLOR }
+    : token.group === 'special' ? { color: SPECIAL_LAGNA_COLOR, opacity: 0.85 }
+    : undefined;
+  return (
+    <span
+      className={`${className ?? ''}${clickable ? ' cursor-pointer' : ''}`}
+      style={style}
+      onClick={clickable ? () => onPlanetClick(planetName) : undefined}
+    >
+      {token.text}
+    </span>
+  );
+}
+
 export default function SouthIndianChart({
   activeYearHouse,
   activeMonthHouse,
@@ -146,6 +181,9 @@ export default function SouthIndianChart({
   nadiParayaHouses = [],
   legendLayers,
   layerControls,
+  compact = false,
+  highlightPlanet = null,
+  onPlanetClick,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
@@ -198,8 +236,9 @@ export default function SouthIndianChart({
   const hasControls = (layerControls?.length ?? 0) > 0;
 
   const cellSize = (gridWidth - 3 * GRID_GAP) / 4;
-  const contentWidth = cellSize - 2 * CELL_PADDING;
-  const contentHeight = cellSize - 2 * CELL_PADDING - CELL_HEADER;
+  const padding = compact ? COMPACT_CELL_PADDING : CELL_PADDING;
+  const contentWidth = cellSize - 2 * padding;
+  const contentHeight = cellSize - 2 * padding - (compact ? COMPACT_CELL_HEADER : CELL_HEADER);
 
   return (
     <div className="w-full max-w-[520px] mx-auto">
@@ -240,7 +279,7 @@ export default function SouthIndianChart({
           const layout = layoutHouseLabels(
             tokens,
             { polygon: [[0, 0], [contentWidth, 0], [contentWidth, cellHeight], [0, cellHeight]], anchorY: 0 },
-            { maxFontSize: 11, minFontSize: 6, padding: 0 },
+            { maxFontSize: compact ? 12 : 11, minFontSize: 6, padding: 0 },
           );
 
           // BNN background tint — only when BCP is not active on this house
@@ -260,7 +299,7 @@ export default function SouthIndianChart({
           return (
             <div
               key={sign}
-              className={`relative w-full h-full min-w-0 min-h-0 overflow-hidden rounded-md border p-1.5 font-mono ${getCellClass(house, activeYearHouse, activeMonthHouse)}`}
+              className={`relative w-full h-full min-w-0 min-h-0 overflow-hidden rounded-md border font-mono ${compact ? 'p-0.5' : 'p-1.5'} ${getCellClass(house, activeYearHouse, activeMonthHouse)}`}
               style={bnnBg ? { backgroundColor: bnnBg } : undefined}
             >
               {/* BNN Major: solid orange border overlay */}
@@ -277,12 +316,12 @@ export default function SouthIndianChart({
                   style={{ border: `2px dashed ${bnnMinColor}`, zIndex: 11 }}
                 />
               )}
-              <div className="flex items-start justify-between gap-1 text-[10px] leading-none text-zinc-500 dark:text-zinc-400">
+              <div className={`flex items-start justify-between gap-1 leading-none text-zinc-500 dark:text-zinc-400 ${compact ? 'text-[8px]' : 'text-[10px]'}`}>
                 <span>{showSigns ? SIGN_NAMES[sign] : ''}</span>
-                <span className="text-zinc-400 dark:text-zinc-600">H{house}</span>
+                {!compact && <span className="text-zinc-400 dark:text-zinc-600">H{house}</span>}
               </div>
 
-              <div className="mt-1 font-bold leading-[1.2] text-zinc-800 dark:text-zinc-100">
+              <div className={`${compact ? 'mt-px' : 'mt-1'} font-bold leading-[1.2] text-zinc-800 dark:text-zinc-100`}>
                 {layout.rows.map((row, rowIndex) => (
                   <div key={rowIndex} className="whitespace-nowrap" style={{ fontSize: `${row.fontSize}px` }}>
                     {row.tokens.map((token, index) => (
@@ -296,12 +335,11 @@ export default function SouthIndianChart({
                             {token.text}
                           </span>
                         ) : (
-                          <span
-                            className={token.group === 'asc' ? 'text-emerald-700 dark:text-green-400' : token.group === 'special' ? 'font-semibold' : undefined}
-                            style={token.group === 'transit' ? { color: TRANSIT_COLOR } : token.group === 'special' ? { color: SPECIAL_LAGNA_COLOR, opacity: 0.85 } : undefined}
-                          >
-                            {token.text}
-                          </span>
+                          <PlanetSpan
+                            token={token}
+                            highlightPlanet={highlightPlanet}
+                            onPlanetClick={onPlanetClick}
+                          />
                         )}
                       </span>
                     ))}
@@ -332,7 +370,7 @@ export default function SouthIndianChart({
         })}
       </div>
 
-      {(activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya || hasControls) && (
+      {!compact && (activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya || hasControls) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {(activeYearHouse > 0 || activeMonthHouse > 0) && legendLayers?.bcp !== false && (
             <>
