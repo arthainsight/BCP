@@ -1,5 +1,20 @@
 export const CHANGELOG = [
   {
+    version: 'v2.30',
+    date: '2026-10-06',
+    title: 'Daśā lords on the chart, BCP back as a layer, chart export',
+    changes: [
+      'The running Vimśottarī lords at the target date are marked on the natal planets: ᴹ for the mahādaśā lord, ᴬ for the antardaśā lord, in the chart and in every Varga chart. The legend names them and switches the marks off and on.',
+      'The BCP running year and month houses can be shown again, as a chart layer that is off by default (v1.80 took them off the chart). Turn it on under Settings → chart layers or from the legend.',
+      'Following a planet in the Varga view now lists its sign in every chart shown, with exaltation ↑, own sign ◆ and debilitation ↓ coloured, and the signs that repeat its D1 sign underlined.',
+      'The chart and a full-size Varga chart can be downloaded as PNG or SVG.',
+      'Settings → display now opens on the calculation settings only; chart style, overlays, layers and daśā systems are collapsed until opened.',
+      'Added a browser test that calculates a chart and opens every main view on a phone and a desktop screen; it runs on every pull request.',
+      'Split the main page: settings storage and the values worked out from the chart now live in their own hooks, and the header, date helpers and daśā-settings migration in their own files. Nothing changes in use.',
+      'Updated the application version to v2.30.',
+    ],
+  },
+  {
     version: 'v2.29',
     date: '2026-10-06',
     title: 'BCP manual mode removed',

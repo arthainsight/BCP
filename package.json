@@ -8,12 +8,14 @@
     "start": "next start",
     "lint": "eslint --max-warnings=0",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test \"src/**/*.test.ts\""
+    "test": "node --import tsx --test \"src/**/*.test.ts\"",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": "24.x"
   },
   "dependencies": {
+    "html-to-image": "1.11.13",
     "next": "16.2.4",
     "next-themes": "^0.4.6",
     "react": "19.2.4",
@@ -21,6 +23,7 @@
     "swisseph-wasm": "^0.0.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.56.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^24",
     "@types/react": "^19",

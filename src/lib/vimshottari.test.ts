@@ -3,6 +3,7 @@ import {
   calculateVimshottari,
   calculateAntardashas,
   calculatePratyantardashas,
+  runningVimshottariLords,
   type MahadashaEntry,
 } from './vimshottari';
 
@@ -183,5 +184,17 @@ const lastDegree = calculateVimshottari(359.999, birth);
 assert.equal(lastDegree.nakshatra, 'Revati');
 assert.equal(lastDegree.nakshatraLord, 'Mercury');
 assert.ok(lastDegree.entries[0].durationYears > 0, 'a positive balance even at the last degree');
+
+// --- Running lords at a moment -------------------------------------------------
+{
+  const birth = new Date(2000, 0, 1, 12);
+  // Moon at 0° Aries: Aśvinī, so the full 7-year Ketu mahādaśā runs from birth.
+  assert.deepEqual(runningVimshottariLords(0, birth, birth), { md: 'Ketu', ad: 'Ketu' });
+  // Ketu–Venus follows Ketu–Ketu (7 × 7 / 120 years ≈ 4.9 months).
+  assert.deepEqual(runningVimshottariLords(0, birth, new Date(2000, 6, 1)), { md: 'Ketu', ad: 'Venus' });
+  // Venus mahādaśā begins at age 7.
+  assert.deepEqual(runningVimshottariLords(0, birth, new Date(2007, 6, 1)), { md: 'Venus', ad: 'Venus' });
+  assert.equal(runningVimshottariLords(0, birth, new Date(1999, 0, 1)), null, 'before birth');
+}
 
 console.log('Vimśottarī tests passed');

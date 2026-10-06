@@ -104,3 +104,16 @@ export function calculatePranaDashas(sd: MahadashaEntry): MahadashaEntry[] {
 export function calculateDehaDashas(prana: MahadashaEntry): MahadashaEntry[] {
   return calculateSubDashas(prana);
 }
+
+/** Lords of the Vimshottari mahadasha and antardasha running at a moment. */
+export interface RunningDashaLords {
+  md: string;
+  ad: string;
+}
+
+export function runningVimshottariLords(moonLongitude: number, birthDate: Date, at: Date): RunningDashaLords | null {
+  const md = calculateVimshottari(moonLongitude, birthDate).entries.find(e => e.startDate <= at && at < e.endDate);
+  if (!md) return null;
+  const ad = calculateAntardashas(md).find(e => e.startDate <= at && at < e.endDate);
+  return ad ? { md: md.lord, ad: ad.lord } : null;
+}

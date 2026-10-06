@@ -63,6 +63,20 @@ function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void 
   );
 }
 
+/** A group inside a section, collapsed until opened. */
+function SubSection({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div>
+      <button type="button" onClick={() => setOpen(v => !v)} aria-expanded={open} className="flex w-full items-center gap-2 text-left">
+        <span className="flex-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{label}</span>
+        <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{open ? '▼' : '▶'}</span>
+      </button>
+      {open && <div className="mt-2">{children}</div>}
+    </div>
+  );
+}
+
 function Section({ label, open, onToggle, children }: { label: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
   return (
     <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-2">
@@ -207,10 +221,7 @@ export default function SettingsPanel(props: Props) {
             </div>
           </div>
 
-          <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">
-              chart style
-            </div>
+          <SubSection label="chart style">
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => updateChartStyle('north')}
                 className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'north' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
@@ -221,12 +232,9 @@ export default function SettingsPanel(props: Props) {
                 South Indian
               </button>
             </div>
-          </div>
+          </SubSection>
 
-          <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">
-              chart overlays
-            </div>
+          <SubSection label="chart overlays">
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               {BASIC_TOGGLES.map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between gap-3">
@@ -254,12 +262,9 @@ export default function SettingsPanel(props: Props) {
                 ))}
               </div>
             </div>
-          </div>
+          </SubSection>
 
-          <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">
-              chart layers
-            </div>
+          <SubSection label="chart layers">
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               {LAYER_TOGGLES.map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between gap-3">
@@ -268,12 +273,9 @@ export default function SettingsPanel(props: Props) {
                 </div>
               ))}
             </div>
-          </div>
+          </SubSection>
 
-          <div>
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">
-              dasha systems
-            </div>
+          <SubSection label="dasha systems">
             <div className="space-y-1.5">
               {CORE_DASHAS.map(({ key, label, kind, conditional, status }) => (
                 <div key={key} className="flex items-center justify-between gap-3 rounded-md border border-zinc-100 dark:border-zinc-800 px-2 py-2">
@@ -282,7 +284,7 @@ export default function SettingsPanel(props: Props) {
                 </div>
               ))}
             </div>
-          </div>
+          </SubSection>
 
         </div>
       </Section>
