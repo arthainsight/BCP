@@ -383,7 +383,6 @@ export default function NorthIndianChart({
 
       {!compact && (showBcpHighlights || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya || hasControls || dashaLords) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
-          {control('bcp') && !showBcpHighlights && <LegendEntry control={control('bcp')} style={{ color: isDark ? '#22d3ee' : '#0891b2' }}>■ BCP</LegendEntry>}
           {showBcpHighlights && legendLayers?.bcp !== false && <LegendEntry control={control('bcp')}><span className="text-cyan-600 dark:text-cyan-400">■ {t('BCP Year')}</span> <span className="text-emerald-700 dark:text-green-400">■ {t('Month')}</span> <span className="text-purple-600 dark:text-purple-400">■ {t('Both')}</span></LegendEntry>}
           {(control('bnnMajor') || (bnnMajorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMajor')} style={{ color: bnnMajColor }}>■ BNN Major</LegendEntry>}
           {(control('bnnMinor') || (bnnMinorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMinor')} style={{ color: bnnMinColor }}>╌ BNN Minor</LegendEntry>}

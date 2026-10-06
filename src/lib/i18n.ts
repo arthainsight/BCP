@@ -85,11 +85,10 @@ export const FI: Record<string, string> = {
   'Close full screen (Esc)': 'Sulje koko näyttö (Esc)',
   'Enter birth data in the Data tab, then click Calculate to see the chart.': 'Syötä syntymätiedot Tiedot-välilehdellä ja laske kartta.',
   'target': 'tavoite',
-  'today': 'tänään',
+  'now': 'nyt',
+  'Target time': 'Tavoiteaika',
+  'transits…': 'transiitit…',
   'Target date': 'Tavoitepäivä',
-  'transit datetime · updates automatically': 'transiittihetki · päivittyy automaattisesti',
-  'Now': 'Nyt',
-  'Calculate transit': 'Laske transiitti',
   'Calculating…': 'Lasketaan…',
   'transit hits · 12 months from target': 'transiittiosumat · 12 kk tavoitepäivästä',
   'Jupiter, Saturn, Rahu and Ketu crossing a natal graha or the ascendant, to the day. ℞ marks a retrograde pass.':
@@ -109,7 +108,6 @@ export const FI: Record<string, string> = {
   'Month': 'Kuukausi',
   'Both': 'Molemmat',
   'Hide this layer': 'Piilota kerros',
-  'Show this layer': 'Näytä kerros',
 
   // Varga view
   'Divisional charts side by side. Tap a planet to follow it through every chart; tap a chart’s title to see it full size with your display settings.':

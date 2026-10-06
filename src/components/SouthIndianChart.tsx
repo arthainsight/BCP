@@ -387,7 +387,6 @@ export default function SouthIndianChart({
 
       {!compact && (activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya || hasControls || dashaLords) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
-          {control('bcp') && !(activeYearHouse > 0 || activeMonthHouse > 0) && <LegendEntry control={control('bcp')} style={{ color: isDark ? '#22d3ee' : '#0891b2' }}>■ BCP</LegendEntry>}
           {(activeYearHouse > 0 || activeMonthHouse > 0) && legendLayers?.bcp !== false && (
             <LegendEntry control={control('bcp')}><span className="text-cyan-600 dark:text-cyan-400">■ {t('BCP Year')}</span> <span className="text-emerald-700 dark:text-green-400">■ {t('Month')}</span> <span className="text-purple-600 dark:text-purple-400">■ {t('Both')}</span></LegendEntry>
           )}

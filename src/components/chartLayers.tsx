@@ -74,18 +74,23 @@ export function buildLayerControls(
     }));
 }
 
-/** A legend entry: a toggle button when a control is given, plain text otherwise. */
+/**
+ * A legend entry: a button that hides the layer when a control is given, plain
+ * text otherwise. A layer that is switched off is left out of the legend; it
+ * comes back from Settings → chart layers.
+ */
 export function LegendEntry({ control, style, className = '', children }: { control?: ChartLayerControl; style?: CSSProperties; className?: string; children: ReactNode }) {
   const t = useT();
+  if (control && !control.on) return null;
   if (!control) return <span style={style} className={`font-semibold ${className}`}>{children}</span>;
   return (
     <button
       type="button"
       onClick={control.onToggle}
       aria-pressed={control.on}
-      title={control.on ? t('Hide this layer') : t('Show this layer')}
+      title={t('Hide this layer')}
       style={style}
-      className={`font-semibold rounded px-1 -mx-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 ${className} ${control.on ? '' : 'opacity-40 line-through'}`}
+      className={`font-semibold rounded px-1 -mx-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 ${className}`}
     >
       {children}
     </button>

@@ -17,7 +17,7 @@ import type { ChartSnapshot } from '@/components/FileActions';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
 import { CalcSummaryBar, EmptyState, Panel } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
-import { getNowDateTimeString, getTodayString, parseTargetDateString } from '@/lib/dateInput';
+import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
 import { LanguageContext, translate, type Language } from '@/lib/i18n';
@@ -39,6 +39,17 @@ export default function Home() {
   const [birthDatetime, setBirthDatetime] = useState('');
   const [city, setCity] = useState('');
   const [targetDate, setTargetDate] = useState(getTodayString());
+  // The target moment: BCP, BNN, Paraya and the dasha lords read its date,
+  // and the transits are calculated for the full date and time.
+  const [targetTime, setTargetTime] = useState(getNowTimeString());
+  const transitDatetime = useMemo(() => targetMomentToTransit(targetDate, targetTime), [targetDate, targetTime]);
+  // "Set as transit" and the transit-hit list move the whole target moment.
+  const setTargetMoment = useCallback((value: string) => {
+    const moment = transitToTargetMoment(value);
+    if (!moment) return;
+    setTargetDate(moment.date);
+    setTargetTime(moment.time);
+  }, []);
 
   // Geo / location
   const [geoResults, setGeoResults] = useState<GeoResult[]>([]);
@@ -52,7 +63,6 @@ export default function Home() {
   // Results
   const [bcpResult, setBcpResult] = useState<BcpResult | null>(null);
   const [chartData, setChartData] = useState<ChartData | null>(null);
-  const [transitDatetime, setTransitDatetime] = useState('');
   const [transitPlanets, setTransitPlanets] = useState<PlanetData[]>([]);
 
   // UI
@@ -128,10 +138,10 @@ export default function Home() {
     setTzOverride('');
     setBcpResult(null);
     setChartData(null);
-    setTransitDatetime('');
     setTransitPlanets([]);
     setError('');
     setTargetDate(getTodayString());
+    setTargetTime(getNowTimeString());
     previousCalculationKeyRef.current = '';
     setActiveTab('data');
     setDesktopTab('data');
@@ -215,7 +225,6 @@ export default function Home() {
         } else {
           setChartData(data);
           setTransitPlanets([]);
-          setTransitDatetime((current) => current || getNowDateTimeString());
           if (!options?.preserveCurrentPanel) {
             setActiveTab('chart');
             setDesktopTab('grahas');
@@ -393,6 +402,7 @@ export default function Home() {
       setIanaTimezone(snap.ianaTimezone);
       setTzOverride(snap.tzOverride);
       setTargetDate(snap.targetDate);
+      setTargetTime(snap.targetTime ?? '12:00');
       setShowCoords(snap.showCoords);
       setGeoResults([]);
       setSelectedGeo(null);
@@ -427,7 +437,7 @@ export default function Home() {
     const [year, month, day] = date.split('-');
     if (!year || !month || !day) return;
     setTargetDate(date);
-    setTransitDatetime(`${day}.${month}.${year} 12.00.00`);
+    setTargetTime('12:00');
     setActiveTab('chart');
   }, []);
 
@@ -440,6 +450,7 @@ export default function Home() {
     ianaTimezone,
     tzOverride,
     targetDate,
+    targetTime,
     showCoords,
   };
 
@@ -454,14 +465,14 @@ export default function Home() {
     transitPlanets,
     chartDisplaySettings,
     karakaByPlanet,
-    transitDatetime,
-    onTransitDatetimeChange: setTransitDatetime,
-    onCalculateTransit: handleCalculateTransit,
+    onTransitDatetimeChange: setTargetMoment,
     transitLoading,
     nakshatraAdjust,
     birthDatetime,
     targetDate,
     onTargetDateChange: setTargetDate,
+    targetTime,
+    onTargetTimeChange: setTargetTime,
     bnnMajorHouseFromParent: effectiveBnnHouses.major,
     bnnMinorHouseFromParent: effectiveBnnHouses.minor,
     nadiParayaHousesFromParent: effectiveNadiParayaHouses,
@@ -583,7 +594,7 @@ export default function Home() {
             )}
             {desktopTab === 'dasha' && (
               bcpResult && chartData
-                ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenDateInChart={openDateInChart} />
+                ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} />
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
@@ -647,7 +658,7 @@ export default function Home() {
         {activeTab === 'dasha' && (
           <Panel>
             {bcpResult && chartData
-              ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} />
+              ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} />
               : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
             }
           </Panel>

@@ -8,7 +8,6 @@ import VargaMatrix from '@/pages/VargaMatrix';
 import VargaGridPanel from './VargaGridPanel';
 import DrishtiPanel from '@/components/DrishtiPanel';
 import AshtakavargaPanel from '@/components/AshtakavargaPanel';
-import TransitDateControls from './TransitDateControls';
 import ChartExportButtons from './ChartExportButtons';
 import TargetDateBar from './TargetDateBar';
 import TransitHitsPanel from './TransitHitsPanel';
@@ -27,14 +26,15 @@ export interface ChartSectionProps {
   transitPlanets: PlanetData[];
   chartDisplaySettings: ChartDisplaySettings;
   karakaByPlanet: Record<string, string>;
-  transitDatetime: string;
   onTransitDatetimeChange: (v: string) => void;
-  onCalculateTransit: () => void;
   transitLoading: boolean;
   nakshatraAdjust?: number;
   birthDatetime?: string;
   targetDate?: string;
   onTargetDateChange?: (value: string) => void;
+  /** Time of the target moment, HH:MM; the transits are calculated for it. */
+  targetTime?: string;
+  onTargetTimeChange?: (value: string) => void;
   /** BNN houses from calculateBnnHouses; 0 hides the highlight. */
   bnnMajorHouseFromParent?: number;
   bnnMinorHouseFromParent?: number;
@@ -52,14 +52,14 @@ export default function ChartSection({
   transitPlanets,
   chartDisplaySettings,
   karakaByPlanet,
-  transitDatetime,
   onTransitDatetimeChange,
-  onCalculateTransit,
   transitLoading = false,
   nakshatraAdjust = 0,
   birthDatetime,
   targetDate,
   onTargetDateChange,
+  targetTime,
+  onTargetTimeChange,
   bnnMajorHouseFromParent = 0,
   bnnMinorHouseFromParent = 0,
   nadiParayaHousesFromParent = [],
@@ -199,7 +199,13 @@ export default function ChartSection({
       </div>
 
       {targetDate && onTargetDateChange && (
-        <TargetDateBar targetDate={targetDate} onTargetDateChange={onTargetDateChange} />
+        <TargetDateBar
+          targetDate={targetDate}
+          onTargetDateChange={onTargetDateChange}
+          targetTime={targetTime}
+          onTargetTimeChange={onTargetTimeChange}
+          transitLoading={transitLoading}
+        />
       )}
 
       {view === 'varga' ? (
@@ -323,14 +329,8 @@ export default function ChartSection({
         </div>
       )}
 
-      {view === 'chart' && transitDatetime !== undefined && onTransitDatetimeChange && onCalculateTransit && (
+      {view === 'chart' && onTransitDatetimeChange && (
         <div className="space-y-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
-          <TransitDateControls
-            transitDatetime={transitDatetime}
-            onTransitDatetimeChange={onTransitDatetimeChange}
-            onCalculateTransit={onCalculateTransit}
-            transitLoading={transitLoading}
-          />
           {targetDate && (
             <TransitHitsPanel
               chart={chart}
