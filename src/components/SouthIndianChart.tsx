@@ -24,6 +24,8 @@ interface Props {
   activeYearHouse: number;
   activeMonthHouse: number;
   ascendantSign: number;
+  /** Degree of the ascendant within its sign; shown in the 1st house when given. */
+  ascendantDegree?: number;
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
   transitPlanets?: PlanetData[];
@@ -112,6 +114,7 @@ export default function SouthIndianChart({
   activeYearHouse,
   activeMonthHouse,
   ascendantSign,
+  ascendantDegree,
   planets,
   specialLagnas = [],
   transitPlanets = [],
@@ -245,7 +248,7 @@ export default function SouthIndianChart({
 
               <div className="mt-1 flex items-center justify-between gap-1 text-[10px] leading-none">
                 {sign === ascendantSign ? (
-                  <span className="font-bold text-emerald-700 dark:text-green-400">ASC</span>
+                  <span className="font-bold text-emerald-700 dark:text-green-400">ASC{ascendantDegree !== undefined && ` ${formatDegree(ascendantDegree, degreePrecision === 'off' ? 'minute' : degreePrecision)}`}</span>
                 ) : <span />}
               </div>
 

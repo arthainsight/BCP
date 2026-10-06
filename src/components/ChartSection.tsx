@@ -149,6 +149,8 @@ export default function ChartSection({
   const monthHouse = 0;
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
+  const showTransit = chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0;
+  const parayaHouses = chartDisplaySettings.showNadiParaya !== false ? nadiParayaHousesFromParent : [];
 
   const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha') =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
@@ -238,12 +240,13 @@ export default function ChartSection({
           activeYearHouse={yearHouse}
           activeMonthHouse={monthHouse}
           ascendantSign={chart.ascendant.sign}
+          ascendantDegree={chart.ascendant.degree}
           planets={chart.planets}
           specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
-          showTransitPlanets={transitPlanets.length > 0}
+          showTransitPlanets={showTransit}
           degreePrecision={chartDisplaySettings.degreePrecision ?? 'off'}
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
@@ -253,19 +256,20 @@ export default function ChartSection({
           nakshatraAdjust={nakshatraAdjust}
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
-          nadiParayaHouses={nadiParayaHousesFromParent}
+          nadiParayaHouses={parayaHouses}
         />
       ) : (
         <NorthIndianChart
           activeYearHouse={yearHouse}
           activeMonthHouse={monthHouse}
           ascendantSign={chart.ascendant.sign}
+          ascendantDegree={chart.ascendant.degree}
           planets={chart.planets}
           specialLagnas={chart.specialLagnas ?? []}
           transitPlanets={transitPlanets}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
-          showTransitPlanets={transitPlanets.length > 0}
+          showTransitPlanets={showTransit}
           degreePrecision={chartDisplaySettings.degreePrecision ?? 'off'}
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
@@ -276,7 +280,7 @@ export default function ChartSection({
           nakshatraAdjust={nakshatraAdjust}
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
-          nadiParayaHouses={nadiParayaHousesFromParent}
+          nadiParayaHouses={parayaHouses}
         />
       )}
 
