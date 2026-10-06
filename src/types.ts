@@ -141,6 +141,7 @@ export interface ChartDisplaySettings {
   chartStyle: ChartStyle;
   showSigns: boolean;
   showNatalPlanets: boolean;
+  /** Unused since v2.22; the chart transit layer follows showTransitOverlay. */
   showTransitPlanets: boolean;
   showDegrees: boolean;
   degreePrecision: DegreePrecision;
@@ -160,6 +161,8 @@ export interface ChartDisplaySettings {
   showBnnEventDetection: boolean;
   showBnnMajorHighlight: boolean;
   showBnnMinorHighlight: boolean;
+  showTransitOverlay: boolean;
+  showNadiParaya: boolean;
   showWorkspace: boolean;
 }
 
@@ -186,6 +189,8 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showBnnEventDetection: true,
   showBnnMajorHighlight: true,
   showBnnMinorHighlight: true,
+  showTransitOverlay: true,
+  showNadiParaya: true,
   showWorkspace: false,
 };
 

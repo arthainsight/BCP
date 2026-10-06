@@ -27,6 +27,8 @@ interface Props {
   activeYearHouse: number;
   activeMonthHouse: number;
   ascendantSign: number;
+  /** Degree of the ascendant within its sign; shown in the 1st house when given. */
+  ascendantDegree?: number;
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
   transitPlanets?: PlanetData[];
@@ -159,6 +161,7 @@ export default function NorthIndianChart({
   activeYearHouse,
   activeMonthHouse,
   ascendantSign,
+  ascendantDegree,
   planets,
   specialLagnas = [],
   transitPlanets = [],
@@ -216,13 +219,14 @@ export default function NorthIndianChart({
           const parayaHere = nadiParayaHouses.filter(activation => activation.house === item.house);
           const parayaBeforePlanets = [1, 2, 3, 11, 12].includes(item.house);
 
-          const totalItems = allPlanets.length + specialInHouse.length + parayaHere.length;
+          const ascLines = item.house === 1 && ascendantDegree !== undefined ? 1 : 0;
+          const totalItems = ascLines + allPlanets.length + specialInHouse.length + parayaHere.length;
           const dynamicLineHeight = totalItems > 6 ? 13 : totalItems > 4 ? 15 : 18;
           const totalHeight = (Math.max(totalItems, 1) - 1) * dynamicLineHeight;
           const startY = item.planet.y - totalHeight / 2;
-          const planetOffset = parayaBeforePlanets ? parayaHere.length : 0;
+          const planetOffset = ascLines + (parayaBeforePlanets ? parayaHere.length : 0);
           const specialOffset = planetOffset + allPlanets.length;
-          const parayaOffset = parayaBeforePlanets ? 0 : allPlanets.length + specialInHouse.length;
+          const parayaOffset = ascLines + (parayaBeforePlanets ? 0 : allPlanets.length + specialInHouse.length);
 
           const isBnnMaj = bnnMajorHouse > 0 && item.house === bnnMajorHouse;
           const isBnnMin = bnnMinorHouse > 0 && item.house === bnnMinorHouse;
@@ -278,6 +282,19 @@ export default function NorthIndianChart({
                   fill={bnnLabelColor}
                 >
                   {bnnLabel}
+                </text>
+              )}
+              {ascLines > 0 && ascendantDegree !== undefined && (
+                <text
+                  x={item.planet.x}
+                  y={startY}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  fontSize="12"
+                  fontWeight="700"
+                  fill={signFill}
+                >
+                  Asc {formatDegree(ascendantDegree, degreePrecision === 'off' ? 'minute' : degreePrecision)}
                 </text>
               )}
               {parayaHere.map((activation, index) => (

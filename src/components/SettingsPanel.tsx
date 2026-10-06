@@ -27,12 +27,19 @@ const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showNakshatra', label: 'nakshatra' },
   { key: 'showCharaKaraka', label: 'karaka' },
   { key: 'showWorkspace', label: 'workspace mode' },
-  { key: 'showTransitPlanets', label: 'transit' },
   { key: 'showOuterPlanets', label: 'outer planets' },
   { key: 'showSpecialLagnas', label: 'special lagnas' },
   { key: 'showPanchang', label: 'panchang' },
   { key: 'showGrahaDrishti', label: 'graha dṛṣṭi' },
   { key: 'showRashiDrishti', label: 'rāśi dṛṣṭi' },
+];
+
+// The coloured layers listed in the chart legend.
+const LAYER_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
+  { key: 'showTransitOverlay', label: 'transit' },
+  { key: 'showBnnMajorHighlight', label: 'BNN major' },
+  { key: 'showBnnMinorHighlight', label: 'BNN minor' },
+  { key: 'showNadiParaya', label: 'paraya Ju Sa Ke Ra' },
 ];
 
 const PRECISION_OPTIONS: [DegreePrecision, string][] = [
@@ -248,6 +255,20 @@ export default function SettingsPanel(props: Props) {
                   </button>
                 ))}
               </div>
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-2">
+              chart layers
+            </div>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+              {LAYER_TOGGLES.map(({ key, label }) => (
+                <div key={key} className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{label}</span>
+                  <MiniToggle value={Boolean(chartDisplaySettings[key])} onToggle={() => onToggleChartDisplay(key)} />
+                </div>
+              ))}
             </div>
           </div>
 

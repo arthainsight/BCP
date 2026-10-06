@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.22',
+    date: '2026-10-06',
+    title: 'Chart layer switches and ascendant degree',
+    changes: [
+      'Added a chart layers group under Settings → display with switches for the transit planets, the BNN Major and BNN Minor houses, and the Nāḍī Paraya points (Ju Sa Ke Ra). Each switch hides the layer and its legend entry in the North and South Indian charts and in the workspace charts.',
+      'The ascendant degree is now shown in the 1st house of the natal chart, as “Asc 12°34′”. It follows the degree precision setting and shows degrees and minutes when that is off.',
+      'Fixed: the old transit switch was not connected to anything, so transits always showed once calculated.',
+      'Updated the application version to v2.22.',
+    ],
+  },
+  {
     version: 'v2.21',
     date: '2026-10-04',
     title: 'Rāśi daśās checked against PyJHora and the book',

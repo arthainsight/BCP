@@ -211,6 +211,7 @@ export default function WorkspaceView({
 
     const shared = {
       ascendantSign: chart.ascendant.sign,
+      ascendantDegree: chart.ascendant.degree,
       planets: chart.planets,
       specialLagnas: chart.specialLagnas ?? [],
       showNatalPlanets: chartDisplaySettings.showNatalPlanets ?? true,
@@ -226,7 +227,7 @@ export default function WorkspaceView({
       activeMonthHouse: monthHouse,
       bnnMajorHouse: bnnMaj,
       bnnMinorHouse: bnnMin,
-      nadiParayaHouses: effectiveNadiParayaHouses,
+      nadiParayaHouses: chartDisplaySettings.showNadiParaya !== false ? effectiveNadiParayaHouses : [],
       transitPlanets: showTransit ? transitPlanets : [],
       showTransitPlanets: showTransit,
       legendLayers,
@@ -246,7 +247,7 @@ export default function WorkspaceView({
       case 'natal-transit':
         return (
           <div className="space-y-2">
-            {renderChart({ showTransit: transitPlanets.length > 0, legendLayers: { bcp: false, bnn: false, transit: true } })}
+            {renderChart({ showTransit: chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0, legendLayers: { bcp: false, bnn: false, transit: true } })}
             <TransitDateControls
               transitDatetime={transitDatetime}
               onTransitDatetimeChange={onTransitDatetimeChange}
