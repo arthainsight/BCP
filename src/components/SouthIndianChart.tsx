@@ -8,7 +8,8 @@ import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
-import { LegendEntry, dashaMark, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
+import { useT } from '@/lib/i18n';
+import { LegendEntry, dashaMark, dignityColor, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
@@ -51,6 +52,8 @@ interface Props {
   layerControls?: ChartLayerControl[];
   /** Running dasha lords to mark on the natal planets. */
   dashaLords?: DashaLordMarks | null;
+  /** Colours natal planets by dignity in their sign (used in the Varga grid). */
+  colorByDignity?: boolean;
   /** Small-chart mode for side-by-side grids: tighter cells, no legend. */
   compact?: boolean;
   /** Natal planet drawn highlighted, by name. */
@@ -135,10 +138,12 @@ function getPlanetLabel(
   return parts.join(' ');
 }
 
-function PlanetSpan({ token, highlightPlanet, onPlanetClick }: {
+function PlanetSpan({ token, highlightPlanet, onPlanetClick, dignity }: {
   token: LabelToken;
   highlightPlanet: string | null;
   onPlanetClick?: (name: string) => void;
+  /** Colour for the planet's dignity, when dignities are shown. */
+  dignity?: string;
 }) {
   const planetName = token.group === 'natal' ? token.key.split('-')[1] : null;
   const highlighted = planetName !== null && planetName === highlightPlanet;
@@ -148,6 +153,7 @@ function PlanetSpan({ token, highlightPlanet, onPlanetClick }: {
     : token.group === 'special' ? 'font-semibold'
     : undefined;
   const style = highlighted ? undefined
+    : dignity ? { color: dignity }
     : token.group === 'transit' ? { color: TRANSIT_COLOR }
     : token.group === 'special' ? { color: SPECIAL_LAGNA_COLOR, opacity: 0.85 }
     : undefined;
@@ -186,6 +192,7 @@ export default function SouthIndianChart({
   legendLayers,
   layerControls,
   dashaLords = null,
+  colorByDignity = false,
   compact = false,
   highlightPlanet = null,
   onPlanetClick,
@@ -193,6 +200,7 @@ export default function SouthIndianChart({
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
   const fill = useChartFill();
+  const t = useT();
   const isDark = !hydrated || resolvedTheme === 'dark';
 
   const gridRef = useRef<HTMLDivElement>(null);
@@ -345,6 +353,7 @@ export default function SouthIndianChart({
                             token={token}
                             highlightPlanet={highlightPlanet}
                             onPlanetClick={onPlanetClick}
+                            dignity={colorByDignity && token.group === 'natal' ? dignityColor(token.key.split('-')[1], sign, isDark) : undefined}
                           />
                         )}
                       </span>
@@ -380,14 +389,14 @@ export default function SouthIndianChart({
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {control('bcp') && !(activeYearHouse > 0 || activeMonthHouse > 0) && <LegendEntry control={control('bcp')} style={{ color: isDark ? '#22d3ee' : '#0891b2' }}>■ BCP</LegendEntry>}
           {(activeYearHouse > 0 || activeMonthHouse > 0) && legendLayers?.bcp !== false && (
-            <LegendEntry control={control('bcp')}><span className="text-cyan-600 dark:text-cyan-400">■ BCP Year</span> <span className="text-emerald-700 dark:text-green-400">■ Month</span> <span className="text-purple-600 dark:text-purple-400">■ Both</span></LegendEntry>
+            <LegendEntry control={control('bcp')}><span className="text-cyan-600 dark:text-cyan-400">■ {t('BCP Year')}</span> <span className="text-emerald-700 dark:text-green-400">■ {t('Month')}</span> <span className="text-purple-600 dark:text-purple-400">■ {t('Both')}</span></LegendEntry>
           )}
           {(control('bnnMajor') || (bnnMajorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMajor')} style={{ color: bnnMajColor }}>■ BNN Major</LegendEntry>}
           {(control('bnnMinor') || (bnnMinorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMinor')} style={{ color: bnnMinColor }}>╌ BNN Minor</LegendEntry>}
           {(control('paraya') || hasParaya) && <LegendEntry control={control('paraya')}><span style={{ color: PARAYA_COLORS.Jupiter }}>Ju</span> <span style={{ color: PARAYA_COLORS.Saturn }}>Sa</span> <span style={{ color: PARAYA_COLORS.Rahu }}>Ra</span> <span style={{ color: PARAYA_COLORS.Ketu }}>Ke</span> Paraya</LegendEntry>}
-          {(control('dasha') || dashaLords) && <LegendEntry control={control('dasha')} className="text-zinc-600 dark:text-zinc-300">ᴹᴬ {dashaLords ? `${PLANET_CODES[dashaLords.md]}–${PLANET_CODES[dashaLords.ad]}` : 'Daśā'}</LegendEntry>}
-          {(control('transit') || (showTransitPlanets && legendLayers?.transit !== false)) && <LegendEntry control={control('transit')} style={{ color: TRANSIT_COLOR }}>■ Transit</LegendEntry>}
-          {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
+          {(control('dasha') || dashaLords) && <LegendEntry control={control('dasha')} className="text-zinc-600 dark:text-zinc-300">ᴹᴬ {dashaLords ? `${dashaLords.label ? `${dashaLords.label} ` : ''}${PLANET_CODES[dashaLords.md]}–${PLANET_CODES[dashaLords.ad]}` : 'Daśā'}</LegendEntry>}
+          {(control('transit') || (showTransitPlanets && legendLayers?.transit !== false)) && <LegendEntry control={control('transit')} style={{ color: TRANSIT_COLOR }}>■ {t('Transit')}</LegendEntry>}
+          {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ {t('Special')}</span>}
         </div>
       )}
     </div>

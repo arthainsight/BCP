@@ -4,6 +4,7 @@ import type { ComponentProps } from 'react';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import FileActions from './FileActions';
 import ThemeToggle from './ThemeToggle';
+import { useT } from '@/lib/i18n';
 
 type Props = {
   activeChartName: string | null;
@@ -13,6 +14,7 @@ type Props = {
 
 /** The sticky top bar: a one-row desktop header and a two-row mobile one. */
 export default function AppHeader({ activeChartName, displayChartName, fileActions }: Props) {
+  const t = useT();
   return (
     <>
       {/* Desktop header */}
@@ -23,9 +25,9 @@ export default function AppHeader({ activeChartName, displayChartName, fileActio
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
-            <span className="text-zinc-300 dark:text-zinc-600">chart:</span>{' '}
+            <span className="text-zinc-300 dark:text-zinc-600">{t('chart:')}</span>{' '}
             <span className={activeChartName ? 'text-zinc-500 dark:text-zinc-400' : 'text-zinc-300 dark:text-zinc-600 italic'}>
-              {displayChartName}
+              {activeChartName ?? t(displayChartName)}
             </span>
           </span>
           <FileActions {...fileActions} />
@@ -50,7 +52,7 @@ export default function AppHeader({ activeChartName, displayChartName, fileActio
           <div className="inline-flex max-w-full min-w-0 items-center gap-1 whitespace-nowrap">
             {displayChartName !== 'None' && (
               <span className="min-w-0 max-w-[calc(100vw-110px)] truncate text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mr-0.5">
-                {displayChartName}
+                {activeChartName ?? t(displayChartName)}
               </span>
             )}
             <FileActions {...fileActions} compact />

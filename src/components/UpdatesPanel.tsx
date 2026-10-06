@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react';
 import { APP_VERSION } from '@/lib/config';
 import { CHANGELOG } from '@/lib/changelog';
+import { useT } from '@/lib/i18n';
 
 const STORAGE_KEY = 'lastSeenVersion';
 
 export default function UpdatesPanel() {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [hasNew, setHasNew] = useState(false);
 
@@ -32,7 +34,7 @@ export default function UpdatesPanel() {
         className="flex items-center gap-2 w-full text-left"
       >
         <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex-1">
-          &gt; updates
+          &gt; {t('updates')}
         </span>
         {hasNew && (
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-green-900/60 text-emerald-700 dark:text-green-400 border border-emerald-400 dark:border-green-700">

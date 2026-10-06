@@ -20,6 +20,7 @@ import AppHeader from '@/components/AppHeader';
 import { getNowDateTimeString, getTodayString, parseTargetDateString } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
+import { LanguageContext, translate, type Language } from '@/lib/i18n';
 
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
@@ -90,7 +91,7 @@ export default function Home() {
     !!birthDatetime && showCoords && !!manualLat && !!manualLng && effectiveTzOffset !== null;
 
   const { karakaByPlanet, nakshatraAdjust, effectiveBnnHouses, effectiveNadiParayaHouses, dashaLords } =
-    useChartDerived(chartData, birthDatetime, targetDate, calculationSettings);
+    useChartDerived(chartData, birthDatetime, targetDate, calculationSettings, chartDisplaySettings.dashaMarkSystem);
 
 
   // Recompute BCP when the target or birth date changes, but only if a chart
@@ -249,7 +250,9 @@ export default function Home() {
       manualLat,
       manualLng,
       effectiveTzOffset,
-      targetDate,
+      // The target date is left out: the natal chart does not depend on it,
+      // and BCP follows it in its own effect above. Stepping the date must not
+      // refetch the chart.
       calculationSettings.ayanamsa,
       calculationSettings.ayanamsaOffsetDegrees,
       calculationSettings.nodeMode,
@@ -267,7 +270,6 @@ export default function Home() {
     manualLat,
     manualLng,
     effectiveTzOffset,
-    targetDate,
     calculationSettings.ayanamsa,
     calculationSettings.ayanamsaOffsetDegrees,
     calculationSettings.nodeMode,
@@ -419,6 +421,16 @@ export default function Home() {
     [performCalculation]
   );
 
+  // "Open in chart" in the Dasha event list: read every target-date layer and
+  // the transits for the event's day.
+  const openDateInChart = useCallback((date: string) => {
+    const [year, month, day] = date.split('-');
+    if (!year || !month || !day) return;
+    setTargetDate(date);
+    setTransitDatetime(`${day}.${month}.${year} 12.00.00`);
+    setActiveTab('chart');
+  }, []);
+
   // Snapshot of current session for FileActions persistence
   const chartSnapshot: ChartSnapshot = {
     birthDatetime,
@@ -449,6 +461,7 @@ export default function Home() {
     nakshatraAdjust,
     birthDatetime,
     targetDate,
+    onTargetDateChange: setTargetDate,
     bnnMajorHouseFromParent: effectiveBnnHouses.major,
     bnnMinorHouseFromParent: effectiveBnnHouses.minor,
     nadiParayaHousesFromParent: effectiveNadiParayaHouses,
@@ -482,7 +495,13 @@ export default function Home() {
     onUpdateDashaSettings: updateDashaSettings,
   };
 
+  const language: Language = chartDisplaySettings.language === 'fi' ? 'fi' : 'en';
+
+  // Keep the document language in step with the interface for screen readers.
+  useEffect(() => { document.documentElement.lang = language; }, [language]);
+
   return (
+    <LanguageContext.Provider value={language}>
     <div className="min-h-screen overflow-x-hidden bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
       <AppHeader
         activeChartName={activeChartName}
@@ -539,7 +558,7 @@ export default function Home() {
                     : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
                 }`}
               >
-                {tab}
+                {translate(language, tab)}
               </button>
             ))}
           </div>
@@ -564,7 +583,7 @@ export default function Home() {
             )}
             {desktopTab === 'dasha' && (
               bcpResult && chartData
-                ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} />
+                ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenDateInChart={openDateInChart} />
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
@@ -628,7 +647,7 @@ export default function Home() {
         {activeTab === 'dasha' && (
           <Panel>
             {bcpResult && chartData
-              ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} />
+              ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} />
               : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
             }
           </Panel>
@@ -655,5 +674,6 @@ export default function Home() {
         {APP_NAME} {APP_VERSION} — selected ayanamsa · whole-sign houses · chara karakas
       </footer>
     </div>
+    </LanguageContext.Provider>
   );
 }

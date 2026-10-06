@@ -5,10 +5,12 @@ import { ChartDisplaySettings, CalculationSettings, CharaOptions, DashaSettings,
 import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
+import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
 import BackupPanel from './BackupPanel';
 import { CHART_LAYER_LABELS, CHART_LAYER_SETTINGS, type ChartLayerKey } from './chartLayers';
+import { LANGUAGES, useT, type Language } from '@/lib/i18n';
 
 interface Props {
   chartDisplaySettings: ChartDisplaySettings;
@@ -65,11 +67,12 @@ function MiniToggle({ value, onToggle }: { value: boolean; onToggle: () => void 
 
 /** A group inside a section, collapsed until opened. */
 function SubSection({ label, children }: { label: string; children: React.ReactNode }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   return (
     <div>
       <button type="button" onClick={() => setOpen(v => !v)} aria-expanded={open} className="flex w-full items-center gap-2 text-left">
-        <span className="flex-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{label}</span>
+        <span className="flex-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t(label)}</span>
         <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{open ? '▼' : '▶'}</span>
       </button>
       {open && <div className="mt-2">{children}</div>}
@@ -78,10 +81,11 @@ function SubSection({ label, children }: { label: string; children: React.ReactN
 }
 
 function Section({ label, open, onToggle, children }: { label: string; open: boolean; onToggle: () => void; children: React.ReactNode }) {
+  const t = useT();
   return (
     <div className="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-2">
       <button type="button" onClick={onToggle} className="flex items-center gap-2 w-full text-left">
-        <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex-1">&gt; {label}</span>
+        <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-widest flex-1">&gt; {t(label)}</span>
         <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{open ? '▼' : '▶'}</span>
       </button>
       {open && <div className="pt-1">{children}</div>}
@@ -90,6 +94,7 @@ function Section({ label, open, onToggle, children }: { label: string; open: boo
 }
 
 export default function SettingsPanel(props: Props) {
+  const t = useT();
   const {
     chartDisplaySettings, onToggleChartDisplay, onUpdateChartDisplay,
     calculationSettings, onUpdateCalculationSettings,
@@ -143,18 +148,29 @@ export default function SettingsPanel(props: Props) {
 
   return (
     <div className="space-y-5">
-      <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; settings</div>
+      <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">{t('> settings')}</div>
 
       {/* ── DISPLAY (basic — open by default) ────────────────── */}
       <Section label="display" open={displayOpen} onToggle={() => setDisplayOpen(v => !v)}>
         <div className="space-y-4">
 
+          <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400">
+            {t('language')}
+            <select
+              className={`${SELECT} mt-1`}
+              value={chartDisplaySettings.language ?? 'en'}
+              onChange={e => onUpdateChartDisplay?.({ language: e.target.value as Language })}
+            >
+              {LANGUAGES.map(language => <option key={language.value} value={language.value}>{language.label}</option>)}
+            </select>
+          </label>
+
           <div className="space-y-2">
             <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
-              calculations
+              {t('calculations')}
             </div>
             <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">ayanamsa</label>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('ayanamsa')}</label>
               <select className={SELECT} value={calculationSettings.ayanamsa} onChange={(e) => onUpdateCalculationSettings({ ayanamsa: e.target.value })}>
                 {['Zodiac', 'Custom', 'Requested', 'Common'].map((group) => (
                   <optgroup key={group} label={group}>
@@ -188,35 +204,35 @@ export default function SettingsPanel(props: Props) {
               )}
             </div>
             <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">nakshatra zodiac</label>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('nakshatra zodiac')}</label>
               <select
                 className={SELECT}
                 value={calculationSettings.nakshatraMode ?? 'sidereal'}
                 onChange={(e) => onUpdateCalculationSettings({ nakshatraMode: e.target.value as 'sidereal' | 'tropical' })}
               >
-                <option value="sidereal">Sidereal (Lahiri)</option>
-                <option value="tropical">Tropical</option>
+                <option value="sidereal">{t('Sidereal (Lahiri)')}</option>
+                <option value="tropical">{t('Tropical')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">rahu / ketu</label>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('rahu / ketu')}</label>
               <select className={SELECT} value={calculationSettings.nodeMode} onChange={(e) => onUpdateCalculationSettings({ nodeMode: e.target.value })}>
-                <option value="mean">Mean Node</option>
-                <option value="true">True Node</option>
+                <option value="mean">{t('Mean Node')}</option>
+                <option value="true">{t('True Node')}</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">chara karaka ranking</label>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('chara karaka ranking')}</label>
               <select
                 className={SELECT}
                 value={calculationSettings.charaKarakaRankMode ?? 'degree'}
                 onChange={(e) => onUpdateCalculationSettings({ charaKarakaRankMode: e.target.value as 'degree' | 'minute' })}
               >
-                <option value="degree">Highest degree (classical)</option>
-                <option value="minute">Highest minute</option>
+                <option value="degree">{t('Highest degree (classical)')}</option>
+                <option value="minute">{t('Highest minute')}</option>
               </select>
               <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-                Minute mode compares the minute–second remainder; Rahu is measured in reverse.
+                {t('Minute mode compares the minute–second remainder; Rahu is measured in reverse.')}
               </div>
             </div>
           </div>
@@ -225,11 +241,11 @@ export default function SettingsPanel(props: Props) {
             <div className="grid grid-cols-2 gap-2">
               <button type="button" onClick={() => updateChartStyle('north')}
                 className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'north' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
-                North Indian
+                {t('North Indian')}
               </button>
               <button type="button" onClick={() => updateChartStyle('south')}
                 className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'south' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
-                South Indian
+                {t('South Indian')}
               </button>
             </div>
           </SubSection>
@@ -238,13 +254,13 @@ export default function SettingsPanel(props: Props) {
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               {BASIC_TOGGLES.map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{label}</span>
+                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{t(label)}</span>
                   <MiniToggle value={Boolean(chartDisplaySettings[key])} onToggle={() => onToggleChartDisplay(key)} />
                 </div>
               ))}
             </div>
             <div className="mt-2 flex items-center justify-between gap-2">
-              <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 shrink-0">degrees</span>
+              <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 shrink-0">{t('degrees')}</span>
               <div className="flex gap-0.5">
                 {PRECISION_OPTIONS.map(([val, lbl]) => (
                   <button
@@ -257,7 +273,7 @@ export default function SettingsPanel(props: Props) {
                         : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
                     }`}
                   >
-                    {lbl}
+                    {t(lbl)}
                   </button>
                 ))}
               </div>
@@ -268,11 +284,24 @@ export default function SettingsPanel(props: Props) {
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               {LAYER_TOGGLES.map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{label}</span>
+                  <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 truncate">{t(label)}</span>
                   <MiniToggle value={Boolean(chartDisplaySettings[key])} onToggle={() => onToggleChartDisplay(key)} />
                 </div>
               ))}
             </div>
+            <label className="mt-3 block text-xs font-mono text-zinc-500 dark:text-zinc-400">
+              {t('dasha lords from')}
+              <select
+                className={`${SELECT} mt-1`}
+                value={chartDisplaySettings.dashaMarkSystem ?? 'vimshottari'}
+                onChange={e => onUpdateChartDisplay?.({ dashaMarkSystem: e.target.value as ChartDisplaySettings['dashaMarkSystem'] })}
+              >
+                {GRAHA_DASHA_SYSTEMS.map(system => <option key={system.key} value={system.key}>{system.label}</option>)}
+              </select>
+              <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">
+                {t('ᴹ marks the mahādaśā lord, ᴬ the antardaśā lord, at the target date. Rāśi daśās run by signs, so they are not offered.')}
+              </span>
+            </label>
           </SubSection>
 
           <SubSection label="dasha systems">

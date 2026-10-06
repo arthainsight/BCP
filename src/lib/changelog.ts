@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v2.31',
+    date: '2026-10-06',
+    title: 'Target date controls, transit hits, Finnish',
+    changes: [
+      'The target date now has its own controls above the chart: step back or forward a day, month or year, pick a date, or return to today. BCP, BNN, Paraya, the daśā lords and the annual charts all follow it at once, without recalculating the chart.',
+      'Transit hits lists the twelve months after the target date: when Jupiter, Saturn, Rahu and Ketu cross a natal graha or the ascendant, to the day, retrograde passes marked ℞. “Set transit” moves the transit chart to that day.',
+      '“Open in chart” in the Dasha event list sets the target date and the transits to the event’s day and shows the chart.',
+      'The daśā lord marks can follow Vimśottarī, Vimśottarī Original, Yoginī or Aṣṭottarī (Settings → chart layers). The legend names the system.',
+      'Planets in the Varga charts are coloured by dignity: exalted green, own sign blue, debilitated red.',
+      'The interface can be switched to Finnish (Settings → display → language). Navigation, birth data, settings, chart views and legends are translated; the detailed analysis tables are still in English.',
+      'Updated the application version to v2.31.',
+    ],
+  },
+  {
     version: 'v2.30',
     date: '2026-10-06',
     title: 'Daśā lords on the chart, BCP back as a layer, chart export',

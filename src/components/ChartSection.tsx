@@ -10,6 +10,8 @@ import DrishtiPanel from '@/components/DrishtiPanel';
 import AshtakavargaPanel from '@/components/AshtakavargaPanel';
 import TransitDateControls from './TransitDateControls';
 import ChartExportButtons from './ChartExportButtons';
+import TargetDateBar from './TargetDateBar';
+import TransitHitsPanel from './TransitHitsPanel';
 import { buildLayerControls, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import NadiAmsaPanel from './NadiAmsaPanel';
@@ -17,6 +19,7 @@ import TithiPravesaPanel from './TithiPravesaPanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
 import type { AnnualPlace } from './annualShared';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
+import { useT } from '@/lib/i18n';
 
 export interface ChartSectionProps {
   bcp: BcpResult | null;
@@ -31,6 +34,7 @@ export interface ChartSectionProps {
   nakshatraAdjust?: number;
   birthDatetime?: string;
   targetDate?: string;
+  onTargetDateChange?: (value: string) => void;
   /** BNN houses from calculateBnnHouses; 0 hides the highlight. */
   bnnMajorHouseFromParent?: number;
   bnnMinorHouseFromParent?: number;
@@ -55,6 +59,7 @@ export default function ChartSection({
   nakshatraAdjust = 0,
   birthDatetime,
   targetDate,
+  onTargetDateChange,
   bnnMajorHouseFromParent = 0,
   bnnMinorHouseFromParent = 0,
   nadiParayaHousesFromParent = [],
@@ -63,6 +68,7 @@ export default function ChartSection({
   ianaTimezone,
   onToggleChartDisplay,
 }: ChartSectionProps) {
+  const t = useT();
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
   const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha'>('chart');
   const [vargaView, setVargaView] = useState<'chart' | 'table'>('chart');
@@ -134,7 +140,7 @@ export default function ChartSection({
   if (!bcp || !chart) {
     return (
       <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs text-center px-4">
-        Enter birth data in the Data tab, then click Calculate to see the chart.
+        {t('Enter birth data in the Data tab, then click Calculate to see the chart.')}
       </div>
     );
   }
@@ -172,7 +178,7 @@ export default function ChartSection({
       <div className="flex items-center gap-2 min-w-0">
         <div className="min-w-0 flex-1 overflow-x-auto">
           <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
-            <button type="button" onClick={() => setView('chart')} className={tabClass('chart')}>Chart</button>
+            <button type="button" onClick={() => setView('chart')} className={tabClass('chart')}>{t('Chart')}</button>
             <button type="button" onClick={() => setView('varga')} className={tabClass('varga')}>Varga</button>
             <button type="button" onClick={() => setView('nadi')} className={tabClass('nadi')}>Nāḍī</button>
             <button type="button" onClick={() => setView('ashtakavarga')} className={tabClass('ashtakavarga')}>Aṣṭakavarga</button>
@@ -184,13 +190,17 @@ export default function ChartSection({
         <button
           type="button"
           onClick={fullscreen ? () => setFullscreen(false) : enterFullscreen}
-          title={fullscreen ? 'Close full screen (Esc)' : 'Full screen'}
-          aria-label={fullscreen ? 'Close full screen' : 'Full screen'}
+          title={fullscreen ? t('Close full screen (Esc)') : t('Full screen')}
+          aria-label={fullscreen ? t('Close full screen') : t('Full screen')}
           className="shrink-0 rounded-md border border-zinc-200 px-2 py-1.5 text-[10px] font-mono text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100"
         >
-          {fullscreen ? '✕ close' : '⤢ full'}
+          {fullscreen ? t('✕ close') : t('⤢ full')}
         </button>
       </div>
+
+      {targetDate && onTargetDateChange && (
+        <TargetDateBar targetDate={targetDate} onTargetDateChange={onTargetDateChange} />
+      )}
 
       {view === 'varga' ? (
         <div className="min-w-0 space-y-4">
@@ -200,14 +210,14 @@ export default function ChartSection({
               onClick={() => setVargaView('chart')}
               className={`rounded-md px-2.5 py-1 text-[10px] font-mono ${vargaView === 'chart' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'}`}
             >
-              Charts
+              {t('Charts')}
             </button>
             <button
               type="button"
               onClick={() => setVargaView('table')}
               className={`rounded-md px-2.5 py-1 text-[10px] font-mono ${vargaView === 'table' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'}`}
             >
-              Matrix &amp; Bala
+              {t('Matrix & Bala')}
             </button>
           </div>
           {vargaView === 'chart' ? (
@@ -321,6 +331,14 @@ export default function ChartSection({
             onCalculateTransit={onCalculateTransit}
             transitLoading={transitLoading}
           />
+          {targetDate && (
+            <TransitHitsPanel
+              chart={chart}
+              targetDate={targetDate}
+              calculationSettings={calculationSettings}
+              onSetTransit={onTransitDatetimeChange}
+            />
+          )}
         </div>
       )}
     </div>

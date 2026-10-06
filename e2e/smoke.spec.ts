@@ -44,6 +44,17 @@ test('calculates a chart and opens every main view', async ({ page }) => {
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
 
+  // Target date: stepping back a year changes the date without a reload.
+  await visible(page, page.getByRole('button', { name: 'Chart', exact: true })).click();
+  const dateField = visible(page, page.locator('input[type="date"]'));
+  const before = await dateField.inputValue();
+  await visible(page, page.getByRole('button', { name: 'Back one year' })).click();
+  await expect(dateField).not.toHaveValue(before);
+
+  // Transit hits load for the twelve months after the target date.
+  await visible(page, page.getByRole('button', { name: /transit hits/ })).click();
+  await expect(visible(page, page.getByText(/over natal/))).toBeVisible({ timeout: 30_000 });
+
   // The other chart views render.
   for (const tab of ['Nāḍī', 'Aṣṭakavarga', 'Dṛṣṭi', 'Tithi Praveśa', 'Varṣaphala', 'Chart']) {
     await visible(page, page.getByRole('button', { name: tab, exact: true })).click();
@@ -62,4 +73,18 @@ test('settings open on calculations with the other groups collapsed', async ({ p
   await expect(layers).toHaveAttribute('aria-expanded', 'false');
   await layers.click();
   await expect(visible(page, page.getByText('BCP year/month'))).toBeVisible();
+});
+
+test('the interface switches to Finnish', async ({ page }) => {
+  await page.goto('/');
+  const settingsTab = page.getByRole('navigation').getByRole('button', { name: 'Settings', exact: true });
+  if (await settingsTab.locator('visible=true').count()) await settingsTab.click();
+  else await visible(page, page.getByRole('button', { name: /settings/i })).click();
+  await visible(page, page.locator('select').filter({ hasText: 'Suomi' })).selectOption('fi');
+  await expect(visible(page, page.getByText('laskenta', { exact: true }))).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fi');
+  const dataTab = page.getByRole('navigation').getByRole('button', { name: 'Tiedot', exact: true });
+  if (await dataTab.locator('visible=true').count()) await dataTab.click();
+  else await visible(page, page.getByRole('button', { name: 'tiedot', exact: true })).click();
+  await expect(visible(page, page.getByRole('button', { name: 'Laske kartta' }))).toBeVisible();
 });

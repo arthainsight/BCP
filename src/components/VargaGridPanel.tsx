@@ -19,6 +19,7 @@ import type { DashaLordMarks } from './chartLayers';
 import ChartExportButtons from './ChartExportButtons';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
+import { useT } from '@/lib/i18n';
 
 const STORAGE_KEY = 'vargaGrid';
 const PLANET_ORDER = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
@@ -42,6 +43,7 @@ const PILL_ON = 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-
 const PILL_OFF = 'text-zinc-500 dark:text-zinc-400';
 
 export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null }: Props) {
+  const t = useT();
   const [selection, setSelection] = useState<VargaGridSelection>(DEFAULT_VARGA_GRID);
   const [highlight, setHighlight] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -85,6 +87,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
       specialLagnas: varga.specialLagnas,
       showSpecialLagnas: !compact && chartDisplaySettings.showSpecialLagnas,
       dashaLords,
+      colorByDignity: true,
       compact,
       highlightPlanet: highlight,
       onPlanetClick: toggleHighlight,
@@ -99,7 +102,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
   return (
     <div className="min-w-0 space-y-3">
       <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-        Divisional charts side by side. Tap a planet to follow it through every chart; tap a chart’s title to see it full size with your display settings.
+        {t('Divisional charts side by side. Tap a planet to follow it through every chart; tap a chart’s title to see it full size with your display settings.')}
       </div>
 
       <div className="overflow-x-auto">
@@ -111,7 +114,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
               onClick={() => save({ ...selection, preset })}
               className={`${PILL} ${selection.preset === preset ? PILL_ON : PILL_OFF}`}
             >
-              {preset === 'custom' ? 'Custom' : VARGA_GRID_PRESETS[preset].label}
+              {preset === 'custom' ? t('Custom') : VARGA_GRID_PRESETS[preset].label}
             </button>
           ))}
         </div>
@@ -141,13 +144,13 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
             })}
           </div>
           <div className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-            Choose {VARGA_GRID_MIN}–{VARGA_GRID_MAX} charts ({selection.custom.length} selected).
+            {t('Choose')} {VARGA_GRID_MIN}–{VARGA_GRID_MAX} {t('charts')} ({selection.custom.length} {t('selected')}).
           </div>
         </div>
       )}
 
       <div className="flex flex-wrap items-center gap-1">
-        <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mr-1">follow</span>
+        <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mr-1">{t('follow')}</span>
         {PLANET_ORDER.map(name => (
           <button
             key={name}
@@ -171,7 +174,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
                 key={place.division}
                 title={[
                   `${highlight} in ${SIGN_ABBR[place.sign - 1]} in D${place.division}`,
-                  place.dignity && `${place.dignity === 'own' ? 'own sign' : place.dignity}`,
+                  place.dignity && t(place.dignity === 'own' ? 'own sign' : place.dignity),
                   place.sameAsRasi && 'same sign as in D1',
                 ].filter(Boolean).join(' · ')}
                 className={`rounded border px-1.5 py-0.5 text-[10px] font-mono ${place.sameAsRasi ? 'font-bold underline' : ''} ${
@@ -185,7 +188,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
             ))}
           </div>
           <div className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-            ↑ exalted · ◆ own sign · ↓ debilitated · <span className="font-bold underline">underlined</span> = same sign as D1
+            {t('↑ exalted · ◆ own sign · ↓ debilitated ·')} <span className="font-bold underline">{t('underlined')}</span> {t('= same sign as D1')}
           </div>
         </div>
       )}
@@ -202,7 +205,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
               </div>
             </div>
             <button type="button" onClick={() => setExpanded(null)} className="shrink-0 rounded border border-zinc-200 px-2 py-1 text-[10px] font-mono text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
-              Close
+              {t('Close')}
             </button>
           </div>
           <div ref={expandedRef} className="space-y-2">
@@ -211,6 +214,10 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
           </div>
         </div>
       )}
+
+      <div className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+        {t('Planet colours:')} <span className="font-bold text-green-700 dark:text-green-400">{t('exalted')}</span> · <span className="font-bold text-sky-700 dark:text-sky-300">{t('own sign')}</span> · <span className="font-bold text-rose-700 dark:text-rose-400">{t('debilitated')}</span>
+      </div>
 
       <div className="@container">
         <div className={`grid gap-2 ${chartStyle === 'south'

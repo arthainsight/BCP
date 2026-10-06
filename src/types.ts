@@ -139,6 +139,10 @@ export interface ChartDisplaySettings {
   showBcpHighlight: boolean;
   /** Marks the running Vimshottari mahadasha and antardasha lords. */
   showDashaLords: boolean;
+  /** Which graha-based dasha system the marks follow. */
+  dashaMarkSystem: 'vimshottari' | 'vds' | 'yogini' | 'ashtottari';
+  /** Interface language. */
+  language: 'en' | 'fi';
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -161,6 +165,8 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showNadiParaya: true,
   showBcpHighlight: false,
   showDashaLords: true,
+  dashaMarkSystem: 'vimshottari',
+  language: 'en',
 };
 
 export interface CalculationSettings {
