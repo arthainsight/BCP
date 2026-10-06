@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import { useHydrated } from '@/lib/useHydrated';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
@@ -12,6 +13,7 @@ import { layoutHouseLabels, type ExclusionBox, type LabelToken, type Point } fro
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
 const TRANSIT_COLOR = '#f43f5e';
+const HIGHLIGHT_COLOR = '#0891b2';
 
 const BNN_MAJOR_LIGHT = '#ea580c';
 const BNN_MAJOR_DARK  = '#f97316';
@@ -52,6 +54,12 @@ interface Props {
   legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
   /** Makes the layer entries in the legend clickable switches. */
   layerControls?: ChartLayerControl[];
+  /** Small-chart mode for side-by-side grids: bigger type, no legend. */
+  compact?: boolean;
+  /** Natal planet drawn highlighted, by name. */
+  highlightPlanet?: string | null;
+  /** Called with a natal planet's name when its label is clicked. */
+  onPlanetClick?: (name: string) => void;
 }
 
 const PLANET_CODES: Record<string, string> = {
@@ -189,6 +197,9 @@ export default function NorthIndianChart({
   nadiParayaHouses = [],
   legendLayers,
   layerControls,
+  compact = false,
+  highlightPlanet = null,
+  onPlanetClick,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
@@ -254,15 +265,16 @@ export default function NorthIndianChart({
           specialInHouse.forEach((sl, index) => tokens.push({ key: `sl-${sl.name}-${index}`, group: 'special', text: sl.name }));
 
           // Keep labels clear of the sign, house number and BNN label.
-          const signBlockBottom = item.sign.y + (bnnLabel || showHouseNumbers ? 20 : 8);
+          const signHalf = compact ? 22 : 13;
+          const signBlockBottom = item.sign.y + (bnnLabel || showHouseNumbers ? 20 : compact ? 14 : 8);
           const exclude: ExclusionBox[] = showSigns || bnnLabel || showHouseNumbers
-            ? [{ x0: item.sign.x - (bnnLabel ? 30 : 13), x1: item.sign.x + (bnnLabel ? 30 : 13), y0: item.sign.y - 9, y1: signBlockBottom }]
+            ? [{ x0: item.sign.x - (bnnLabel ? 30 : signHalf), x1: item.sign.x + (bnnLabel ? 30 : signHalf), y0: item.sign.y - (compact ? 15 : 9), y1: signBlockBottom }]
             : [];
           const longNatal = natalInHouse.some(planet => natalLabel(planet).length > 3);
           const layout = layoutHouseLabels(
             tokens,
             { polygon: HOUSE_POLYGONS[item.house], exclude, anchorY: item.planet.y },
-            { maxFontSize: longNatal ? 13 : 16 },
+            compact ? { maxFontSize: 44, minFontSize: 18 } : { maxFontSize: longNatal ? 13 : 16 },
           );
           const planetFill = getPlanetFill(item.house, activeYearHouse, activeMonthHouse, isDark, showBcpHighlights);
           const parayaFill = (key: string) => parayaColors[(key.slice('paraya-'.length)) as ParayaBody];
@@ -295,7 +307,7 @@ export default function NorthIndianChart({
                 />
               )}
               {showSigns && (
-                <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize="13" fontWeight="600" fill={signFill}>
+                <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize={compact ? 24 : 13} fontWeight="600" fill={signFill}>
                   {SIGN_ABBR[sign]}
                 </text>
               )}
@@ -330,18 +342,28 @@ export default function NorthIndianChart({
                   opacity={row.group === 'transit' ? 0.9 : row.group === 'special' ? 0.85 : 1}
                   {...(row.group === 'paraya' ? { stroke: isDark ? '#18181b' : '#ffffff', strokeWidth: 3, strokeLinejoin: 'round' as const, style: { paintOrder: 'stroke fill' } } : {})}
                 >
-                  {row.tokens.map((token, index) => (
-                    <tspan
-                      key={token.key}
-                      fill={token.group === 'natal' ? planetFill
-                        : token.group === 'transit' ? TRANSIT_COLOR
-                        : token.group === 'special' ? SPECIAL_LAGNA_COLOR
-                        : token.group === 'paraya' ? parayaFill(token.key)
-                        : signFill}
-                    >
-                      {index > 0 ? ' ' : ''}{token.text}
-                    </tspan>
-                  ))}
+                  {row.tokens.map((token, index) => {
+                    const planetName = token.group === 'natal' ? token.key.slice('na-'.length) : null;
+                    const highlighted = planetName !== null && planetName === highlightPlanet;
+                    return (
+                      <Fragment key={token.key}>
+                        {index > 0 ? ' ' : ''}
+                        <tspan
+                          fill={highlighted ? HIGHLIGHT_COLOR
+                            : token.group === 'natal' ? planetFill
+                            : token.group === 'transit' ? TRANSIT_COLOR
+                            : token.group === 'special' ? SPECIAL_LAGNA_COLOR
+                            : token.group === 'paraya' ? parayaFill(token.key)
+                            : signFill}
+                          textDecoration={highlighted ? 'underline' : undefined}
+                          onClick={planetName && onPlanetClick ? () => onPlanetClick(planetName) : undefined}
+                          style={planetName && onPlanetClick ? { cursor: 'pointer' } : undefined}
+                        >
+                          {token.text}
+                        </tspan>
+                      </Fragment>
+                    );
+                  })}
                 </text>
               ))}
             </g>
@@ -349,7 +371,7 @@ export default function NorthIndianChart({
         })}
       </svg>
 
-      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya || hasControls) && (
+      {!compact && (showBcpHighlights || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya || hasControls) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ BCP Year</span>}
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ BCP Month</span>}

@@ -6,6 +6,7 @@ import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import VargaMatrix from '@/pages/VargaMatrix';
 import VargaChartPanel from './VargaChartPanel';
+import VargaGridPanel from './VargaGridPanel';
 import DrishtiPanel from '@/components/DrishtiPanel';
 import AshtakavargaPanel from '@/components/AshtakavargaPanel';
 import TransitDateControls from './TransitDateControls';
@@ -66,7 +67,7 @@ export default function ChartSection({
   onToggleChartDisplay,
 }: ChartSectionProps) {
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
-  const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha'>('chart');
+  const [view, setView] = useState<'chart' | 'varga' | 'vargas' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha'>('chart');
   const [vargaView, setVargaView] = useState<'chart' | 'table'>('chart');
   // Residence for the annual charts, shared by Tithi Praveśa and Varṣaphala.
   const [annualPlace, setAnnualPlace] = useState<AnnualPlace>(null);
@@ -124,7 +125,7 @@ export default function ChartSection({
     paraya: nadiParayaHousesFromParent.length > 0,
   }, onToggleChartDisplay);
 
-  const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha') =>
+  const tabClass = (id: 'chart' | 'varga' | 'vargas' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha') =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
 
   return (
@@ -136,6 +137,7 @@ export default function ChartSection({
           <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
             <button type="button" onClick={() => setView('chart')} className={tabClass('chart')}>Chart</button>
             <button type="button" onClick={() => setView('varga')} className={tabClass('varga')}>Varga</button>
+            <button type="button" onClick={() => setView('vargas')} className={tabClass('vargas')}>Vargas</button>
             <button type="button" onClick={() => setView('nadi')} className={tabClass('nadi')}>Nāḍī</button>
             <button type="button" onClick={() => setView('ashtakavarga')} className={tabClass('ashtakavarga')}>Aṣṭakavarga</button>
             <button type="button" onClick={() => setView('drishti')} className={tabClass('drishti')}>Dṛṣṭi</button>
@@ -175,6 +177,8 @@ export default function ChartSection({
             <div className="overflow-x-auto"><VargaMatrix chart={chart} /></div>
           )}
         </div>
+      ) : view === 'vargas' ? (
+        <VargaGridPanel chart={chart} chartStyle={chartStyle} chartDisplaySettings={chartDisplaySettings} />
       ) : view === 'nadi' ? (
         <div className="min-w-0 overflow-x-auto"><NadiAmsaPanel chart={chart} /></div>
       ) : view === 'ashtakavarga' ? (

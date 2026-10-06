@@ -60,3 +60,16 @@ for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianC
 }
 
 assert.equal(buildLayerControls(DEFAULT_CHART_DISPLAY, { transit: true }), undefined, 'no controls without a toggle handler');
+
+// --- Compact charts for the Vargas grid ----------------------------------------
+for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianChart]] as const) {
+  const compact = renderToStaticMarkup(createElement(Chart, {
+    ...base, compact: true, transitPlanets: transits, showTransitPlanets: true, nadiParayaHouses: paraya,
+  }));
+  assert.doesNotMatch(text(compact), /Transit|Paraya/, `${name}: compact charts have no legend`);
+  assert.match(text(compact), /Su/, `${name}: compact charts still draw planets`);
+
+  const highlighted = renderToStaticMarkup(createElement(Chart, { ...base, highlightPlanet: 'Moon', onPlanetClick: () => {} }));
+  assert.equal(highlighted.match(/underline/g)?.length, 1, `${name}: only the followed planet is highlighted`);
+  assert.match(highlighted, /underline[^>]*>Mo</, `${name}: the Moon is the highlighted label`);
+}
