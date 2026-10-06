@@ -94,3 +94,14 @@ for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianC
   assert.match(same, /Moᴹᴬ/, `${name}: one lord can hold both`);
   assert.doesNotMatch(text(renderToStaticMarkup(createElement(Chart, base))), /ᴹ|ᴬ/, `${name}: no marks without lords`);
 }
+
+// --- Dignity colours (Varga grid) -------------------------------------------------
+// Sun in Aries is exalted; its label takes the exaltation green only when asked.
+for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianChart]] as const) {
+  const sunInAries = { ...base, ascendantSign: 1, planets: [planet('Sun', 1, 1, 10)] };
+  const plain = renderToStaticMarkup(createElement(Chart, sunInAries));
+  const coloured = renderToStaticMarkup(createElement(Chart, { ...sunInAries, colorByDignity: true }));
+  // The server render uses the dark palette until the theme is known.
+  assert.doesNotMatch(plain, /#4ade80/i, `${name}: no dignity colour by default`);
+  assert.match(coloured, /#4ade80/i, `${name}: exalted Sun is green`);
+}

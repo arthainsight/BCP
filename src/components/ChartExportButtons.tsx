@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type RefObject } from 'react';
+import { useT } from '@/lib/i18n';
 
 type Props = {
   /** The element to capture: the chart with its legend. */
@@ -17,6 +18,7 @@ const BUTTON = 'rounded border border-zinc-200 px-2 py-1 text-[10px] font-mono t
  * button is pressed.
  */
 export default function ChartExportButtons({ targetRef, fileName }: Props) {
+  const t = useT();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -39,7 +41,7 @@ export default function ChartExportButtons({ targetRef, fileName }: Props) {
       link.download = `${fileName}.${format}`;
       link.click();
     } catch {
-      setError('Export failed. Try again, or use a screenshot.');
+      setError(t('Export failed. Try again, or use a screenshot.'));
     } finally {
       setBusy(false);
     }

@@ -1,0 +1,192 @@
+'use client';
+
+import { createContext, useCallback, useContext } from 'react';
+
+// Interface language. English text is the key, so a string without a Finnish
+// entry simply stays in English. Sanskrit terms (daśā, varga names, nakṣatras)
+// are the same in both languages and are not translated.
+
+export type Language = 'en' | 'fi';
+
+export const LANGUAGES: { value: Language; label: string }[] = [
+  { value: 'en', label: 'English' },
+  { value: 'fi', label: 'Suomi' },
+];
+
+export const FI: Record<string, string> = {
+  // Navigation
+  'Chart': 'Kartta',
+  'Data': 'Tiedot',
+  'Grahas': 'Grahat',
+  'Dasha': 'Daśā',
+  'Public': 'Julkiset',
+  'Settings': 'Asetukset',
+  'data': 'tiedot',
+  'grahas': 'grahat',
+  'dasha': 'daśā',
+  'public': 'julkiset',
+  'settings': 'asetukset',
+
+  // Header and chart files
+  'chart:': 'kartta:',
+  'Untitled': 'Nimetön',
+  'None': 'Ei karttaa',
+  'Chart actions': 'Kartan toiminnot',
+  'chart actions': 'kartan toiminnot',
+  'NEW': 'UUSI',
+  'confirm?': 'vahvista?',
+  'CONFIRM NEW': 'VAHVISTA UUSI',
+  'LOAD': 'AVAA',
+  'SAVE': 'TALLENNA',
+  'SAVE AS': 'TALLENNA NIMELLÄ',
+  'EXPORT': 'VIE',
+  'IMPORT': 'TUO',
+  'saved charts': 'tallennetut kartat',
+  'save chart as': 'tallenna kartta nimellä',
+  'Cancel': 'Peruuta',
+  'Save': 'Tallenna',
+  'Discard current chart?': 'Hylätäänkö nykyinen kartta?',
+  'Unsaved changes will be lost.': 'Tallentamattomat muutokset menetetään.',
+  'Discard & New': 'Hylkää ja aloita uusi',
+
+  // Birth data
+  '> data': '> tiedot',
+  'birth datetime': 'syntymäaika',
+  'city': 'kaupunki',
+  'lookup': 'hae',
+  'select location': 'valitse paikka',
+  '-- select --': '-- valitse --',
+  '> location': '> sijainti',
+  'lat': 'lev.',
+  'lng': 'pit.',
+  'timezone': 'aikavyöhyke',
+  '— enter birth time to resolve DST': '— anna syntymäaika kesäajan selvittämiseksi',
+  'geocode a city to auto-detect timezone': 'hae kaupunki, niin aikavyöhyke tunnistetaan',
+  'override UTC offset (leave blank for auto)': 'ohita UTC-ero (tyhjä = automaattinen)',
+  'Calculate Chart': 'Laske kartta',
+  'Calculating...': 'Lasketaan...',
+
+  // Main page
+  'Calculate a chart to see graha positions': 'Laske kartta nähdäksesi grahojen sijainnit',
+  'Calculate a chart in Data to see graha positions': 'Laske kartta Tiedot-välilehdellä nähdäksesi grahojen sijainnit',
+  'Calculate a chart to see Dasha analysis': 'Laske kartta nähdäksesi daśā-analyysin',
+  'Calculate a chart in Data to see Dasha analysis': 'Laske kartta Tiedot-välilehdellä nähdäksesi daśā-analyysin',
+  'ayanamsa': 'ayanamsa',
+  'true node': 'todellinen solmu',
+  'mean node': 'keskisolmu',
+
+  // Chart views
+  'Charts': 'Kartat',
+  'Matrix & Bala': 'Matriisi ja bala',
+  '⤢ full': '⤢ koko',
+  '✕ close': '✕ sulje',
+  'Full screen': 'Koko näyttö',
+  'Close full screen': 'Sulje koko näyttö',
+  'Close full screen (Esc)': 'Sulje koko näyttö (Esc)',
+  'Enter birth data in the Data tab, then click Calculate to see the chart.': 'Syötä syntymätiedot Tiedot-välilehdellä ja laske kartta.',
+  'target': 'tavoite',
+  'today': 'tänään',
+  'Target date': 'Tavoitepäivä',
+  'transit datetime · updates automatically': 'transiittihetki · päivittyy automaattisesti',
+  'Now': 'Nyt',
+  'Calculate transit': 'Laske transiitti',
+  'Calculating…': 'Lasketaan…',
+  'transit hits · 12 months from target': 'transiittiosumat · 12 kk tavoitepäivästä',
+  'Jupiter, Saturn, Rahu and Ketu crossing a natal graha or the ascendant, to the day. ℞ marks a retrograde pass.':
+    'Jupiter, Saturnus, Rahu ja Ketu ylittämässä natal-grahan tai lagnan, päivän tarkkuudella. ℞ merkitsee retrogradista ylitystä.',
+  'Could not load transits:': 'Transiittien lataus epäonnistui:',
+  'No crossings in these twelve months.': 'Ei ylityksiä näiden kahdentoista kuukauden aikana.',
+  'over natal': 'ylittää natal',
+  'set transit': 'aseta transiitti',
+  'show fewer': 'näytä vähemmän',
+  'show all': 'näytä kaikki',
+  'Export failed. Try again, or use a screenshot.': 'Vienti epäonnistui. Yritä uudelleen tai ota kuvakaappaus.',
+
+  // Legends
+  'Transit': 'Transiitti',
+  'Special': 'Erityislagnat',
+  'BCP Year': 'BCP-vuosi',
+  'Month': 'Kuukausi',
+  'Both': 'Molemmat',
+  'Hide this layer': 'Piilota kerros',
+  'Show this layer': 'Näytä kerros',
+
+  // Varga view
+  'Divisional charts side by side. Tap a planet to follow it through every chart; tap a chart’s title to see it full size with your display settings.':
+    'Vargat rinnakkain. Napauta planeettaa seurataksesi sitä kaikissa kartoissa; napauta kartan otsikkoa nähdäksesi sen isona.',
+  'Custom': 'Oma',
+  'follow': 'seuraa',
+  'Planet colours:': 'Planeettojen värit:',
+  'exalted': 'korotettu',
+  'own sign': 'oma merkki',
+  'debilitated': 'heikentynyt',
+  '↑ exalted · ◆ own sign · ↓ debilitated ·': '↑ korotettu · ◆ oma merkki · ↓ heikentynyt ·',
+  'underlined': 'alleviivattu',
+  '= same sign as D1': '= sama merkki kuin D1:ssä',
+  'Close': 'Sulje',
+  'Choose': 'Valitse',
+  'charts': 'karttaa',
+  'selected': 'valittu',
+
+  // Settings
+  '> settings': '> asetukset',
+  'display': 'näyttö',
+  'language': 'kieli',
+  'calculations': 'laskenta',
+  'nakshatra zodiac': 'nakṣatrojen zodiakki',
+  'rahu / ketu': 'rahu / ketu',
+  'chara karaka ranking': 'chara karakojen järjestys',
+  'Highest degree (classical)': 'Suurin aste (klassinen)',
+  'Highest minute': 'Suurin minuutti',
+  'Mean Node': 'Keskisolmu',
+  'True Node': 'Todellinen solmu',
+  'chart style': 'kartan tyyli',
+  'North Indian': 'Pohjoisintialainen',
+  'South Indian': 'Eteläintialainen',
+  'chart overlays': 'kartan merkinnät',
+  'chart layers': 'kartan kerrokset',
+  'dasha systems': 'daśā-järjestelmät',
+  'dasha methods': 'daśā-menetelmät',
+  'degrees': 'asteet',
+  'Off': 'Pois',
+  'signs': 'merkit',
+  'natal': 'natal',
+  'nakshatra': 'nakṣatra',
+  'karaka': 'karaka',
+  'outer planets': 'ulkoplaneetat',
+  'special lagnas': 'erityislagnat',
+  'panchang': 'pañcāṅga',
+  'graha dṛṣṭi': 'graha dṛṣṭi',
+  'rāśi dṛṣṭi': 'rāśi dṛṣṭi',
+  'BCP year/month': 'BCP vuosi/kuukausi',
+  'dasha lords': 'daśā-herrat',
+  'transit': 'transiitti',
+  'BNN major': 'BNN major',
+  'BNN minor': 'BNN minor',
+  'paraya Ju Sa Ke Ra': 'paraya Ju Sa Ke Ra',
+  'dasha lords from': 'daśā-herrat järjestelmästä',
+  'ᴹ marks the mahādaśā lord, ᴬ the antardaśā lord, at the target date. Rāśi daśās run by signs, so they are not offered.':
+    'ᴹ merkitsee mahādaśān herraa, ᴬ antardaśān herraa tavoitepäivänä. Rāśi-daśāt etenevät merkeittäin, joten niitä ei voi valita.',
+  'about': 'tietoja',
+  'updates': 'päivitykset',
+  'Sidereal (Lahiri)': 'Sideerinen (Lahiri)',
+  'Tropical': 'Trooppinen',
+  'Minute mode compares the minute–second remainder; Rahu is measured in reverse.': 'Minuuttitila vertaa minuutti–sekunti-jäännöstä; Rahu mitataan käänteisesti.',
+  'Full local backup': 'Täysi paikallinen varmuuskopio',
+  'Includes saved charts, all Event Lists, calculation and display settings and Dasha methods.': 'Sisältää tallennetut kartat, kaikki tapahtumalistat, laskenta- ja näyttöasetukset sekä daśā-menetelmät.',
+  'Download backup': 'Lataa varmuuskopio',
+  'Choose backup': 'Valitse varmuuskopio',
+  'Replace and restore': 'Korvaa ja palauta',
+};
+
+/** Translates English interface text; anything without a Finnish entry stays in English. */
+export function translate(language: Language, text: string): string {
+  return language === 'fi' ? FI[text] ?? text : text;
+}
+
+export const LanguageContext = createContext<Language>('en');
+
+export function useT(): (text: string) => string {
+  const language = useContext(LanguageContext);
+  return useCallback((text: string) => translate(language, text), [language]);
+}

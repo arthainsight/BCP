@@ -1,6 +1,7 @@
 'use client';
 
 import { GeoResult } from '@/types';
+import { useT } from '@/lib/i18n';
 
 interface Props {
   birthDatetime: string;
@@ -45,14 +46,15 @@ export default function DataPanel({
   onGeocode, onSelectGeo, onCalculate,
   loading, error, canCalculate,
 }: Props) {
+  const t = useT();
   return (
     <div className="space-y-5">
-      <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; data</div>
+      <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">{t('> data')}</div>
 
       {/* Birth datetime */}
       <div>
         <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-          birth datetime
+          {t('birth datetime')}
         </label>
         <input
           type="text"
@@ -67,7 +69,7 @@ export default function DataPanel({
       {/* City geocode */}
       <div>
         <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-          city
+          {t('city')}
         </label>
         <div className="flex gap-2">
           <input
@@ -83,7 +85,7 @@ export default function DataPanel({
             disabled={loading || !city.trim()}
             className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 border border-emerald-600 dark:border-cyan-700 text-emerald-700 dark:text-cyan-400 rounded text-xs font-mono hover:bg-emerald-50 dark:hover:bg-zinc-700 disabled:opacity-30 whitespace-nowrap transition-colors"
           >
-            {loading ? '...' : 'lookup'}
+            {loading ? '...' : t('lookup')}
           </button>
         </div>
       </div>
@@ -92,14 +94,14 @@ export default function DataPanel({
       {geoResults.length > 1 && (
         <div>
           <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">
-            select location
+            {t('select location')}
           </label>
           <select
             className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm font-mono text-zinc-800 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500"
             onChange={(e) => onSelectGeo(parseInt(e.target.value), geoResults)}
             defaultValue=""
           >
-            <option value="" disabled>-- select --</option>
+            <option value="" disabled>{t('-- select --')}</option>
             {geoResults.map((r, i) => (
               <option key={i} value={i}>
                 {r.name}, {r.country} ({r.latitude.toFixed(2)}, {r.longitude.toFixed(2)})
@@ -112,22 +114,22 @@ export default function DataPanel({
       {/* Location + timezone */}
       {showCoords && (
         <div className="space-y-3 border-t border-zinc-200 dark:border-zinc-700 pt-4">
-          <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">&gt; location</div>
+          <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">{t('> location')}</div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">lat</label>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">{t('lat')}</label>
               <input type="number" step="any" value={manualLat} onChange={(e) => onManualLatChange(e.target.value)} placeholder="28.6139" className={INPUT} />
             </div>
             <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">lng</label>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">{t('lng')}</label>
               <input type="number" step="any" value={manualLng} onChange={(e) => onManualLngChange(e.target.value)} placeholder="77.2090" className={INPUT} />
             </div>
           </div>
 
           <div className="bg-zinc-100 dark:bg-zinc-800/60 rounded p-3 space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">timezone</span>
+              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">{t('timezone')}</span>
               {autoTzOffset !== null && tzOverride === '' && (
                 <span className="text-xs font-mono text-emerald-600 dark:text-green-500">auto</span>
               )}
@@ -140,18 +142,18 @@ export default function DataPanel({
                   <span className="ml-2 text-emerald-600 dark:text-green-400">{fmtOffset(autoTzOffset)}</span>
                 )}
                 {!birthDatetime && (
-                  <span className="ml-2 text-amber-500 dark:text-amber-400">— enter birth time to resolve DST</span>
+                  <span className="ml-2 text-amber-500 dark:text-amber-400">{t('— enter birth time to resolve DST')}</span>
                 )}
               </div>
             ) : (
               <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">
-                geocode a city to auto-detect timezone
+                {t('geocode a city to auto-detect timezone')}
               </div>
             )}
 
             <div>
               <label className="block text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-1">
-                override UTC offset (leave blank for auto)
+                {t('override UTC offset (leave blank for auto)')}
               </label>
               <input
                 type="number"
@@ -179,7 +181,7 @@ export default function DataPanel({
         disabled={!canCalculate || loading}
         className="w-full py-3 text-base font-mono font-bold bg-emerald-600 dark:bg-green-700 text-white rounded-lg shadow-lg hover:bg-emerald-700 dark:hover:bg-green-600 disabled:opacity-30 transition-colors md:sticky md:bottom-auto sticky bottom-24 z-20"
       >
-        {loading ? 'Calculating...' : 'Calculate Chart'}
+        {loading ? t('Calculating...') : t('Calculate Chart')}
       </button>
 
     </div>

@@ -182,3 +182,39 @@ export async function calculateChart(
   };
 }
 
+
+/** Bodies the transit-hit search follows; Ketu is Rahu + 180°. */
+export const SLOW_TRANSIT_BODIES = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'] as const;
+
+/**
+ * Daily sidereal longitudes of the slow grahas, starting at a UTC moment, for
+ * the transit-hit search. Uses the same ayanamsa and node settings as the chart.
+ */
+export async function calculateSlowTransitSeries(
+  startUtcMs: number,
+  days: number,
+  ayanamsaSetting: string = 'lahiri',
+  nodeModeSetting: string = 'mean',
+  ayanamsaOffsetDegrees: number = 0,
+): Promise<Record<(typeof SLOW_TRANSIT_BODIES)[number], number[]>> {
+  const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
+  const useTropical = ayanamsaMode === 'tropical';
+  const nodeId = resolveNodeMode(nodeModeSetting) === 'true' ? SE_TRUE_NODE : SE_MEAN_NODE;
+  const start = new Date(startUtcMs);
+  const startJd = await sweJulday(
+    start.getUTCFullYear(), start.getUTCMonth() + 1, start.getUTCDate(),
+    start.getUTCHours() + start.getUTCMinutes() / 60 + start.getUTCSeconds() / 3600,
+  );
+  const series = { Jupiter: [] as number[], Saturn: [] as number[], Rahu: [] as number[], Ketu: [] as number[] };
+  for (let day = 0; day <= days; day++) {
+    const jd = startJd + day;
+    const ayanamsa = useTropical ? 0 : applyAyanamsaOffset(await sweGetAyanamsa(jd, ayanamsaMode), ayanamsaMode, ayanamsaOffsetDegrees);
+    const sidereal = (tropical: number) => normalize(tropical - ayanamsa);
+    series.Jupiter.push(sidereal((await sweCalcUt(jd, SE_JUPITER)).longitude));
+    series.Saturn.push(sidereal((await sweCalcUt(jd, SE_SATURN)).longitude));
+    const rahu = sidereal((await sweCalcUt(jd, nodeId)).longitude);
+    series.Rahu.push(rahu);
+    series.Ketu.push(normalize(rahu + 180));
+  }
+  return series;
+}

@@ -6,7 +6,7 @@ import { parseDateTime } from '@/lib/bcp';
 import { calculateBnnHouses, calculateParayaHouses } from '@/lib/bnn/bnnHouses';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { calculateCharaKarakas, type CharaKaraka } from '@/lib/karakas';
-import { runningVimshottariLords } from '@/lib/vimshottari';
+import { GRAHA_DASHA_SYSTEMS, runningGrahaDashaLords, type GrahaDashaSystem } from '@/lib/dashaEvents';
 
 /** Values worked out from the calculated chart and the target date. */
 export function useChartDerived(
@@ -14,6 +14,7 @@ export function useChartDerived(
   birthDatetime: string,
   targetDate: string,
   calculationSettings: CalculationSettings,
+  dashaMarkSystem: GrahaDashaSystem = 'vimshottari',
 ) {
   const charaKarakas: CharaKaraka[] = useMemo(
     () => (chartData ? calculateCharaKarakas(chartData.planets, calculationSettings.charaKarakaRankMode) : []),
@@ -46,14 +47,15 @@ export function useChartDerived(
   const effectiveBnnHouses = useMemo(() => calculateBnnHouses(chartData, bnnAge), [chartData, bnnAge]);
   const effectiveNadiParayaHouses = useMemo(() => calculateParayaHouses(chartData, bnnAge), [chartData, bnnAge]);
 
-  // Vimshottari lords running at the target date, marked on the charts.
+  // Dasha lords running at the target date, marked on the charts.
   const dashaLords = useMemo(() => {
-    const moon = chartData?.planets.find(p => p.name === 'Moon');
     const birth = parseDateTime(birthDatetime);
     const target = parseTargetDateString(targetDate);
-    if (!moon || !birth || !target) return null;
-    return runningVimshottariLords(moon.longitude, birth, target);
-  }, [chartData, birthDatetime, targetDate]);
+    if (!chartData || !birth || !target) return null;
+    const system = GRAHA_DASHA_SYSTEMS.find(s => s.key === dashaMarkSystem) ?? GRAHA_DASHA_SYSTEMS[0];
+    const lords = runningGrahaDashaLords(system.key, { eventDate: target, birthDate: birth, planets: chartData.planets, ascendant: chartData.ascendant });
+    return lords ? { ...lords, label: system.short } : null;
+  }, [chartData, birthDatetime, targetDate, dashaMarkSystem]);
 
   return { karakaByPlanet, nakshatraAdjust, effectiveBnnHouses, effectiveNadiParayaHouses, dashaLords };
 }

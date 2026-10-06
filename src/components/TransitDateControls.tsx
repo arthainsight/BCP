@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 export type TransitDateControlsProps = {
   transitDatetime: string;
@@ -22,10 +23,11 @@ export default function TransitDateControls({
   onCalculateTransit,
   transitLoading = false,
 }: TransitDateControlsProps) {
+  const t = useT();
   return (
     <div className="space-y-1.5">
       <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
-        transit datetime · updates automatically
+        {t('transit datetime · updates automatically')}
       </div>
       <div className="flex gap-1.5 items-center min-w-0">
         <input
@@ -40,7 +42,7 @@ export default function TransitDateControls({
           onClick={() => onTransitDatetimeChange(getNowString())}
           className="shrink-0 px-2 py-1.5 text-[10px] font-mono rounded border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-emerald-400 dark:hover:border-green-600 hover:text-emerald-700 dark:hover:text-green-400 transition-colors"
         >
-          Now
+          {t('Now')}
         </button>
         <button
           type="button"
@@ -48,7 +50,7 @@ export default function TransitDateControls({
           disabled={transitLoading || !transitDatetime.trim()}
           className="shrink-0 px-2 py-1.5 text-[10px] font-mono rounded bg-emerald-600 dark:bg-green-700 text-white disabled:opacity-40 hover:bg-emerald-700 dark:hover:bg-green-600 transition-colors whitespace-nowrap"
         >
-          {transitLoading ? '…' : 'Calculate transit'}
+          {transitLoading ? '…' : t('Calculate transit')}
         </button>
       </div>
     </div>

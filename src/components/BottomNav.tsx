@@ -1,4 +1,5 @@
 'use client';
+import { useT } from '@/lib/i18n';
 
 export type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
 
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export default function BottomNav({ activeTab, onChange }: Props) {
+  const t = useT();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 safe-bottom">
@@ -36,7 +38,7 @@ export default function BottomNav({ activeTab, onChange }: Props) {
                 : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
             }`}
           >
-            {tab.label}
+            {t(tab.label)}
           </button>
         ))}
       </div>
