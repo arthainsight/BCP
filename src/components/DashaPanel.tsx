@@ -1,7 +1,6 @@
 import { BcpResult, PlanetData, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { RENDERABLE_DASHAS } from '@/lib/dashaRegistry';
 import { renderDasha, DashaRendererContext } from '@/lib/dashaRenderers';
-import CollapsibleCard from './CollapsibleCard';
 import DashaTimeline from './DashaTimeline';
 import DashaDateFinder from './DashaDateFinder';
 
@@ -11,11 +10,10 @@ interface Props {
   ascendant: { longitude: number; sign: number; degree: number };
   birthDatetime: string;
   dashaSettings: DashaSettings;
-  collapsible?: boolean;
   view?: 'all' | 'finder' | 'timeline' | 'systems';
 }
 
-export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, dashaSettings, collapsible = false, view = 'all' }: Props) {
+export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, dashaSettings, view = 'all' }: Props) {
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
   const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
   const rasiOptions = { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions };
@@ -33,28 +31,14 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
   if (view === 'finder') return <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />;
   if (view === 'timeline') return <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />;
 
-  if (!collapsible) {
-    return (
-      <div className="space-y-8">
-        {view === 'all' && <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />}
-        {view === 'all' && <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />}
-        {activeDashas.map(d => (
-          <div key={d.key} id={`dasha-${d.key}`} className="min-w-0 scroll-mt-4">
-            {d.renderer ? renderDasha(d.renderer, ctx) : null}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-2">
+    <div className="space-y-8">
       {view === 'all' && <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />}
       {view === 'all' && <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />}
-      {activeDashas.map((d, i) => (
-        <div key={d.key} id={`dasha-${d.key}`} className="scroll-mt-4"><CollapsibleCard title={d.label} defaultOpen={i === 0}>
+      {activeDashas.map(d => (
+        <div key={d.key} id={`dasha-${d.key}`} className="min-w-0 scroll-mt-4">
           {d.renderer ? renderDasha(d.renderer, ctx) : null}
-        </CollapsibleCard></div>
+        </div>
       ))}
     </div>
   );
