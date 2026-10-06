@@ -6,6 +6,8 @@ import { PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 import { normalizeDegrees } from '@/lib/angles';
+import { LegendEntry, type ChartLayerControl, type ChartLayerKey } from './chartLayers';
+import { layoutHouseLabels, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -48,6 +50,8 @@ interface Props {
   bnnMinorHouse?: number;
   nadiParayaHouses?: NadiParayaHouseActivation[];
   legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
+  /** Makes the layer entries in the legend clickable switches. */
+  layerControls?: ChartLayerControl[];
 }
 
 const PLANET_CODES: Record<string, string> = {
@@ -80,23 +84,26 @@ type HouseShape = {
   points: string;
   planet: { x: number; y: number };
   sign: { x: number; y: number };
-  paraya: { x: number; y: number; step: number };
 };
 
 const HOUSES: HouseShape[] = [
-  { house: 1,  points: '250,0 375,125 250,250 125,125',     planet: { x: 250, y: 115 }, sign: { x: 250, y: 220 }, paraya: { x: 250, y: 205, step: -12 } },
-  { house: 2,  points: '0,0 250,0 125,125',                  planet: { x: 125, y: 70  }, sign: { x: 125, y: 95  }, paraya: { x: 125, y: 25, step: 12 } },
-  { house: 3,  points: '0,0 125,125 0,250',                  planet: { x: 55,  y: 130 }, sign: { x: 95,  y: 130 }, paraya: { x: 103, y: 125, step: 12 } },
-  { house: 4,  points: '0,250 125,125 250,250 125,375',      planet: { x: 135, y: 250 }, sign: { x: 220, y: 250 }, paraya: { x: 200, y: 250, step: 12 } },
-  { house: 5,  points: '0,250 125,375 0,500',                planet: { x: 55,  y: 370 }, sign: { x: 95,  y: 380 }, paraya: { x: 103, y: 375, step: -12 } },
-  { house: 6,  points: '0,500 125,375 250,500',              planet: { x: 125, y: 430 }, sign: { x: 125, y: 400 }, paraya: { x: 125, y: 395, step: 12 } },
-  { house: 7,  points: '250,500 125,375 250,250 375,375',    planet: { x: 250, y: 390 }, sign: { x: 250, y: 280 }, paraya: { x: 250, y: 295, step: 12 } },
-  { house: 8,  points: '250,500 375,375 500,500',            planet: { x: 375, y: 430 }, sign: { x: 375, y: 400 }, paraya: { x: 375, y: 395, step: 12 } },
-  { house: 9,  points: '500,500 375,375 500,250',            planet: { x: 445, y: 370 }, sign: { x: 400, y: 380 }, paraya: { x: 397, y: 375, step: -12 } },
-  { house: 10, points: '500,250 375,375 250,250 375,125',    planet: { x: 365, y: 250 }, sign: { x: 280, y: 250 }, paraya: { x: 300, y: 250, step: 12 } },
-  { house: 11, points: '500,250 375,125 500,0',              planet: { x: 445, y: 130 }, sign: { x: 400, y: 130 }, paraya: { x: 465, y: 65, step: 12 } },
-  { house: 12, points: '500,0 375,125 250,0',                planet: { x: 375, y: 70  }, sign: { x: 375, y: 95  }, paraya: { x: 375, y: 105, step: -12 } },
+  { house: 1,  points: '250,0 375,125 250,250 125,125',     planet: { x: 250, y: 115 }, sign: { x: 250, y: 220 } },
+  { house: 2,  points: '0,0 250,0 125,125',                  planet: { x: 125, y: 70  }, sign: { x: 125, y: 95  } },
+  { house: 3,  points: '0,0 125,125 0,250',                  planet: { x: 55,  y: 130 }, sign: { x: 95,  y: 130 } },
+  { house: 4,  points: '0,250 125,125 250,250 125,375',      planet: { x: 135, y: 250 }, sign: { x: 220, y: 250 } },
+  { house: 5,  points: '0,250 125,375 0,500',                planet: { x: 55,  y: 370 }, sign: { x: 95,  y: 380 } },
+  { house: 6,  points: '0,500 125,375 250,500',              planet: { x: 125, y: 430 }, sign: { x: 125, y: 400 } },
+  { house: 7,  points: '250,500 125,375 250,250 375,375',    planet: { x: 250, y: 390 }, sign: { x: 250, y: 280 } },
+  { house: 8,  points: '250,500 375,375 500,500',            planet: { x: 375, y: 430 }, sign: { x: 375, y: 400 } },
+  { house: 9,  points: '500,500 375,375 500,250',            planet: { x: 445, y: 370 }, sign: { x: 400, y: 380 } },
+  { house: 10, points: '500,250 375,375 250,250 375,125',    planet: { x: 365, y: 250 }, sign: { x: 280, y: 250 } },
+  { house: 11, points: '500,250 375,125 500,0',              planet: { x: 445, y: 130 }, sign: { x: 400, y: 130 } },
+  { house: 12, points: '500,0 375,125 250,0',                planet: { x: 375, y: 70  }, sign: { x: 375, y: 95  } },
 ];
+
+const HOUSE_POLYGONS: Record<number, Point[]> = Object.fromEntries(
+  HOUSES.map(item => [item.house, item.points.split(' ').map(pair => pair.split(',').map(Number) as [number, number])]),
+);
 
 function getHouseFill(
   house: number,
@@ -181,6 +188,7 @@ export default function NorthIndianChart({
   bnnMinorHouse = 0,
   nadiParayaHouses = [],
   legendLayers,
+  layerControls,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
@@ -198,6 +206,20 @@ export default function NorthIndianChart({
 
   const hasBnn = bnnMajorHouse > 0 || bnnMinorHouse > 0;
   const hasParaya = nadiParayaHouses.length > 0;
+  const control = (key: ChartLayerKey) => layerControls?.find(c => c.key === key);
+  const hasControls = (layerControls?.length ?? 0) > 0;
+
+  const natalLabel = (planet: PlanetData) => {
+    const parts = [(PLANET_CODES[planet.name] ?? planet.name.slice(0, 2)) + (planet.isRetrograde ? '℞' : '')];
+    if (degreePrecision !== 'off') parts.push(formatDegree(planet.degree, degreePrecision));
+    if (showCharaKaraka && karakaByPlanet[planet.name]) parts.push(karakaByPlanet[planet.name]);
+    if (showNakshatra) parts.push(getNakAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
+    return parts.join(' ');
+  };
+  const transitLabel = (planet: PlanetData) => {
+    const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
+    return degreePrecision !== 'off' ? `${code} ${formatDegree(planet.degree, degreePrecision)}` : code;
+  };
 
   return (
     <div className="w-full max-w-[620px] mx-auto">
@@ -215,23 +237,35 @@ export default function NorthIndianChart({
           const specialInHouse = showSpecialLagnas
             ? specialLagnas.filter((sl) => getHouseFromSign(sl.sign, ascendantSign) === item.house)
             : [];
-          const allPlanets: MergedPlanet[] = [...natalInHouse, ...transitInHouse];
           const parayaHere = nadiParayaHouses.filter(activation => activation.house === item.house);
-          const parayaBeforePlanets = [1, 2, 3, 11, 12].includes(item.house);
-
-          const ascLines = item.house === 1 && ascendantDegree !== undefined ? 1 : 0;
-          const totalItems = ascLines + allPlanets.length + specialInHouse.length + parayaHere.length;
-          const dynamicLineHeight = totalItems > 6 ? 13 : totalItems > 4 ? 15 : 18;
-          const totalHeight = (Math.max(totalItems, 1) - 1) * dynamicLineHeight;
-          const startY = item.planet.y - totalHeight / 2;
-          const planetOffset = ascLines + (parayaBeforePlanets ? parayaHere.length : 0);
-          const specialOffset = planetOffset + allPlanets.length;
-          const parayaOffset = ascLines + (parayaBeforePlanets ? 0 : allPlanets.length + specialInHouse.length);
 
           const isBnnMaj = bnnMajorHouse > 0 && item.house === bnnMajorHouse;
           const isBnnMin = bnnMinorHouse > 0 && item.house === bnnMinorHouse;
           const bnnLabel = (isBnnMaj && isBnnMin) ? 'BNN Maj+Min' : isBnnMaj ? 'BNN Maj' : isBnnMin ? 'BNN Min' : null;
           const bnnLabelColor = (isBnnMaj && isBnnMin) ? (isDark ? '#e879f9' : '#a21caf') : isBnnMaj ? bnnMajColor : bnnMinColor;
+
+          const tokens: LabelToken[] = [];
+          if (item.house === 1 && ascendantDegree !== undefined) {
+            tokens.push({ key: 'asc', group: 'asc', text: `Asc ${formatDegree(ascendantDegree, degreePrecision === 'off' ? 'minute' : degreePrecision)}` });
+          }
+          parayaHere.forEach(activation => tokens.push({ key: `paraya-${activation.body}`, group: 'paraya', text: `${PARAYA_CODES[activation.body]} ${activation.degree.toFixed(1)}°` }));
+          natalInHouse.forEach(planet => tokens.push({ key: `na-${planet.name}`, group: 'natal', text: natalLabel(planet) }));
+          transitInHouse.forEach(planet => tokens.push({ key: `tr-${planet.name}`, group: 'transit', text: transitLabel(planet) }));
+          specialInHouse.forEach((sl, index) => tokens.push({ key: `sl-${sl.name}-${index}`, group: 'special', text: sl.name }));
+
+          // Keep labels clear of the sign, house number and BNN label.
+          const signBlockBottom = item.sign.y + (bnnLabel || showHouseNumbers ? 20 : 8);
+          const exclude: ExclusionBox[] = showSigns || bnnLabel || showHouseNumbers
+            ? [{ x0: item.sign.x - (bnnLabel ? 30 : 13), x1: item.sign.x + (bnnLabel ? 30 : 13), y0: item.sign.y - 9, y1: signBlockBottom }]
+            : [];
+          const longNatal = natalInHouse.some(planet => natalLabel(planet).length > 3);
+          const layout = layoutHouseLabels(
+            tokens,
+            { polygon: HOUSE_POLYGONS[item.house], exclude, anchorY: item.planet.y },
+            { maxFontSize: longNatal ? 13 : 16 },
+          );
+          const planetFill = getPlanetFill(item.house, activeYearHouse, activeMonthHouse, isDark, showBcpHighlights);
+          const parayaFill = (key: string) => parayaColors[(key.slice('paraya-'.length)) as ParayaBody];
 
           return (
             <g key={item.house}>
@@ -284,80 +318,30 @@ export default function NorthIndianChart({
                   {bnnLabel}
                 </text>
               )}
-              {ascLines > 0 && ascendantDegree !== undefined && (
+              {layout.rows.map((row, rowIndex) => (
                 <text
-                  x={item.planet.x}
-                  y={startY}
+                  key={`row-${item.house}-${rowIndex}`}
+                  x={row.x}
+                  y={row.y}
                   textAnchor="middle"
                   dominantBaseline="middle"
-                  fontSize="12"
-                  fontWeight="700"
-                  fill={signFill}
+                  fontSize={row.fontSize}
+                  fontWeight={row.group === 'paraya' ? 900 : row.group === 'transit' ? 800 : 700}
+                  opacity={row.group === 'transit' ? 0.9 : row.group === 'special' ? 0.85 : 1}
+                  {...(row.group === 'paraya' ? { stroke: isDark ? '#18181b' : '#ffffff', strokeWidth: 3, strokeLinejoin: 'round' as const, style: { paintOrder: 'stroke fill' } } : {})}
                 >
-                  Asc {formatDegree(ascendantDegree, degreePrecision === 'off' ? 'minute' : degreePrecision)}
-                </text>
-              )}
-              {parayaHere.map((activation, index) => (
-                <text
-                  key={`paraya-label-${activation.body}`}
-                  x={item.planet.x}
-                  y={startY + (parayaOffset + index) * dynamicLineHeight}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="10"
-                  fontWeight="900"
-                  fill={parayaColors[activation.body]}
-                  stroke={isDark ? '#18181b' : '#ffffff'}
-                  strokeWidth="3"
-                  strokeLinejoin="round"
-                  style={{ paintOrder: 'stroke fill' }}
-                >
-                  {PARAYA_CODES[activation.body]} {activation.degree.toFixed(1)}°
-                </text>
-              ))}
-              {allPlanets.map((planet, index) => {
-                const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
-                const retroSuffix = !planet.isTransit && planet.isRetrograde ? '℞' : '';
-                const parts: string[] = [code + retroSuffix];
-                if (degreePrecision !== 'off') parts.push(formatDegree(planet.degree, degreePrecision));
-                if (!planet.isTransit) {
-                  if (showCharaKaraka) {
-                    const k = karakaByPlanet[planet.name];
-                    if (k) parts.push(k);
-                  }
-                  if (showNakshatra) parts.push(getNakAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
-                }
-                const label = parts.join(' ');
-                const fontSize = planet.isTransit ? '12' : (parts.length > 1 ? '13' : '16');
-                return (
-                  <text
-                    key={`${planet.isTransit ? 'tr' : 'na'}-${item.house}-${planet.name}-${index}`}
-                    x={item.planet.x}
-                    y={startY + (planetOffset + index) * dynamicLineHeight}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontSize={fontSize}
-                    fontWeight={planet.isTransit ? '800' : '700'}
-                    fill={planet.isTransit ? TRANSIT_COLOR : getPlanetFill(item.house, activeYearHouse, activeMonthHouse, isDark, showBcpHighlights)}
-                    opacity={planet.isTransit ? 0.9 : 1}
-                  >
-                    {label}
-                  </text>
-                );
-              })}
-              {specialInHouse.map((sl, index) => (
-                <text
-                  key={`sl-${item.house}-${sl.name}-${index}`}
-                  x={item.planet.x}
-                  y={startY + (specialOffset + index) * dynamicLineHeight}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="11"
-                  fontWeight="700"
-                  fill={SPECIAL_LAGNA_COLOR}
-                  opacity={0.85}
-                >
-                  {sl.name}
+                  {row.tokens.map((token, index) => (
+                    <tspan
+                      key={token.key}
+                      fill={token.group === 'natal' ? planetFill
+                        : token.group === 'transit' ? TRANSIT_COLOR
+                        : token.group === 'special' ? SPECIAL_LAGNA_COLOR
+                        : token.group === 'paraya' ? parayaFill(token.key)
+                        : signFill}
+                    >
+                      {index > 0 ? ' ' : ''}{token.text}
+                    </tspan>
+                  ))}
                 </text>
               ))}
             </g>
@@ -365,15 +349,15 @@ export default function NorthIndianChart({
         })}
       </svg>
 
-      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya) && (
+      {(showBcpHighlights || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya || hasControls) && (
         <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-cyan-600 dark:text-cyan-400 font-semibold">■ BCP Year</span>}
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-emerald-700 dark:text-green-400 font-semibold">■ BCP Month</span>}
           {showBcpHighlights && legendLayers?.bcp !== false && <span className="text-purple-600 dark:text-purple-400 font-semibold">■ BCP Both</span>}
-          {bnnMajorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: isDark ? BNN_MAJOR_DARK : BNN_MAJOR_LIGHT }} className="font-semibold">■ BNN Major</span>}
-          {bnnMinorHouse > 0 && legendLayers?.bnn !== false && <span style={{ color: isDark ? BNN_MINOR_DARK : BNN_MINOR_LIGHT }} className="font-semibold">╌ BNN Minor</span>}
-          {hasParaya && <span className="font-semibold"><span style={{ color: parayaColors.Jupiter }}>Ju</span> <span style={{ color: parayaColors.Saturn }}>Sa</span> <span style={{ color: parayaColors.Rahu }}>Ra</span> <span style={{ color: parayaColors.Ketu }}>Ke</span> Paraya</span>}
-          {showTransitPlanets && legendLayers?.transit !== false && <span style={{ color: TRANSIT_COLOR }} className="font-semibold">■ Transit</span>}
+          {(control('bnnMajor') || (bnnMajorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMajor')} style={{ color: bnnMajColor }}>■ BNN Major</LegendEntry>}
+          {(control('bnnMinor') || (bnnMinorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMinor')} style={{ color: bnnMinColor }}>╌ BNN Minor</LegendEntry>}
+          {(control('paraya') || hasParaya) && <LegendEntry control={control('paraya')}><span style={{ color: parayaColors.Jupiter }}>Ju</span> <span style={{ color: parayaColors.Saturn }}>Sa</span> <span style={{ color: parayaColors.Rahu }}>Ra</span> <span style={{ color: parayaColors.Ketu }}>Ke</span> Paraya</LegendEntry>}
+          {(control('transit') || (showTransitPlanets && legendLayers?.transit !== false)) && <LegendEntry control={control('transit')} style={{ color: TRANSIT_COLOR }}>■ Transit</LegendEntry>}
           {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ Special</span>}
         </div>
       )}

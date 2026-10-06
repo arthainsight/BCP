@@ -3,9 +3,8 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { GeoResult, BcpResult, ChartData, PlanetData, ChartDisplaySettings, CalculationSettings, DashaSettings, UiMode, DEFAULT_CHART_DISPLAY, DEFAULT_CALCULATION_SETTINGS, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
-import { calculateJupiterianRounds } from '@/lib/bnn/jupiterianRounds';
-import { calculateMinorProgression } from '@/lib/bnn/jupiterMinorProgression';
-import { calculateNadiParaya, type NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
+import { migrateChartDisplaySettings } from '@/lib/chartDisplaySettings';
+import { calculateBnnHouses, calculateParayaHouses } from '@/lib/bnn/bnnHouses';
 import { calculateCharaKarakas, CharaKaraka } from '@/lib/karakas';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
@@ -286,45 +285,8 @@ export default function Home() {
     return bnnAutoAge;
   }, [bnnOverrideStr, bnnAutoAge]);
 
-  const effectiveBnnHouses = useMemo(() => {
-    if (!chartData) return { major: 0, minor: 0 };
-    const natalJupiter = chartData.planets.find(p => p.name === 'Jupiter');
-    if (!natalJupiter) return { major: 0, minor: 0 };
-    const natalJupiterSignIndex = natalJupiter.sign - 1;
-    const natalJupiterDegree = natalJupiter.degree;
-    const planets = chartData.planets.map(p => ({ name: p.name, signIndex: p.sign - 1 }));
-    const roundsResult = calculateJupiterianRounds({ natalJupiterSignIndex, natalJupiterDegree, ageYears: effectiveBnnAge });
-    const minorResult = calculateMinorProgression({ natalJupiterSignIndex, ageYears: effectiveBnnAge, planets });
-    const asc = chartData.ascendant.sign;
-    return {
-      major: roundsResult.currentRound
-        ? ((roundsResult.currentRound.activeSignIndex + 1 - asc + 12) % 12) + 1
-        : 0,
-      minor: ((minorResult.minorSignIndex + 1 - asc + 12) % 12) + 1,
-    };
-  }, [chartData, effectiveBnnAge]);
-
-  const effectiveNadiParayaHouses = useMemo<NadiParayaHouseActivation[]>(() => {
-    if (!chartData) return [];
-    const jupiter = chartData.planets.find(p => p.name === 'Jupiter');
-    const saturn = chartData.planets.find(p => p.name === 'Saturn');
-    const rahu = chartData.planets.find(p => p.name === 'Rahu');
-    if (!jupiter || !saturn || !rahu) return [];
-    const paraya = calculateNadiParaya({
-      ageYears: effectiveBnnAge,
-      natalJupiterSignIndex: jupiter.sign - 1,
-      natalSaturnSignIndex: saturn.sign - 1,
-      natalRahuSignIndex: rahu.sign - 1,
-      jupiterRetrograde: Boolean(jupiter.isRetrograde),
-      saturnRetrograde: Boolean(saturn.isRetrograde),
-    });
-    const asc = chartData.ascendant.sign;
-    return [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu].map(period => ({
-      body: period.body,
-      house: ((period.signIndex + 1 - asc + 12) % 12) + 1,
-      degree: period.degree,
-    }));
-  }, [chartData, effectiveBnnAge]);
+  const effectiveBnnHouses = useMemo(() => calculateBnnHouses(chartData, effectiveBnnAge), [chartData, effectiveBnnAge]);
+  const effectiveNadiParayaHouses = useMemo(() => calculateParayaHouses(chartData, effectiveBnnAge), [chartData, effectiveBnnAge]);
 
   // Recompute BCP when the target or birth date changes, but only if a chart
   // has already produced a result. The previous version had bcpResult in the
@@ -351,10 +313,7 @@ export default function Home() {
     try {
       const ds = localStorage.getItem('chartDisplaySettings');
       if (ds) {
-        const parsed = JSON.parse(ds);
-        const merged = { ...DEFAULT_CHART_DISPLAY, ...parsed };
-        if (!parsed.degreePrecision && parsed.showDegrees) merged.degreePrecision = 'degree';
-        setChartDisplaySettings(merged);
+        setChartDisplaySettings(migrateChartDisplaySettings(JSON.parse(ds)));
       }
       const cs = localStorage.getItem('calculationSettings');
       if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
@@ -756,6 +715,7 @@ export default function Home() {
     onManualBcpMonthChange: setManualBcpMonth,
     calculationSettings,
     ianaTimezone: ianaTimezone || undefined,
+    onToggleChartDisplay: toggleChartDisplay,
   };
 
   const dataProps = {
@@ -945,6 +905,7 @@ export default function Home() {
                     targetDate={targetDate}
                     onTargetDateChange={setTargetDate}
                     chartDisplaySettings={chartDisplaySettings}
+                    onToggleChartDisplay={toggleChartDisplay}
                     karakaByPlanet={karakaByPlanet}
                     nakshatraAdjust={nakshatraAdjust}
                     dashaSettings={dashaSettings}
@@ -1046,6 +1007,7 @@ export default function Home() {
                   targetDate={targetDate}
                   onTargetDateChange={setTargetDate}
                   chartDisplaySettings={chartDisplaySettings}
+                  onToggleChartDisplay={toggleChartDisplay}
                   karakaByPlanet={karakaByPlanet}
                   nakshatraAdjust={nakshatraAdjust}
                   dashaSettings={dashaSettings}
