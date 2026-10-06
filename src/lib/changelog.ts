@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v2.29',
+    date: '2026-10-06',
+    title: 'BCP manual mode removed',
+    changes: [
+      'Removed the manual BCP age and month entry. It had no controls left in the app, so BCP always followed the target date anyway; the unused code is now gone.',
+      'Updated the application version to v2.29.',
+    ],
+  },
+  {
     version: 'v2.28',
     date: '2026-10-06',
     title: 'Workspace removed, Varga fixes',

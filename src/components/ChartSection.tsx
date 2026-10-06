@@ -34,13 +34,6 @@ export interface ChartSectionProps {
   bnnMajorHouseFromParent?: number;
   bnnMinorHouseFromParent?: number;
   nadiParayaHousesFromParent?: NadiParayaHouseActivation[];
-  bcpEnabled?: boolean;
-  useManualBcpMode?: boolean;
-  onUseManualBcpModeChange?: (v: boolean) => void;
-  manualBcpAge?: string;
-  onManualBcpAgeChange?: (v: string) => void;
-  manualBcpMonth?: string;
-  onManualBcpMonthChange?: (v: string) => void;
   calculationSettings?: CalculationSettings;
   ianaTimezone?: string;
   onToggleChartDisplay?: (key: keyof ChartDisplaySettings) => void;

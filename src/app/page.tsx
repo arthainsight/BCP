@@ -48,20 +48,6 @@ function parseTargetDateString(value: string): Date | null {
   return new Date(year, month - 1, day, 12, 0, 0);
 }
 
-function computeManualBcp(completedAge: number, month: number): BcpResult {
-  const runningYear = completedAge + 1;
-  const activeYearHouse = ((runningYear - 1) % 12) + 1;
-  const activeMonthHouse = ((activeYearHouse + month - 2) % 12) + 1;
-  return {
-    completedAge,
-    runningYear,
-    activeYearHouse,
-    bcpCycle: Math.floor((runningYear - 1) / 12) + 1,
-    monthInRunningYear: month,
-    activeMonthHouse,
-  };
-}
-
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
 
 type CalculationOptions = {
@@ -180,9 +166,6 @@ export default function Home() {
   const previousCalculationKeyRef = useRef('');
 
   // Manual BCP
-  const [useManualBcpMode, setUseManualBcpMode] = useState(false);
-  const [manualBcpAge, setManualBcpAge] = useState('');
-  const [manualBcpMonth, setManualBcpMonth] = useState('');
 
   // BNN age override — lifted here so chart highlights + event panel stay in sync
 
@@ -206,16 +189,6 @@ export default function Home() {
     return autoTzOffset;
   }, [tzOverride, autoTzOffset]);
 
-  const manualBcpAgeNum = parseInt(manualBcpAge);
-  const manualBcpMonthNum = parseInt(manualBcpMonth);
-  const manualBcpResult: BcpResult | null =
-    useManualBcpMode &&
-    !isNaN(manualBcpAgeNum) && manualBcpAgeNum >= 0 &&
-    !isNaN(manualBcpMonthNum) && manualBcpMonthNum >= 1 && manualBcpMonthNum <= 12
-      ? computeManualBcp(manualBcpAgeNum, manualBcpMonthNum)
-      : null;
-
-  const effectiveBcpResult = useManualBcpMode && manualBcpResult ? manualBcpResult : bcpResult;
 
   const canCalculate =
     !!birthDatetime && showCoords && !!manualLat && !!manualLng && effectiveTzOffset !== null;
@@ -258,7 +231,6 @@ export default function Home() {
   // calculated chart. The functional update reads the previous result without
   // depending on it.
   useEffect(() => {
-    if (useManualBcpMode) return;
     const birthDate = parseDateTime(birthDatetime);
     const target = parseTargetDateString(targetDate);
     if (!birthDate || !target) return;
@@ -266,7 +238,7 @@ export default function Home() {
     // this cannot re-trigger itself. The rule flags the shape, not the behaviour.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setBcpResult((previous) => (previous ? calculateBcp(birthDate, target) : previous));
-  }, [targetDate, birthDatetime, useManualBcpMode]);
+  }, [targetDate, birthDatetime]);
 
   // Restore persisted display/calculation/dasha settings on mount
   // localStorage cannot be read during the server render, so restoring has to
@@ -341,9 +313,6 @@ export default function Home() {
     setTransitDatetime('');
     setTransitPlanets([]);
     setError('');
-    setUseManualBcpMode(false);
-    setManualBcpAge('');
-    setManualBcpMonth('');
     setTargetDate(getTodayString());
     previousCalculationKeyRef.current = '';
     setActiveTab('data');
@@ -651,7 +620,7 @@ export default function Home() {
 
   // Shared props objects
   const chartSectionProps = {
-    bcp: effectiveBcpResult,
+    bcp: bcpResult,
     chart: chartData,
     transitPlanets,
     chartDisplaySettings,
@@ -666,13 +635,6 @@ export default function Home() {
     bnnMajorHouseFromParent: effectiveBnnHouses.major,
     bnnMinorHouseFromParent: effectiveBnnHouses.minor,
     nadiParayaHousesFromParent: effectiveNadiParayaHouses,
-    bcpEnabled: dashaSettings.dashas.bcp,
-    useManualBcpMode,
-    onUseManualBcpModeChange: setUseManualBcpMode,
-    manualBcpAge,
-    onManualBcpAgeChange: setManualBcpAge,
-    manualBcpMonth,
-    onManualBcpMonthChange: setManualBcpMonth,
     calculationSettings,
     ianaTimezone: ianaTimezone || undefined,
     onToggleChartDisplay: toggleChartDisplay,
@@ -829,8 +791,8 @@ export default function Home() {
               </>
             )}
             {desktopTab === 'dasha' && (
-              effectiveBcpResult && chartData
-                ? <DashaWorkspace bcp={effectiveBcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} />
+              bcpResult && chartData
+                ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} />
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
@@ -893,8 +855,8 @@ export default function Home() {
 
         {activeTab === 'dasha' && (
           <Panel>
-            {effectiveBcpResult && chartData
-              ? <DashaWorkspace bcp={effectiveBcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} />
+            {bcpResult && chartData
+              ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTransitDatetime} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} />
               : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
             }
           </Panel>
