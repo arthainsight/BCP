@@ -89,7 +89,9 @@ test('normal transit overlay toggles on and off in CHART', async ({ page }) => {
 
   await calculateChart(page);
 
-  const transit = page.getByRole('button', { name: /Transit/ }).locator('visible=true').first();
+  // The layer switches live behind the ··· menu of the chart.
+  await page.getByRole('button', { name: '···' }).locator('visible=true').first().click();
+  const transit = page.getByRole('button', { name: /transit/i }).locator('visible=true').first();
   await expect(transit).toHaveAttribute('aria-pressed', 'false');
 
   // ON — the twelve normal transit bodies are drawn in the transit colour.

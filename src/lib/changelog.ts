@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.33',
+    date: '2026-10-07',
+    title: 'Chart layers behind the ··· menu',
+    changes: [
+      'The chart layer switches are now ON/OFF buttons at the top of the ··· menu next to the chart: Transit, BCP year/month, BNN major, BNN minor, Paraya and the daśā lords. The separate Transit button is gone.',
+      'Added tools/llm_router, a LiteLLM based router that picks DeepSeek or OpenAI by task type.',
+      'Updated the application version to v2.33.',
+    ],
+  },
+  {
     version: 'v2.32',
     date: '2026-10-06',
     title: 'One target moment, transits included',

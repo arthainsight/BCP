@@ -6,7 +6,7 @@ import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import ChartExportButtons from './ChartExportButtons';
 import TargetDateBar from './TargetDateBar';
-import { buildLayerControls, type DashaLordMarks } from './chartLayers';
+import { buildLayerControls, CHART_LAYER_LABELS, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 import { useT } from '@/lib/i18n';
@@ -46,6 +46,7 @@ function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: 
         type="button"
         onClick={onToggle}
         aria-pressed={value}
+        aria-label={label}
         className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-mono ${
           value
             ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
@@ -156,8 +157,6 @@ export default function ChartSection({
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
   const showTransit = chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0;
-  // The Transits toggle drives the same setting the chart overlay reads.
-  const transitOn = chartDisplaySettings.showTransitOverlay !== false;
   const parayaHouses = chartDisplaySettings.showNadiParaya !== false ? nadiParayaHousesFromParent : [];
   const layerControls = buildLayerControls(chartDisplaySettings, {
     bcp: true,
@@ -226,20 +225,6 @@ export default function ChartSection({
               S
             </button>
           </div>
-          <button
-            type="button"
-            onClick={() => onToggleChartDisplay?.('showTransitOverlay')}
-            aria-pressed={transitOn}
-            disabled={transitPlanets.length === 0}
-            title={t('transit')}
-            className={`shrink-0 rounded-md border px-2 py-1.5 text-[10px] font-mono transition-colors ${
-              transitOn
-                ? 'border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300'
-                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
-            } disabled:opacity-30`}
-          >
-            {t('Transit')} {transitOn ? 'ON' : 'OFF'}
-          </button>
           <div className="relative shrink-0">
             <button
               type="button"
@@ -255,6 +240,11 @@ export default function ChartSection({
               <>
                 <div className="fixed inset-0 z-[70]" onClick={() => setShowDisplay(false)} />
                 <div className="absolute right-0 top-full z-[80] mt-1 w-64 rounded-lg border border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-700 shadow-lg p-2 space-y-2">
+                  <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('chart layers')}</div>
+                  {(layerControls ?? []).map((control) => (
+                    <ChartDisplayToggle key={control.key} label={t(CHART_LAYER_LABELS[control.key])} value={control.on} onToggle={control.onToggle} />
+                  ))}
+                  <div className="border-t border-zinc-200 dark:border-zinc-700" />
                   <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('chart display')}</div>
                   <ChartDisplayToggle label={t('nakshatra')} value={chartDisplaySettings.showNakshatra} onToggle={() => onToggleChartDisplay?.('showNakshatra')} />
                   <ChartDisplayToggle label={t('karaka')} value={chartDisplaySettings.showCharaKaraka} onToggle={() => onToggleChartDisplay?.('showCharaKaraka')} />
@@ -278,21 +268,6 @@ export default function ChartSection({
                         </button>
                       ))}
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-300">{t('dasha lords')}</span>
-                    <button
-                      type="button"
-                      onClick={() => onToggleChartDisplay?.('showDashaLords')}
-                      aria-pressed={chartDisplaySettings.showDashaLords !== false}
-                      className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-mono ${
-                        chartDisplaySettings.showDashaLords !== false
-                          ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
-                          : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'
-                      }`}
-                    >
-                      {chartDisplaySettings.showDashaLords !== false ? 'on' : 'off'}
-                    </button>
                   </div>
                 </div>
               </>
