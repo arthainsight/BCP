@@ -161,7 +161,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showRashiDrishti: false,
   showBnnMajorHighlight: true,
   showBnnMinorHighlight: true,
-  showTransitOverlay: true,
+  showTransitOverlay: false,
   showNadiParaya: true,
   showBcpHighlight: false,
   showDashaLords: true,

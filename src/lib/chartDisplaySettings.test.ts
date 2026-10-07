@@ -19,7 +19,7 @@ const old = migrateChartDisplaySettings({
 assert.equal(old.showSigns, false, 'stored values are kept');
 assert.equal(old.showNakshatra, DEFAULT_CHART_DISPLAY.showNakshatra, 'a value of the wrong type is ignored');
 assert.equal(old.degreePrecision, 'degree', 'the old degrees switch maps to whole degrees');
-assert.equal(old.showTransitOverlay, true, 'the dead transit switch no longer hides transits');
+assert.equal(old.showTransitOverlay, false, 'the transit overlay defaults to off');
 for (const removed of ['showBnnAlpha', 'showSanskrit', 'showTransitPlanets', 'showDegrees']) {
   assert.ok(!(removed in old), `${removed} is dropped`);
 }

@@ -5,14 +5,14 @@ import { GeoResult, BcpResult, ChartData, PlanetData } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
-import BottomNav, { TabId } from '@/components/BottomNav';
+import PrimaryNav, { type Workspace } from '@/components/PrimaryNav';
+import { type TabId } from '@/components/BottomNav';
 import DataPanel from '@/components/DataPanel';
 import SettingsPanel from '@/components/SettingsPanel';
-import GrahasPanel from '@/components/GrahasPanel';
-import DashaWorkspace from '@/components/DashaWorkspace';
+import AnalysisPanel from '@/components/AnalysisPanel';
+import TimingPanel from '@/components/TimingPanel';
 import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
-import CalculationDebugPanel from '@/components/CalculationDebugPanel';
 import type { ChartSnapshot } from '@/components/FileActions';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
 import { CalcSummaryBar, EmptyState, Panel } from '@/components/PageParts';
@@ -20,7 +20,7 @@ import AppHeader from '@/components/AppHeader';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
-import { LanguageContext, translate, type Language } from '@/lib/i18n';
+import { LanguageContext, type Language } from '@/lib/i18n';
 
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
@@ -29,11 +29,41 @@ type CalculationOptions = {
   preserveCurrentPanel?: boolean;
 };
 
+// Maps the three primary workspaces (plus Settings) onto the existing tab
+// machinery. Desktop always shows the chart on the left, so CHART targets the
+// birth-data panel on the right; mobile shows a single full-screen panel.
+const WORKSPACE_TO_DESKTOP: Record<Workspace, DesktopTab> = {
+  chart: 'data',
+  timing: 'dasha',
+  analysis: 'grahas',
+  settings: 'settings',
+};
+const WORKSPACE_TO_MOBILE: Record<Workspace, TabId> = {
+  chart: 'chart',
+  timing: 'dasha',
+  analysis: 'grahas',
+  settings: 'settings',
+};
+function desktopToWorkspace(tab: DesktopTab): Workspace {
+  switch (tab) {
+    case 'dasha': return 'timing';
+    case 'grahas': return 'analysis';
+    case 'settings': return 'settings';
+    default: return 'chart'; // 'data' and 'public' land on CHART for now
+  }
+}
+
 
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('data');
   const [desktopTab, setDesktopTab] = useState<DesktopTab>('data');
+
+  // The primary nav drives both the mobile tab and the desktop right-column tab.
+  const selectWorkspace = useCallback((ws: Workspace) => {
+    setActiveTab(WORKSPACE_TO_MOBILE[ws]);
+    setDesktopTab(WORKSPACE_TO_DESKTOP[ws]);
+  }, []);
 
   // Birth data
   const [birthDatetime, setBirthDatetime] = useState('');
@@ -480,6 +510,7 @@ export default function Home() {
     calculationSettings,
     ianaTimezone: ianaTimezone || undefined,
     onToggleChartDisplay: toggleChartDisplay,
+    onUpdateChartDisplay: updateChartDisplay,
   };
 
   const dataProps = {
@@ -528,6 +559,9 @@ export default function Home() {
         }}
       />
 
+      {/* Primary navigation: CHART / TIMING / ANALYSIS + Settings gear (desktop). */}
+      <PrimaryNav active={desktopToWorkspace(desktopTab)} onChange={selectWorkspace} variant="top" />
+
       {/* ── DESKTOP: 2-column grid (full width for Public) ────────── */}
       <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'public' ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
         {/* Left: Chart + optional BCP summary + optional Panchang (hidden on Public) */}
@@ -556,45 +590,20 @@ export default function Home() {
           )}
         </div>
 
-        {/* Right: tabbed panels */}
+        {/* Right: panel for the active workspace */}
         <div className="space-y-3">
-          <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1 overflow-x-auto">
-            {(['data', 'grahas', 'dasha', 'public', 'settings'] as DesktopTab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setDesktopTab(tab)}
-                className={`flex-1 min-w-max py-1.5 text-xs font-mono rounded-md transition-colors ${
-                  desktopTab === tab
-                    ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm'
-                    : 'text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200'
-                }`}
-              >
-                {translate(language, tab)}
-              </button>
-            ))}
-          </div>
-
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
             {desktopTab === 'data' && (
               <DataPanel {...dataProps} />
             )}
             {desktopTab === 'grahas' && (
-              <>
-                {chartData
-                  ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} />
-                  : <EmptyState message="Calculate a chart to see graha positions" />
-                }
-                {chartData?.debug && (
-                  <CalculationDebugPanel
-                    debug={chartData.debug}
-                    ianaTimezone={ianaTimezone}
-                  />
-                )}
-              </>
+              chartData
+                ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} />
+                : <EmptyState message="Calculate a chart to see graha positions" />
             )}
             {desktopTab === 'dasha' && (
               bcpResult && chartData
-                ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} />
+                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} />
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
@@ -610,16 +619,19 @@ export default function Home() {
         {activeTab === 'chart' && (
           <div className="space-y-3">
             <Panel>
-              <ChartSection {...chartSectionProps} />
-              {chartData && (
+              <DataPanel {...dataProps} />
+            </Panel>
+            {chartData && (
+              <Panel>
+                <ChartSection {...chartSectionProps} />
                 <CalcSummaryBar
                   ayanamsa={calculationSettings.ayanamsa}
                   ayanamsaOffsetDegrees={calculationSettings.ayanamsaOffsetDegrees ?? 0}
                   nodeMode={calculationSettings.nodeMode}
                   ianaTimezone={ianaTimezone || undefined}
                 />
-              )}
-            </Panel>
+              </Panel>
+            )}
             {chartDisplaySettings.showPanchang && chartData && (
               <Panel>
                 <PanchangPanel
@@ -643,22 +655,16 @@ export default function Home() {
         {activeTab === 'grahas' && (
           <Panel>
             {chartData
-              ? <GrahasPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} />
+              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} />
               : <EmptyState message="Calculate a chart in Data to see graha positions" />
             }
-            {chartData?.debug && (
-              <CalculationDebugPanel
-                debug={chartData.debug}
-                ianaTimezone={ianaTimezone}
-              />
-            )}
           </Panel>
         )}
 
         {activeTab === 'dasha' && (
           <Panel>
             {bcpResult && chartData
-              ? <DashaWorkspace bcp={bcpResult} planets={chartData.planets} ascendant={chartData.ascendant} birthDatetime={birthDatetime} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={() => { setActiveTab('chart'); window.setTimeout(() => window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')), 0); }} />
+              ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} />
               : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
             }
           </Panel>
@@ -673,11 +679,6 @@ export default function Home() {
             <SettingsPanel {...settingsProps} />
           </Panel>
         )}
-      </div>
-
-      {/* Mobile bottom nav */}
-      <div className="lg:hidden">
-        <BottomNav activeTab={activeTab} onChange={setActiveTab} />
       </div>
 
       {/* Footer (desktop only) */}

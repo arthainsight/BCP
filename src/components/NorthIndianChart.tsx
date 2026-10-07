@@ -10,7 +10,7 @@ import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { useT } from '@/lib/i18n';
 import { LegendEntry, dashaMark, dignityColor, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
-import { layoutHouseLabels, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
+import { layoutHouseLabels, polygonSpanAt, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -66,6 +66,10 @@ interface Props {
   highlightPlanet?: string | null;
   /** Called with a natal planet's name when its label is clicked. */
   onPlanetClick?: (name: string) => void;
+  /** Selected body (natal or transit) drawn highlighted. Kind-aware sibling of `highlightPlanet`. */
+  selectedPlanet?: { kind: 'natal' | 'transit'; name: string } | null;
+  /** Called with the kind and name of any natal or transit label that is clicked. */
+  onPlanetSelect?: (selection: { kind: 'natal' | 'transit'; name: string }) => void;
 }
 
 const PLANET_CODES: Record<string, string> = {
@@ -118,6 +122,76 @@ const HOUSES: HouseShape[] = [
 const HOUSE_POLYGONS: Record<number, Point[]> = Object.fromEntries(
   HOUSES.map(item => [item.house, item.points.split(' ').map(pair => pair.split(',').map(Number) as [number, number])]),
 );
+
+// Monospace metrics matching layoutHouseLabels.
+const BNN_CHAR_WIDTH = 0.6;
+const BNN_LINE_HEIGHT = 1.2;
+
+/**
+ * Places the BNN Major/Minor labels as a compact vertical block directly below
+ * the existing planet/sign label cluster of a house, keeping the block inside
+ * the house polygon. The font is shrunk step by step until the whole block
+ * fits with a margin from the triangle edges, so the labels stay readable but
+ * never spill outside the BNN region or on top of the existing content.
+ *
+ * Returns one entry per text, each with its own centred x/y and the shared
+ * fitted font size. The caller renders them top-to-bottom.
+ */
+function layoutBnnBlock(
+  polygon: Point[],
+  labels: { x: number; y: number; fontSize: number }[],
+  texts: string[],
+  margin = 6,
+): { x: number; y: number; fontSize: number }[] {
+  const ys = polygon.map(p => p[1]);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  // Bottom edge of the existing label cluster (below which the BNN block sits).
+  const clusterBottom = labels.reduce(
+    (max, l) => Math.max(max, l.y + l.fontSize * 0.6),
+    minY,
+  );
+
+  const maxChars = Math.max(...texts.map(t => Array.from(t).length));
+
+  // Largest first: shrink until the block fits inside the polygon.
+  for (let fontSize = 8; fontSize >= 4; fontSize--) {
+    const lineHeight = fontSize * BNN_LINE_HEIGHT;
+    const textWidth = maxChars * fontSize * BNN_CHAR_WIDTH;
+    const gap = fontSize * 0.4;
+
+    // Place the block just below the cluster, centred on the band it occupies.
+    let blockTop = clusterBottom + gap;
+    let fits = true;
+    const lineCentres: number[] = [];
+    for (let i = 0; i < texts.length; i++) {
+      const centre = blockTop + lineHeight * 0.5 + i * lineHeight;
+      lineCentres.push(centre);
+      const span = polygonSpanAt(polygon, centre);
+      if (!span || span[1] - span[0] < textWidth + 2 * margin) { fits = false; break; }
+    }
+    const blockBottom = blockTop + texts.length * lineHeight;
+    if (!fits || blockBottom > maxY - margin) continue;
+
+    return texts.map((_text, i) => {
+      const centre = lineCentres[i];
+      const span = polygonSpanAt(polygon, centre)!;
+      return { x: (span[0] + span[1]) / 2, y: centre, fontSize };
+    });
+  }
+
+  // Nothing fits below the cluster at any size: fall back to a single stacked
+  // block at the minimum size, still inside the polygon.
+  const fontSize = 4;
+  const lineHeight = fontSize * BNN_LINE_HEIGHT;
+  const bottom = maxY - margin;
+  return texts.map((_text, i) => {
+    const centre = bottom - (texts.length - 1 - i) * lineHeight - lineHeight * 0.5;
+    const span = polygonSpanAt(polygon, centre) ?? [0, 0] as unknown as [number, number];
+    return { x: (span[0] + span[1]) / 2, y: centre, fontSize };
+  });
+}
 
 function getHouseFill(
   house: number,
@@ -208,6 +282,8 @@ export default function NorthIndianChart({
   compact = false,
   highlightPlanet = null,
   onPlanetClick,
+  selectedPlanet = null,
+  onPlanetSelect,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
@@ -216,7 +292,9 @@ export default function NorthIndianChart({
   const isDark = !hydrated || resolvedTheme === 'dark';
 
   const visiblePlanets = filterOuterPlanets(planets, showOuterPlanets);
-  const visibleTransitPlanets = filterOuterPlanets(transitPlanets, showOuterPlanets);
+  // Transits always show all bodies: `showOuterPlanets` governs the natal chart
+  // only, so Normal Transits ON reveals Uranus, Neptune and Pluto too.
+  const visibleTransitPlanets = transitPlanets;
 
   const strokeColor = isDark ? '#71717a' : '#71717a';
   const signFill = isDark ? '#a1a1aa' : '#52525b';
@@ -262,8 +340,14 @@ export default function NorthIndianChart({
 
           const isBnnMaj = bnnMajorHouse > 0 && item.house === bnnMajorHouse;
           const isBnnMin = bnnMinorHouse > 0 && item.house === bnnMinorHouse;
-          const bnnLabel = (isBnnMaj && isBnnMin) ? 'BNN Maj+Min' : isBnnMaj ? 'BNN Maj' : isBnnMin ? 'BNN Min' : null;
-          const bnnLabelColor = (isBnnMaj && isBnnMin) ? (isDark ? '#e879f9' : '#a21caf') : isBnnMaj ? bnnMajColor : bnnMinColor;
+          const bnnLabels: { text: string; color: string }[] = [];
+          if (isBnnMaj && isBnnMin) {
+            bnnLabels.push({ text: 'BNN Maj', color: bnnMajColor }, { text: 'BNN Min', color: bnnMinColor });
+          } else if (isBnnMaj) {
+            bnnLabels.push({ text: 'BNN Maj', color: bnnMajColor });
+          } else if (isBnnMin) {
+            bnnLabels.push({ text: 'BNN Min', color: bnnMinColor });
+          }
 
           const tokens: LabelToken[] = [];
           if (item.house === 1 && ascendantDegree !== undefined) {
@@ -274,11 +358,12 @@ export default function NorthIndianChart({
           transitInHouse.forEach(planet => tokens.push({ key: `tr-${planet.name}`, group: 'transit', text: transitLabel(planet) }));
           specialInHouse.forEach((sl, index) => tokens.push({ key: `sl-${sl.name}-${index}`, group: 'special', text: sl.name }));
 
-          // Keep labels clear of the sign, house number and BNN label.
+          // Keep labels clear of the sign and house number; BNN finds free
+          // space around them afterwards (existing labels have priority).
           const signHalf = compact ? 22 : 13;
-          const signBlockBottom = item.sign.y + (bnnLabel || showHouseNumbers ? 20 : compact ? 14 : 8);
-          const exclude: ExclusionBox[] = showSigns || bnnLabel || showHouseNumbers
-            ? [{ x0: item.sign.x - (bnnLabel ? 30 : signHalf), x1: item.sign.x + (bnnLabel ? 30 : signHalf), y0: item.sign.y - (compact ? 15 : 9), y1: signBlockBottom }]
+          const signBlockBottom = item.sign.y + (showHouseNumbers ? 14 : compact ? 14 : 8);
+          const exclude: ExclusionBox[] = showSigns || showHouseNumbers
+            ? [{ x0: item.sign.x - signHalf, x1: item.sign.x + signHalf, y0: item.sign.y - (compact ? 15 : 9), y1: signBlockBottom }]
             : [];
           const longNatal = natalInHouse.some(planet => natalLabel(planet).length > 3);
           const layout = layoutHouseLabels(
@@ -286,6 +371,16 @@ export default function NorthIndianChart({
             { polygon: HOUSE_POLYGONS[item.house], exclude, anchorY: item.planet.y },
             compact ? { maxFontSize: 44, minFontSize: 18 } : { maxFontSize: longNatal ? 13 : 16 },
           );
+          // Place the BNN block directly below the existing label cluster,
+          // inside the house polygon, shrinking the font until it fits. Existing
+          // labels keep priority; the BNN block is not allowed to overlap them.
+          const occupiedLabels = [
+            { x: item.sign.x, y: item.sign.y, fontSize: compact ? 24 : 13 },
+            ...layout.rows.map(row => ({ x: row.x, y: row.y, fontSize: row.fontSize })),
+          ];
+          const bnnPositions = bnnLabels.length
+            ? layoutBnnBlock(HOUSE_POLYGONS[item.house], occupiedLabels, bnnLabels.map(l => l.text))
+            : [];
           const planetFill = getPlanetFill(item.house, activeYearHouse, activeMonthHouse, isDark, showBcpHighlights);
           const parayaFill = (key: string) => parayaColors[(key.slice('paraya-'.length)) as ParayaBody];
 
@@ -326,20 +421,25 @@ export default function NorthIndianChart({
                   H{item.house}
                 </text>
               )}
-              {/* BNN label — sits below the sign abbreviation */}
-              {bnnLabel && (
-                <text
-                  x={item.sign.x}
-                  y={item.sign.y + (showSigns ? 13 : 0)}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontSize="8"
-                  fontWeight="800"
-                  fill={bnnLabelColor}
-                >
-                  {bnnLabel}
-                </text>
-              )}
+              {/* BNN labels — a compact block below the existing label cluster */}
+              {bnnLabels.map((label, i) => {
+                const pos = bnnPositions[i];
+                if (!pos) return null;
+                return (
+                  <text
+                    key={label.text}
+                    x={pos.x}
+                    y={pos.y}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={pos.fontSize}
+                    fontWeight="800"
+                    fill={label.color}
+                  >
+                    {label.text}
+                  </text>
+                );
+              })}
               {layout.rows.map((row, rowIndex) => (
                 <text
                   key={`row-${item.house}-${rowIndex}`}
@@ -353,21 +453,36 @@ export default function NorthIndianChart({
                   {...(row.group === 'paraya' ? { stroke: isDark ? '#18181b' : '#ffffff', strokeWidth: 3, strokeLinejoin: 'round' as const, style: { paintOrder: 'stroke fill' } } : {})}
                 >
                   {row.tokens.map((token, index) => {
-                    const planetName = token.group === 'natal' ? token.key.slice('na-'.length) : null;
-                    const highlighted = planetName !== null && planetName === highlightPlanet;
+                    const tokenKind = token.group === 'natal' ? 'natal' : token.group === 'transit' ? 'transit' : null;
+                    const tokenName = tokenKind
+                      ? tokenKind === 'natal' ? token.key.slice('na-'.length) : token.key.slice('tr-'.length)
+                      : null;
+                    const selectedHere =
+                      tokenName !== null && selectedPlanet !== null && selectedPlanet.name === tokenName && selectedPlanet.kind === tokenKind;
+                    // Legacy natal-only highlight (used by the Varga grid's planet follow).
+                    const highlighted = tokenName !== null && tokenKind === 'natal' && tokenName === highlightPlanet;
+                    const clickable = tokenName !== null
+                      && (onPlanetClick !== undefined || onPlanetSelect !== undefined)
+                      && (tokenKind === 'natal' || (tokenKind === 'transit' && onPlanetSelect !== undefined));
+                    const handleClick = () => {
+                      if (!tokenName || !tokenKind) return;
+                      if (tokenKind === 'transit') onPlanetSelect?.({ kind: 'transit', name: tokenName });
+                      else if (onPlanetSelect) onPlanetSelect({ kind: 'natal', name: tokenName });
+                      else onPlanetClick?.(tokenName);
+                    };
                     return (
                       <Fragment key={token.key}>
                         {index > 0 ? ' ' : ''}
                         <tspan
-                          fill={highlighted ? HIGHLIGHT_COLOR
-                            : token.group === 'natal' ? (colorByDignity && planetName ? dignityColor(planetName, sign, isDark) : undefined) ?? planetFill
+                          fill={selectedHere || highlighted ? HIGHLIGHT_COLOR
+                            : token.group === 'natal' ? (colorByDignity && tokenName ? dignityColor(tokenName, sign, isDark) : undefined) ?? planetFill
                             : token.group === 'transit' ? TRANSIT_COLOR
                             : token.group === 'special' ? SPECIAL_LAGNA_COLOR
                             : token.group === 'paraya' ? parayaFill(token.key)
                             : signFill}
-                          textDecoration={highlighted ? 'underline' : undefined}
-                          onClick={planetName && onPlanetClick ? () => onPlanetClick(planetName) : undefined}
-                          style={planetName && onPlanetClick ? { cursor: 'pointer' } : undefined}
+                          textDecoration={selectedHere || highlighted ? 'underline' : undefined}
+                          onClick={clickable ? handleClick : undefined}
+                          style={clickable ? { cursor: 'pointer' } : undefined}
                         >
                           {token.text}
                         </tspan>

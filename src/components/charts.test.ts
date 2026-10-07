@@ -46,7 +46,7 @@ for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianC
 
   // --- Legend controls: an off layer stays in the legend as a pressed-off button
   const toggled: string[] = [];
-  const settings = { ...DEFAULT_CHART_DISPLAY, showNadiParaya: false };
+  const settings = { ...DEFAULT_CHART_DISPLAY, showTransitOverlay: true, showNadiParaya: false };
   const controls = buildLayerControls(settings, { transit: true, paraya: true, bnnMajor: false }, key => toggled.push(key));
   assert.deepEqual(controls?.map(c => [c.key, c.on]), [['transit', true], ['paraya', false]]);
   const withControls = renderToStaticMarkup(createElement(Chart, {
