@@ -4,19 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import { BcpResult, CalculationSettings, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
-import VargaMatrix from '@/pages/VargaMatrix';
-import VargaGridPanel from './VargaGridPanel';
-import DrishtiPanel from '@/components/DrishtiPanel';
-import AshtakavargaPanel from '@/components/AshtakavargaPanel';
 import ChartExportButtons from './ChartExportButtons';
 import TargetDateBar from './TargetDateBar';
-import TransitHitsPanel from './TransitHitsPanel';
 import { buildLayerControls, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
-import NadiAmsaPanel from './NadiAmsaPanel';
-import TithiPravesaPanel from './TithiPravesaPanel';
-import VarshaphalaPanel from './VarshaphalaPanel';
-import type { AnnualPlace } from './annualShared';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 import { useT } from '@/lib/i18n';
 
@@ -44,6 +35,27 @@ export interface ChartSectionProps {
   calculationSettings?: CalculationSettings;
   ianaTimezone?: string;
   onToggleChartDisplay?: (key: keyof ChartDisplaySettings) => void;
+  onUpdateChartDisplay?: (update: Partial<ChartDisplaySettings>) => void;
+}
+
+function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: boolean; onToggle: () => void }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={value}
+        className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-mono ${
+          value
+            ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
+            : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'
+        }`}
+      >
+        {value ? 'on' : 'off'}
+      </button>
+    </div>
+  );
 }
 
 export default function ChartSection({
@@ -67,14 +79,15 @@ export default function ChartSection({
   calculationSettings,
   ianaTimezone,
   onToggleChartDisplay,
+  onUpdateChartDisplay,
 }: ChartSectionProps) {
   const t = useT();
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
-  const [view, setView] = useState<'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha'>('chart');
-  const [vargaView, setVargaView] = useState<'chart' | 'table'>('chart');
-  // Residence for the annual charts, shared by Tithi Praveśa and Varṣaphala.
-  const [annualPlace, setAnnualPlace] = useState<AnnualPlace>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  // Selected natal or transit body from clicking a chart label. Selection is a
+  // highlight only — it never hides the other bodies.
+  const [selectedPlanet, setSelectedPlanet] = useState<{ kind: 'natal' | 'transit'; name: string } | null>(null);
+  const [showDisplay, setShowDisplay] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
 
   // Full screen is an overlay over the whole app, plus the browser's own full
@@ -118,22 +131,13 @@ export default function ChartSection({
       const customEvent = event as CustomEvent<ChartStyle>;
       if (customEvent.detail === 'north' || customEvent.detail === 'south') {
         setChartStyle(customEvent.detail);
-        setView('chart');
       }
     };
 
-    // "Open Varga Matrix" in the Dasha event list.
-    const handleShowVargaMatrix = () => {
-      setView('varga');
-      setVargaView('table');
-    };
-
     window.addEventListener('bcp:chart-style-change', handleChartStyleChange);
-    window.addEventListener('bcp:show-varga-matrix', handleShowVargaMatrix);
 
     return () => {
       window.removeEventListener('bcp:chart-style-change', handleChartStyleChange);
-      window.removeEventListener('bcp:show-varga-matrix', handleShowVargaMatrix);
     };
   }, []);
 
@@ -152,6 +156,8 @@ export default function ChartSection({
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
   const showTransit = chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0;
+  // The Transits toggle drives the same setting the chart overlay reads.
+  const transitOn = chartDisplaySettings.showTransitOverlay !== false;
   const parayaHouses = chartDisplaySettings.showNadiParaya !== false ? nadiParayaHousesFromParent : [];
   const layerControls = buildLayerControls(chartDisplaySettings, {
     bcp: true,
@@ -161,9 +167,6 @@ export default function ChartSection({
     bnnMinor: bnnHouses.minor > 0,
     paraya: nadiParayaHousesFromParent.length > 0,
   }, onToggleChartDisplay);
-
-  const tabClass = (id: 'chart' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tithi' | 'varsha') =>
-    `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
 
   return (
     <ChartFillContext.Provider value={fullscreen}>
@@ -175,103 +178,138 @@ export default function ChartSection({
       aria-modal={fullscreen || undefined}
       aria-label={fullscreen ? 'Charts in full screen' : undefined}
     >
-      <div className="flex items-center gap-2 min-w-0">
-        <div className="min-w-0 flex-1 overflow-x-auto">
-          <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
-            <button type="button" onClick={() => setView('chart')} className={tabClass('chart')}>{t('Chart')}</button>
-            <button type="button" onClick={() => setView('varga')} className={tabClass('varga')}>Varga</button>
-            <button type="button" onClick={() => setView('nadi')} className={tabClass('nadi')}>Nāḍī</button>
-            <button type="button" onClick={() => setView('ashtakavarga')} className={tabClass('ashtakavarga')}>Aṣṭakavarga</button>
-            <button type="button" onClick={() => setView('drishti')} className={tabClass('drishti')}>Dṛṣṭi</button>
-            <button type="button" onClick={() => setView('tithi')} className={tabClass('tithi')}>Tithi Praveśa</button>
-            <button type="button" onClick={() => setView('varsha')} className={tabClass('varsha')}>Varṣaphala</button>
+      <div className="flex flex-wrap items-center gap-2 min-w-0">
+        {targetDate && onTargetDateChange && (
+          <TargetDateBar
+            targetDate={targetDate}
+            onTargetDateChange={onTargetDateChange}
+            targetTime={targetTime}
+            onTargetTimeChange={onTargetTimeChange}
+            transitLoading={transitLoading}
+          />
+        )}
+        <div className="ml-auto flex items-center gap-1.5">
+          <div
+            role="group"
+            aria-label={t('chart style')}
+            title={t('chart style')}
+            className="inline-flex shrink-0 overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                setChartStyle('north');
+                onUpdateChartDisplay?.({ chartStyle: 'north' });
+              }}
+              aria-pressed={chartStyle === 'north'}
+              className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors ${
+                chartStyle === 'north'
+                  ? 'bg-emerald-600 dark:bg-green-700 text-white'
+                  : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
+              }`}
+            >
+              N
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setChartStyle('south');
+                onUpdateChartDisplay?.({ chartStyle: 'south' });
+              }}
+              aria-pressed={chartStyle === 'south'}
+              className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors border-l border-zinc-200 dark:border-zinc-700 ${
+                chartStyle === 'south'
+                  ? 'bg-emerald-600 dark:bg-green-700 text-white'
+                  : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
+              }`}
+            >
+              S
+            </button>
           </div>
+          <button
+            type="button"
+            onClick={() => onToggleChartDisplay?.('showTransitOverlay')}
+            aria-pressed={transitOn}
+            disabled={transitPlanets.length === 0}
+            title={t('transit')}
+            className={`shrink-0 rounded-md border px-2 py-1.5 text-[10px] font-mono transition-colors ${
+              transitOn
+                ? 'border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300'
+                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
+            } disabled:opacity-30`}
+          >
+            {t('Transit')} {transitOn ? 'ON' : 'OFF'}
+          </button>
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowDisplay((v) => !v)}
+              aria-expanded={showDisplay}
+              aria-haspopup="true"
+              title={t('chart display')}
+              className="shrink-0 rounded-md border border-zinc-200 dark:border-zinc-700 px-2 py-1.5 text-[10px] font-mono text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+            >
+              ···
+            </button>
+            {showDisplay && (
+              <>
+                <div className="fixed inset-0 z-[70]" onClick={() => setShowDisplay(false)} />
+                <div className="absolute right-0 top-full z-[80] mt-1 w-64 rounded-lg border border-zinc-200 bg-white dark:bg-zinc-900 dark:border-zinc-700 shadow-lg p-2 space-y-2">
+                  <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('chart display')}</div>
+                  <ChartDisplayToggle label={t('nakshatra')} value={chartDisplaySettings.showNakshatra} onToggle={() => onToggleChartDisplay?.('showNakshatra')} />
+                  <ChartDisplayToggle label={t('karaka')} value={chartDisplaySettings.showCharaKaraka} onToggle={() => onToggleChartDisplay?.('showCharaKaraka')} />
+                  <ChartDisplayToggle label={t('outer planets')} value={chartDisplaySettings.showOuterPlanets} onToggle={() => onToggleChartDisplay?.('showOuterPlanets')} />
+                  <ChartDisplayToggle label={t('special lagnas')} value={chartDisplaySettings.showSpecialLagnas} onToggle={() => onToggleChartDisplay?.('showSpecialLagnas')} />
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-300">{t('degrees')}</span>
+                    <div className="flex gap-0.5">
+                      {(['off', 'degree', 'minute', 'second'] as const).map((val) => (
+                        <button
+                          key={val}
+                          type="button"
+                          onClick={() => onUpdateChartDisplay?.({ degreePrecision: val })}
+                          className={`rounded-sm border px-1 py-0.5 text-[9px] font-mono ${
+                            (chartDisplaySettings.degreePrecision ?? 'off') === val
+                              ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
+                              : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'
+                          }`}
+                        >
+                          {val === 'off' ? 'off' : val.slice(0, 1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-300">{t('dasha lords')}</span>
+                    <button
+                      type="button"
+                      onClick={() => onToggleChartDisplay?.('showDashaLords')}
+                      aria-pressed={chartDisplaySettings.showDashaLords !== false}
+                      className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-mono ${
+                        chartDisplaySettings.showDashaLords !== false
+                          ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
+                          : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'
+                      }`}
+                    >
+                      {chartDisplaySettings.showDashaLords !== false ? 'on' : 'off'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={fullscreen ? () => setFullscreen(false) : enterFullscreen}
+            title={fullscreen ? t('Close full screen (Esc)') : t('Full screen')}
+            aria-label={fullscreen ? t('Close full screen') : t('Full screen')}
+            className="shrink-0 rounded-md border border-zinc-200 px-2 py-1.5 text-[10px] font-mono text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            {fullscreen ? t('✕ close') : t('⤢ full')}
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={fullscreen ? () => setFullscreen(false) : enterFullscreen}
-          title={fullscreen ? t('Close full screen (Esc)') : t('Full screen')}
-          aria-label={fullscreen ? t('Close full screen') : t('Full screen')}
-          className="shrink-0 rounded-md border border-zinc-200 px-2 py-1.5 text-[10px] font-mono text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100"
-        >
-          {fullscreen ? t('✕ close') : t('⤢ full')}
-        </button>
       </div>
 
-      {targetDate && onTargetDateChange && (
-        <TargetDateBar
-          targetDate={targetDate}
-          onTargetDateChange={onTargetDateChange}
-          targetTime={targetTime}
-          onTargetTimeChange={onTargetTimeChange}
-          transitLoading={transitLoading}
-        />
-      )}
-
-      {view === 'varga' ? (
-        <div className="min-w-0 space-y-4">
-          <div className="inline-flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50">
-            <button
-              type="button"
-              onClick={() => setVargaView('chart')}
-              className={`rounded-md px-2.5 py-1 text-[10px] font-mono ${vargaView === 'chart' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'}`}
-            >
-              {t('Charts')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setVargaView('table')}
-              className={`rounded-md px-2.5 py-1 text-[10px] font-mono ${vargaView === 'table' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'}`}
-            >
-              {t('Matrix & Bala')}
-            </button>
-          </div>
-          {vargaView === 'chart' ? (
-            <VargaGridPanel
-              chart={chart}
-              dashaLords={dashaLords}
-              chartStyle={chartStyle}
-              chartDisplaySettings={chartDisplaySettings}
-              karakaByPlanet={karakaByPlanet}
-              nakshatraAdjust={nakshatraAdjust}
-            />
-          ) : (
-            <div className="overflow-x-auto"><VargaMatrix chart={chart} /></div>
-          )}
-        </div>
-      ) : view === 'nadi' ? (
-        <div className="min-w-0 overflow-x-auto"><NadiAmsaPanel chart={chart} /></div>
-      ) : view === 'ashtakavarga' ? (
-        <div className="min-w-0 overflow-x-auto"><AshtakavargaPanel chart={chart} /></div>
-      ) : view === 'drishti' ? (
-        <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} showGrahaDrishti={chartDisplaySettings.showGrahaDrishti ?? true} showRashiDrishti={chartDisplaySettings.showRashiDrishti ?? true} /></div>
-      ) : view === 'tithi' ? (
-        <TithiPravesaPanel
-          chart={chart}
-          birthDatetime={birthDatetime ?? ''}
-          targetDate={targetDate}
-          ianaTimezone={ianaTimezone}
-          calculationSettings={calculationSettings}
-          chartStyle={chartStyle}
-          chartDisplaySettings={chartDisplaySettings}
-          nakshatraAdjust={nakshatraAdjust}
-          place={annualPlace}
-          onPlaceChange={setAnnualPlace}
-        />
-      ) : view === 'varsha' ? (
-        <VarshaphalaPanel
-          chart={chart}
-          birthDatetime={birthDatetime ?? ''}
-          targetDate={targetDate}
-          ianaTimezone={ianaTimezone}
-          calculationSettings={calculationSettings}
-          chartStyle={chartStyle}
-          chartDisplaySettings={chartDisplaySettings}
-          nakshatraAdjust={nakshatraAdjust}
-          place={annualPlace}
-          onPlaceChange={setAnnualPlace}
-        />
-      ) : (
         <div ref={chartRef} className="space-y-2">
         <ChartExportButtons targetRef={chartRef} fileName="chart-d1" />
         {chartStyle === 'south' ? (
@@ -298,6 +336,8 @@ export default function ChartSection({
           nadiParayaHouses={parayaHouses}
           layerControls={layerControls}
           dashaLords={dashaLords}
+          selectedPlanet={selectedPlanet}
+          onPlanetSelect={setSelectedPlanet}
         />
         ) : (
         <NorthIndianChart
@@ -324,23 +364,11 @@ export default function ChartSection({
           nadiParayaHouses={parayaHouses}
           layerControls={layerControls}
           dashaLords={dashaLords}
+          selectedPlanet={selectedPlanet}
+          onPlanetSelect={setSelectedPlanet}
         />
         )}
         </div>
-      )}
-
-      {view === 'chart' && onTransitDatetimeChange && (
-        <div className="space-y-3 border-t border-zinc-100 dark:border-zinc-800 pt-3">
-          {targetDate && (
-            <TransitHitsPanel
-              chart={chart}
-              targetDate={targetDate}
-              calculationSettings={calculationSettings}
-              onSetTransit={onTransitDatetimeChange}
-            />
-          )}
-        </div>
-      )}
     </div>
     </ChartFillContext.Provider>
   );

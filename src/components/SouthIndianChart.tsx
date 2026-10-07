@@ -60,6 +60,10 @@ interface Props {
   highlightPlanet?: string | null;
   /** Called with a natal planet's name when its label is clicked. */
   onPlanetClick?: (name: string) => void;
+  /** Selected body (natal or transit) drawn highlighted. Kind-aware sibling of `highlightPlanet`. */
+  selectedPlanet?: { kind: 'natal' | 'transit'; name: string } | null;
+  /** Called with the kind and name of any natal or transit label that is clicked. */
+  onPlanetSelect?: (selection: { kind: 'natal' | 'transit'; name: string }) => void;
 }
 
 // Grid gap (gap-1), cell padding (p-1.5) and the sign / house header plus its
@@ -138,30 +142,46 @@ function getPlanetLabel(
   return parts.join(' ');
 }
 
-function PlanetSpan({ token, highlightPlanet, onPlanetClick, dignity }: {
+function PlanetSpan({ token, highlightPlanet, onPlanetClick, selectedPlanet, onPlanetSelect, dignity }: {
   token: LabelToken;
   highlightPlanet: string | null;
   onPlanetClick?: (name: string) => void;
+  selectedPlanet?: { kind: 'natal' | 'transit'; name: string } | null;
+  onPlanetSelect?: (selection: { kind: 'natal' | 'transit'; name: string }) => void;
   /** Colour for the planet's dignity, when dignities are shown. */
   dignity?: string;
 }) {
-  const planetName = token.group === 'natal' ? token.key.split('-')[1] : null;
-  const highlighted = planetName !== null && planetName === highlightPlanet;
-  const clickable = planetName !== null && onPlanetClick !== undefined;
-  const className = highlighted ? 'text-cyan-600 dark:text-cyan-400 underline'
+  // A body is selectable when it is a natal or transit planet and a select handler exists.
+  const tokenKind = token.group === 'natal' ? 'natal' : token.group === 'transit' ? 'transit' : null;
+  const tokenName = tokenKind
+    ? tokenKind === 'natal' ? token.key.split('-')[1] : token.key.slice('tr-'.length)
+    : null;
+  const selectedByName =
+    tokenName !== null && selectedPlanet && selectedPlanet.name === tokenName && selectedPlanet.kind === tokenKind;
+  // Legacy natal-only highlight (used by the Varga grid's planet follow).
+  const highlighted = tokenName !== null && tokenKind === 'natal' && tokenName === highlightPlanet;
+  const clickable = tokenName !== null && (onPlanetClick !== undefined || onPlanetSelect !== undefined) && (tokenKind === 'natal' || (tokenKind === 'transit' && onPlanetSelect !== undefined));
+  const className = selectedByName ? 'text-cyan-600 dark:text-cyan-400 underline'
+    : highlighted ? 'text-cyan-600 dark:text-cyan-400 underline'
     : token.group === 'asc' ? 'text-emerald-700 dark:text-green-400'
     : token.group === 'special' ? 'font-semibold'
     : undefined;
-  const style = highlighted ? undefined
+  const style = selectedByName || highlighted ? undefined
     : dignity ? { color: dignity }
     : token.group === 'transit' ? { color: TRANSIT_COLOR }
     : token.group === 'special' ? { color: SPECIAL_LAGNA_COLOR, opacity: 0.85 }
     : undefined;
+  const handleClick = () => {
+    if (!tokenName) return;
+    if (tokenKind === 'transit') onPlanetSelect?.({ kind: 'transit', name: tokenName });
+    else if (onPlanetSelect) onPlanetSelect({ kind: 'natal', name: tokenName });
+    else onPlanetClick?.(tokenName);
+  };
   return (
     <span
       className={`${className ?? ''}${clickable ? ' cursor-pointer' : ''}`}
       style={style}
-      onClick={clickable ? () => onPlanetClick(planetName) : undefined}
+      onClick={clickable ? handleClick : undefined}
     >
       {token.text}
     </span>
@@ -196,6 +216,8 @@ export default function SouthIndianChart({
   compact = false,
   highlightPlanet = null,
   onPlanetClick,
+  selectedPlanet = null,
+  onPlanetSelect,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
@@ -220,7 +242,9 @@ export default function SouthIndianChart({
   const bySign: Record<number, MergedPlanet[]> = {};
 
   const natal = filterOuter(planets, showOuterPlanets);
-  const transits = filterOuter(transitPlanets, showOuterPlanets);
+  // Transits always show all bodies: `showOuterPlanets` governs the natal chart
+  // only, so Normal Transits ON reveals Uranus, Neptune and Pluto too.
+  const transits = transitPlanets;
 
   if (showNatalPlanets) {
     natal.forEach((p) => {
@@ -353,6 +377,8 @@ export default function SouthIndianChart({
                             token={token}
                             highlightPlanet={highlightPlanet}
                             onPlanetClick={onPlanetClick}
+                            selectedPlanet={selectedPlanet}
+                            onPlanetSelect={onPlanetSelect}
                             dignity={colorByDignity && token.group === 'natal' ? dignityColor(token.key.split('-')[1], sign, isDark) : undefined}
                           />
                         )}

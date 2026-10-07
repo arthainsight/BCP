@@ -15,6 +15,9 @@ export const LANGUAGES: { value: Language; label: string }[] = [
 
 export const FI: Record<string, string> = {
   // Navigation
+  'CHART': 'KARTTA',
+  'TIMING': 'AJANKOHTA',
+  'ANALYSIS': 'ANALYYSI',
   'Chart': 'Kartta',
   'Data': 'Tiedot',
   'Grahas': 'Grahat',
@@ -139,6 +142,8 @@ export const FI: Record<string, string> = {
   'Mean Node': 'Keskisolmu',
   'True Node': 'Todellinen solmu',
   'chart style': 'kartan tyyli',
+  'chart display': 'kartan näyttö',
+  'views': 'näkymät',
   'North Indian': 'Pohjoisintialainen',
   'South Indian': 'Eteläintialainen',
   'chart overlays': 'kartan merkinnät',
