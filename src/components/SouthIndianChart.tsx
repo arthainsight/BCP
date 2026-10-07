@@ -9,7 +9,7 @@ import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya
 import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { useT } from '@/lib/i18n';
-import { LegendEntry, dashaMark, dignityColor, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
+import { dashaMark, dignityColor, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
@@ -222,7 +222,6 @@ export default function SouthIndianChart({
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
   const fill = useChartFill();
-  const t = useT();
   const isDark = !hydrated || resolvedTheme === 'dark';
 
   const gridRef = useRef<HTMLDivElement>(null);
@@ -268,10 +267,6 @@ export default function SouthIndianChart({
     });
   }
 
-  const hasBnn = bnnMajorHouse > 0 || bnnMinorHouse > 0;
-  const hasParaya = nadiParayaHouses.length > 0;
-  const control = (key: ChartLayerKey) => layerControls?.find(c => c.key === key);
-  const hasControls = (layerControls?.length ?? 0) > 0;
 
   const cellSize = (gridWidth - 3 * GRID_GAP) / 4;
   const padding = compact ? COMPACT_CELL_PADDING : CELL_PADDING;
@@ -410,20 +405,6 @@ export default function SouthIndianChart({
           );
         })}
       </div>
-
-      {!compact && (activeYearHouse > 0 || activeMonthHouse > 0 || showTransitPlanets || showSpecialLagnas || hasBnn || hasParaya || hasControls || dashaLords) && (
-        <div className="mt-3 flex justify-center gap-4 text-[11px] font-mono flex-wrap">
-          {(activeYearHouse > 0 || activeMonthHouse > 0) && legendLayers?.bcp !== false && (
-            <LegendEntry control={control('bcp')}><span className="text-cyan-600 dark:text-cyan-400">■ {t('BCP Year')}</span> <span className="text-emerald-700 dark:text-green-400">■ {t('Month')}</span> <span className="text-purple-600 dark:text-purple-400">■ {t('Both')}</span></LegendEntry>
-          )}
-          {(control('bnnMajor') || (bnnMajorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMajor')} style={{ color: bnnMajColor }}>■ BNN Major</LegendEntry>}
-          {(control('bnnMinor') || (bnnMinorHouse > 0 && legendLayers?.bnn !== false)) && <LegendEntry control={control('bnnMinor')} style={{ color: bnnMinColor }}>╌ BNN Minor</LegendEntry>}
-          {(control('paraya') || hasParaya) && <LegendEntry control={control('paraya')}><span style={{ color: PARAYA_COLORS.Jupiter }}>Ju</span> <span style={{ color: PARAYA_COLORS.Saturn }}>Sa</span> <span style={{ color: PARAYA_COLORS.Rahu }}>Ra</span> <span style={{ color: PARAYA_COLORS.Ketu }}>Ke</span> Paraya</LegendEntry>}
-          {(control('dasha') || dashaLords) && <LegendEntry control={control('dasha')} className="text-zinc-600 dark:text-zinc-300">ᴹᴬ {dashaLords ? `${dashaLords.label ? `${dashaLords.label} ` : ''}${PLANET_CODES[dashaLords.md]}–${PLANET_CODES[dashaLords.ad]}` : 'Daśā'}</LegendEntry>}
-          {(control('transit') || (showTransitPlanets && legendLayers?.transit !== false)) && <LegendEntry control={control('transit')} style={{ color: TRANSIT_COLOR }}>■ {t('Transit')}</LegendEntry>}
-          {showSpecialLagnas && <span style={{ color: SPECIAL_LAGNA_COLOR }} className="font-semibold">■ {t('Special')}</span>}
-        </div>
-      )}
     </div>
   );
 }

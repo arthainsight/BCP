@@ -15,7 +15,7 @@ import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
 import type { ChartSnapshot } from '@/components/FileActions';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
-import { CalcSummaryBar, EmptyState, Panel } from '@/components/PageParts';
+import { EmptyState, Panel } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
@@ -568,14 +568,6 @@ export default function Home() {
         <div className={`space-y-3 ${desktopTab === 'public' ? 'hidden' : ''}`}>
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
             <ChartSection {...chartSectionProps} />
-            {chartData && (
-              <CalcSummaryBar
-                ayanamsa={calculationSettings.ayanamsa}
-                ayanamsaOffsetDegrees={calculationSettings.ayanamsaOffsetDegrees ?? 0}
-                nodeMode={calculationSettings.nodeMode}
-                ianaTimezone={ianaTimezone || undefined}
-              />
-            )}
           </div>
           {chartDisplaySettings.showPanchang && chartData && (
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
@@ -624,12 +616,6 @@ export default function Home() {
             {chartData && (
               <Panel>
                 <ChartSection {...chartSectionProps} />
-                <CalcSummaryBar
-                  ayanamsa={calculationSettings.ayanamsa}
-                  ayanamsaOffsetDegrees={calculationSettings.ayanamsaOffsetDegrees ?? 0}
-                  nodeMode={calculationSettings.nodeMode}
-                  ianaTimezone={ianaTimezone || undefined}
-                />
               </Panel>
             )}
             {chartDisplaySettings.showPanchang && chartData && (
@@ -683,7 +669,7 @@ export default function Home() {
 
       {/* Footer (desktop only) */}
       <footer className="hidden lg:block text-center text-xs font-mono text-zinc-400 dark:text-zinc-700 py-6">
-        {APP_NAME} {APP_VERSION} — selected ayanamsa · whole-sign houses · chara karakas
+        {APP_NAME} {APP_VERSION}
       </footer>
     </div>
     </LanguageContext.Provider>

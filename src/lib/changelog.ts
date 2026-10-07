@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.34',
+    date: '2026-10-07',
+    title: 'A cleaner chart',
+    changes: [
+      'Removed the legend under the chart (BCP, BNN, Paraya, daśā lords, Transit); the layers are switched in the ··· menu.',
+      'Removed the ayanamsa, node and time zone line under the chart. The footer shows only the version.',
+      'Updated the application version to v2.34.',
+    ],
+  },
+  {
     version: 'v2.33',
     date: '2026-10-07',
     title: 'Chart layers behind the ··· menu',
