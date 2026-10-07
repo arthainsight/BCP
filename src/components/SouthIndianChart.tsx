@@ -342,11 +342,11 @@ export default function SouthIndianChart({
                   style={{ border: `2px solid ${bnnMajColor}`, zIndex: 10 }}
                 />
               )}
-              {/* BNN Minor: dashed violet border overlay */}
+              {/* BNN Minor: solid violet border overlay */}
               {isBnnMin && (
                 <div
                   className="absolute inset-0 rounded-md pointer-events-none"
-                  style={{ border: `2px dashed ${bnnMinColor}`, zIndex: 11 }}
+                  style={{ border: `2px solid ${bnnMinColor}`, zIndex: 11 }}
                 />
               )}
               <div className={`flex items-start justify-between gap-1 leading-none text-zinc-500 dark:text-zinc-400 ${compact ? 'text-[8px]' : 'text-[10px]'}`}>

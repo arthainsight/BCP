@@ -6,6 +6,7 @@ export const CHANGELOG = [
     changes: [
       'Removed the legend under the chart (BCP, BNN, Paraya, daśā lords, Transit); the layers are switched in the ··· menu.',
       'Removed the ayanamsa, node and time zone line under the chart. The footer shows only the version.',
+      'The BNN minor house outline is now a solid line instead of dashed.',
       'Updated the application version to v2.34.',
     ],
   },

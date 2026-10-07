@@ -396,14 +396,13 @@ export default function NorthIndianChart({
                   strokeWidth="3"
                 />
               )}
-              {/* BNN Minor: dashed violet border overlay */}
+              {/* BNN Minor: solid violet border overlay */}
               {isBnnMin && (
                 <polygon
                   points={item.points}
                   fill="none"
                   stroke={bnnMinColor}
                   strokeWidth="3"
-                  strokeDasharray="8,5"
                 />
               )}
               {showSigns && (
