@@ -17,6 +17,7 @@ import type { ChartSnapshot } from '@/components/FileActions';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
 import { EmptyState, Panel } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
+import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
@@ -544,7 +545,7 @@ export default function Home() {
 
   return (
     <LanguageContext.Provider value={language}>
-    <div className="min-h-screen overflow-x-hidden bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
+    <div className="min-h-screen overflow-x-clip bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
       <AppHeader
         activeChartName={activeChartName}
         displayChartName={displayChartName}
@@ -648,12 +649,23 @@ export default function Home() {
         )}
 
         {activeTab === 'dasha' && (
-          <Panel>
-            {bcpResult && chartData
-              ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} />
-              : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
-            }
-          </Panel>
+          <div className="space-y-3">
+            {chartData && (
+              <PinnedChart
+                chart={chartData}
+                chartDisplaySettings={chartDisplaySettings}
+                karakaByPlanet={karakaByPlanet}
+                nakshatraAdjust={nakshatraAdjust}
+                dashaLords={dashaLords}
+              />
+            )}
+            <Panel>
+              {bcpResult && chartData
+                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} />
+                : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
+              }
+            </Panel>
+          </div>
         )}
 
         {activeTab === 'public' && (
