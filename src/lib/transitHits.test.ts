@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { findCrossings, findTransitHits, type LongitudeSeries } from './transitHits';
+import { HIT_RELATIONS, findCrossings, findTransitHits, type LongitudeSeries } from './transitHits';
 
 const DAY = 86_400_000;
 const series = (longitudes: number[]): LongitudeSeries => ({ start: 0, step: DAY, longitudes });
@@ -31,3 +31,25 @@ const hits = findTransitHits(
   [{ name: 'Moon', longitude: 10 }, { name: 'Asc', longitude: 99.5 }],
 );
 assert.deepEqual(hits.map(h => `${h.transit}-${h.natal}`), ['Jupiter-Asc', 'Saturn-Moon']);
+
+// --- The same degree in the 5th and 9th signs from a natal point -----------------
+const natalSun = [{ name: 'Sun', longitude: 10 }];
+assert.deepEqual(findTransitHits({ Jupiter: series([129, 130, 131]) }, natalSun).map(h => h.relation), [], 'by default only the point itself');
+const fifth = findTransitHits({ Jupiter: series([129, 130, 131]) }, natalSun, HIT_RELATIONS);
+assert.deepEqual(fifth.map(h => h.relation), [5], '130° is 120° on from 10°: the 5th');
+const ninth = findTransitHits({ Saturn: series([249, 250, 251]) }, natalSun, HIT_RELATIONS);
+assert.deepEqual(ninth.map(h => h.relation), [9], '250° is 240° on from 10°: the 9th');
+assert.equal(ninth[0].time, DAY, 'the crossing moment is the same as for any other target');
+// A natal point near the end of the zodiac puts its trines past 0° Aries.
+const wrapTrine = findTransitHits({ Rahu: series([89, 90, 91]) }, [{ name: 'Moon', longitude: 330 }], HIT_RELATIONS);
+assert.deepEqual(wrapTrine.map(h => h.relation), [5], '330° + 120° wraps to 90°');
+// Each relation is found independently, and the hits come out in time order.
+const all = findTransitHits(
+  { Jupiter: series([9, 10, 11, 129, 130, 131, 249, 250, 251]) },
+  natalSun,
+  HIT_RELATIONS,
+);
+assert.deepEqual(all.map(h => h.relation), [1, 5, 9]);
+assert.ok(all.every((h, i) => i === 0 || all[i - 1].time <= h.time));
+
+console.log('Transit hit relation tests passed');

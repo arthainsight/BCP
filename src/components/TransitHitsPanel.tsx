@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
-import { findTransitHits, type LongitudeSeries, type TransitHit } from '@/lib/transitHits';
+import { HIT_RELATIONS, findTransitHits, type HitRelation, type LongitudeSeries, type TransitHit } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 
 type Props = {
@@ -35,6 +35,8 @@ export default function TransitHitsPanel({ chart, targetDate, calculationSetting
   const t = useT();
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  // Which houses from the natal point count: 1 is the point itself, 5 and 9 its trines.
+  const [relations, setRelations] = useState<HitRelation[]>([...HIT_RELATIONS]);
   const [data, setData] = useState<{ key: string; series: Series } | null>(null);
   const [error, setError] = useState('');
 
@@ -80,8 +82,8 @@ export default function TransitHitsPanel({ chart, targetDate, calculationSetting
       ...chart.planets.filter(p => NATAL.includes(p.name)).map(p => ({ name: p.name, longitude: p.longitude })),
       { name: 'Asc', longitude: chart.ascendant.longitude },
     ];
-    return findTransitHits(series, natal);
-  }, [data, chart]);
+    return findTransitHits(series, natal, relations);
+  }, [data, chart, relations]);
 
   const loading = open && data?.key !== key && !error;
   const rows = showAll ? hits : hits.slice(0, FIRST_ROWS);
@@ -97,19 +99,42 @@ export default function TransitHitsPanel({ chart, targetDate, calculationSetting
       {open && (
         <div className="space-y-1">
           <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-            {t('Jupiter, Saturn, Rahu and Ketu crossing a natal graha or the ascendant, to the day. ℞ marks a retrograde pass.')}
+            {t('Jupiter, Saturn, Rahu and Ketu crossing a natal graha or the ascendant, to the day, and the same degree in its 5th and 9th sign. ℞ marks a retrograde pass.')}
           </p>
+          <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('houses from the natal graha')}>
+            <span className="mr-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('houses from natal')}</span>
+            {HIT_RELATIONS.map(relation => {
+              const on = relations.includes(relation);
+              return (
+                <button
+                  key={relation}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => {
+                    // At least one stays on.
+                    setRelations(current => on ? (current.length > 1 ? current.filter(r => r !== relation) : current) : [...current, relation].sort((a, b) => a - b));
+                    setShowAll(false);
+                  }}
+                  className={`rounded-md border px-2.5 py-1.5 text-[10px] font-mono sm:px-2 sm:py-1 ${on
+                    ? 'border-emerald-500 bg-emerald-500 text-white dark:border-green-600 dark:bg-green-600'
+                    : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400'}`}
+                >
+                  {relation}
+                </button>
+              );
+            })}
+          </div>
           {error && <p className="text-[10px] font-mono text-rose-600 dark:text-rose-400">{t('Could not load transits:')} {error}</p>}
           {loading && <p className="text-[10px] font-mono text-zinc-400">{t('Calculating…')}</p>}
           {!loading && !error && hits.length === 0 && <p className="text-[10px] font-mono text-zinc-400">{t('No crossings in these twelve months.')}</p>}
           {!loading && rows.length > 0 && (
             <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
               {rows.map(hit => (
-                <li key={`${hit.transit}-${hit.natal}-${hit.time}`} className="flex items-center gap-2 py-1 text-[11px] font-mono">
+                <li key={`${hit.transit}-${hit.natal}-${hit.relation}-${hit.time}`} className="flex items-center gap-2 py-1 text-[11px] font-mono">
                   <span className="w-20 shrink-0 text-zinc-500 dark:text-zinc-400">{formatDay(hit.time)}</span>
                   <span className="min-w-0 flex-1 text-zinc-700 dark:text-zinc-200">
                     <span className="font-bold text-rose-500">{CODES[hit.transit]}{hit.retrograde ? '℞' : ''}</span>
-                    {` ${t('over natal')} `}
+                    {` ${hit.relation === 1 ? t('over natal') : hit.relation === 5 ? t('5th from natal') : t('9th from natal')} `}
                     <span className="font-bold">{CODES[hit.natal]}</span>
                   </span>
                   {onSetTransit && (

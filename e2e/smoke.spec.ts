@@ -200,6 +200,30 @@ test('ANALYSIS Nava-Tara chakra and the direction chart show the grahas', async 
   expect(errors).toEqual([]);
 });
 
+test('transit hits list the 1st, 5th and 9th from each natal graha', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'transit.hits', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: /transit hits/ })).click();
+
+  const hits = visible(page, page.locator('ul').filter({ hasText: 'natal' }));
+  await expect(hits).toContainText('natal', { timeout: 15_000 });
+  const group = visible(page, page.getByRole('group', { name: 'houses from the natal graha' }));
+  await expect(group.getByRole('button', { name: '1', exact: true })).toHaveAttribute('aria-pressed', 'true');
+
+  // The trines are in the list by default; with only the 1st left they disappear.
+  await visible(page, page.getByRole('button', { name: 'show all' })).click();
+  await expect(visible(page, page.locator('ul').filter({ hasText: 'natal' }))).toContainText(/5th from natal|9th from natal/);
+  await group.getByRole('button', { name: '5', exact: true }).click();
+  await group.getByRole('button', { name: '9', exact: true }).click();
+  await expect(visible(page, page.locator('ul').filter({ hasText: 'natal' }))).not.toContainText(/5th from natal|9th from natal/);
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

@@ -7,7 +7,7 @@ import { calculateDashaEventSnapshots } from '@/lib/dashaEvents';
 import { parseDateTime } from '@/lib/bcp';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { collectTimingEvents, type TimingEvent } from '@/lib/signChanges';
-import { findTransitHits, type LongitudeSeries } from '@/lib/transitHits';
+import { HIT_RELATIONS, findTransitHits, type LongitudeSeries } from '@/lib/transitHits';
 import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 import { useT } from '@/lib/i18n';
 
@@ -83,7 +83,7 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
       ...chart.planets.filter(p => NATAL.includes(p.name)).map(p => ({ name: p.name, longitude: p.longitude })),
       { name: 'Asc', longitude: chart.ascendant.longitude },
     ];
-    return findTransitHits(series, natal).slice(0, HIT_ROWS);
+    return findTransitHits(series, natal, HIT_RELATIONS).slice(0, HIT_ROWS);
   }, [hits.data, chart]);
 
   const heading = 'text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600';
@@ -148,11 +148,11 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
         {!hits.loading && !hits.error && transitHits.length === 0 && <p className="text-[10px] font-mono text-zinc-400">{t('No crossings in these twelve months.')}</p>}
         <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
           {transitHits.map(hit => (
-            <li key={`${hit.transit}-${hit.natal}-${hit.time}`} className="flex items-baseline gap-2 py-1 text-[11px] font-mono">
+            <li key={`${hit.transit}-${hit.natal}-${hit.relation}-${hit.time}`} className="flex items-baseline gap-2 py-1 text-[11px] font-mono">
               <span className="w-32 shrink-0 text-zinc-500 dark:text-zinc-400">{day(hit.time)}</span>
               <span className="min-w-0 text-zinc-700 dark:text-zinc-200">
                 <span className="font-bold text-rose-500">{CODES[hit.transit]}{hit.retrograde ? '℞' : ''}</span>
-                {` ${t('over natal')} `}
+                {` ${hit.relation === 1 ? t('over natal') : hit.relation === 5 ? t('5th from natal') : t('9th from natal')} `}
                 <span className="font-bold">{CODES[hit.natal]}</span>
               </span>
             </li>
