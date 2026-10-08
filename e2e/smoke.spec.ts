@@ -585,7 +585,7 @@ test('the dasha lords on the chart name their system, which the ··· menu chan
   expect(errors).toEqual([]);
 });
 
-test('Vimsottari Utpanna / Kshema / Adhana picks the strongest start from the Moon, or the one chosen in Settings', async ({ page }) => {
+test('Vimsottari Utpanna / Kshema / Adhana starts from the Moon house rule, or the one chosen in Settings', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -601,8 +601,11 @@ test('Vimsottari Utpanna / Kshema / Adhana picks the strongest start from the Mo
   // The three candidates, the strongest marked; the daśās below start from it.
   const rows = visible(page, page.locator('tbody tr[data-variant]').locator('..')).locator('tr[data-variant]');
   await expect(rows).toHaveCount(3);
-  await expect(visible(page, page.getByText(/strongest of the three: (Utpanna|Kshema|Adhana)/))).toBeVisible();
-  await expect(visible(page, page.getByText(/^> vimshottari (utpanna|kshema|adhana)$/i))).toBeVisible();
+  // The Moon of this chart is in the 11th house, which gives Utpanna (Sanjay Rath).
+  await expect(card).toContainText('Vimsottari Utpanna');
+  await expect(visible(page, page.getByText('Moon in house 11 → Utpanna'))).toBeVisible();
+  await expect(visible(page, page.locator('tr[data-variant="utpanna"]'))).toContainText('●');
+  await expect(visible(page, page.getByText(/^> vimshottari utpanna$/i))).toBeVisible();
 
   // Settings can fix the choice.
   await selectWorkspace(page, '⚙');
@@ -614,6 +617,11 @@ test('Vimsottari Utpanna / Kshema / Adhana picks the strongest start from the Mo
   await kshema.click();
   await expect(visible(page, page.getByText(/chosen in Settings: Kshema/))).toBeVisible();
   await expect(visible(page, page.locator('tr[data-variant="kshema"]'))).toContainText('●');
+
+  // The VDS daśā carries the name of U K Jha.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /dasha systems/ })).click();
+  await expect(visible(page, page.getByText('Vimsottari Original (U K Jha)'))).toBeVisible();
 
   expect(errors).toEqual([]);
 });

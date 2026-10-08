@@ -112,7 +112,7 @@ export default function VdsPanel({ planets, ascendant, birthDatetime }: Props) {
   if (!result) {
     return (
       <div className="space-y-2">
-        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; vimsottari original</div>
+        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; vimsottari original (u k jha)</div>
         <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 italic">
           Moon, Sun, Lagna, or birth datetime data missing.
         </div>
@@ -170,7 +170,7 @@ export default function VdsPanel({ planets, ascendant, birthDatetime }: Props) {
     <div className="space-y-3 min-w-0 overflow-hidden">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
-          &gt; vimsottari original
+          &gt; vimsottari original (u k jha)
         </div>
         <button
           onClick={openNow}

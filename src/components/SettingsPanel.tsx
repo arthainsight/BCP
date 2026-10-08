@@ -399,13 +399,13 @@ export default function SettingsPanel(props: Props) {
             <label className="block text-xs font-mono text-zinc-500">
               {t('start from')}
               <select className={`${SELECT} mt-1`} value={dashaSettings.variantChoice ?? 'auto'} onChange={e => updateVariantChoice(e.target.value as VimshottariVariantChoice)}>
-                <option value="auto">{t('the strongest (auto)')}</option>
+                <option value="auto">{t('by the Moon (auto)')}</option>
                 <option value="utpanna">Utpanna ({t('5th nakshatra')})</option>
                 <option value="kshema">Kshema ({t('4th nakshatra')})</option>
                 <option value="adhana">Adhana ({t('8th nakshatra')})</option>
               </select>
               <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">
-                {t('Counted from the Moon, the Vimsottari can start from the lord of the Utpanna, Kshema or Adhana nakshatra. Auto takes the one with the most grahas in the angles from its sign.')}
+                {t('Counted from the Moon, the Vimsottari can start from the lord of the Utpanna, Kshema or Adhana nakshatra. Auto follows the house of the Moon (3 or 11 Utpanna, 2 or 6 Kshema, 8 or 12 Adhana, by Sanjay Rath) and takes the strongest in the other houses.')}
               </span>
             </label>
           </div>

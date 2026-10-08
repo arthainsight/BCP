@@ -25,8 +25,8 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
   vimshottari: ({ planets, birthDatetime }) => (
     <VimshottariPanel planets={planets} birthDatetime={birthDatetime} />
   ),
-  vimshottariVariant: ({ planets, birthDatetime, variantChoice }) => (
-    <VimshottariVariantPanel planets={planets} birthDatetime={birthDatetime} choice={variantChoice} />
+  vimshottariVariant: ({ planets, ascendant, birthDatetime, variantChoice }) => (
+    <VimshottariVariantPanel planets={planets} birthDatetime={birthDatetime} choice={variantChoice} ascendantSign={ascendant.sign} />
   ),
   vds: ({ planets, ascendant, birthDatetime }) => (
     <VdsPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />

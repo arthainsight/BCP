@@ -10,12 +10,16 @@ import { calculateVimshottari, type VimshottariResult } from './vimshottari';
 // fraction of the new nakṣatra is taken as passed as the Moon has passed of its
 // own, which is the Moon's longitude turned forward by that many nakṣatras.
 //
-// Which of the three to use is judged by strength (Sanjay Rath, Vimśottarī and
-// Udu Daśās): the one whose sign has the most grahas in the angles (kendras)
-// from it is the stronger. When these are equal, or the signs stand in
-// kendra to each other, the one the lord of its nakṣatra, Jupiter or Mercury
-// joins or aspects is the stronger. Should these be equal too, Utpanna, Kṣema
-// and Ādhāna are taken in that order.
+// Which of the three to use follows the house of the Moon (Sanjay Rath):
+//   Moon in the 3rd or 11th house  -> Utpanna
+//   Moon in the 2nd or 6th house   -> Kṣema
+//   Moon in the 8th or 12th house  -> Ādhāna
+// For a Moon in any other house there is no rule, so the three are judged by
+// strength: the one whose sign has the most grahas in the angles (kendras) from
+// it is the stronger. When these are equal, or the signs stand in kendra to
+// each other, the one the lord of its nakṣatra, Jupiter or Mercury joins or
+// aspects is the stronger. Should these be equal too, Utpanna, Kṣema and Ādhāna
+// are taken in that order.
 
 export type VimshottariVariant = 'utpanna' | 'kshema' | 'adhana';
 export type VimshottariVariantChoice = 'auto' | VimshottariVariant;
@@ -32,6 +36,13 @@ export const VARIANT_LABELS: Record<VimshottariVariant, string> = {
 export const VARIANT_POSITION: Record<VimshottariVariant, number> = { utpanna: 5, kshema: 4, adhana: 8 };
 
 export const VARIANT_SHORT: Record<VimshottariVariant, string> = { utpanna: 'Utp', kshema: 'Ksh', adhana: 'Adh' };
+
+/** The variant the Moon's house (from the Lagna) calls for; the other houses have none. */
+export const HOUSE_VARIANT: Partial<Record<number, VimshottariVariant>> = {
+  3: 'utpanna', 11: 'utpanna',
+  2: 'kshema', 6: 'kshema',
+  8: 'adhana', 12: 'adhana',
+};
 
 const NAKSHATRA_SIZE = 360 / 27;
 const LORDS = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'] as const;
@@ -86,18 +97,42 @@ export function variantStrengths(moonLongitude: number, planets: VariantPlanet[]
   });
 }
 
-/** The strongest of the three. */
-export function chooseVariant(moonLongitude: number, planets: VariantPlanet[]): VimshottariVariant {
+/** The house of the Moon from the Lagna sign (whole signs), or null without a Lagna. */
+export function moonHouse(moonLongitude: number, ascendantSign?: number): number | null {
+  if (!ascendantSign) return null;
+  const moonSign = Math.floor(normalize(moonLongitude) / 30) + 1;
+  return ((moonSign - ascendantSign + 12) % 12) + 1;
+}
+
+/** The strongest of the three, by the grahas in the angles and then by the lord, Jupiter and Mercury. */
+export function strongestVariant(moonLongitude: number, planets: VariantPlanet[]): VimshottariVariant {
   const strengths = variantStrengths(moonLongitude, planets);
   // Sorting is stable, so the order Utpanna, Kṣema, Ādhāna settles what is still equal.
   const best = [...strengths].sort((a, b) => b.kendraGrahas - a.kendraGrahas || b.supporters - a.supporters)[0];
   return best.variant;
 }
 
+/** How a variant was arrived at: by the Moon's house, by strength where the house has no rule, or by choice. */
+export type VariantBasis = 'house' | 'strength' | 'chosen';
+
+/** The variant to use and why: the Moon's house when it has a rule, else the strongest of the three. */
+export function decideVariant(
+  moonLongitude: number,
+  planets: VariantPlanet[],
+  ascendantSign?: number,
+  choice: VimshottariVariantChoice = 'auto',
+): { variant: VimshottariVariant; basis: VariantBasis; moonHouse: number | null } {
+  const house = moonHouse(moonLongitude, ascendantSign);
+  if (choice !== 'auto') return { variant: choice, basis: 'chosen', moonHouse: house };
+  const byHouse = house ? HOUSE_VARIANT[house] : undefined;
+  if (byHouse) return { variant: byHouse, basis: 'house', moonHouse: house };
+  return { variant: strongestVariant(moonLongitude, planets), basis: 'strength', moonHouse: house };
+}
+
 export interface VimshottariVariantResult extends VimshottariResult {
   variant: VimshottariVariant;
-  /** True when the strength rule picked the variant, false when it was chosen. */
-  automatic: boolean;
+  basis: VariantBasis;
+  moonHouse: number | null;
   strengths: VariantStrength[];
 }
 
@@ -107,10 +142,11 @@ export function calculateVimshottariVariant(
   planets: VariantPlanet[],
   birthDate: Date,
   choice: VimshottariVariantChoice = 'auto',
+  ascendantSign?: number,
 ): VimshottariVariantResult {
-  const variant = choice === 'auto' ? chooseVariant(moonLongitude, planets) : choice;
+  const { variant, basis, moonHouse: house } = decideVariant(moonLongitude, planets, ascendantSign, choice);
   const result = calculateVimshottari(variantLongitude(moonLongitude, variant), birthDate);
-  return { ...result, variant, automatic: choice === 'auto', strengths: variantStrengths(moonLongitude, planets) };
+  return { ...result, variant, basis, moonHouse: house, strengths: variantStrengths(moonLongitude, planets) };
 }
 
 export function isVariantChoice(value: unknown): value is VimshottariVariantChoice {

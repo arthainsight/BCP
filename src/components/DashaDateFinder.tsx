@@ -8,7 +8,7 @@ import { groupDailyMatches, snapshotMatches } from '@/lib/dashaDateFinder';
 import { parseDateTime } from '@/lib/bcp';
 
 type Key = DashaEventSnapshot['key'];
-const KEYS: { key: Key | 'all'; label: string }[] = [{ key: 'all', label: 'All enabled systems' }, { key: 'vimshottari', label: 'Vimsottari' }, { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana' }, { key: 'vds', label: 'Vimsottari Original' }, { key: 'chara', label: 'Chara' }, { key: 'yogini', label: 'Yogini' }, { key: 'ashtottari', label: 'Ashtottari' }, { key: 'kalaChakra', label: 'Kalachakra' }, { key: 'narayana', label: 'Narayana' }, { key: 'moola', label: 'Mula' }, { key: 'sthira', label: 'Sthira' }];
+const KEYS: { key: Key | 'all'; label: string }[] = [{ key: 'all', label: 'All enabled systems' }, { key: 'vimshottari', label: 'Vimsottari' }, { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana' }, { key: 'vds', label: 'Vimsottari Original (U K Jha)' }, { key: 'chara', label: 'Chara' }, { key: 'yogini', label: 'Yogini' }, { key: 'ashtottari', label: 'Ashtottari' }, { key: 'kalaChakra', label: 'Kalachakra' }, { key: 'narayana', label: 'Narayana' }, { key: 'moola', label: 'Mula' }, { key: 'sthira', label: 'Sthira' }];
 const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
 const DAY = 24 * 60 * 60 * 1000;
 const value = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
