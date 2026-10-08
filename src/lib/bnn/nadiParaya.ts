@@ -1,6 +1,26 @@
 import { SIGN_NAMES } from '@/lib/varga/index';
+import type { ParayaSpeed } from '@/types';
 
 export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu';
+
+/** The choices for how Saturn and Rahu (and so Ketu) stay in each sign. */
+export interface ParayaOptions {
+  saturn: ParayaSpeed;
+  rahu: ParayaSpeed;
+}
+
+export const DEFAULT_PARAYA_OPTIONS: ParayaOptions = { saturn: 'alternating', rahu: 'alternating' };
+
+/**
+ * Years spent in each sign in turn. Jupiter stays a year; Saturn alternates 3
+ * and 2 years or stays 2.5; Rahu alternates 2 and 1 or stays 1.5. Either way a
+ * round takes 12, 30 and 18 years.
+ */
+export function parayaDurations(body: Exclude<ParayaBody, 'Ketu'>, options: ParayaOptions = DEFAULT_PARAYA_OPTIONS): readonly number[] {
+  if (body === 'Jupiter') return [1];
+  if (body === 'Saturn') return options.saturn === 'even' ? [2.5] : [3, 2];
+  return options.rahu === 'even' ? [1.5] : [2, 1];
+}
 
 export type NadiParayaHouseActivation = {
   body: ParayaBody;
@@ -88,13 +108,14 @@ export function calculateNadiParaya(params: {
   natalRahuSignIndex: number;
   jupiterRetrograde?: boolean;
   saturnRetrograde?: boolean;
+  options?: ParayaOptions;
 }): NadiParayaResult {
   const ageYears = Math.max(0, params.ageYears);
   const jupiter = periodAtAge({
     body: 'Jupiter',
     natalSignIndex: params.natalJupiterSignIndex,
     ageYears,
-    durations: [1],
+    durations: parayaDurations('Jupiter', params.options),
     direction: 1,
     retrogradeStartShift: params.jupiterRetrograde,
   });
@@ -102,7 +123,7 @@ export function calculateNadiParaya(params: {
     body: 'Saturn',
     natalSignIndex: params.natalSaturnSignIndex,
     ageYears,
-    durations: [3, 2],
+    durations: parayaDurations('Saturn', params.options),
     direction: 1,
     retrogradeStartShift: params.saturnRetrograde,
   });
@@ -110,7 +131,7 @@ export function calculateNadiParaya(params: {
     body: 'Rahu',
     natalSignIndex: params.natalRahuSignIndex,
     ageYears,
-    durations: [2, 1],
+    durations: parayaDurations('Rahu', params.options),
     direction: -1,
   });
   const ketuSignIndex = normalizeSign(rahu.signIndex + 6);
@@ -129,12 +150,9 @@ export function buildParayaTimeline(params: {
   natalSignIndex: number;
   maxAge: number;
   retrograde?: boolean;
+  options?: ParayaOptions;
 }): ParayaPeriod[] {
-  const config = params.body === 'Jupiter'
-    ? { durations: [1] as const, direction: 1 as const }
-    : params.body === 'Saturn'
-      ? { durations: [3, 2] as const, direction: 1 as const }
-      : { durations: [2, 1] as const, direction: -1 as const };
+  const config = { durations: parayaDurations(params.body, params.options), direction: params.body === 'Rahu' ? -1 as const : 1 as const };
   const periods: ParayaPeriod[] = [];
   let age = 0;
   while (age < params.maxAge) {
@@ -162,6 +180,7 @@ export function findParayaAgesForPosition(params: {
   jupiterRetrograde?: boolean;
   saturnRetrograde?: boolean;
   maxAge?: number;
+  options?: ParayaOptions;
 }): ParayaPositionMatch[] {
   const maxAge = params.maxAge ?? 120;
   const targetSignIndex = normalizeSign(params.targetSignIndex);
@@ -183,6 +202,7 @@ export function findParayaAgesForPosition(params: {
     natalSignIndex,
     maxAge,
     retrograde,
+    options: params.options,
   });
   const backward = sourceBody === 'Rahu';
 

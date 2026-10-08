@@ -235,6 +235,31 @@ export default function SettingsPanel(props: Props) {
                 {t('Minute mode compares the minute–second remainder; Rahu is measured in reverse.')}
               </div>
             </div>
+            <div>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('paraya Saturn')}</label>
+              <select
+                className={SELECT}
+                value={calculationSettings.parayaSaturn ?? 'alternating'}
+                onChange={(e) => onUpdateCalculationSettings({ parayaSaturn: e.target.value as 'alternating' | 'even' })}
+              >
+                <option value="alternating">{t('3 / 2 years alternating')}</option>
+                <option value="even">{t('2.5 years per sign')}</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('paraya Rahu / Ketu')}</label>
+              <select
+                className={SELECT}
+                value={calculationSettings.parayaRahu ?? 'alternating'}
+                onChange={(e) => onUpdateCalculationSettings({ parayaRahu: e.target.value as 'alternating' | 'even' })}
+              >
+                <option value="alternating">{t('2 / 1 years alternating')}</option>
+                <option value="even">{t('1.5 years per sign')}</option>
+              </select>
+              <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                {t('How long the Paraya graha stays in each sign. Either way a round takes 30 years for Saturn and 18 for Rahu; the chart and the Paraya hits follow the choice.')}
+              </div>
+            </div>
           </div>
 
           <SubSection label="chart style">

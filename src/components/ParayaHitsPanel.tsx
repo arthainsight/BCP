@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { ChartData } from '@/types';
+import type { CalculationSettings, ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { findParayaHits } from '@/lib/bnn/parayaHits';
@@ -12,6 +12,7 @@ type Props = {
   chart: ChartData;
   birthDatetime: string;
   targetDate: string;
+  calculationSettings?: CalculationSettings;
   /** Moves the target moment (DD.MM.YYYY HH.MM.SS). */
   onSetTarget?: (value: string) => void;
 };
@@ -38,10 +39,13 @@ const formatMoment = (time: number) => {
  * through the signs, reach each natal graha or the ascendant, and the same
  * degree in its 5th and 9th sign. Worked out in the browser from the age.
  */
-export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, onSetTarget }: Props) {
+export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, calculationSettings, onSetTarget }: Props) {
   const t = useT();
   const [years, setYears] = useState(1);
   const [showAll, setShowAll] = useState(false);
+
+  const saturn = calculationSettings?.parayaSaturn ?? 'alternating';
+  const rahu = calculationSettings?.parayaRahu ?? 'alternating';
 
   const hits = useMemo(() => {
     const birth = parseDateTime(birthDatetime);
@@ -53,8 +57,9 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, onSe
       fromTime: from.getTime(),
       toTime: from.getTime() + years * YEAR_MS,
       relations: HIT_RELATIONS,
+      options: { saturn, rahu },
     });
-  }, [chart, birthDatetime, targetDate, years]);
+  }, [chart, birthDatetime, targetDate, years, saturn, rahu]);
 
   const rows = showAll ? hits : hits.slice(0, FIRST_ROWS);
   const chip = (on: boolean) =>

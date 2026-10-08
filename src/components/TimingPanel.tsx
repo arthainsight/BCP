@@ -117,6 +117,7 @@ export default function TimingPanel({
               chart={chart}
               birthDatetime={birthDatetime}
               targetDate={targetDate ?? ''}
+              calculationSettings={calculationSettings}
               onSetTarget={onSetTransitDatetime}
             />
           </div>

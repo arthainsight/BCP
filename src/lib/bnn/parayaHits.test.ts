@@ -50,25 +50,36 @@ assert.deepEqual(findParayaHits({ chart, birthTime: birth, fromTime: birth + YEA
 
 // --- Round trip: at every hit the chart's own Paraya calculation stands on the natal degree ---
 // (Retrograde natal Jupiter and Saturn start their walk one sign back, so both cases are covered.)
-for (const retro of [false, true]) {
+const optionSets = [
+  { saturn: 'alternating', rahu: 'alternating' },
+  { saturn: 'even', rahu: 'alternating' },
+  { saturn: 'alternating', rahu: 'even' },
+  { saturn: 'even', rahu: 'even' },
+] as const;
+for (const options of optionSets) for (const retro of [false, true]) {
   const natalChart = {
     ascendant: { sign: 1, degree: 2, longitude: 2 },
     planets: [planet('Jupiter', 1, 5, retro), planet('Saturn', 6, 10, retro), planet('Rahu', 4, 20), planet('Sun', 1, 15), planet('Moon', 9, 27.5)],
   } as unknown as ChartData;
-  const everything = findParayaHits({ chart: natalChart, birthTime: birth, fromTime: birth, toTime: birth + 40 * YEAR, relations: [1, 5, 9] });
+  const everything = findParayaHits({ chart: natalChart, birthTime: birth, fromTime: birth, toTime: birth + 40 * YEAR, relations: [1, 5, 9], options });
   assert.ok(everything.length > 40, 'a good number of hits in forty years');
   for (const hit of everything) {
     const point = natalChart.planets.find(p => p.name === hit.natal) ?? { sign: 1, degree: 2 };
     const paraya = calculateNadiParaya({
       ageYears: hit.ageYears,
       natalJupiterSignIndex: 0, natalSaturnSignIndex: 5, natalRahuSignIndex: 3,
-      jupiterRetrograde: retro, saturnRetrograde: retro,
+      jupiterRetrograde: retro, saturnRetrograde: retro, options,
     });
     const period = { Jupiter: paraya.jupiter, Saturn: paraya.saturn, Rahu: paraya.rahu, Ketu: paraya.ketu }[hit.body];
     const wantedSign = (point.sign - 1 + RELATION_OFFSET[hit.relation] / 30) % 12;
-    assert.equal(period.signIndex, wantedSign, `${hit.body} → ${hit.natal} (${hit.relation}) is in the wanted sign`);
+    assert.equal(period.signIndex, wantedSign, `${hit.body} → ${hit.natal} (${hit.relation}) is in the wanted sign (${options.saturn}/${options.rahu})`);
     assert.ok(Math.abs(period.degree - point.degree) < 0.05, `${hit.body} → ${hit.natal} (${hit.relation}) is at the natal degree`);
   }
 }
+
+// --- The choice changes the dates: Saturn reaches its second sign at 3 years, or at 2.5 --------------
+const saturnToSun = (saturn: 'alternating' | 'even') => findParayaHits({ ...window(5), relations: [1, 5, 9], options: { saturn, rahu: 'alternating' } })
+  .filter(hit => hit.body === 'Saturn').map(hit => hit.time);
+assert.notDeepEqual(saturnToSun('alternating'), saturnToSun('even'));
 
 console.log('Paraya hit tests passed');

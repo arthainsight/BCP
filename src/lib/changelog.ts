@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.45',
+    date: '2026-10-08',
+    title: 'Paraya speed options',
+    changes: [
+      'Settings has two new choices for the Paraya: Saturn either 3 / 2 years alternating (as before) or 2.5 years in every sign, and Rahu / Ketu either 2 / 1 years alternating (as before) or 1.5 years in every sign. A round still takes 30 years for Saturn and 18 for Rahu.',
+      'The choices apply to the Paraya houses on the chart and to the Paraya hits.',
+      'Updated the application version to v2.45.',
+    ],
+  },
+  {
     version: 'v2.44',
     date: '2026-10-08',
     title: 'No 1 / 5 / 9 buttons',
