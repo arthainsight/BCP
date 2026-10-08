@@ -149,6 +149,31 @@ test('divisional charts stay on screen next to the daśā panel on a wide screen
   expect(errors).toEqual([]);
 });
 
+test('on a phone the chart stays pinned at the top while the daśās scroll', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'the pinned chart is for the single-column phone layout');
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+
+  const pinned = page.getByRole('region', { name: 'pinned chart' });
+  await expect(pinned.locator('svg[aria-label="North Indian Jyotish chart"]')).toBeVisible();
+
+  // Scroll the daśā list: the chart stays at the top of the screen, just below the app's top bar.
+  await page.evaluate(() => window.scrollTo(0, 500));
+  const barBottom = async () => (await page.locator('header').locator('visible=true').first().boundingBox())?.height ?? 0;
+  await expect.poll(async () => Math.abs(((await pinned.boundingBox())?.y ?? 999) - (await barBottom()))).toBeLessThan(3);
+  await expect(visible(page, page.getByRole('button', { name: /^Vimsottari/ }))).toBeVisible();
+
+  // It folds away, and the daśās keep their place.
+  await pinned.getByRole('button', { name: 'hide chart' }).click();
+  await expect(pinned.locator('svg')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Systems lists the daśā systems closed and opens one on click', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

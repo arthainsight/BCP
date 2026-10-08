@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v2.39',
+    date: '2026-10-08',
+    title: 'Pinned chart on the phone',
+    changes: [
+      'On a phone, TIMING keeps the chart at the top of the screen while the daśās scroll underneath. It shows the same D1 / D9 / D10 (or other divisional) charts as the main chart, can be changed with the same buttons, and folds away with the ▲ button.',
+      'Updated the application version to v2.39.',
+    ],
+  },
+  {
     version: 'v2.38',
     date: '2026-10-08',
     title: 'Divisional charts next to the daśās',
