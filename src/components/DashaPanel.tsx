@@ -45,12 +45,13 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
   };
   const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
   const rasiOptions = { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions };
+  const variantChoice = dashaSettings.variantChoice ?? DEFAULT_DASHA_SETTINGS.variantChoice;
   const summaries = useMemo(() => {
     const birthDate = parseDateTime(birthDatetime);
     if (!birthDate || view === 'finder' || view === 'timeline') return {} as Record<string, DashaEventSnapshot>;
     const eventDate = (targetDate && parseTargetDateString(targetDate)) || new Date();
     return Object.fromEntries(
-      calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions }).map(snapshot => [snapshot.key, snapshot]),
+      calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice }).map(snapshot => [snapshot.key, snapshot]),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthDatetime, targetDate, planets, ascendant, dashaSettings, view]);
@@ -64,9 +65,9 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
     );
   }
 
-  const ctx: DashaRendererContext = { bcp, planets, ascendant, birthDatetime, charaOptions, rasiOptions };
-  if (view === 'finder') return <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />;
-  if (view === 'timeline') return <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />;
+  const ctx: DashaRendererContext = { bcp, planets, ascendant, birthDatetime, charaOptions, rasiOptions, variantChoice };
+  if (view === 'finder') return <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} variantChoice={variantChoice} />;
+  if (view === 'timeline') return <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} variantChoice={variantChoice} />;
 
   const today = (targetDate && parseTargetDateString(targetDate)) || new Date();
 
@@ -90,8 +91,8 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
           ))}
         </div>
       )}
-      {view === 'all' && <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />}
-      {view === 'all' && <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />}
+      {view === 'all' && <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} variantChoice={variantChoice} />}
+      {view === 'all' && <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} variantChoice={variantChoice} />}
       {/* Side by side from the sm breakpoint up; one under the other on a phone. */}
       <div
         className="grid grid-cols-1 items-start gap-3 sm:[grid-template-columns:repeat(var(--columns),minmax(0,1fr))]"
@@ -101,7 +102,7 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
           <DashaSystemCard
             key={d.key}
             id={`dasha-${d.key}`}
-            title={d.label}
+            title={d.key === 'vimshottariVariant' ? summaries[d.key]?.label ?? d.label : d.label}
             summary={translate(runningPeriod(summaries[d.key]) ?? '') || undefined}
             flag={mdChangeFlag(summaries[d.key], today, t('MD changes'))}
             note={notes[d.key] ?? ''}

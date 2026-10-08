@@ -51,7 +51,7 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
     const enabled = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
     const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
     const rasiOptions = { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions };
-    return calculateDashaEventSnapshots({ eventDate, birthDate, planets: chart.planets, ascendant: chart.ascendant, charaOptions, rasiOptions })
+    return calculateDashaEventSnapshots({ eventDate, birthDate, planets: chart.planets, ascendant: chart.ascendant, charaOptions, rasiOptions, variantChoice: dashaSettings.variantChoice })
       .filter(snapshot => enabled[snapshot.key as keyof typeof enabled]);
   }, [birthDatetime, targetDate, dashaSettings, chart]);
 

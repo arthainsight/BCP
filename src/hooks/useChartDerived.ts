@@ -6,6 +6,7 @@ import { parseDateTime } from '@/lib/bcp';
 import { calculateBnnHouses, calculateParayaHouses } from '@/lib/bnn/bnnHouses';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { calculateCharaKarakas, type CharaKaraka } from '@/lib/karakas';
+import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { GRAHA_DASHA_SYSTEMS, runningGrahaDashaLords, type GrahaDashaSystem } from '@/lib/dashaEvents';
 
 /** Values worked out from the calculated chart and the target date. */
@@ -15,6 +16,7 @@ export function useChartDerived(
   targetDate: string,
   calculationSettings: CalculationSettings,
   dashaMarkSystem: GrahaDashaSystem = 'vimshottari',
+  variantChoice: VimshottariVariantChoice = 'auto',
 ) {
   const charaKarakas: CharaKaraka[] = useMemo(
     () => (chartData ? calculateCharaKarakas(chartData.planets, calculationSettings.charaKarakaRankMode, calculationSettings.charaKarakaCount) : []),
@@ -58,9 +60,9 @@ export function useChartDerived(
     const target = parseTargetDateString(targetDate);
     if (!chartData || !birth || !target) return null;
     const system = GRAHA_DASHA_SYSTEMS.find(s => s.key === dashaMarkSystem) ?? GRAHA_DASHA_SYSTEMS[0];
-    const lords = runningGrahaDashaLords(system.key, { eventDate: target, birthDate: birth, planets: chartData.planets, ascendant: chartData.ascendant });
+    const lords = runningGrahaDashaLords(system.key, { eventDate: target, birthDate: birth, planets: chartData.planets, ascendant: chartData.ascendant, variantChoice });
     return lords ? { ...lords, label: system.short } : null;
-  }, [chartData, birthDatetime, targetDate, dashaMarkSystem]);
+  }, [chartData, birthDatetime, targetDate, dashaMarkSystem, variantChoice]);
 
   return { karakaByPlanet, nakshatraAdjust, effectiveBnnHouses, effectiveNadiParayaHouses, dashaLords };
 }

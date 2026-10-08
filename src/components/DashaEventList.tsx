@@ -37,7 +37,7 @@ type StoredEvent = StoredDashaEvent;
 
 const CATEGORY_LABELS = DASHA_EVENT_CATEGORY_LABELS;
 const VARGAS = DASHA_EVENT_VARGAS;
-const KEY_TO_SETTING: Record<SnapshotKey, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
+const KEY_TO_SETTING: Record<SnapshotKey, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
 
 function today(): string { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 function parseEventDate(value: string): Date | null { const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value); if (!match) return null; const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12); return Number.isNaN(date.getTime()) ? null : date; }
@@ -69,7 +69,7 @@ export default function DashaEventList({ planets, ascendant, birthDatetime, dash
   useEffect(() => { const select = (event: Event) => setDate((event as CustomEvent<string>).detail); window.addEventListener('bcp:dasha-date-selected', select); return () => window.removeEventListener('bcp:dasha-date-selected', select); }, []);
 
   const visibleKeys = enabledKeys.filter(key => !hiddenKeys.includes(key));
-  function snapshotsFor(item: StoredEvent) { const eventDate = parseEventDate(item.date); return birthDate && eventDate ? calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions }).filter(snapshot => visibleKeys.includes(snapshot.key)) : []; }
+  function snapshotsFor(item: StoredEvent) { const eventDate = parseEventDate(item.date); return birthDate && eventDate ? calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice: dashaSettings.variantChoice }).filter(snapshot => visibleKeys.includes(snapshot.key)) : []; }
   function addEvent(event: FormEvent) { event.preventDefault(); if (!name.trim() || !parseEventDate(date)) return; setEvents(current => [...current, { id: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`, name: name.trim(), date, category, varga, notes: '', tags: [], significance: 3 }].sort((a, b) => a.date.localeCompare(b.date))); setName(''); }
   function updateEvent(id: string, update: Partial<StoredEvent>) { setEvents(current => current.map(item => item.id === id ? { ...item, ...update } : item)); }
   function toggleKey(key: SnapshotKey) { setHiddenKeys(current => current.includes(key) ? current.filter(item => item !== key) : [...current, key]); }

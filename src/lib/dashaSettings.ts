@@ -1,4 +1,5 @@
 import { DEFAULT_DASHA_SETTINGS, type DashaSettings } from '@/types';
+import { isVariantChoice } from '@/lib/vimshottariVariants';
 
 // Handles both the new { dashas: {...} } format and the old
 // { showBcp, showVimshottari, dashaSystem } format from localStorage / saved charts.
@@ -29,6 +30,7 @@ export function migrateDashaSettings(raw: unknown): DashaSettings {
       rasiOptions: obj.rasiOptions && typeof obj.rasiOptions === 'object'
         ? { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...(obj.rasiOptions as DashaSettings['rasiOptions']) }
         : DEFAULT_DASHA_SETTINGS.rasiOptions,
+      variantChoice: isVariantChoice(obj.variantChoice) ? obj.variantChoice : DEFAULT_DASHA_SETTINGS.variantChoice,
     };
   }
 

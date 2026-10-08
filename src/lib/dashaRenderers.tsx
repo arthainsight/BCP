@@ -3,6 +3,8 @@ import { BcpResult, PlanetData, CharaOptions, RasiDashaOptions } from '@/types';
 import { DashaRendererKey } from './dashaRegistry';
 import VimshottariPanel from '@/components/VimshottariPanel';
 import VdsPanel from '@/components/VdsPanel';
+import VimshottariVariantPanel from '@/components/VimshottariVariantPanel';
+import type { VimshottariVariantChoice } from './vimshottariVariants';
 import CharaCleanPanel from '@/components/CharaCleanPanel';
 import KalachakraPanel from '@/components/KalachakraPanel';
 import YoginiPanel from '@/components/YoginiPanel';
@@ -16,11 +18,15 @@ export type DashaRendererContext = {
   birthDatetime: string;
   charaOptions: CharaOptions;
   rasiOptions: RasiDashaOptions;
+  variantChoice: VimshottariVariantChoice;
 };
 
 const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNode> = {
   vimshottari: ({ planets, birthDatetime }) => (
     <VimshottariPanel planets={planets} birthDatetime={birthDatetime} />
+  ),
+  vimshottariVariant: ({ planets, birthDatetime, variantChoice }) => (
+    <VimshottariVariantPanel planets={planets} birthDatetime={birthDatetime} choice={variantChoice} />
   ),
   vds: ({ planets, ascendant, birthDatetime }) => (
     <VdsPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />

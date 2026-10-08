@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { CharaOptions, DashaSettings, PlanetData, RasiDashaOptions } from '@/types';
+import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { calculateDashaEventSnapshots } from '@/lib/dashaEvents';
 import { parseDateTime } from '@/lib/bcp';
 
@@ -12,11 +13,12 @@ interface Props {
   normalizedDashas: DashaSettings['dashas'];
   charaOptions: CharaOptions;
   rasiOptions: RasiDashaOptions;
+  variantChoice?: VimshottariVariantChoice;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const KEY_TO_SETTING: Record<string, keyof DashaSettings['dashas']> = {
-  vimshottari: 'vimshottari', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari',
+  vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari',
   kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira',
 };
 const COLORS = ['bg-emerald-500', 'bg-cyan-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500', 'bg-lime-600', 'bg-fuchsia-500', 'bg-orange-500'];
@@ -25,12 +27,12 @@ function dateValue(date: Date) { return `${date.getFullYear()}-${String(date.get
 function parseDate(value: string) { const [y, m, d] = value.split('-').map(Number); return new Date(y, m - 1, d, 12); }
 function fmt(date: Date) { return `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`; }
 
-export default function DashaTimeline({ planets, ascendant, birthDatetime, normalizedDashas, charaOptions, rasiOptions }: Props) {
+export default function DashaTimeline({ planets, ascendant, birthDatetime, normalizedDashas, charaOptions, rasiOptions, variantChoice }: Props) {
   const [selectedValue, setSelectedValue] = useState(() => dateValue(new Date()));
   useEffect(() => { const select = (event: Event) => setSelectedValue((event as CustomEvent<string>).detail); window.addEventListener('bcp:dasha-date-selected', select); return () => window.removeEventListener('bcp:dasha-date-selected', select); }, []);
   const birthDate = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const selectedDate = useMemo(() => parseDate(selectedValue), [selectedValue]);
-  const snapshots = useMemo(() => birthDate ? calculateDashaEventSnapshots({ eventDate: selectedDate, birthDate, planets, ascendant, charaOptions, rasiOptions }) : [], [birthDate, selectedDate, planets, ascendant, charaOptions, rasiOptions]);
+  const snapshots = useMemo(() => birthDate ? calculateDashaEventSnapshots({ eventDate: selectedDate, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice }) : [], [birthDate, selectedDate, planets, ascendant, charaOptions, rasiOptions, variantChoice]);
   const visible = snapshots.filter(snapshot => normalizedDashas[KEY_TO_SETTING[snapshot.key]]);
   const windowStart = new Date(selectedDate.getTime() - 10 * 365.25 * DAY_MS);
   const windowEnd = new Date(selectedDate.getTime() + 10 * 365.25 * DAY_MS);

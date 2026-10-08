@@ -297,7 +297,7 @@ test('Systems stand side by side in columns, and each daśā keeps a note', asyn
     const columns = visible(page, page.getByText('columns', { exact: true })).locator('..');
     await columns.getByRole('button', { name: '2', exact: true }).click();
     const first = await visible(page, page.getByRole('button', { name: /^Vimsottari/ })).boundingBox();
-    const second = await visible(page, page.getByRole('button', { name: /^Yogin/ })).boundingBox();
+    const second = await visible(page, page.getByRole('button', { name: /^Vimsottari (Utpanna|Kshema|Adhana)/ })).boundingBox();
     expect(Math.abs((first?.y ?? 0) - (second?.y ?? 99))).toBeLessThan(4);
     expect((second?.x ?? 0)).toBeGreaterThan((first?.x ?? 0) + 50);
   }
@@ -327,7 +327,7 @@ test('the Dasha Slider and the Yearly table show the running daśās through tim
   await visible(page, page.getByRole('button', { name: 'Yearly', exact: true })).click();
   const yearly = visible(page, page.getByRole('region', { name: 'yearly dashas' }));
   await expect(yearly.locator('tbody tr')).toHaveCount(21);
-  await expect(yearly.locator('thead th', { hasText: 'Vimsottari' })).toBeVisible();
+  await expect(yearly.locator('thead th', { hasText: /^Vimsottari$/ })).toBeVisible();
   await expect(yearly.locator('td.font-bold').first()).toBeVisible();
   await yearly.getByRole('button', { name: '+10 yr' }).click();
   await expect(yearly.locator('tbody tr').first()).toContainText('2026');
@@ -557,6 +557,63 @@ test('the chara karakas can be seven or eight, ranked by degrees or minutes', as
   await expect.poll(chartText).not.toMatch(/PiK/);
   expect(await chartText()).toMatch(/AK/);
   expect(await chartText()).toMatch(/DK/);
+
+  expect(errors).toEqual([]);
+});
+
+test('the dasha lords on the chart name their system, which the ··· menu changes', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const northChart = () => visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
+  // The hover text of a lord's house names the daśā system the lords come from.
+  await expect(northChart().locator('title', { hasText: 'Mahadasha lord' })).toContainText('Vimś');
+
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByLabel('dasha lords from')).selectOption('vds');
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect(northChart().locator('title', { hasText: 'Mahadasha lord' })).toContainText('VDS');
+
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByLabel('dasha lords from')).selectOption('vimshottariVariant');
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect(northChart().locator('title', { hasText: 'Mahadasha lord' })).toContainText('Utp/Ksh/Adh');
+
+  expect(errors).toEqual([]);
+});
+
+test('Vimsottari Utpanna / Kshema / Adhana picks the strongest start from the Moon, or the one chosen in Settings', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+
+  const card = visible(page, page.getByRole('button', { name: /^Vimsottari (Utpanna|Kshema|Adhana).*[▶▼]$/ }));
+  await expect(card).toHaveAttribute('aria-expanded', 'false');
+  await card.click();
+  await expect(card).toHaveAttribute('aria-expanded', 'true');
+
+  // The three candidates, the strongest marked; the daśās below start from it.
+  const rows = visible(page, page.locator('tbody tr[data-variant]').locator('..')).locator('tr[data-variant]');
+  await expect(rows).toHaveCount(3);
+  await expect(visible(page, page.getByText(/strongest of the three: (Utpanna|Kshema|Adhana)/))).toBeVisible();
+  await expect(visible(page, page.getByText(/^> vimshottari (utpanna|kshema|adhana)$/i))).toBeVisible();
+
+  // Settings can fix the choice.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /dasha methods/ })).click();
+  await visible(page, page.locator('select', { has: page.getByRole('option', { name: 'Kshema (4th nakshatra)' }) })).selectOption('kshema');
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  const kshema = visible(page, page.getByRole('button', { name: /^Vimsottari Kshema.*[▶▼]$/ }));
+  await kshema.click();
+  await expect(visible(page, page.getByText(/chosen in Settings: Kshema/))).toBeVisible();
+  await expect(visible(page, page.locator('tr[data-variant="kshema"]'))).toContainText('●');
 
   expect(errors).toEqual([]);
 });

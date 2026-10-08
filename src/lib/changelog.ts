@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.54',
+    date: '2026-10-08',
+    title: 'Vimsottari Utpanna / Kshema / Adhana',
+    changes: [
+      'New daśā system, Vimsottari Utpanna / Kshema / Adhana, in TIMING and everywhere the daśā systems are listed (Systems, Slider, Yearly, Event List, Summary, the date finder and the timeline). It starts the Vimsottari from the lord of the 5th (Utpanna), 4th (Kshema) or 8th (Adhana) nakshatra counted from the Moon’s, with the balance taken from the Moon’s own longitude.',
+      'The system picks the start from the Moon: the one of the three whose sign has the most grahas in the angles is the strongest; ties go to the one the lord of its nakshatra, Jupiter or Mercury joins or aspects, then to Utpanna, Kshema, Adhana in that order. The card shows the three candidates with their nakshatra, lord and strength, and marks the one in use.',
+      'Settings → dasha methods has a start from choice: the strongest (auto), or Utpanna, Kshema or Adhana fixed.',
+      'The daśā lords on the charts (ᴹ ᴬ marks and the dasha houses) can come from the new system too. The ··· menu of the chart now has a dasha lords from choice, and hovering a lord’s house names the system the lords come from.',
+      'Updated the application version to v2.54.',
+    ],
+  },
+  {
     version: 'v2.53',
     date: '2026-10-08',
     title: 'Upagrahas, Karakamsa and the pada table',

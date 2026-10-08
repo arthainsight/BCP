@@ -40,8 +40,8 @@ export default function DashaSlider({ planets, ascendant, birthDatetime, dashaSe
   const date = useMemo(() => (birth ? new Date(birth.getTime() + shownDays * DAY_MS) : null), [birth, shownDays]);
   const snapshots = useMemo(() => {
     if (!birth || !date) return [];
-    const { charaOptions, rasiOptions, enabled } = dashaSnapshotOptions(dashaSettings);
-    return enabledSnapshots(calculateDashaEventSnapshots({ eventDate: date, birthDate: birth, planets, ascendant, charaOptions, rasiOptions }), enabled);
+    const { charaOptions, rasiOptions, variantChoice, enabled } = dashaSnapshotOptions(dashaSettings);
+    return enabledSnapshots(calculateDashaEventSnapshots({ eventDate: date, birthDate: birth, planets, ascendant, charaOptions, rasiOptions, variantChoice }), enabled);
   }, [birth, date, dashaSettings, planets, ascendant]);
 
   const step = (delta: number) => setDays(current => Math.min(maxDays, Math.max(0, current + delta)));

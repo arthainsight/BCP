@@ -63,8 +63,8 @@ export function dashaHouseBorders(lords: DashaLordMarks | null | undefined, lord
   if (!lords || lords.houses === false) return [];
   const mode = isDark ? 'dark' : 'light';
   const borders: { key: 'md' | 'ad'; color: string; title: string }[] = [];
-  if (lordsHere(lords.md)) borders.push({ key: 'md', color: DASHA_HOUSE_COLORS.md[mode], title: `Mahadasha lord ${lords.md}` });
-  if (lordsHere(lords.ad)) borders.push({ key: 'ad', color: DASHA_HOUSE_COLORS.ad[mode], title: `Antardasha lord ${lords.ad}` });
+  if (lordsHere(lords.md)) borders.push({ key: 'md', color: DASHA_HOUSE_COLORS.md[mode], title: `Mahadasha lord ${lords.md}${lords.label ? ` · ${lords.label}` : ''}` });
+  if (lordsHere(lords.ad)) borders.push({ key: 'ad', color: DASHA_HOUSE_COLORS.ad[mode], title: `Antardasha lord ${lords.ad}${lords.label ? ` · ${lords.label}` : ''}` });
   return borders;
 }
 

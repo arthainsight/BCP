@@ -1,4 +1,5 @@
 import type { CharaOptions, DashaSettings, RasiDashaOptions } from '@/types';
+import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { DEFAULT_DASHA_SETTINGS } from '@/types';
 import type { DashaEventSnapshot } from '@/lib/dashaEvents';
 
@@ -6,11 +7,13 @@ import type { DashaEventSnapshot } from '@/lib/dashaEvents';
 export function dashaSnapshotOptions(dashaSettings: DashaSettings): {
   charaOptions: CharaOptions;
   rasiOptions: RasiDashaOptions;
+  variantChoice: VimshottariVariantChoice;
   enabled: DashaSettings['dashas'];
 } {
   return {
     charaOptions: dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions,
     rasiOptions: { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions },
+    variantChoice: dashaSettings.variantChoice ?? DEFAULT_DASHA_SETTINGS.variantChoice,
     enabled: { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas },
   };
 }

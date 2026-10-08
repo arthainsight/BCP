@@ -6,6 +6,7 @@ import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
 import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
+import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
 import BackupPanel from './BackupPanel';
@@ -117,6 +118,10 @@ export default function SettingsPanel(props: Props) {
 
   const updateCharaOption = <K extends keyof CharaOptions,>(key: K, value: CharaOptions[K]) => {
     saveDashaSettings({ ...dashaSettings, dashas: normalizedDashas, charaOptions: { ...charaOptions, [key]: value }, rasiOptions });
+  };
+
+  const updateVariantChoice = (variantChoice: VimshottariVariantChoice) => {
+    saveDashaSettings({ ...dashaSettings, dashas: normalizedDashas, charaOptions, rasiOptions, variantChoice });
   };
 
   const updateRasiOption = <K extends keyof RasiDashaOptions,>(key: K, value: RasiDashaOptions[K]) => {
@@ -389,6 +394,21 @@ export default function SettingsPanel(props: Props) {
       <Section label="dasha methods" open={methodsOpen} onToggle={() => setMethodsOpen(v => !v)}>
         <div className="space-y-4">
           <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">Method choices update Dasha panels, the shared timeline and Event List together.</p>
+          <div className="space-y-2">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{t('Vimsottari Utpanna / Kshema / Adhana')}</div>
+            <label className="block text-xs font-mono text-zinc-500">
+              {t('start from')}
+              <select className={`${SELECT} mt-1`} value={dashaSettings.variantChoice ?? 'auto'} onChange={e => updateVariantChoice(e.target.value as VimshottariVariantChoice)}>
+                <option value="auto">{t('the strongest (auto)')}</option>
+                <option value="utpanna">Utpanna ({t('5th nakshatra')})</option>
+                <option value="kshema">Kshema ({t('4th nakshatra')})</option>
+                <option value="adhana">Adhana ({t('8th nakshatra')})</option>
+              </select>
+              <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">
+                {t('Counted from the Moon, the Vimsottari can start from the lord of the Utpanna, Kshema or Adhana nakshatra. Auto takes the one with the most grahas in the angles from its sign.')}
+              </span>
+            </label>
+          </div>
           <div className="space-y-2">
             <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">Chara Dasha</div>
             <label className="block text-xs font-mono text-zinc-500">Start sign<select className={`${SELECT} mt-1`} value={charaOptions.start} onChange={e => updateCharaOption('start', e.target.value as CharaOptions['start'])}><option value="lagna">Lagna</option><option value="ak">Atmakaraka</option></select></label>
