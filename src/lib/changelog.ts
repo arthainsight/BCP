@@ -1,5 +1,36 @@
 export const CHANGELOG = [
   {
+    version: 'v2.53',
+    date: '2026-10-08',
+    title: 'Upagrahas, Karakamsa and the pada table',
+    changes: [
+      'Special Sphutas in ANALYSIS now also lists the upagrahas: Gulika and Maandi (the Lagna rising in Saturn’s part of the day or night) and the Sun-based Dhuma, Vyatipata, Parivesha, Indrachapa and Upaketu, each with its sign, longitude, house, nakshatra and pada.',
+      'Traditions take the Lagna at different moments of Saturn’s part, so Gulika and Maandi each have a choice of the beginning, the middle or the end of the part (Gulika starts at the beginning and Maandi at the middle).',
+      'New Jaimini points: Karakamsa (the sign of the Atmakaraka in the Navamsa, read from the Lagna) and Svamsa (the same sign read in the Navamsa chart), following the chosen karaka scheme, and a table of the Arudha padas AL … AL12 (AL12 marked UL) with their sign, degree and the house they fall in.',
+      'Updated the application version to v2.53.',
+    ],
+  },
+  {
+    version: 'v2.52',
+    date: '2026-10-08',
+    title: 'Dasha houses on the charts',
+    changes: [
+      'The houses of the running mahadasha and antardasha lords get a coloured border on the North and South charts: cyan for the mahadasha lord’s house and pink for the antardasha lord’s house (hover for the lord). Before, only the small ᴹ and ᴬ marks on the planets showed them.',
+      'The borders are a layer of their own, dasha houses, switched on and off in the ··· menu of the chart or in Settings, separately from the dasha lords marks. The Vargas grid and the pinned chart follow the same switches.',
+      'Updated the application version to v2.52.',
+    ],
+  },
+  {
+    version: 'v2.51',
+    date: '2026-10-08',
+    title: '7 or 8 chara karakas',
+    changes: [
+      'Settings has a new chara karaka scheme choice: eight karakas (Rahu included, with the Pitrikaraka) or seven (without Rahu and the Pitrikaraka). Either scheme can be ranked by degrees or by minutes, with the ranking choice that was already there.',
+      'The charts, the grahas table and the report follow the choice, and the Chara dasha that starts from the Atmakaraka finds it the same way.',
+      'Updated the application version to v2.51.',
+    ],
+  },
+  {
     version: 'v2.50',
     date: '2026-10-08',
     title: 'All Arudha padas at once',

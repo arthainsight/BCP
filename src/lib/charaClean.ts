@@ -63,7 +63,7 @@ function countSigns(from: number, to: number, direction: 1 | -1, mode: 'inclusiv
 
 function startSignFor(planets: PlanetData[], ascSign: number, options: CharaOptions): { sign: number; basis: string } | null {
   if (options.start === 'lagna') return { sign: ascSign, basis: 'Lagna' };
-  const ak = calculateCharaKarakas(planets).find((k) => k.karaka === 'AK');
+  const ak = calculateCharaKarakas(planets, options.karaka?.rankMode, options.karaka?.count).find((k) => k.karaka === 'AK');
   const p = ak ? planets.find((planet) => planet.name === ak.planet) : null;
   return p ? { sign: p.sign, basis: `AK ${p.name}` } : null;
 }

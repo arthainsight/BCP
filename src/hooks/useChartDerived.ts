@@ -17,8 +17,8 @@ export function useChartDerived(
   dashaMarkSystem: GrahaDashaSystem = 'vimshottari',
 ) {
   const charaKarakas: CharaKaraka[] = useMemo(
-    () => (chartData ? calculateCharaKarakas(chartData.planets, calculationSettings.charaKarakaRankMode) : []),
-    [chartData, calculationSettings.charaKarakaRankMode]
+    () => (chartData ? calculateCharaKarakas(chartData.planets, calculationSettings.charaKarakaRankMode, calculationSettings.charaKarakaCount) : []),
+    [chartData, calculationSettings.charaKarakaRankMode, calculationSettings.charaKarakaCount]
   );
 
   const karakaByPlanet = useMemo(() => {

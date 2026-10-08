@@ -431,6 +431,41 @@ test('ANALYSIS Special Sphutas lists the special lagnas and follows the sunrise 
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Special Sphutas also lists the upagrahas, Karakamsa and the Arudha pada table', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Special Sphutas', exact: true })).click();
+
+  // Gulika and Maandi from Saturn's part of the day, and the five Sun-based ones.
+  const upagrahas = visible(page, page.locator('table').filter({ hasText: 'Upagraha' }));
+  for (const key of ['Gu', 'Ma', 'Dh', 'Vy', 'Pa', 'In', 'Uk']) {
+    await expect(upagrahas.locator(`tr[data-upagraha="${key}"]`)).toContainText(/\d+° \d+' \d+\.\d{2}"/);
+  }
+  const gulika = async () => (await upagrahas.locator('tr[data-upagraha="Gu"]').innerText()).replace(/\s+/g, ' ');
+  const atBeginning = await gulika();
+  // The 15 Aug 1947 Sun is in Cancer, so Upaketu (Sun − 30°) is in Gemini.
+  await expect(upagrahas.locator('tr[data-upagraha="Uk"]')).toContainText('Gemini');
+
+  // The moment of Saturn's part that gives Gulika can be chosen.
+  await visible(page, page.getByRole('combobox', { name: /Gulika/ })).selectOption('end');
+  await expect.poll(gulika).not.toEqual(atBeginning);
+
+  // Karakamsa and Svamsa name the sign of the Atmakaraka in the Navamsa.
+  await expect(visible(page, page.locator('tr[data-jaimini="karakamsa"]'))).toContainText(/Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces/);
+  await expect(visible(page, page.locator('tr[data-jaimini="svamsa"]'))).toBeVisible();
+
+  // One pada for every house, AL12 being the Upapada.
+  for (const name of ['AL', 'AL2', 'AL7', 'AL12']) {
+    await expect(visible(page, page.locator(`tr[data-pada="${name}"]`))).toBeVisible();
+  }
+  await expect(visible(page, page.locator('tr[data-pada="AL12"]'))).toContainText('UL');
+
+  expect(errors).toEqual([]);
+});
+
 test('the Arudha padas AL, AL2 … can be marked on the charts', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -476,6 +511,52 @@ test('the Arudha padas AL, AL2 … can be marked on the charts', async ({ page }
   await page.keyboard.press('Escape');
   await page.mouse.click(2, 2);
   await expect.poll(async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '').not.toMatch(/AL\d*/);
+
+  expect(errors).toEqual([]);
+});
+
+test('the houses of the running daśā lords get a border that can be switched off', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const northChart = () => visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
+  await expect(northChart().locator('title', { hasText: 'Mahadasha lord' })).toHaveCount(1);
+  await expect(northChart().locator('title', { hasText: 'Antardasha lord' })).toHaveCount(1);
+
+  // The ··· menu switches the borders off without touching the ᴹ/ᴬ marks.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'dasha houses' })).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect(northChart().locator('title', { hasText: 'Mahadasha lord' })).toHaveCount(0);
+  await expect.poll(async () => (await northChart().textContent()) ?? '').toMatch(/[ᴹᴬ]/);
+
+  expect(errors).toEqual([]);
+});
+
+test('the chara karakas can be seven or eight, ranked by degrees or minutes', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const chartText = async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'karaka', exact: true })).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  // Eight karakas include the Pitṛkāraka; the Rahu leg is there too.
+  await expect.poll(chartText).toMatch(/PiK/);
+
+  await selectWorkspace(page, '⚙');
+  const scheme = visible(page, page.locator('select', { has: page.getByRole('option', { name: '7 karakas (without Rahu)' }) }));
+  await scheme.selectOption('7');
+  await visible(page, page.locator('select', { has: page.getByRole('option', { name: 'Highest minute' }) })).selectOption('minute');
+
+  await selectWorkspace(page, 'CHART');
+  await expect.poll(chartText).not.toMatch(/PiK/);
+  expect(await chartText()).toMatch(/AK/);
+  expect(await chartText()).toMatch(/DK/);
 
   expect(errors).toEqual([]);
 });

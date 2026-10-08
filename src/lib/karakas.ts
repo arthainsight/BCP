@@ -1,7 +1,8 @@
 import { PlanetData } from '@/types';
 
-const KARAKA_ABBR = ['AK', 'AmK', 'BK', 'MK', 'PiK', 'PuK', 'GK', 'DK'];
-const KARAKA_FULL = [
+/** The karakas of the eight-karaka scheme (Rahu included), in rank order. */
+const KARAKA_ABBR_8 = ['AK', 'AmK', 'BK', 'MK', 'PiK', 'PuK', 'GK', 'DK'];
+const KARAKA_FULL_8 = [
   'Ātmakāraka',
   'Amātyakāraka',
   'Bhrātṛkāraka',
@@ -11,6 +12,9 @@ const KARAKA_FULL = [
   'Jñātikāraka',
   'Dārakāraka',
 ];
+/** The seven-karaka scheme has no Pitṛkāraka and leaves Rahu out. */
+const KARAKA_ABBR_7 = ['AK', 'AmK', 'BK', 'MK', 'PuK', 'GK', 'DK'];
+const KARAKA_FULL_7 = KARAKA_FULL_8.filter(name => name !== 'Pitṛkāraka');
 
 const KARAKA_DESC: Record<string, string> = {
   AK: 'Soul — self, dharma, body',
@@ -32,6 +36,16 @@ export interface CharaKaraka {
 }
 
 export type CharaKarakaRankMode = 'degree' | 'minute';
+/** 8: Sun to Saturn and Rahu; 7: Sun to Saturn only. */
+export type CharaKarakaCount = 7 | 8;
+
+/** How the karakas are ranked and how many there are. */
+export interface CharaKarakaScheme {
+  rankMode: CharaKarakaRankMode;
+  count: CharaKarakaCount;
+}
+
+export const DEFAULT_KARAKA_SCHEME: CharaKarakaScheme = { rankMode: 'degree', count: 8 };
 
 const RELEVANT_PLANETS = new Set([
   'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu',
@@ -40,9 +54,12 @@ const RELEVANT_PLANETS = new Set([
 export function calculateCharaKarakas(
   planets: PlanetData[],
   rankMode: CharaKarakaRankMode = 'degree',
+  count: CharaKarakaCount = 8,
 ): CharaKaraka[] {
+  const abbreviations = count === 7 ? KARAKA_ABBR_7 : KARAKA_ABBR_8;
+  const fullNames = count === 7 ? KARAKA_FULL_7 : KARAKA_FULL_8;
   const ranked = planets
-    .filter((p) => RELEVANT_PLANETS.has(p.name))
+    .filter((p) => RELEVANT_PLANETS.has(p.name) && (count === 8 || p.name !== 'Rahu'))
     .map((p) => {
       // Rahu moves retrograde; use distance from the 30° end of the sign.
       const effectiveDegree = p.name === 'Rahu' ? 30 - p.degree : p.degree;
@@ -60,9 +77,9 @@ export function calculateCharaKarakas(
     );
 
   return ranked.map((entry, i) => ({
-    karaka: KARAKA_ABBR[i],
-    karakaFull: KARAKA_FULL[i],
-    karakaDesc: KARAKA_DESC[KARAKA_ABBR[i]],
+    karaka: abbreviations[i],
+    karakaFull: fullNames[i],
+    karakaDesc: KARAKA_DESC[abbreviations[i]],
     planet: entry.planet,
     degree: entry.effectiveDegree,
   }));

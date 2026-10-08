@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { BcpResult, CalculationSettings, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
+import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import ChartExportButtons from './ChartExportButtons';
@@ -11,7 +11,7 @@ import ChartDivisionsView from './ChartDivisionsView';
 import { useChartDivisions } from '@/hooks/useChartDivisions';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPadas';
-import { buildLayerControls, CHART_LAYER_LABELS, type DashaLordMarks } from './chartLayers';
+import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 import { useT } from '@/lib/i18n';
@@ -22,10 +22,8 @@ export interface ChartSectionProps {
   transitPlanets: PlanetData[];
   chartDisplaySettings: ChartDisplaySettings;
   karakaByPlanet: Record<string, string>;
-  onTransitDatetimeChange: (v: string) => void;
   transitLoading: boolean;
   nakshatraAdjust?: number;
-  birthDatetime?: string;
   targetDate?: string;
   onTargetDateChange?: (value: string) => void;
   /** Time of the target moment, HH:MM; the transits are calculated for it. */
@@ -37,8 +35,6 @@ export interface ChartSectionProps {
   nadiParayaHousesFromParent?: NadiParayaHouseActivation[];
   /** Vimshottari lords running at the target date. */
   dashaLordsFromParent?: DashaLordMarks | null;
-  calculationSettings?: CalculationSettings;
-  ianaTimezone?: string;
   onToggleChartDisplay?: (key: keyof ChartDisplaySettings) => void;
   onUpdateChartDisplay?: (update: Partial<ChartDisplaySettings>) => void;
 }
@@ -70,10 +66,8 @@ export default function ChartSection({
   transitPlanets,
   chartDisplaySettings,
   karakaByPlanet,
-  onTransitDatetimeChange,
   transitLoading = false,
   nakshatraAdjust = 0,
-  birthDatetime,
   targetDate,
   onTargetDateChange,
   targetTime,
@@ -82,8 +76,6 @@ export default function ChartSection({
   bnnMinorHouseFromParent = 0,
   nadiParayaHousesFromParent = [],
   dashaLordsFromParent = null,
-  calculationSettings,
-  ianaTimezone,
   onToggleChartDisplay,
   onUpdateChartDisplay,
 }: ChartSectionProps) {
@@ -166,7 +158,7 @@ export default function ChartSection({
   const d1SpecialLagnas = [...(chartDisplaySettings.showSpecialLagnas ? chart.specialLagnas ?? [] : []), ...arudhaMarks];
   const d1ShowSpecialLagnas = chartDisplaySettings.showSpecialLagnas || arudhaMarks.length > 0;
   const showBcp = chartDisplaySettings.showBcpHighlight === true;
-  const dashaLords = chartDisplaySettings.showDashaLords !== false ? dashaLordsFromParent : null;
+  const dashaLords = withDashaLayers(dashaLordsFromParent, chartDisplaySettings);
   const yearHouse = showBcp ? bcp.activeYearHouse : 0;
   const monthHouse = showBcp ? bcp.activeMonthHouse : 0;
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
@@ -176,6 +168,7 @@ export default function ChartSection({
   const layerControls = buildLayerControls(chartDisplaySettings, {
     bcp: true,
     dasha: dashaLordsFromParent !== null,
+    dashaHouses: dashaLordsFromParent !== null,
     transit: transitPlanets.length > 0,
     bnnMajor: bnnHouses.major > 0,
     bnnMinor: bnnHouses.minor > 0,
@@ -377,7 +370,6 @@ export default function ChartSection({
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
           nadiParayaHouses={parayaHouses}
-          layerControls={layerControls}
           dashaLords={dashaLords}
           selectedPlanet={selectedPlanet}
           onPlanetSelect={setSelectedPlanet}
@@ -405,7 +397,6 @@ export default function ChartSection({
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
           nadiParayaHouses={parayaHouses}
-          layerControls={layerControls}
           dashaLords={dashaLords}
           selectedPlanet={selectedPlanet}
           onPlanetSelect={setSelectedPlanet}

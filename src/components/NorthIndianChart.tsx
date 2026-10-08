@@ -8,9 +8,8 @@ import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
-import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
-import { dashaMark, dignityColor, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
+import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, polygonSpanAt, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
@@ -54,14 +53,11 @@ interface Props {
   bnnMajorHouse?: number;
   bnnMinorHouse?: number;
   nadiParayaHouses?: NadiParayaHouseActivation[];
-  legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
-  /** Makes the layer entries in the legend clickable switches. */
-  layerControls?: ChartLayerControl[];
   /** Running dasha lords to mark on the natal planets. */
   dashaLords?: DashaLordMarks | null;
   /** Colours natal planets by dignity in their sign (used in the Varga grid). */
   colorByDignity?: boolean;
-  /** Small-chart mode for side-by-side grids: bigger type, no legend. */
+  /** Small-chart mode for side-by-side grids: bigger type */
   compact?: boolean;
   /** Natal planet drawn highlighted, by name. */
   highlightPlanet?: string | null;
@@ -157,7 +153,7 @@ function layoutBnnBlock(
     const gap = fontSize * 0.4;
 
     // Place the block just below the cluster, centred on the band it occupies.
-    let blockTop = clusterBottom + gap;
+    const blockTop = clusterBottom + gap;
     let fits = true;
     const lineCentres: number[] = [];
     for (let i = 0; i < texts.length; i++) {
@@ -270,8 +266,6 @@ export default function NorthIndianChart({
   bnnMajorHouse = 0,
   bnnMinorHouse = 0,
   nadiParayaHouses = [],
-  legendLayers,
-  layerControls,
   dashaLords = null,
   colorByDignity = false,
   compact = false,
@@ -392,6 +386,19 @@ export default function NorthIndianChart({
                   strokeWidth="3"
                 />
               )}
+              {/* Houses of the running dasha lords: cyan for the mahadasha, pink for the antardasha */}
+              {dashaHouseBorders(dashaLords, (lord) => planets.some((p) => p.name === lord && Number(p.house) === item.house), isDark).map((border) => (
+                <polygon
+                  key={`dasha-${border.key}`}
+                  points={item.points}
+                  fill="none"
+                  stroke={border.color}
+                  strokeWidth={border.key === 'md' ? 4 : 2}
+                  pointerEvents="none"
+                >
+                  <title>{border.title}</title>
+                </polygon>
+              ))}
               {/* BNN Minor: solid violet border overlay */}
               {isBnnMin && (
                 <polygon

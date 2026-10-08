@@ -8,9 +8,8 @@ import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
-import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
-import { dashaMark, dignityColor, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
+import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
@@ -48,14 +47,11 @@ interface Props {
   bnnMajorHouse?: number;
   bnnMinorHouse?: number;
   nadiParayaHouses?: NadiParayaHouseActivation[];
-  legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
-  /** Makes the layer entries in the legend clickable switches. */
-  layerControls?: ChartLayerControl[];
   /** Running dasha lords to mark on the natal planets. */
   dashaLords?: DashaLordMarks | null;
   /** Colours natal planets by dignity in their sign (used in the Varga grid). */
   colorByDignity?: boolean;
-  /** Small-chart mode for side-by-side grids: tighter cells, no legend. */
+  /** Small-chart mode for side-by-side grids: tighter cells */
   compact?: boolean;
   /** Natal planet drawn highlighted, by name. */
   highlightPlanet?: string | null;
@@ -206,8 +202,6 @@ export default function SouthIndianChart({
   bnnMajorHouse = 0,
   bnnMinorHouse = 0,
   nadiParayaHouses = [],
-  legendLayers,
-  layerControls,
   dashaLords = null,
   colorByDignity = false,
   compact = false,
@@ -347,6 +341,16 @@ export default function SouthIndianChart({
                   style={{ border: `2px solid ${bnnMinColor}`, zIndex: 11 }}
                 />
               )}
+              {/* Houses of the running dasha lords: cyan for the mahadasha, pink for the antardasha */}
+              {dashaHouseBorders(dashaLords, (lord) => planets.some((p) => p.name === lord && p.sign === sign), isDark).map((border) => (
+                <div
+                  key={`dasha-${border.key}`}
+                  data-dasha-house={border.key}
+                  title={border.title}
+                  className="absolute rounded-md pointer-events-none"
+                  style={{ inset: border.key === 'md' ? 0 : 3, border: `${border.key === 'md' ? 3 : 2}px solid ${border.color}`, zIndex: 12 }}
+                />
+              ))}
               <div className={`flex items-start justify-between gap-1 leading-none text-zinc-500 dark:text-zinc-400 ${compact ? 'text-[8px]' : 'text-[10px]'}`}>
                 <span>{showSigns ? SIGN_NAMES[sign] : ''}</span>
                 {!compact && <span className="text-zinc-400 dark:text-zinc-600">H{house}</span>}

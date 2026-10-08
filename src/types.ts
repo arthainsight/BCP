@@ -1,4 +1,5 @@
 import type { DegreePrecision } from '@/lib/formatDegree';
+import type { SaturnPortionLagnas } from '@/lib/upagrahas';
 export type { DegreePrecision };
 
 export interface GeoResult {
@@ -81,6 +82,8 @@ export interface ChartData {
   };
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
+  /** The Lagna at the beginning, middle and end of Saturn's part of the day or night (Gulika and Māndi); missing when the Sun neither rises nor sets. */
+  saturnPortion?: SaturnPortionLagnas;
   /** The amānta lunar month running at the chart moment. */
   lunarMonth?: {
     /** 0 = Chaitra … 11 = Phālguna. */
@@ -139,6 +142,8 @@ export interface ChartDisplaySettings {
   showBcpHighlight: boolean;
   /** Marks the running Vimshottari mahadasha and antardasha lords. */
   showDashaLords: boolean;
+  /** Coloured borders on the houses of the running mahadasha and antardasha lords. */
+  showDashaHouses: boolean;
   /** Which graha-based dasha system the marks follow. */
   dashaMarkSystem: 'vimshottari' | 'vds' | 'yogini' | 'ashtottari';
   /** Interface language. */
@@ -167,6 +172,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showNadiParaya: true,
   showBcpHighlight: false,
   showDashaLords: true,
+  showDashaHouses: true,
   dashaMarkSystem: 'vimshottari',
   language: 'en',
   grahaNames: 'english',
@@ -184,6 +190,8 @@ export interface CalculationSettings {
   nodeMode: string;
   nakshatraMode: 'sidereal' | 'tropical';
   charaKarakaRankMode: 'degree' | 'minute';
+  /** Chara karakas: 8 with Rahu, or 7 without. */
+  charaKarakaCount: 7 | 8;
   /** Paraya Saturn: 3 / 2 years alternating, or 2.5 years in every sign. */
   parayaSaturn: ParayaSpeed;
   /** Paraya Rahu and Ketu: 2 / 1 years alternating, or 1.5 years in every sign. */
@@ -198,6 +206,7 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   nodeMode: 'mean',
   nakshatraMode: 'sidereal',
   charaKarakaRankMode: 'degree',
+  charaKarakaCount: 8,
   parayaSaturn: 'alternating',
   parayaRahu: 'alternating',
   sunriseMode: 'mean',
@@ -213,6 +222,8 @@ export interface CharaOptions {
   exaltDebilAdjust: boolean;
   scorpioLord: 'Ketu' | 'Mars';
   aquariusLord: 'Saturn' | 'Rahu';
+  /** How the Ātmakāraka is found when the daśā starts from it; the chart's own karaka choice, filled in by the page. */
+  karaka?: { rankMode: 'degree' | 'minute'; count: 7 | 8 };
 }
 
 export interface RasiDashaOptions {

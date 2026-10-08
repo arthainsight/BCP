@@ -248,6 +248,20 @@ export default function SettingsPanel(props: Props) {
               </div>
             </div>
             <div>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('chara karaka scheme')}</label>
+              <select
+                className={SELECT}
+                value={String(calculationSettings.charaKarakaCount ?? 8)}
+                onChange={(e) => onUpdateCalculationSettings({ charaKarakaCount: e.target.value === '7' ? 7 : 8 })}
+              >
+                <option value="8">{t('8 karakas (with Rahu and Pitṛkāraka)')}</option>
+                <option value="7">{t('7 karakas (without Rahu)')}</option>
+              </select>
+              <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                {t('Either scheme can be ranked by degrees or by minutes. The seven-karaka scheme has no Pitṛkāraka. The charts, the grahas table and the Chara daśā follow the choice.')}
+              </div>
+            </div>
+            <div>
               <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('paraya Saturn')}</label>
               <select
                 className={SELECT}

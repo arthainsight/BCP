@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { GeoResult, BcpResult, ChartData, PlanetData } from '@/types';
+import { GeoResult, BcpResult, ChartData, PlanetData, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
@@ -21,6 +21,7 @@ import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
+import { withDashaLayers } from '@/components/chartLayers';
 import { LanguageContext, type Language } from '@/lib/i18n';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 
@@ -500,10 +501,8 @@ export default function Home() {
     transitPlanets,
     chartDisplaySettings,
     karakaByPlanet,
-    onTransitDatetimeChange: setTargetMoment,
     transitLoading,
     nakshatraAdjust,
-    birthDatetime,
     targetDate,
     onTargetDateChange: setTargetDate,
     targetTime,
@@ -512,8 +511,6 @@ export default function Home() {
     bnnMinorHouseFromParent: effectiveBnnHouses.minor,
     nadiParayaHousesFromParent: effectiveNadiParayaHouses,
     dashaLordsFromParent: dashaLords,
-    calculationSettings,
-    ianaTimezone: ianaTimezone || undefined,
     onToggleChartDisplay: toggleChartDisplay,
     onUpdateChartDisplay: updateChartDisplay,
   };
@@ -548,6 +545,18 @@ export default function Home() {
     const lng = parseFloat(manualLng);
     return Number.isNaN(lat) || Number.isNaN(lng) || effectiveTzOffset === null ? undefined : { lat, lng, tzOffset: effectiveTzOffset };
   }, [manualLat, manualLng, effectiveTzOffset]);
+
+  // The dasha marks and house borders of the extra charts follow the same layer switches as the main chart.
+  const chartDashaLords = useMemo(() => withDashaLayers(dashaLords, chartDisplaySettings), [dashaLords, chartDisplaySettings]);
+
+  // The daśā calculations find the Ātmakāraka the way the charts do.
+  const timingDashaSettings = useMemo(() => ({
+    ...dashaSettings,
+    charaOptions: {
+      ...(dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions),
+      karaka: { rankMode: calculationSettings.charaKarakaRankMode ?? 'degree', count: calculationSettings.charaKarakaCount ?? 8 },
+    },
+  }), [dashaSettings, calculationSettings.charaKarakaRankMode, calculationSettings.charaKarakaCount]);
 
   // The timing panel can take the whole width of a wide screen, hiding the chart.
   const [timingWide, setTimingWide] = useState(false);
@@ -617,12 +626,12 @@ export default function Home() {
             )}
             {desktopTab === 'grahas' && (
               chartData
-                ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
+                ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
                 : <EmptyState message="Calculate a chart to see graha positions" />
             )}
             {desktopTab === 'dasha' && (
               bcpResult && chartData
-                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} wide={wideTiming} onToggleWide={toggleTimingWide} />
+                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} wide={wideTiming} onToggleWide={toggleTimingWide} />
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
@@ -668,7 +677,7 @@ export default function Home() {
         {activeTab === 'grahas' && (
           <Panel>
             {chartData
-              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
+              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
               : <EmptyState message="Calculate a chart in Data to see graha positions" />
             }
           </Panel>
@@ -682,12 +691,12 @@ export default function Home() {
                 chartDisplaySettings={chartDisplaySettings}
                 karakaByPlanet={karakaByPlanet}
                 nakshatraAdjust={nakshatraAdjust}
-                dashaLords={dashaLords}
+                dashaLords={chartDashaLords}
               />
             )}
             <Panel>
               {bcpResult && chartData
-                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} />
+                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} />
                 : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
               }
             </Panel>

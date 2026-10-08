@@ -5,11 +5,12 @@ import { useT } from '@/lib/i18n';
 
 // The coloured chart layers a viewer can switch on and off, from the Settings
 // panel or by clicking their entry in the chart legend.
-export type ChartLayerKey = 'bcp' | 'dasha' | 'transit' | 'bnnMajor' | 'bnnMinor' | 'paraya';
+export type ChartLayerKey = 'bcp' | 'dasha' | 'dashaHouses' | 'transit' | 'bnnMajor' | 'bnnMinor' | 'paraya';
 
 export const CHART_LAYER_SETTINGS: Record<ChartLayerKey, keyof ChartDisplaySettings> = {
   bcp: 'showBcpHighlight',
   dasha: 'showDashaLords',
+  dashaHouses: 'showDashaHouses',
   transit: 'showTransitOverlay',
   bnnMajor: 'showBnnMajorHighlight',
   bnnMinor: 'showBnnMinorHighlight',
@@ -19,6 +20,7 @@ export const CHART_LAYER_SETTINGS: Record<ChartLayerKey, keyof ChartDisplaySetti
 export const CHART_LAYER_LABELS: Record<ChartLayerKey, string> = {
   bcp: 'BCP year/month',
   dasha: 'dasha lords',
+  dashaHouses: 'dasha houses',
   transit: 'transit',
   bnnMajor: 'RSN major',
   bnnMinor: 'RSN minor',
@@ -31,12 +33,39 @@ export interface DashaLordMarks {
   ad: string;
   /** Short name of the dasha system, shown in the legend. */
   label?: string;
+  /** Whether the ᴹ/ᴬ marks are drawn on the planets (drawn unless false). */
+  marks?: boolean;
+  /** Whether the houses of the two lords get a coloured border (drawn unless false). */
+  houses?: boolean;
 }
 
 /** Superscript after a natal planet: ᴹ for the mahadasha lord, ᴬ for the antardasha lord. */
 export function dashaMark(planet: string, lords?: DashaLordMarks | null): string {
-  if (!lords) return '';
+  if (!lords || lords.marks === false) return '';
   return (lords.md === planet ? 'ᴹ' : '') + (lords.ad === planet ? 'ᴬ' : '');
+}
+
+/** Sets which of the two dasha layers are drawn; nothing to draw gives null. */
+export function withDashaLayers(lords: DashaLordMarks | null | undefined, settings: Pick<ChartDisplaySettings, 'showDashaLords' | 'showDashaHouses'>): DashaLordMarks | null {
+  if (!lords) return null;
+  const marks = settings.showDashaLords !== false;
+  const houses = settings.showDashaHouses !== false;
+  return marks || houses ? { ...lords, marks, houses } : null;
+}
+
+export const DASHA_HOUSE_COLORS = {
+  md: { light: '#0891b2', dark: '#22d3ee' },
+  ad: { light: '#db2777', dark: '#f472b6' },
+};
+
+/** Which lords sit in a house, as the border colours and the tooltip of that house. */
+export function dashaHouseBorders(lords: DashaLordMarks | null | undefined, lordsHere: (planet: string) => boolean, isDark: boolean) {
+  if (!lords || lords.houses === false) return [];
+  const mode = isDark ? 'dark' : 'light';
+  const borders: { key: 'md' | 'ad'; color: string; title: string }[] = [];
+  if (lordsHere(lords.md)) borders.push({ key: 'md', color: DASHA_HOUSE_COLORS.md[mode], title: `Mahadasha lord ${lords.md}` });
+  if (lordsHere(lords.ad)) borders.push({ key: 'ad', color: DASHA_HOUSE_COLORS.ad[mode], title: `Antardasha lord ${lords.ad}` });
+  return borders;
 }
 
 /** Label colour for a graha's dignity in a sign: exalted green, own sign blue, debilitated red. */

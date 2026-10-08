@@ -34,4 +34,31 @@ assert.deepEqual(
   degreeRanking.map((entry) => entry.planet),
 );
 
+// --- Seven karakas: Rahu is left out and there is no Pitṛkāraka ------------------------------------------
+const seven = calculateCharaKarakas(planets, 'degree', 7);
+assert.equal(seven.length, 7);
+assert.ok(!seven.some(entry => entry.planet === 'Rahu'));
+assert.deepEqual(seven.map(entry => entry.karaka), ['AK', 'AmK', 'BK', 'MK', 'PuK', 'GK', 'DK']);
+assert.deepEqual(seven.map(entry => entry.planet), ['Sun', 'Saturn', 'Mercury', 'Mars', 'Venus', 'Moon', 'Jupiter']);
+assert.equal(seven[0].karakaFull, 'Ātmakāraka');
+assert.equal(seven[4].karakaFull, 'Putrakāraka');
+assert.equal(seven.at(-1)?.karakaFull, 'Dārakāraka');
+
+// --- Eight karakas are the default, and have Rahu measured in reverse ------------------------------------------
+const eight = calculateCharaKarakas(planets, 'degree', 8);
+assert.equal(eight.length, 8);
+assert.deepEqual(eight.map(entry => entry.karaka), ['AK', 'AmK', 'BK', 'MK', 'PiK', 'PuK', 'GK', 'DK']);
+assert.deepEqual(eight, degreeRanking);
+
+// --- Seven karakas by the minutes of the degree ----------------------------------------------------------------------
+const sevenByMinute = calculateCharaKarakas(planets, 'minute', 7);
+// 54′, 48′, 42′, 36′, 30′, 24′ and 12′.
+assert.deepEqual(sevenByMinute.map(entry => entry.planet), ['Moon', 'Jupiter', 'Mars', 'Venus', 'Mercury', 'Saturn', 'Sun']);
+assert.equal(sevenByMinute[0].karaka, 'AK');
+
+// --- With Rahu the Atmakaraka can change between the schemes ---------------------------------------------------------------
+const rahuLeads = [...planets.filter(p => p.name !== 'Rahu'), planet('Rahu', 2)]; // reversed: 28°
+assert.equal(calculateCharaKarakas(rahuLeads, 'degree', 8)[0].planet, 'Rahu');
+assert.equal(calculateCharaKarakas(rahuLeads, 'degree', 7)[0].planet, 'Sun');
+
 console.log('Chara Karaka ranking tests passed');
