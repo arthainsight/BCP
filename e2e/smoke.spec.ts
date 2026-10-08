@@ -455,6 +455,21 @@ test('the Arudha padas AL, AL2 … can be marked on the charts', async ({ page }
   await visible(page, page.getByRole('group', { name: 'divisional charts' }).getByRole('button', { name: 'D1', exact: true })).click();
   await expect.poll(async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '').toMatch(/AL(?!\d)/);
 
+  // All switches the twelve on at once.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'all', exact: true })).click();
+  const allPadas = visible(page, page.getByRole('group', { name: 'arudha padas' }));
+  for (const name of ['AL', 'AL2', 'AL5', 'AL9', 'AL12']) {
+    await expect(allPadas.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true');
+  }
+  await expect(visible(page, page.getByRole('button', { name: 'all', exact: true }))).toBeDisabled();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(async () => {
+    const text = (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
+    return ['AL2', 'AL3', 'AL4', 'AL5', 'AL6', 'AL7', 'AL8', 'AL9', 'AL10', 'AL11', 'AL12'].every(name => text.includes(name));
+  }).toBe(true);
+
   // None clears them again.
   await visible(page, page.getByRole('button', { name: '···' })).click();
   await visible(page, page.getByRole('button', { name: 'none', exact: true })).click();

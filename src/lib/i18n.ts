@@ -123,6 +123,7 @@ export const FI: Record<string, string> = {
   'Sign changes': 'Merkinvaihdot',
   'arudha padas': 'āruḍha-padat',
   'none': 'ei mitään',
+  'all': 'kaikki',
   'Special Sphutas': 'Erikoissphuṭat',
   'manual sunrise': 'oma auringonnousu',
   'Use another sunrise (HH:MM:SS)': 'Käytä toista auringonnousua (HH:MM:SS)',
