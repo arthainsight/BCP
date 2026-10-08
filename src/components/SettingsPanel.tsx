@@ -405,7 +405,7 @@ export default function SettingsPanel(props: Props) {
                 <option value="adhana">Adhana ({t('8th nakshatra')})</option>
               </select>
               <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">
-                {t('Counted from the Moon, the Vimsottari can start from the lord of the Utpanna, Kshema or Adhana nakshatra. Auto follows the house of the Moon (3 or 11 Utpanna, 2 or 6 Kshema, 8 or 12 Adhana, by Sanjay Rath) and takes the strongest in the other houses.')}
+                {t('Counted from the Moon, the Vimsottari can start from the lord of the Utpanna, Kshema or Adhana nakshatra. Auto follows the house of the Moon (3 or 11 Utpanna, 2 or 6 Kshema, 8 or 12 Adhana, by Sanjay Rath); with the Moon in any other house the daśā is not used.')}
               </span>
             </label>
           </div>

@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.56',
+    date: '2026-10-08',
+    title: 'Utpanna / Kshema / Adhana only where Rath uses it',
+    changes: [
+      'The Vimsottari Utpanna / Kshema / Adhana is used only with the Moon in the 2nd, 3rd, 6th, 8th, 11th or 12th house (Sanjay Rath): 3 and 11 Utpanna, 2 and 6 Kshema, 8 and 12 Adhana. With the Moon in the 1st, 4th, 5th, 7th, 9th or 10th house the daśā is not used, as with the conditional Ashtottari: the card says so, there are no periods, and no lords are marked on the charts. The strength comparison that stood in for those houses is gone.',
+      'A start fixed in Settings → dasha methods → start from is still used whatever the house of the Moon. The card lists the three candidates with their nakshatra and lord and marks the one in use.',
+      'The dasha lords from choice in the ··· menu of the chart is always there, and tells when the chosen system has nothing to show for the chart.',
+      'Updated the application version to v2.56.',
+    ],
+  },
+  {
     version: 'v2.55',
     date: '2026-10-08',
     title: 'Utpanna / Kshema / Adhana by the Moon’s house; U K Jha on VDS',

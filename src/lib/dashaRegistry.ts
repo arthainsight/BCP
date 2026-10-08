@@ -16,7 +16,7 @@ export type DashaRegistryItem = {
 
 export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'vimshottari', label: 'Vimsottari', group: 'Core', status: 'implemented', renderer: 'vimshottari', kind: 'nakshatra' },
-  { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', group: 'Core', status: 'implemented', renderer: 'vimshottariVariant', kind: 'nakshatra' },
+  { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', group: 'Core', status: 'implemented', renderer: 'vimshottariVariant', kind: 'nakshatra', conditional: true },
   { key: 'vds', label: 'Vimsottari Original (U K Jha)', group: 'Core', status: 'implemented', renderer: 'vds', kind: 'nakshatra' },
 
   { key: 'chara', label: 'Chara Daśā', group: 'Core', status: 'implemented', renderer: 'chara' },
