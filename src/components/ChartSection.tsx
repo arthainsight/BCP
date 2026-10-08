@@ -47,7 +47,7 @@ function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: 
         onClick={onToggle}
         aria-pressed={value}
         aria-label={label}
-        className={`rounded-sm border px-1.5 py-0.5 text-[9px] font-mono ${
+        className={`rounded-sm border px-2.5 py-1.5 text-[10px] font-mono sm:px-1.5 sm:py-0.5 sm:text-[9px] ${
           value
             ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
             : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'
@@ -258,7 +258,7 @@ export default function ChartSection({
                           key={val}
                           type="button"
                           onClick={() => onUpdateChartDisplay?.({ degreePrecision: val })}
-                          className={`rounded-sm border px-1 py-0.5 text-[9px] font-mono ${
+                          className={`rounded-sm border px-2 py-1.5 text-[10px] font-mono sm:px-1 sm:py-0.5 sm:text-[9px] ${
                             (chartDisplaySettings.degreePrecision ?? 'off') === val
                               ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
                               : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'

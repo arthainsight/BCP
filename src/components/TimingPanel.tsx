@@ -78,6 +78,7 @@ export default function TimingPanel({
 
       {view === 'dasha' && (
         <DashaWorkspace
+          targetDate={targetDate}
           bcp={bcp}
           planets={chart.planets}
           ascendant={chart.ascendant}

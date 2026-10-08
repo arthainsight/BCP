@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { findAllSignChanges, findSignChanges } from './signChanges';
+import { findAllSignChanges, findCombustion, findSignChanges, findStations } from './signChanges';
 
 const DAY = 86_400_000;
 const series = (longitudes: number[]) => ({ start: 0, step: DAY, longitudes });
@@ -30,5 +30,23 @@ assert.deepEqual(findSignChanges('Moon', series([10, 100])), []);
 const all = findAllSignChanges({ Mars: series([29, 31]), Sun: series([59, 60.5]) });
 assert.deepEqual(all.map(c => c.body), ['Mars', 'Sun']);
 assert.ok(all[0].time < all[1].time || all[0].time === all[1].time);
+
+// --- Stations: direct to retrograde and back -----------------------------------
+const stations = findStations('Mercury', series([10, 11, 11.5, 11.5, 11, 10, 9.5, 9.6, 10]));
+assert.deepEqual(stations.map(s => s.turnsTo), ['retrograde', 'direct']);
+assert.ok(stations[0].time > 2 * DAY && stations[0].time < 3 * DAY, 'the turn lies between the samples that bracket it');
+assert.equal(stations[0].sign, 1);
+assert.deepEqual(findStations('Mars', series([10, 11, 12, 13])), [], 'steady motion has no station');
+// A station across 0° Aries uses the shortest distance, not the raw difference.
+assert.deepEqual(findStations('Venus', series([358, 359, 0.5, 1, 0.5, 0])).map(s => s.turnsTo), ['retrograde']);
+
+// --- Combustion: entering and leaving the orb of the Sun --------------------------
+const sun = series([100, 101, 102, 103, 104, 105]);
+const mercury = series([120, 117, 113, 110, 120, 125]);
+const combust = findCombustion('Mercury', mercury, sun);
+assert.deepEqual(combust.map(c => c.combust), [true, false]);
+assert.ok(combust[0].time > 0 && combust[0].time < 2 * DAY);
+assert.deepEqual(findCombustion('Mars', mercury, sun), [], 'only Mercury and Venus have an orb here');
+assert.deepEqual(findCombustion('Mercury', series([150, 151, 152]), series([100, 101, 102])), [], 'far from the Sun is never combust');
 
 console.log('Sign change tests passed');

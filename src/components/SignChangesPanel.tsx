@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
-import { findAllSignChanges, type SignChange } from '@/lib/signChanges';
+import { COMBUST_ORBS, findCombustion, findSignChanges, findStations, type CombustChange, type SignChange, type Station } from '@/lib/signChanges';
 import type { LongitudeSeries } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 
@@ -25,6 +25,13 @@ const RANGES = [
   { label: '12 mo', days: 366 },
 ];
 const FIRST_ROWS = 20;
+// Grahas that turn retrograde; the Sun, Moon and the mean nodes do not (or always are).
+const STATION_BODIES = ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+
+type Event =
+  | ({ kind: 'sign'; time: number } & SignChange)
+  | ({ kind: 'station'; time: number } & Station)
+  | ({ kind: 'combust'; time: number } & CombustChange);
 const DEFAULT_BODIES = BODIES.filter(body => body !== 'Moon');
 
 type Loaded = { key: string; start: number; series: Record<string, { step: number; longitudes: number[] }> };
@@ -44,13 +51,17 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
   const t = useT();
   const [selected, setSelected] = useState<string[]>([...DEFAULT_BODIES]);
   const [days, setDays] = useState(92);
+  const [stations, setStations] = useState(true);
   const [showAll, setShowAll] = useState(false);
   const [data, setData] = useState<Loaded | null>(null);
   const [error, setError] = useState('');
 
   const bodies = BODIES.filter(body => selected.includes(body));
+  // Combustion compares Mercury and Venus with the Sun, so the Sun is fetched along.
+  const needsSun = stations && bodies.some(body => body in COMBUST_ORBS);
+  const requested = needsSun ? BODIES.filter(body => body === 'Sun' || bodies.includes(body)) : bodies;
   const key = [
-    targetDate, days, bodies.join(','),
+    targetDate, days, requested.join(','),
     calculationSettings?.ayanamsa ?? 'lahiri',
     calculationSettings?.ayanamsaOffsetDegrees ?? 0,
     calculationSettings?.nodeMode ?? 'mean',
@@ -64,7 +75,7 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
       const params = new URLSearchParams({
         start: targetDate,
         days: String(days),
-        bodies: bodies.join(','),
+        bodies: requested.join(','),
         ayanamsa: calculationSettings?.ayanamsa ?? 'lahiri',
         ayanamsaOffset: String(calculationSettings?.ayanamsaOffsetDegrees ?? 0),
         nodeMode: calculationSettings?.nodeMode ?? 'mean',
@@ -83,17 +94,26 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, data?.key]);
 
-  const changes: SignChange[] = useMemo(() => {
+  const events: Event[] = useMemo(() => {
     if (!data) return [];
     const series: Record<string, LongitudeSeries> = {};
     for (const [body, s] of Object.entries(data.series)) {
       series[body] = { start: data.start, step: s.step, longitudes: s.longitudes };
     }
-    return findAllSignChanges(series);
-  }, [data]);
+    const all: Event[] = [];
+    for (const body of bodies) {
+      if (!series[body]) continue;
+      all.push(...findSignChanges(body, series[body]).map(c => ({ kind: 'sign' as const, ...c })));
+      if (!stations) continue;
+      if (STATION_BODIES.includes(body)) all.push(...findStations(body, series[body]).map(c => ({ kind: 'station' as const, ...c })));
+      if (body in COMBUST_ORBS && series.Sun) all.push(...findCombustion(body, series[body], series.Sun).map(c => ({ kind: 'combust' as const, ...c })));
+    }
+    return all.sort((a, b) => a.time - b.time);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, stations]);
 
   const loading = bodies.length > 0 && data?.key !== key && !error;
-  const rows = showAll ? changes : changes.slice(0, FIRST_ROWS);
+  const rows = showAll ? events : events.slice(0, FIRST_ROWS);
   const house = (sign: number) => ((sign - chart.ascendant.sign + 12) % 12) + 1;
 
   const toggle = (body: string) => {
@@ -101,7 +121,7 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
     setShowAll(false);
   };
   const chip = (on: boolean) =>
-    `rounded-md border px-2 py-1 text-[10px] font-mono ${on
+    `rounded-md border px-2.5 py-1.5 text-[10px] font-mono sm:px-2 sm:py-1 ${on
       ? 'border-emerald-500 dark:border-green-600 bg-emerald-500 dark:bg-green-600 text-white'
       : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`;
 
@@ -111,7 +131,7 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
         {t('sign changes')}
       </div>
       <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-        {t('When a graha moves into the next sign, from the target date. H is the house from the natal ascendant. ℞ marks a move backwards.')}
+        {t('When a graha moves into the next sign, from the target date. H is the house from the natal ascendant. ℞ marks a move backwards. Stations are the turns to retrograde or direct; combustion is Mercury or Venus coming within the orb of the Sun.')}
       </p>
       <div className="flex flex-wrap gap-1">
         {BODIES.map(body => (
@@ -120,7 +140,11 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
           </button>
         ))}
       </div>
-      <div className="flex gap-1">
+      <div className="flex flex-wrap gap-1">
+        <button type="button" aria-pressed={stations} onClick={() => { setStations(v => !v); setShowAll(false); }} className={chip(stations)}>
+          {t('stations & combustion')}
+        </button>
+        <span className="mx-1 self-stretch border-l border-zinc-200 dark:border-zinc-700" />
         {RANGES.map(range => (
           <button key={range.days} type="button" aria-pressed={days === range.days} onClick={() => { setDays(range.days); setShowAll(false); }} className={chip(days === range.days)}>
             {t(range.label)}
@@ -130,28 +154,44 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
       {error && <p className="text-[10px] font-mono text-rose-600 dark:text-rose-400">{t('Could not load sign changes:')} {error}</p>}
       {loading && <p className="text-[10px] font-mono text-zinc-400">{t('Calculating…')}</p>}
       {bodies.length === 0 && <p className="text-[10px] font-mono text-zinc-400">{t('Pick at least one graha.')}</p>}
-      {!loading && !error && bodies.length > 0 && changes.length === 0 && (
+      {!loading && !error && bodies.length > 0 && events.length === 0 && (
         <p className="text-[10px] font-mono text-zinc-400">{t('No sign changes in this period.')}</p>
       )}
       {!loading && bodies.length > 0 && rows.length > 0 && (
         <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
-          {rows.map(change => (
-            <li key={`${change.body}-${change.time}`} className="flex items-center gap-2 py-1 text-[11px] font-mono">
-              <span className="w-32 shrink-0 text-zinc-500 dark:text-zinc-400">{formatMoment(change.time)}</span>
+          {rows.map(event => (
+            <li key={`${event.kind}-${event.body}-${event.time}`} className="flex items-center gap-2 py-1 text-[11px] font-mono">
+              <span className="w-32 shrink-0 text-zinc-500 dark:text-zinc-400">{formatMoment(event.time)}</span>
               <span className="min-w-0 flex-1 text-zinc-700 dark:text-zinc-200">
-                <span className="font-bold text-rose-500">{CODES[change.body]}{change.retrograde ? '℞' : ''}</span>
-                {` → `}
-                <span className="font-bold">{SIGNS[change.to - 1]}</span>
-                <span className="text-zinc-400 dark:text-zinc-500"> H{house(change.to)}</span>
+                {event.kind === 'sign' && (
+                  <>
+                    <span className="font-bold text-rose-500">{CODES[event.body]}{event.retrograde ? '℞' : ''}</span>
+                    {` → `}
+                    <span className="whitespace-nowrap"><span className="font-bold">{SIGNS[event.to - 1]}</span><span className="text-zinc-400 dark:text-zinc-500"> H{house(event.to)}</span></span>
+                  </>
+                )}
+                {event.kind === 'station' && (
+                  <>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">{CODES[event.body]}</span>
+                    {` ${event.turnsTo === 'retrograde' ? t('turns retrograde') + ' ℞' : t('turns direct')} `}
+                    <span className="whitespace-nowrap text-zinc-400 dark:text-zinc-500">{SIGNS[event.sign - 1]} H{house(event.sign)}</span>
+                  </>
+                )}
+                {event.kind === 'combust' && (
+                  <>
+                    <span className="font-bold text-orange-600 dark:text-orange-400">{CODES[event.body]}</span>
+                    {` ${event.combust ? t('becomes combust') : t('leaves combustion')}`}
+                  </>
+                )}
               </span>
               {onSetTransit && (
                 <button
                   type="button"
                   onClick={() => {
-                    const d = new Date(change.time);
+                    const d = new Date(event.time);
                     onSetTransit(`${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}.${pad(d.getMinutes())}.00`);
                   }}
-                  className="shrink-0 rounded border border-violet-300 px-1.5 py-0.5 text-[10px] text-violet-700 dark:border-violet-700 dark:text-violet-300"
+                  className="shrink-0 rounded border border-violet-300 px-2 py-1.5 text-[10px] sm:px-1.5 sm:py-0.5 text-violet-700 dark:border-violet-700 dark:text-violet-300"
                 >
                   {t('set transit')}
                 </button>
@@ -160,9 +200,9 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
           ))}
         </ul>
       )}
-      {!loading && changes.length > FIRST_ROWS && (
+      {!loading && events.length > FIRST_ROWS && (
         <button type="button" onClick={() => setShowAll(v => !v)} className="text-[10px] font-mono text-emerald-700 dark:text-green-400">
-          {showAll ? t('show fewer') : `${t('show all')} ${changes.length}`}
+          {showAll ? t('show fewer') : `${t('show all')} ${events.length}`}
         </button>
       )}
     </div>
