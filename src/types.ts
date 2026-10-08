@@ -184,6 +184,8 @@ export interface CalculationSettings {
   nodeMode: string;
   nakshatraMode: 'sidereal' | 'tropical';
   charaKarakaRankMode: 'degree' | 'minute';
+  /** Chara karakas: 8 with Rahu, or 7 without. */
+  charaKarakaCount: 7 | 8;
   /** Paraya Saturn: 3 / 2 years alternating, or 2.5 years in every sign. */
   parayaSaturn: ParayaSpeed;
   /** Paraya Rahu and Ketu: 2 / 1 years alternating, or 1.5 years in every sign. */
@@ -198,6 +200,7 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   nodeMode: 'mean',
   nakshatraMode: 'sidereal',
   charaKarakaRankMode: 'degree',
+  charaKarakaCount: 8,
   parayaSaturn: 'alternating',
   parayaRahu: 'alternating',
   sunriseMode: 'mean',
@@ -213,6 +216,8 @@ export interface CharaOptions {
   exaltDebilAdjust: boolean;
   scorpioLord: 'Ketu' | 'Mars';
   aquariusLord: 'Saturn' | 'Rahu';
+  /** How the Ātmakāraka is found when the daśā starts from it; the chart's own karaka choice, filled in by the page. */
+  karaka?: { rankMode: 'degree' | 'minute'; count: 7 | 8 };
 }
 
 export interface RasiDashaOptions {

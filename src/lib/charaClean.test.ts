@@ -24,4 +24,10 @@ assert.equal(children.length, 12);
 assert.ok(Math.abs(children.reduce((sum, entry) => sum + entry.durationYears, 0) - result.entries[0].durationYears) < 1e-10);
 assert.equal(children[0].sign, 5); // Movable Cancer starts forward with the next sign, Leo.
 
+// Starting from the Ātmakāraka follows the chart's karaka scheme: Rahu (reversed, 29.5°) leads only among eight karakas.
+const rahuLeads = planets.map((p) => (p.name === 'Rahu' ? { ...p, degree: 0.5, longitude: 330.5 } : p));
+const akOptions = { ...settings, start: 'ak' as const };
+assert.equal(calculateCleanCharaMD(rahuLeads, 4, new Date(2000, 0, 1), { ...akOptions, karaka: { rankMode: 'degree', count: 8 } })?.startSign, 12);
+assert.equal(calculateCleanCharaMD(rahuLeads, 4, new Date(2000, 0, 1), { ...akOptions, karaka: { rankMode: 'degree', count: 7 } })?.startSign, 8); // Saturn, 24°
+
 console.log('Chara Daśā tests passed');
