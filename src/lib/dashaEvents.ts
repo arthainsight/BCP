@@ -3,7 +3,7 @@ import { calculateCleanCharaMD, calculateCleanCharaSubDashas, type CleanCharaEnt
 import { calculateKalachakra, calculateKalachakraAntardashas, type KalachakraEntry } from './kalachakra';
 import { calculateVds } from './vds';
 import { calculateSubDashas, calculateVimshottari, type MahadashaEntry } from './vimshottari';
-import { calculateVimshottariVariant, VARIANT_LABELS, type VimshottariVariantChoice } from './vimshottariVariants';
+import { calculateVimshottariVariant, moonHouse, VARIANT_LABELS, variantNotApplicable, type VimshottariVariantChoice } from './vimshottariVariants';
 import { calculateYogini, calculateYoginiSubDashas } from './yogini';
 import { calculateAshtottari, calculateAshtottariSubDashas, evaluateAshtottariEligibility } from './ashtottari';
 import type { NakshatraDashaEntry } from './nakshatraDasha';
@@ -96,8 +96,10 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
   } : { key: 'vimshottari', label: 'Vimsottari', levels: [], note: 'Moon unavailable' });
 
   if (moon) {
-    const variant = calculateVimshottariVariant(moon.longitude, planets, birthDate, variantChoice, ascendant.sign);
-    snapshots.push({ key: 'vimshottariVariant', label: `Vimsottari ${VARIANT_LABELS[variant.variant]}`, levels: vimshottariLevels(variant.entries, eventDate), mdRange: activeRange(variant.entries, eventDate) });
+    const variant = calculateVimshottariVariant(moon.longitude, birthDate, variantChoice, ascendant.sign);
+    snapshots.push(variant
+      ? { key: 'vimshottariVariant', label: `Vimsottari ${VARIANT_LABELS[variant.variant]}`, levels: vimshottariLevels(variant.entries, eventDate), mdRange: activeRange(variant.entries, eventDate) }
+      : { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', levels: [], note: variantNotApplicable(moonHouse(moon.longitude, ascendant.sign)) });
   } else snapshots.push({ key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', levels: [], note: 'Moon unavailable' });
 
   const planetLongitudes = Object.fromEntries(planets.map((planet) => [planet.name, planet.longitude]));
@@ -172,8 +174,10 @@ export function runningGrahaDashaLords(
   switch (system) {
     case 'vimshottari':
       return fromEntries(calculateVimshottari(moon.longitude, birthDate).entries, calculateSubDashas);
-    case 'vimshottariVariant':
-      return fromEntries(calculateVimshottariVariant(moon.longitude, planets, birthDate, variantChoice, ascendant.sign).entries, calculateSubDashas);
+    case 'vimshottariVariant': {
+      const variant = calculateVimshottariVariant(moon.longitude, birthDate, variantChoice, ascendant.sign);
+      return variant ? fromEntries(variant.entries, calculateSubDashas) : null;
+    }
     case 'vds': {
       if (!sun) return null;
       const planetLongitudes = Object.fromEntries(planets.map(p => [p.name, p.longitude]));

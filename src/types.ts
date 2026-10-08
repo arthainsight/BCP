@@ -254,7 +254,7 @@ export interface DashaSettings {
   };
   charaOptions?: CharaOptions;
   rasiOptions?: RasiDashaOptions;
-  /** Which of Utpanna, Kṣema and Ādhāna the variant Vimśottarī starts from; auto picks the strongest. */
+  /** Which of Utpanna, Kṣema and Ādhāna the variant Vimśottarī starts from; auto follows the house of the Moon. */
   variantChoice?: VimshottariVariantChoice;
 }
 

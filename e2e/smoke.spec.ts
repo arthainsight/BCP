@@ -626,6 +626,40 @@ test('Vimsottari Utpanna / Kshema / Adhana starts from the Moon house rule, or t
   expect(errors).toEqual([]);
 });
 
+test('Utpanna / Kshema / Adhana is not used when the Moon stands in a house with no rule', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.route('**/api/geocode**', (route) =>
+    route.fulfill({ json: { results: [{ name: 'New Delhi', country: 'India', latitude: 28.6139, longitude: 77.209, timezone: 'Asia/Kolkata' }] } })
+  );
+  await page.goto('/');
+  // Two hours later than the other tests' chart the Lagna is Libra and the Moon is in the 10th house.
+  await visible(page, page.getByPlaceholder('15.08.1947 09.15.00')).fill('15.08.1947 11.30.00');
+  await visible(page, page.getByPlaceholder('e.g. New Delhi')).fill('New Delhi');
+  await visible(page, page.getByRole('button', { name: 'lookup' })).click();
+  await visible(page, page.getByRole('button', { name: 'Calculate Chart' })).click();
+  await expect(visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'))).toBeVisible({ timeout: 30_000 });
+
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  const card = visible(page, page.getByRole('button', { name: /^Vimsottari Utpanna \/ Kshema \/ Adhana.*[▶▼]$/ }));
+  await expect(card).toContainText('Conditional: not applicable (Moon in 10H');
+  await card.click();
+  await expect(visible(page, page.getByText(/Moon in house 10: this daśā is not used/))).toBeVisible();
+  await expect(page.locator('tr[data-variant] >> text=●')).toHaveCount(0);
+
+  // The chart's ··· menu still offers the other systems, and says this one has nothing to show.
+  await selectWorkspace(page, 'CHART');
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByLabel('dasha lords from')).selectOption('vimshottariVariant');
+  await expect(visible(page, page.getByText('not applicable for this chart'))).toBeVisible();
+  await visible(page, page.getByLabel('dasha lords from')).selectOption('vimshottari');
+  await expect(visible(page, page.getByText('not applicable for this chart'))).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

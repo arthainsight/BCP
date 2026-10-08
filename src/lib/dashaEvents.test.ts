@@ -50,6 +50,16 @@ assert.match(variantOf(startLord('utpanna')).label, /Utpanna/);
 assert.equal(variantOf(startLord('auto')).label, 'Vimsottari Adhana');
 assert.equal(variantOf(startLord('auto')).levels[0].value, 'Sun');
 
+// With the Moon in a house that calls for none of the three the daśā is not used: here Gemini with the Lagna in Gemini is the 1st house.
+const noRule = (variantChoice?: 'kshema') => calculateDashaEventSnapshots({
+  birthDate: new Date(2000, 0, 1, 10), eventDate: new Date(2000, 0, 2, 12), planets, ascendant: { longitude: 70, sign: 3, degree: 10 },
+  charaOptions: DEFAULT_DASHA_SETTINGS.charaOptions, rasiOptions: DEFAULT_DASHA_SETTINGS.rasiOptions, variantChoice,
+}).find(snapshot => snapshot.key === 'vimshottariVariant')!;
+assert.equal(noRule().levels.length, 0);
+assert.match(noRule().note ?? '', /^Conditional: not applicable \(Moon in 1H/);
+// …unless one is fixed by hand.
+assert.equal(noRule('kshema').levels[0].value, 'Saturn');
+
 const beforeBirth = calculateDashaEventSnapshots({
   birthDate: new Date(2000, 0, 1),
   eventDate: new Date(1999, 0, 1),

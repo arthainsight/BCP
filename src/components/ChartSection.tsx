@@ -253,7 +253,7 @@ export default function ChartSection({
                   {(layerControls ?? []).map((control) => (
                     <ChartDisplayToggle key={control.key} label={t(CHART_LAYER_LABELS[control.key])} value={control.on} onToggle={control.onToggle} />
                   ))}
-                  {dashaLordsFromParent !== null && onUpdateChartDisplay && (
+                  {onUpdateChartDisplay && (
                     <label className="block text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
                       {t('dasha lords from')}
                       <select
@@ -263,6 +263,9 @@ export default function ChartSection({
                       >
                         {GRAHA_DASHA_SYSTEMS.map((system) => <option key={system.key} value={system.key}>{system.label}</option>)}
                       </select>
+                      {dashaLordsFromParent === null && (
+                        <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">{t('not applicable for this chart')}</span>
+                      )}
                     </label>
                   )}
                   <div className="border-t border-zinc-200 dark:border-zinc-700" />
