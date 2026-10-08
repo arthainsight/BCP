@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v2.36',
+    date: '2026-10-08',
+    title: 'Daśā systems start closed',
+    changes: [
+      'In TIMING → Dasha → Systems every daśā system now starts closed, listed by name. Open the one you want; the others are not drawn until opened.',
+      'Updated the application version to v2.36.',
+    ],
+  },
+  {
     version: 'v2.35',
     date: '2026-10-08',
     title: 'Sign changes of the grahas',

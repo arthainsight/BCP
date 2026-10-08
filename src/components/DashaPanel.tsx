@@ -3,6 +3,7 @@ import { RENDERABLE_DASHAS } from '@/lib/dashaRegistry';
 import { renderDasha, DashaRendererContext } from '@/lib/dashaRenderers';
 import DashaTimeline from './DashaTimeline';
 import DashaDateFinder from './DashaDateFinder';
+import DashaSystemCard from './DashaSystemCard';
 
 interface Props {
   bcp: BcpResult;
@@ -32,13 +33,13 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
   if (view === 'timeline') return <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-3">
       {view === 'all' && <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />}
       {view === 'all' && <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} />}
       {activeDashas.map(d => (
-        <div key={d.key} id={`dasha-${d.key}`} className="min-w-0 scroll-mt-4">
+        <DashaSystemCard key={d.key} id={`dasha-${d.key}`} title={d.label}>
           {d.renderer ? renderDasha(d.renderer, ctx) : null}
-        </div>
+        </DashaSystemCard>
       ))}
     </div>
   );
