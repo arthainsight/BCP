@@ -118,6 +118,37 @@ test('BNN Major and BNN Minor labels render in the North Indian chart', async ({
   expect(errors).toEqual([]);
 });
 
+test('divisional charts stay on screen next to the daśā panel on a wide screen', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const group = visible(page, page.getByRole('group', { name: 'divisional charts' }));
+  const d9 = group.getByRole('button', { name: 'D9', exact: true });
+  const d10 = group.getByRole('button', { name: 'D10', exact: true });
+  await d9.click();
+  await d10.click();
+  await expect(d9).toHaveAttribute('aria-pressed', 'true');
+  await expect(visible(page, page.getByRole('button', { name: /^D9 Navāṁśa/ }))).toBeVisible();
+  await expect(visible(page, page.getByRole('button', { name: /^D10 Daśāṁśa/ }))).toBeVisible();
+
+  // Only D9 left, full size.
+  await group.getByRole('button', { name: 'D1', exact: true }).click();
+  await d10.click();
+  await expect(d10).toHaveAttribute('aria-pressed', 'false');
+  await expect(visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'))).toBeVisible();
+
+  // On a wide screen the chart column stays while TIMING is open.
+  if (info.project.name === 'desktop') {
+    await selectWorkspace(page, 'TIMING');
+    await expect(visible(page, page.getByRole('button', { name: 'Systems', exact: true }))).toBeVisible();
+    await expect(visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'))).toBeVisible();
+    await expect(visible(page, page.getByRole('group', { name: 'divisional charts' }).getByRole('button', { name: 'D9', exact: true }))).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Systems lists the daśā systems closed and opens one on click', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

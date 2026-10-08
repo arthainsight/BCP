@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChartData, ChartDisplaySettings } from '@/types';
 import { VARGA_DIVISIONS, VARGA_NAMES, VARGA_SIGNIFICATIONS, buildVargaChart } from '@/lib/vargaChart';
+import { vargaChartProps } from '@/lib/vargaChartProps';
 import {
   DEFAULT_VARGA_GRID,
   VARGA_GRID_MAX,
@@ -66,33 +67,11 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
   const divisions = vargaGridDivisions(selection);
   const toggleHighlight = (name: string) => setHighlight(current => (current === name ? null : name));
 
-  const chartProps = (division: number, compact: boolean) => {
-    const varga = buildVargaChart(chart, division);
-    return {
-      activeYearHouse: 0,
-      activeMonthHouse: 0,
-      ascendantSign: varga.ascendantSign,
-      planets: varga.planets,
-      showSigns: chartDisplaySettings.showSigns,
-      showNatalPlanets: true,
-      showOuterPlanets: chartDisplaySettings.showOuterPlanets,
-      showBcpHighlights: false,
-      // Small charts show planet codes only; the enlarged chart follows the settings.
-      // BCP highlights and transits are rāśi concepts, so they stay off here.
-      degreePrecision: compact ? 'off' as const : chartDisplaySettings.degreePrecision ?? 'off',
-      showCharaKaraka: compact ? false : chartDisplaySettings.showCharaKaraka,
-      karakaByPlanet,
-      showNakshatra: !compact && division === 1 && chartDisplaySettings.showNakshatra,
-      nakshatraAdjust,
-      specialLagnas: varga.specialLagnas,
-      showSpecialLagnas: !compact && chartDisplaySettings.showSpecialLagnas,
-      dashaLords,
-      colorByDignity: true,
-      compact,
-      highlightPlanet: highlight,
-      onPlanetClick: toggleHighlight,
-    };
-  };
+  const chartProps = (division: number, compact: boolean) =>
+    vargaChartProps({
+      chart, division, compact, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords,
+      highlight, onPlanetClick: toggleHighlight,
+    });
 
   const renderChart = (division: number, compact: boolean) =>
     chartStyle === 'south'

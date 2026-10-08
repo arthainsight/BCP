@@ -6,6 +6,9 @@ import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import ChartExportButtons from './ChartExportButtons';
 import TargetDateBar from './TargetDateBar';
+import ChartDivisionBar from './ChartDivisionBar';
+import ChartDivisionsView from './ChartDivisionsView';
+import { VARGA_DIVISIONS } from '@/lib/vargaChart';
 import { buildLayerControls, CHART_LAYER_LABELS, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
@@ -37,6 +40,8 @@ export interface ChartSectionProps {
   onToggleChartDisplay?: (key: keyof ChartDisplaySettings) => void;
   onUpdateChartDisplay?: (update: Partial<ChartDisplaySettings>) => void;
 }
+
+const DIVISIONS_KEY = 'chartDivisions';
 
 function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: boolean; onToggle: () => void }) {
   return (
@@ -89,7 +94,24 @@ export default function ChartSection({
   // highlight only — it never hides the other bodies.
   const [selectedPlanet, setSelectedPlanet] = useState<{ kind: 'natal' | 'transit'; name: string } | null>(null);
   const [showDisplay, setShowDisplay] = useState(false);
+  // Which divisional charts are shown; D1 alone is the full chart with its layers.
+  const [divisions, setDivisionsState] = useState<number[]>([1]);
+  const setDivisions = (next: number[]) => {
+    setDivisionsState(next);
+    try { localStorage.setItem(DIVISIONS_KEY, JSON.stringify(next)); } catch {}
+  };
   const chartRef = useRef<HTMLDivElement>(null);
+
+  // localStorage is only readable after mount.
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(DIVISIONS_KEY) ?? 'null');
+      if (Array.isArray(stored) && stored.length > 0 && stored.every(d => (VARGA_DIVISIONS as readonly number[]).includes(d))) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setDivisionsState([...new Set<number>(stored)].sort((a, b) => a - b));
+      }
+    } catch {}
+  }, []);
 
   // Full screen is an overlay over the whole app, plus the browser's own full
   // screen where it is available (not on iPhone). Esc, the close button or
@@ -285,9 +307,22 @@ export default function ChartSection({
         </div>
       </div>
 
+        <ChartDivisionBar selected={divisions} onChange={setDivisions} />
+
         <div ref={chartRef} className="space-y-2">
-        <ChartExportButtons targetRef={chartRef} fileName="chart-d1" />
-        {chartStyle === 'south' ? (
+        <ChartExportButtons targetRef={chartRef} fileName={`chart-${divisions.map(d => `d${d}`).join('-')}`} />
+        {!(divisions.length === 1 && divisions[0] === 1) ? (
+        <ChartDivisionsView
+          chart={chart}
+          divisions={divisions}
+          chartStyle={chartStyle}
+          chartDisplaySettings={chartDisplaySettings}
+          karakaByPlanet={karakaByPlanet}
+          nakshatraAdjust={nakshatraAdjust}
+          dashaLords={dashaLords}
+          onFocus={(division) => setDivisions([division])}
+        />
+        ) : chartStyle === 'south' ? (
         <SouthIndianChart
           activeYearHouse={yearHouse}
           activeMonthHouse={monthHouse}

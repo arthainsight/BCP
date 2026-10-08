@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.38',
+    date: '2026-10-08',
+    title: 'Divisional charts next to the daśās',
+    changes: [
+      'The chart has a D1 / D9 / D10 selector, and a “+ more” list for the other divisions. Choose one or several: several are drawn side by side, so on a wide screen they stay on the left while TIMING, with the daśās, is open on the right.',
+      'One chart alone is drawn full size (D1 with all its layers). Tap a chart’s title to show that chart alone. Tap a planet to follow it through every chart. The choice is remembered.',
+      'Updated the application version to v2.38.',
+    ],
+  },
+  {
     version: 'v2.37',
     date: '2026-10-08',
     title: 'Running periods, stations, touch targets',
