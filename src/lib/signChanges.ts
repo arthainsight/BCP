@@ -128,3 +128,31 @@ export function findCombustion(
   }
   return changes;
 }
+
+/** Grahas that turn retrograde; the Sun, Moon and the mean nodes do not (or always are). */
+export const STATION_BODIES = ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+
+export type TimingEvent =
+  | ({ kind: 'sign' } & SignChange)
+  | ({ kind: 'station' } & Station)
+  | ({ kind: 'combust' } & CombustChange);
+
+/**
+ * Sign changes of the chosen grahas, and with `stations` their stations and the
+ * combustion of Mercury and Venus, in time order. Combustion needs the Sun's series.
+ */
+export function collectTimingEvents(
+  series: Record<string, LongitudeSeries>,
+  bodies: readonly string[],
+  stations: boolean,
+): TimingEvent[] {
+  const all: TimingEvent[] = [];
+  for (const body of bodies) {
+    if (!series[body]) continue;
+    all.push(...findSignChanges(body, series[body]).map(c => ({ kind: 'sign' as const, ...c })));
+    if (!stations) continue;
+    if (STATION_BODIES.includes(body)) all.push(...findStations(body, series[body]).map(c => ({ kind: 'station' as const, ...c })));
+    if (body in COMBUST_ORBS && series.Sun) all.push(...findCombustion(body, series[body], series.Sun).map(c => ({ kind: 'combust' as const, ...c })));
+  }
+  return all.sort((a, b) => a.time - b.time);
+}

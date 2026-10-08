@@ -5,3 +5,12 @@
 body {
   font-family: var(--font-geist-mono), monospace;
 }
+
+/* Print: only the TIMING summary, so the page saves as a one-page PDF. */
+@media print {
+  body * { visibility: hidden; }
+  #timing-summary, #timing-summary * { visibility: visible; }
+  #timing-summary { position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
+  /* Paper is white, whatever theme is on screen. */
+  #timing-summary, #timing-summary * { color: #1f2937 !important; }
+}

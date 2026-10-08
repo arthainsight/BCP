@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { findAllSignChanges, findCombustion, findSignChanges, findStations } from './signChanges';
+import { collectTimingEvents, findAllSignChanges, findCombustion, findSignChanges, findStations } from './signChanges';
 
 const DAY = 86_400_000;
 const series = (longitudes: number[]) => ({ start: 0, step: DAY, longitudes });
@@ -48,5 +48,16 @@ assert.deepEqual(combust.map(c => c.combust), [true, false]);
 assert.ok(combust[0].time > 0 && combust[0].time < 2 * DAY);
 assert.deepEqual(findCombustion('Mars', mercury, sun), [], 'only Mercury and Venus have an orb here');
 assert.deepEqual(findCombustion('Mercury', series([150, 151, 152]), series([100, 101, 102])), [], 'far from the Sun is never combust');
+
+// --- All events of the chosen grahas, in time order --------------------------------
+const events = collectTimingEvents(
+  { Sun: sun, Mercury: mercury },
+  ['Mercury'],
+  true,
+);
+assert.deepEqual(events.map(e => e.kind).sort(), ['combust', 'combust', 'sign', 'sign', 'station'], 'sign changes at 120°, combustion in and out, and the turn to direct');
+assert.ok(events.every((e, i) => i === 0 || events[i - 1].time <= e.time), 'in time order');
+assert.deepEqual(collectTimingEvents({ Sun: sun, Mercury: mercury }, ['Mercury'], false).map(e => e.kind), ['sign', 'sign'], 'without stations only sign changes are listed');
+assert.deepEqual(collectTimingEvents({ Mars: series([29, 31]) }, ['Mars', 'Venus'], false).map(e => e.kind), ['sign'], 'a body without a series is skipped');
 
 console.log('Sign change tests passed');

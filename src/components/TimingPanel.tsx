@@ -5,15 +5,17 @@ import type { BcpResult, CalculationSettings, ChartData, ChartDisplaySettings, D
 import DashaWorkspace from './DashaWorkspace';
 import TransitHitsPanel from './TransitHitsPanel';
 import SignChangesPanel from './SignChangesPanel';
+import TimingSummary from './TimingSummary';
 import TithiPravesaPanel from './TithiPravesaPanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
 import type { AnnualPlace } from './annualShared';
 import { useT } from '@/lib/i18n';
 
-type View = 'dasha' | 'transits' | 'signs' | 'tithi' | 'varsha';
+type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'tithi' | 'varsha';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'dasha', label: 'Dasha' },
+  { key: 'summary', label: 'Summary' },
   { key: 'transits', label: 'transit.hits' },
   { key: 'signs', label: 'Sign changes' },
   { key: 'tithi', label: 'Tithi Praveśa' },
@@ -70,7 +72,7 @@ export default function TimingPanel({
         <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
           {VIEWS.map((item) => (
             <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-              {item.key === 'dasha' || item.key === 'signs' ? t(item.label) : item.label}
+              {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' ? t(item.label) : item.label}
             </button>
           ))}
         </div>
@@ -88,6 +90,16 @@ export default function TimingPanel({
           transitDatetime={transitDatetime}
           onSetTransitDatetime={onSetTransitDatetime}
           onOpenDateInChart={onOpenDateInChart}
+        />
+      )}
+
+      {view === 'summary' && (
+        <TimingSummary
+          chart={chart}
+          birthDatetime={birthDatetime}
+          targetDate={targetDate ?? ''}
+          dashaSettings={dashaSettings}
+          calculationSettings={calculationSettings}
         />
       )}
 

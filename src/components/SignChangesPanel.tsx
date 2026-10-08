@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
-import { COMBUST_ORBS, findCombustion, findSignChanges, findStations, type CombustChange, type SignChange, type Station } from '@/lib/signChanges';
+import { COMBUST_ORBS, collectTimingEvents, type TimingEvent } from '@/lib/signChanges';
 import type { LongitudeSeries } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 
@@ -25,13 +25,7 @@ const RANGES = [
   { label: '12 mo', days: 366 },
 ];
 const FIRST_ROWS = 20;
-// Grahas that turn retrograde; the Sun, Moon and the mean nodes do not (or always are).
-const STATION_BODIES = ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
-
-type Event =
-  | ({ kind: 'sign'; time: number } & SignChange)
-  | ({ kind: 'station'; time: number } & Station)
-  | ({ kind: 'combust'; time: number } & CombustChange);
+type Event = TimingEvent & { time: number };
 const DEFAULT_BODIES = BODIES.filter(body => body !== 'Moon');
 
 type Loaded = { key: string; start: number; series: Record<string, { step: number; longitudes: number[] }> };
@@ -100,15 +94,7 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
     for (const [body, s] of Object.entries(data.series)) {
       series[body] = { start: data.start, step: s.step, longitudes: s.longitudes };
     }
-    const all: Event[] = [];
-    for (const body of bodies) {
-      if (!series[body]) continue;
-      all.push(...findSignChanges(body, series[body]).map(c => ({ kind: 'sign' as const, ...c })));
-      if (!stations) continue;
-      if (STATION_BODIES.includes(body)) all.push(...findStations(body, series[body]).map(c => ({ kind: 'station' as const, ...c })));
-      if (body in COMBUST_ORBS && series.Sun) all.push(...findCombustion(body, series[body], series.Sun).map(c => ({ kind: 'combust' as const, ...c })));
-    }
-    return all.sort((a, b) => a.time - b.time);
+    return collectTimingEvents(series, bodies, stations);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, stations]);
 
