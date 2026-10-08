@@ -126,11 +126,14 @@ test('TIMING Systems lists the daśā systems closed and opens one on click', as
   await selectWorkspace(page, 'TIMING');
   await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
 
-  const vimshottari = visible(page, page.getByRole('button', { name: /^Vimsottari [▶▼]$/ }));
+  const vimshottari = visible(page, page.getByRole('button', { name: /^Vimsottari .*[▶▼]$/ }));
   await expect(vimshottari).toBeVisible();
   await expect(vimshottari).toHaveAttribute('aria-expanded', 'false');
   // Every system starts closed.
   await expect(page.locator('button[aria-expanded="true"]').filter({ hasText: '▼' })).toHaveCount(0);
+
+  // The header already tells which period is running: lords joined by dashes and the MD end.
+  await expect(vimshottari).toContainText(/\w+ – \w+.*MD → \d{2}\.\d{4}/);
 
   await vimshottari.click();
   await expect(vimshottari).toHaveAttribute('aria-expanded', 'true');
@@ -170,6 +173,9 @@ test('TIMING exposes Dasha, Transit Hits, Sign changes, Tithi Praveśa and Var�
   // Sign changes lists when the grahas move into the next sign.
   await visible(page, page.getByRole('button', { name: 'Sign changes', exact: true })).click();
   await expect(visible(page, page.getByText('→').first())).toBeVisible({ timeout: 15_000 });
+  // Stations and combustion are listed too (a year is certain to hold Mercury's turns).
+  await visible(page, page.getByRole('button', { name: '12 mo', exact: true })).click();
+  await expect(visible(page, page.getByText(/turns retrograde/).first())).toBeVisible({ timeout: 15_000 });
 
   expect(errors).toEqual([]);
 });

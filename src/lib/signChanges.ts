@@ -54,3 +54,77 @@ export function findAllSignChanges(series: Record<string, LongitudeSeries>): Sig
     .flatMap(([body, s]) => findSignChanges(body, s))
     .sort((a, b) => a.time - b.time);
 }
+
+export interface Station {
+  body: string;
+  time: number;
+  /** The direction the graha turns into. */
+  turnsTo: 'retrograde' | 'direct';
+  /** Sign the graha is in at the turn, 1 = Aries … 12 = Pisces. */
+  sign: number;
+}
+
+/**
+ * Moments a graha turns retrograde or direct: where its motion between two
+ * samples changes sign. The moment is interpolated between the midpoints of
+ * the two steps, where the motion is measured.
+ */
+export function findStations(body: string, series: LongitudeSeries): Station[] {
+  const stations: Station[] = [];
+  const { longitudes, start, step } = series;
+  const motion = longitudes.slice(1).map((lon, i) => signedDistance(lon, longitudes[i]));
+  for (let i = 1; i < motion.length; i++) {
+    const before = motion[i - 1];
+    const after = motion[i];
+    const toRetrograde = before > 0 && after <= 0;
+    const toDirect = before < 0 && after >= 0;
+    if (!toRetrograde && !toDirect) continue;
+    const fraction = before / (before - after);
+    stations.push({
+      body,
+      time: start + (i - 0.5 + fraction) * step,
+      turnsTo: toRetrograde ? 'retrograde' : 'direct',
+      sign: signOf(longitudes[i]),
+    });
+  }
+  return stations;
+}
+
+export interface CombustChange {
+  body: string;
+  time: number;
+  /** True when the graha comes within the orb of the Sun, false when it leaves it. */
+  combust: boolean;
+}
+
+/** Classical combustion orbs in degrees, narrower while the graha is retrograde. */
+export const COMBUST_ORBS: Record<string, { direct: number; retrograde: number }> = {
+  Mercury: { direct: 14, retrograde: 12 },
+  Venus: { direct: 10, retrograde: 8 },
+};
+
+/** Moments a graha enters or leaves combustion. Both series must share start, step and length. */
+export function findCombustion(
+  body: string,
+  series: LongitudeSeries,
+  sun: LongitudeSeries,
+  orbs = COMBUST_ORBS[body],
+): CombustChange[] {
+  if (!orbs) return [];
+  const { longitudes, start, step } = series;
+  // Distance to the Sun less the orb: negative while combust.
+  const margin = longitudes.map((lon, i) => {
+    const next = longitudes[i + 1] ?? lon;
+    const retrograde = i + 1 < longitudes.length ? signedDistance(next, lon) < 0 : signedDistance(lon, longitudes[i - 1] ?? lon) < 0;
+    return Math.abs(signedDistance(lon, sun.longitudes[i])) - (retrograde ? orbs.retrograde : orbs.direct);
+  });
+  const changes: CombustChange[] = [];
+  for (let i = 0; i + 1 < margin.length; i++) {
+    const was = margin[i] < 0;
+    const now = margin[i + 1] < 0;
+    if (was === now) continue;
+    const fraction = margin[i] / (margin[i] - margin[i + 1]);
+    changes.push({ body, time: start + (i + fraction) * step, combust: now });
+  }
+  return changes;
+}

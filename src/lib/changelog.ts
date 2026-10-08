@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.37',
+    date: '2026-10-08',
+    title: 'Running periods, stations, touch targets',
+    changes: [
+      'Each daśā system in TIMING → Dasha → Systems shows its running periods in the closed header, for example “Rahu – Rahu – Moon · MD → 05.2042”, for the target date.',
+      'Sign changes also lists stations (when Mars, Mercury, Venus, Jupiter and Saturn turn retrograde or direct) and when Mercury and Venus enter or leave combustion. The “stations & combustion” button switches them off.',
+      'Phone: the on/off switches in the ··· menu, the graha and period buttons and “set transit” are larger to tap, and a sign and its house no longer split across two lines.',
+      'Updated the application version to v2.37.',
+    ],
+  },
+  {
     version: 'v2.36',
     date: '2026-10-08',
     title: 'Daśā systems start closed',
