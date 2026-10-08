@@ -33,11 +33,11 @@ export default function DashaYearly({ planets, ascendant, birthDatetime, dashaSe
 
   const table = useMemo(() => {
     if (!birth) return { labels: [] as string[], rows: [] as { year: number; cells: ReturnType<typeof enabledSnapshots> }[] };
-    const { charaOptions, rasiOptions, enabled } = dashaSnapshotOptions(dashaSettings);
+    const { charaOptions, rasiOptions, variantChoice, enabled } = dashaSnapshotOptions(dashaSettings);
     const rows = Array.from({ length: ROWS }, (_, index) => {
       const year = firstYear + index;
       const eventDate = new Date(year, 6, 1, 12);
-      const snapshots = enabledSnapshots(calculateDashaEventSnapshots({ eventDate, birthDate: birth, planets, ascendant, charaOptions, rasiOptions }), enabled);
+      const snapshots = enabledSnapshots(calculateDashaEventSnapshots({ eventDate, birthDate: birth, planets, ascendant, charaOptions, rasiOptions, variantChoice }), enabled);
       return { year, cells: snapshots };
     });
     return { labels: rows[0]?.cells.map(cell => cell.label) ?? [], rows };

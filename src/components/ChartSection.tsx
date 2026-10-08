@@ -11,6 +11,7 @@ import ChartDivisionsView from './ChartDivisionsView';
 import { useChartDivisions } from '@/hooks/useChartDivisions';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPadas';
+import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
 import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
@@ -252,6 +253,18 @@ export default function ChartSection({
                   {(layerControls ?? []).map((control) => (
                     <ChartDisplayToggle key={control.key} label={t(CHART_LAYER_LABELS[control.key])} value={control.on} onToggle={control.onToggle} />
                   ))}
+                  {dashaLordsFromParent !== null && onUpdateChartDisplay && (
+                    <label className="block text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
+                      {t('dasha lords from')}
+                      <select
+                        value={chartDisplaySettings.dashaMarkSystem ?? 'vimshottari'}
+                        onChange={(e) => onUpdateChartDisplay({ dashaMarkSystem: e.target.value as ChartDisplaySettings['dashaMarkSystem'] })}
+                        className="mt-1 w-full rounded border border-zinc-200 bg-white px-1.5 py-1 text-[10px] dark:border-zinc-700 dark:bg-zinc-900"
+                      >
+                        {GRAHA_DASHA_SYSTEMS.map((system) => <option key={system.key} value={system.key}>{system.label}</option>)}
+                      </select>
+                    </label>
+                  )}
                   <div className="border-t border-zinc-200 dark:border-zinc-700" />
                   <div className="flex items-baseline justify-between">
                     <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('arudha padas')}</div>

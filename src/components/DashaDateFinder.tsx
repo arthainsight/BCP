@@ -2,21 +2,22 @@
 
 import { useState } from 'react';
 import type { CharaOptions, DashaSettings, PlanetData, RasiDashaOptions } from '@/types';
+import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { calculateDashaEventSnapshots, type DashaEventSnapshot } from '@/lib/dashaEvents';
 import { groupDailyMatches, snapshotMatches } from '@/lib/dashaDateFinder';
 import { parseDateTime } from '@/lib/bcp';
 
 type Key = DashaEventSnapshot['key'];
-const KEYS: { key: Key | 'all'; label: string }[] = [{ key: 'all', label: 'All enabled systems' }, { key: 'vimshottari', label: 'Vimsottari' }, { key: 'vds', label: 'Vimsottari Original' }, { key: 'chara', label: 'Chara' }, { key: 'yogini', label: 'Yogini' }, { key: 'ashtottari', label: 'Ashtottari' }, { key: 'kalaChakra', label: 'Kalachakra' }, { key: 'narayana', label: 'Narayana' }, { key: 'moola', label: 'Mula' }, { key: 'sthira', label: 'Sthira' }];
-const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
+const KEYS: { key: Key | 'all'; label: string }[] = [{ key: 'all', label: 'All enabled systems' }, { key: 'vimshottari', label: 'Vimsottari' }, { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana' }, { key: 'vds', label: 'Vimsottari Original' }, { key: 'chara', label: 'Chara' }, { key: 'yogini', label: 'Yogini' }, { key: 'ashtottari', label: 'Ashtottari' }, { key: 'kalaChakra', label: 'Kalachakra' }, { key: 'narayana', label: 'Narayana' }, { key: 'moola', label: 'Mula' }, { key: 'sthira', label: 'Sthira' }];
+const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
 const DAY = 24 * 60 * 60 * 1000;
 const value = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 const fmt = (date: Date) => `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
 const csvCell = (input: unknown) => `"${String(input ?? '').replaceAll('"', '""')}"`;
 
-interface Props { planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashas: DashaSettings['dashas']; charaOptions: CharaOptions; rasiOptions: RasiDashaOptions; }
+interface Props { planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashas: DashaSettings['dashas']; charaOptions: CharaOptions; rasiOptions: RasiDashaOptions; variantChoice?: VimshottariVariantChoice; }
 
-export default function DashaDateFinder({ planets, ascendant, birthDatetime, dashas, charaOptions, rasiOptions }: Props) {
+export default function DashaDateFinder({ planets, ascendant, birthDatetime, dashas, charaOptions, rasiOptions, variantChoice }: Props) {
   const now = new Date(); const later = new Date(now); later.setFullYear(later.getFullYear() + 2);
   const [system, setSystem] = useState<Key | 'all'>('vimshottari'); const [start, setStart] = useState(value(now)); const [end, setEnd] = useState(value(later));
   const [md, setMd] = useState(''); const [ad, setAd] = useState(''); const [pd, setPd] = useState(''); const [any, setAny] = useState(''); const [operator, setOperator] = useState<'and' | 'or'>('and'); const [minimum, setMinimum] = useState(2);
@@ -30,7 +31,7 @@ export default function DashaDateFinder({ planets, ascendant, birthDatetime, das
     const matches = [];
     let scanned = 0;
     for (let time = from.getTime(); time <= to.getTime(); time += DAY) {
-      const date = new Date(time); const snapshots = calculateDashaEventSnapshots({ eventDate: date, birthDate, planets, ascendant, charaOptions, rasiOptions });
+      const date = new Date(time); const snapshots = calculateDashaEventSnapshots({ eventDate: date, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice });
       const candidates = snapshots.filter(snapshot => dashas[SETTING[snapshot.key]] && (system === 'all' || snapshot.key === system) && snapshotMatches(snapshot, { md, ad, pd, any, operator }));
       if (candidates.length >= (system === 'all' ? minimum : 1)) matches.push({ date, snapshots: candidates });
       scanned += 1;

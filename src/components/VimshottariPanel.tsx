@@ -77,9 +77,11 @@ function activeEntry(entries: MahadashaEntry[], now: Date): MahadashaEntry | nul
 interface Props {
   planets: PlanetData[];
   birthDatetime: string;
+  /** Heading shown after the prompt; vimshottari when missing. */
+  title?: string;
 }
 
-export default function VimshottariPanel({ planets, birthDatetime }: Props) {
+export default function VimshottariPanel({ planets, birthDatetime, title = 'vimshottari' }: Props) {
   const [level, setLevel] = useState<Level>('md');
   const [selected, setSelected] = useState<MahadashaEntry[]>([]);
 
@@ -112,7 +114,7 @@ export default function VimshottariPanel({ planets, birthDatetime }: Props) {
     const moon = planets.find((p) => p.name === 'Moon');
     return (
       <div className="space-y-2">
-        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; vimshottari</div>
+        <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; {title}</div>
         <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 italic">
           {!moon ? 'Moon data required.' : 'Invalid birth datetime.'}
         </div>
@@ -171,7 +173,7 @@ export default function VimshottariPanel({ planets, birthDatetime }: Props) {
     <div className="space-y-3 min-w-0 overflow-hidden">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
-          &gt; vimshottari
+          &gt; {title}
         </div>
         <button
           onClick={openNow}

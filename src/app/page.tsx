@@ -134,7 +134,7 @@ export default function Home() {
     !!birthDatetime && showCoords && !!manualLat && !!manualLng && effectiveTzOffset !== null;
 
   const { karakaByPlanet, nakshatraAdjust, effectiveBnnHouses, effectiveNadiParayaHouses, dashaLords } =
-    useChartDerived(chartData, birthDatetime, targetDate, calculationSettings, chartDisplaySettings.dashaMarkSystem);
+    useChartDerived(chartData, birthDatetime, targetDate, calculationSettings, chartDisplaySettings.dashaMarkSystem, dashaSettings.variantChoice);
 
 
   // Recompute BCP when the target or birth date changes, but only if a chart

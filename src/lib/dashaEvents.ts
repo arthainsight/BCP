@@ -3,6 +3,7 @@ import { calculateCleanCharaMD, calculateCleanCharaSubDashas, type CleanCharaEnt
 import { calculateKalachakra, calculateKalachakraAntardashas, type KalachakraEntry } from './kalachakra';
 import { calculateVds } from './vds';
 import { calculateSubDashas, calculateVimshottari, type MahadashaEntry } from './vimshottari';
+import { calculateVimshottariVariant, VARIANT_LABELS, type VimshottariVariantChoice } from './vimshottariVariants';
 import { calculateYogini, calculateYoginiSubDashas } from './yogini';
 import { calculateAshtottari, calculateAshtottariSubDashas, evaluateAshtottariEligibility } from './ashtottari';
 import type { NakshatraDashaEntry } from './nakshatraDasha';
@@ -10,7 +11,7 @@ import { calculateRasiDasha, calculateRasiSubDashas, type RasiDashaEntry, type R
 
 export interface DashaEventLevel { level: string; value: string; }
 export interface DashaEventSnapshot {
-  key: 'vimshottari' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'narayana' | 'moola' | 'sthira';
+  key: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'narayana' | 'moola' | 'sthira';
   label: string;
   levels: DashaEventLevel[];
   mdRange?: { startDate: Date; endDate: Date };
@@ -23,6 +24,8 @@ interface SnapshotInput {
   ascendant: { longitude: number; sign: number; degree: number };
   charaOptions: CharaOptions;
   rasiOptions: RasiDashaOptions;
+  /** Which of Utpanna, Kṣema and Ādhāna the variant Vimśottarī starts from; auto when missing. */
+  variantChoice?: VimshottariVariantChoice;
 }
 
 function activeEntry<T extends { startDate: Date; endDate: Date }>(entries: T[], date: Date): T | null {
@@ -69,9 +72,10 @@ function rasiLevels(entries: RasiDashaEntry[], date: Date, planets: PlanetData[]
 }
 
 export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSnapshot[] {
-  const { eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions } = input;
+  const { eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice = 'auto' } = input;
   if (eventDate < birthDate) return [
     { key: 'vimshottari', label: 'Vimsottari', levels: [], note: 'Date is before birth' },
+    { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', levels: [], note: 'Date is before birth' },
     { key: 'vds', label: 'Vimsottari Original', levels: [], note: 'Date is before birth' },
     { key: 'chara', label: 'Chara Dasha', levels: [], note: 'Date is before birth' },
     { key: 'yogini', label: 'Yogini Dasha', levels: [], note: 'Date is before birth' },
@@ -90,6 +94,11 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
   snapshots.push(vimshottari ? {
     key: 'vimshottari', label: 'Vimsottari', levels: vimshottariLevels(vimshottari, eventDate), mdRange: activeRange(vimshottari, eventDate),
   } : { key: 'vimshottari', label: 'Vimsottari', levels: [], note: 'Moon unavailable' });
+
+  if (moon) {
+    const variant = calculateVimshottariVariant(moon.longitude, planets, birthDate, variantChoice);
+    snapshots.push({ key: 'vimshottariVariant', label: `Vimsottari ${VARIANT_LABELS[variant.variant]}`, levels: vimshottariLevels(variant.entries, eventDate), mdRange: activeRange(variant.entries, eventDate) });
+  } else snapshots.push({ key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', levels: [], note: 'Moon unavailable' });
 
   const planetLongitudes = Object.fromEntries(planets.map((planet) => [planet.name, planet.longitude]));
   const vds = moon && sun ? calculateVds({ moonLongitude: moon.longitude, sunLongitude: sun.longitude, lagnaLongitude: ascendant.longitude, lagnaSign: ascendant.sign, lagnaDegree: ascendant.degree, birthDate, planetLongitudes }) : null;
@@ -129,10 +138,11 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
 }
 
 /** Dasha systems whose periods belong to grahas, so their lords can be marked on a chart. */
-export type GrahaDashaSystem = 'vimshottari' | 'vds' | 'yogini' | 'ashtottari';
+export type GrahaDashaSystem = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'yogini' | 'ashtottari';
 
 export const GRAHA_DASHA_SYSTEMS: { key: GrahaDashaSystem; label: string; short: string }[] = [
   { key: 'vimshottari', label: 'Vimśottarī', short: 'Vimś' },
+  { key: 'vimshottariVariant', label: 'Vimśottarī Utpanna / Kṣema / Ādhāna', short: 'Utp/Ksh/Adh' },
   { key: 'vds', label: 'Vimśottarī Original', short: 'VDS' },
   { key: 'yogini', label: 'Yoginī', short: 'Yog' },
   { key: 'ashtottari', label: 'Aṣṭottarī', short: 'Aṣṭ' },
@@ -147,7 +157,7 @@ export function runningGrahaDashaLords(
   system: GrahaDashaSystem,
   input: Omit<SnapshotInput, 'charaOptions' | 'rasiOptions'>,
 ): { md: string; ad: string } | null {
-  const { eventDate, birthDate, planets, ascendant } = input;
+  const { eventDate, birthDate, planets, ascendant, variantChoice = 'auto' } = input;
   if (eventDate < birthDate) return null;
   const moon = planets.find(p => p.name === 'Moon');
   const sun = planets.find(p => p.name === 'Sun');
@@ -162,6 +172,8 @@ export function runningGrahaDashaLords(
   switch (system) {
     case 'vimshottari':
       return fromEntries(calculateVimshottari(moon.longitude, birthDate).entries, calculateSubDashas);
+    case 'vimshottariVariant':
+      return fromEntries(calculateVimshottariVariant(moon.longitude, planets, birthDate, variantChoice).entries, calculateSubDashas);
     case 'vds': {
       if (!sun) return null;
       const planetLongitudes = Object.fromEntries(planets.map(p => [p.name, p.longitude]));

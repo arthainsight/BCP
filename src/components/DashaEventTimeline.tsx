@@ -8,8 +8,8 @@ import { calculateDashaEventSnapshots, type DashaEventSnapshot } from '@/lib/das
 import { DASHA_EVENT_CATEGORIES, DASHA_EVENT_CATEGORY_LABELS, parseStoredDashaEvents, type DashaEventCategory, type StoredDashaEvent } from '@/lib/dashaEventStore';
 
 type SnapshotKey = DashaEventSnapshot['key'];
-const KEY_TO_SETTING: Record<SnapshotKey, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
-const SYSTEM_LABELS: Record<SnapshotKey, string> = { vimshottari: 'Vimsottari', vds: 'Vimsottari Original', chara: 'Chara', yogini: 'Yogini', ashtottari: 'Ashtottari', kalaChakra: 'Kalachakra', narayana: 'Narayana', moola: 'Mula', sthira: 'Sthira' };
+const KEY_TO_SETTING: Record<SnapshotKey, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
+const SYSTEM_LABELS: Record<SnapshotKey, string> = { vimshottari: 'Vimsottari', vimshottariVariant: 'Vimsottari Utpanna / Kshema / Adhana', vds: 'Vimsottari Original', chara: 'Chara', yogini: 'Yogini', ashtottari: 'Ashtottari', kalaChakra: 'Kalachakra', narayana: 'Narayana', moola: 'Mula', sthira: 'Sthira' };
 
 interface Props { planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashaSettings: DashaSettings; }
 interface EventRow { event: StoredDashaEvent; snapshots: DashaEventSnapshot[]; }
@@ -38,9 +38,9 @@ export default function DashaEventTimeline({ planets, ascendant, birthDatetime, 
   const rows = useMemo<EventRow[]>(() => events.flatMap(event => {
     const eventDate = parseEventDate(event.date);
     if (!birthDate || !eventDate) return [];
-    const snapshots = calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions }).filter(snapshot => enabledKeys.includes(snapshot.key));
+    const snapshots = calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice: dashaSettings.variantChoice }).filter(snapshot => enabledKeys.includes(snapshot.key));
     return [{ event, snapshots }];
-  }), [ascendant, birthDate, charaOptions, enabledKeys, events, planets, rasiOptions]);
+  }), [ascendant, birthDate, charaOptions, dashaSettings.variantChoice, enabledKeys, events, planets, rasiOptions]);
   const tags = useMemo(() => [...new Set(events.flatMap(event => event.tags))].sort((a, b) => a.localeCompare(b)), [events]);
   const usedCategories = useMemo(() => DASHA_EVENT_CATEGORIES.filter(item => events.some(event => event.category === item)), [events]);
 

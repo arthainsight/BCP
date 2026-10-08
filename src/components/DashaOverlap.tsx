@@ -7,7 +7,7 @@ import { parseDateTime } from '@/lib/bcp';
 import { calculateDashaEventSnapshots, type DashaEventSnapshot } from '@/lib/dashaEvents';
 
 type Key = DashaEventSnapshot['key'];
-const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
+const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
 const isoToday = () => { const date = new Date(); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
 
 interface Props { planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashaSettings: DashaSettings; }
@@ -18,7 +18,7 @@ export default function DashaOverlap({ planets, ascendant, birthDatetime, dashaS
     const birthDate = parseDateTime(birthDatetime); const eventDate = new Date(`${date}T12:00:00`);
     if (!birthDate || Number.isNaN(eventDate.getTime())) return [];
     const dashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
-    return calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions: dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions, rasiOptions: { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions } }).filter(snapshot => dashas[SETTING[snapshot.key]]);
+    return calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions: dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions, rasiOptions: { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions }, variantChoice: dashaSettings.variantChoice }).filter(snapshot => dashas[SETTING[snapshot.key]]);
   }, [ascendant, birthDatetime, dashaSettings, date, planets]);
   const overlaps = useMemo(() => {
     const values = new Map<string, { value: string; hits: { system: string; level: string }[] }>();

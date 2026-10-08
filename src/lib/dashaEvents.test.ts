@@ -23,14 +23,31 @@ const snapshots = calculateDashaEventSnapshots({
   rasiOptions: DEFAULT_DASHA_SETTINGS.rasiOptions,
 });
 
-assert.deepEqual(snapshots.map((snapshot) => snapshot.key), ['vimshottari', 'vds', 'chara', 'yogini', 'ashtottari', 'kalaChakra', 'narayana', 'moola', 'sthira']);
+assert.deepEqual(snapshots.map((snapshot) => snapshot.key), ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', 'kalaChakra', 'narayana', 'moola', 'sthira']);
 assert.equal(snapshots[0].levels.length, 3);
-assert.equal(snapshots[2].levels.length, 3);
+assert.equal(snapshots[1].levels.length, 3);
 assert.equal(snapshots[3].levels.length, 3);
-assert.equal(snapshots[5].levels.length, 2);
-assert.ok(snapshots.slice(6).every((snapshot) => snapshot.levels.length === 3));
+assert.equal(snapshots[4].levels.length, 3);
+assert.equal(snapshots[6].levels.length, 2);
+assert.ok(snapshots.slice(7).every((snapshot) => snapshot.levels.length === 3));
 assert.ok(snapshots.filter(snapshot => snapshot.levels.length).every(snapshot => snapshot.mdRange && snapshot.mdRange.startDate < snapshot.mdRange.endDate));
 assert.ok(snapshots.filter(snapshot => snapshot.mdRange).every(snapshot => snapshot.mdRange!.startDate <= new Date(2001, 0, 1, 12) && snapshot.mdRange!.endDate > new Date(2001, 0, 1, 12)));
+
+// The variant Vimsottari starts from the Utpanna, Kshema or Adhana nakshatra of the Moon. The Moon at 66° is in
+// Mrigashira (Mars); the 4th, 5th and 8th from it are Pushya (Saturn), Ashlesha (Mercury) and Uttara Phalguni (Sun).
+const startLord = (variantChoice: 'auto' | 'utpanna' | 'kshema' | 'adhana') => calculateDashaEventSnapshots({
+  birthDate: new Date(2000, 0, 1, 10), eventDate: new Date(2000, 0, 2, 12), planets, ascendant: { longitude: 90, sign: 4, degree: 0 },
+  charaOptions: DEFAULT_DASHA_SETTINGS.charaOptions, rasiOptions: DEFAULT_DASHA_SETTINGS.rasiOptions, variantChoice,
+});
+const variantOf = (list: ReturnType<typeof startLord>) => list.find(snapshot => snapshot.key === 'vimshottariVariant')!;
+assert.equal(variantOf(startLord('auto')).levels.length, 3);
+assert.equal(startLord('auto')[0].levels[0].value, 'Mars');
+assert.equal(variantOf(startLord('utpanna')).levels[0].value, 'Mercury');
+assert.equal(variantOf(startLord('kshema')).levels[0].value, 'Saturn');
+assert.equal(variantOf(startLord('adhana')).levels[0].value, 'Sun');
+assert.match(variantOf(startLord('utpanna')).label, /Utpanna/);
+// Auto picks one of the three and names it.
+assert.match(variantOf(startLord('auto')).label, /^Vimsottari (Utpanna|Kshema|Adhana)$/);
 
 const beforeBirth = calculateDashaEventSnapshots({
   birthDate: new Date(2000, 0, 1),

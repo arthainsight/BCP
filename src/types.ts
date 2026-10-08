@@ -1,5 +1,6 @@
 import type { DegreePrecision } from '@/lib/formatDegree';
 import type { SaturnPortionLagnas } from '@/lib/upagrahas';
+import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 export type { DegreePrecision };
 
 export interface GeoResult {
@@ -145,7 +146,7 @@ export interface ChartDisplaySettings {
   /** Coloured borders on the houses of the running mahadasha and antardasha lords. */
   showDashaHouses: boolean;
   /** Which graha-based dasha system the marks follow. */
-  dashaMarkSystem: 'vimshottari' | 'vds' | 'yogini' | 'ashtottari';
+  dashaMarkSystem: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'yogini' | 'ashtottari';
   /** Interface language. */
   language: 'en' | 'fi';
   /** Names of the grahas: English or Sanskrit. */
@@ -240,6 +241,8 @@ export interface DashaSettings {
   dashas: {
     bcp: boolean;
     vimshottari: boolean;
+    /** Vimśottarī from the Utpanna, Kṣema or Ādhāna nakṣatra of the Moon. */
+    vimshottariVariant?: boolean;
     vds: boolean;
     chara?: boolean;
     yogini?: boolean;
@@ -251,12 +254,15 @@ export interface DashaSettings {
   };
   charaOptions?: CharaOptions;
   rasiOptions?: RasiDashaOptions;
+  /** Which of Utpanna, Kṣema and Ādhāna the variant Vimśottarī starts from; auto picks the strongest. */
+  variantChoice?: VimshottariVariantChoice;
 }
 
 export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
   dashas: {
     bcp: true,
     vimshottari: true,
+    vimshottariVariant: true,
     vds: false,
     chara: false,
     yogini: true,
@@ -282,4 +288,5 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     moolaSeed: 'stronger-lagna-seventh',
     sthiraMethod: 'brahma-pvr',
   },
+  variantChoice: 'auto',
 };
