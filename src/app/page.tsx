@@ -591,7 +591,7 @@ export default function Home() {
             )}
             {desktopTab === 'grahas' && (
               chartData
-                ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} />
+                ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} />
                 : <EmptyState message="Calculate a chart to see graha positions" />
             )}
             {desktopTab === 'dasha' && (
@@ -642,7 +642,7 @@ export default function Home() {
         {activeTab === 'grahas' && (
           <Panel>
             {chartData
-              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} />
+              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} />
               : <EmptyState message="Calculate a chart in Data to see graha positions" />
             }
           </Panel>

@@ -174,6 +174,32 @@ test('on a phone the chart stays pinned at the top while the daśās scroll', as
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Nava-Tara chakra and the direction chart show the grahas', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+
+  // Nava-Tara: nine Taras of three nakshatras each, counted from the Moon's.
+  await visible(page, page.getByRole('button', { name: 'Nava-Tara', exact: true })).click();
+  for (const tara of ['Janma', 'Sampat', 'Vipat', 'Kshema', 'Pratyari', 'Sadhaka', 'Vadha', 'Mitra', 'Ati-Mitra']) {
+    await expect(visible(page, page.getByRole('region', { name: tara, exact: true }))).toBeVisible();
+  }
+  await expect(visible(page, page.getByRole('region', { name: 'Janma', exact: true }))).toContainText('Mo');
+
+  // Directions: the cross with the four directions; every graha stands in one.
+  await visible(page, page.getByRole('button', { name: 'Directions', exact: true })).click();
+  for (const direction of ['North', 'East', 'South', 'West']) {
+    await expect(visible(page, page.getByRole('region', { name: direction, exact: true }))).toBeVisible();
+  }
+  await expect(visible(page, page.getByRole('group', { name: 'Direction chart' }))).toContainText('Mo');
+  await visible(page, page.getByRole('button', { name: 'by house' })).click();
+  await expect(visible(page, page.getByRole('region', { name: 'East', exact: true }))).toContainText('Asc');
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -216,14 +242,14 @@ test('TIMING Systems lists the daśā systems closed and opens one on click', as
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS exposes Grahas, Varga, Nāḍī, Aṣṭakavarga and Dṛṣṭi', async ({ page }) => {
+test('ANALYSIS exposes Grahas, Varga, Nāḍī, Aṣṭakavarga, Dṛṣṭi, Nava-Tara and Directions', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
   await selectWorkspace(page, 'ANALYSIS');
 
-  for (const tab of ['Grahas', 'Varga', 'Nāḍī', 'Aṣṭakavarga', 'Dṛṣṭi']) {
+  for (const tab of ['Grahas', 'Varga', 'Nāḍī', 'Aṣṭakavarga', 'Dṛṣṭi', 'Nava-Tara', 'Directions']) {
     await visible(page, page.getByRole('button', { name: tab, exact: true })).click();
     await expect(visible(page, page.getByRole('button', { name: tab, exact: true }))).toBeVisible();
   }
