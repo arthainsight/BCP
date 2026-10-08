@@ -218,3 +218,55 @@ export async function calculateSlowTransitSeries(
   }
   return series;
 }
+
+/** Grahas whose sign changes are listed, with the sample step that suits their speed, in hours. */
+export const SIGN_CHANGE_STEP_HOURS = {
+  Moon: 3,
+  Sun: 12, Mars: 12, Mercury: 12, Venus: 12,
+  Jupiter: 24, Saturn: 24, Rahu: 24, Ketu: 24,
+} as const;
+export type SignChangeBody = keyof typeof SIGN_CHANGE_STEP_HOURS;
+
+const SIGN_CHANGE_IDS: Record<Exclude<SignChangeBody, 'Rahu' | 'Ketu'>, number> = {
+  Sun: SE_SUN, Moon: SE_MOON, Mars: SE_MARS, Mercury: SE_MERCURY, Venus: SE_VENUS, Jupiter: SE_JUPITER, Saturn: SE_SATURN,
+};
+
+/**
+ * Sidereal longitudes of the chosen grahas from a UTC moment for a number of
+ * days, each sampled at the step that suits it (see SIGN_CHANGE_STEP_HOURS).
+ * Uses the same ayanamsa and node settings as the chart.
+ */
+export async function calculateSignChangeSeries(
+  bodies: SignChangeBody[],
+  startUtcMs: number,
+  days: number,
+  ayanamsaSetting: string = 'lahiri',
+  nodeModeSetting: string = 'mean',
+  ayanamsaOffsetDegrees: number = 0,
+): Promise<Record<string, { step: number; longitudes: number[] }>> {
+  const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
+  const useTropical = ayanamsaMode === 'tropical';
+  const nodeId = resolveNodeMode(nodeModeSetting) === 'true' ? SE_TRUE_NODE : SE_MEAN_NODE;
+  const start = new Date(startUtcMs);
+  const startJd = await sweJulday(
+    start.getUTCFullYear(), start.getUTCMonth() + 1, start.getUTCDate(),
+    start.getUTCHours() + start.getUTCMinutes() / 60 + start.getUTCSeconds() / 3600,
+  );
+  const result: Record<string, { step: number; longitudes: number[] }> = {};
+  for (const body of bodies) {
+    const stepHours = SIGN_CHANGE_STEP_HOURS[body];
+    const longitudes: number[] = [];
+    for (let i = 0; i <= (days * 24) / stepHours; i++) {
+      const jd = startJd + (i * stepHours) / 24;
+      const ayanamsa = useTropical ? 0 : applyAyanamsaOffset(await sweGetAyanamsa(jd, ayanamsaMode), ayanamsaMode, ayanamsaOffsetDegrees);
+      if (body === 'Rahu' || body === 'Ketu') {
+        const rahu = normalize((await sweCalcUt(jd, nodeId)).longitude - ayanamsa);
+        longitudes.push(body === 'Rahu' ? rahu : normalize(rahu + 180));
+      } else {
+        longitudes.push(normalize((await sweCalcUt(jd, SIGN_CHANGE_IDS[body])).longitude - ayanamsa));
+      }
+    }
+    result[body] = { step: stepHours * 3_600_000, longitudes };
+  }
+  return result;
+}

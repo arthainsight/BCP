@@ -102,6 +102,15 @@ export const FI: Record<string, string> = {
   'set transit': 'aseta transiitti',
   'show fewer': 'näytä vähemmän',
   'show all': 'näytä kaikki',
+  'Sign changes': 'Merkinvaihdot',
+  'sign changes': 'merkinvaihdot',
+  'When a graha moves into the next sign, from the target date. H is the house from the natal ascendant. ℞ marks a move backwards.': 'Milloin graha siirtyy seuraavaan merkkiin tavoitepäivästä alkaen. H on talo natal-lagnasta laskien. ℞ tarkoittaa siirtymää taaksepäin.',
+  'Could not load sign changes:': 'Merkinvaihtojen lataus epäonnistui:',
+  'Pick at least one graha.': 'Valitse vähintään yksi graha.',
+  'No sign changes in this period.': 'Ei merkinvaihtoja tällä jaksolla.',
+  '1 mo': '1 kk',
+  '3 mo': '3 kk',
+  '12 mo': '12 kk',
   'Export failed. Try again, or use a screenshot.': 'Vienti epäonnistui. Yritä uudelleen tai ota kuvakaappaus.',
 
   // Legends
