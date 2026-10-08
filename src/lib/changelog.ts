@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.35',
+    date: '2026-10-08',
+    title: 'Sign changes of the grahas',
+    changes: [
+      'New Sign changes view in TIMING: when each graha moves into the next sign, from the target date, to the minute. Each row shows the new sign and its house from the natal ascendant; ℞ marks a move backwards.',
+      'Choose the grahas (the Moon is off by default, since it changes sign every two to three days) and the period: 1, 3 or 12 months. “set transit” moves the transit chart to that moment.',
+      'Updated the application version to v2.35.',
+    ],
+  },
+  {
     version: 'v2.34',
     date: '2026-10-07',
     title: 'A cleaner chart',

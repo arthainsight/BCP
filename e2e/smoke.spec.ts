@@ -133,18 +133,22 @@ test('ANALYSIS exposes Grahas, Varga, Nāḍī, Aṣṭakavarga and Dṛṣṭi'
   expect(errors).toEqual([]);
 });
 
-test('TIMING exposes Dasha, Transit Hits, Tithi Praveśa and Varṣaphala', async ({ page }) => {
+test('TIMING exposes Dasha, Transit Hits, Sign changes, Tithi Praveśa and Varṣaphala', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
 
-  const dashaLabels = ['Dasha', 'transit.hits', 'Tithi Praveśa', 'Varṣaphala'];
+  const dashaLabels = ['Dasha', 'transit.hits', 'Sign changes', 'Tithi Praveśa', 'Varṣaphala'];
   for (const tab of dashaLabels) {
     await visible(page, page.getByRole('button', { name: tab, exact: true })).click();
     await expect(visible(page, page.getByRole('button', { name: tab, exact: true }))).toBeVisible();
   }
+
+  // Sign changes lists when the grahas move into the next sign.
+  await visible(page, page.getByRole('button', { name: 'Sign changes', exact: true })).click();
+  await expect(visible(page, page.getByText('→').first())).toBeVisible({ timeout: 15_000 });
 
   expect(errors).toEqual([]);
 });
