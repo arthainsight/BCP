@@ -118,6 +118,27 @@ test('BNN Major and BNN Minor labels render in the North Indian chart', async ({
   expect(errors).toEqual([]);
 });
 
+test('TIMING Systems lists the daśā systems closed and opens one on click', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+
+  const vimshottari = visible(page, page.getByRole('button', { name: /^Vimsottari [▶▼]$/ }));
+  await expect(vimshottari).toBeVisible();
+  await expect(vimshottari).toHaveAttribute('aria-expanded', 'false');
+  // Every system starts closed.
+  await expect(page.locator('button[aria-expanded="true"]').filter({ hasText: '▼' })).toHaveCount(0);
+
+  await vimshottari.click();
+  await expect(vimshottari).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('button[aria-expanded="true"]').filter({ hasText: '▼' })).toHaveCount(1);
+
+  expect(errors).toEqual([]);
+});
+
 test('ANALYSIS exposes Grahas, Varga, Nāḍī, Aṣṭakavarga and Dṛṣṭi', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
