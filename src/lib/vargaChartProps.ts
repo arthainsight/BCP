@@ -1,4 +1,4 @@
-import type { ChartData, ChartDisplaySettings } from '@/types';
+import type { ChartData, ChartDisplaySettings, PlanetData } from '@/types';
 import type { DashaLordMarks } from '@/components/chartLayers';
 import { buildVargaChart } from './vargaChart';
 
@@ -12,11 +12,13 @@ interface Options {
   dashaLords?: DashaLordMarks | null;
   highlight?: string | null;
   onPlanetClick?: (name: string) => void;
+  /** Transiting grahas to draw on the chart, given in the rāśi and projected into the division. */
+  transitPlanets?: PlanetData[];
 }
 
 /** Props for a North or South Indian chart drawing one divisional chart. */
 export function vargaChartProps({
-  chart, division, compact, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null, highlight = null, onPlanetClick,
+  chart, division, compact, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null, highlight = null, onPlanetClick, transitPlanets,
 }: Options) {
   const varga = buildVargaChart(chart, division);
   return {
@@ -42,5 +44,8 @@ export function vargaChartProps({
     compact,
     highlightPlanet: highlight,
     onPlanetClick,
+    ...(transitPlanets
+      ? { transitPlanets: buildVargaChart({ ...chart, planets: transitPlanets }, division).planets, showTransitPlanets: true }
+      : {}),
   };
 }

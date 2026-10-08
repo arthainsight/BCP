@@ -5,6 +5,7 @@ import type { CalculationSettings, ChartData } from '@/types';
 import { COMBUST_ORBS, collectTimingEvents, type TimingEvent } from '@/lib/signChanges';
 import type { LongitudeSeries } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
+import { useGrahaNames } from '@/lib/grahaNames';
 
 type Props = {
   chart: ChartData;
@@ -15,9 +16,6 @@ type Props = {
 };
 
 const BODIES = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'] as const;
-const CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
-};
 const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 const RANGES = [
   { label: '1 mo', days: 31 },
@@ -43,6 +41,7 @@ function formatMoment(time: number): string {
  */
 export default function SignChangesPanel({ chart, targetDate, calculationSettings, onSetTransit }: Props) {
   const t = useT();
+  const { code } = useGrahaNames();
   const [selected, setSelected] = useState<string[]>([...DEFAULT_BODIES]);
   const [days, setDays] = useState(92);
   const [stations, setStations] = useState(true);
@@ -122,7 +121,7 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
       <div className="flex flex-wrap gap-1">
         {BODIES.map(body => (
           <button key={body} type="button" aria-pressed={selected.includes(body)} onClick={() => toggle(body)} className={chip(selected.includes(body))}>
-            {CODES[body]}
+            {code(body)}
           </button>
         ))}
       </div>
@@ -151,21 +150,21 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
               <span className="min-w-0 flex-1 text-zinc-700 dark:text-zinc-200">
                 {event.kind === 'sign' && (
                   <>
-                    <span className="font-bold text-rose-500">{CODES[event.body]}{event.retrograde ? '℞' : ''}</span>
+                    <span className="font-bold text-rose-500">{code(event.body)}{event.retrograde ? '℞' : ''}</span>
                     {` → `}
                     <span className="whitespace-nowrap"><span className="font-bold">{SIGNS[event.to - 1]}</span><span className="text-zinc-400 dark:text-zinc-500"> H{house(event.to)}</span></span>
                   </>
                 )}
                 {event.kind === 'station' && (
                   <>
-                    <span className="font-bold text-amber-600 dark:text-amber-400">{CODES[event.body]}</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">{code(event.body)}</span>
                     {` ${event.turnsTo === 'retrograde' ? t('turns retrograde') + ' ℞' : t('turns direct')} `}
                     <span className="whitespace-nowrap text-zinc-400 dark:text-zinc-500">{SIGNS[event.sign - 1]} H{house(event.sign)}</span>
                   </>
                 )}
                 {event.kind === 'combust' && (
                   <>
-                    <span className="font-bold text-orange-600 dark:text-orange-400">{CODES[event.body]}</span>
+                    <span className="font-bold text-orange-600 dark:text-orange-400">{code(event.body)}</span>
                     {` ${event.combust ? t('becomes combust') : t('leaves combustion')}`}
                   </>
                 )}

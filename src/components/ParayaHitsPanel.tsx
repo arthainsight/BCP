@@ -7,6 +7,7 @@ import { parseTargetDateString } from '@/lib/dateInput';
 import { findParayaHits } from '@/lib/bnn/parayaHits';
 import { HIT_RELATIONS } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
+import { useGrahaNames } from '@/lib/grahaNames';
 
 type Props = {
   chart: ChartData;
@@ -17,9 +18,6 @@ type Props = {
   onSetTarget?: (value: string) => void;
 };
 
-const CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Asc: 'Asc',
-};
 const RANGES = [
   { label: '1 yr', years: 1 },
   { label: '3 yr', years: 3 },
@@ -41,6 +39,7 @@ const formatMoment = (time: number) => {
  */
 export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, calculationSettings, onSetTarget }: Props) {
   const t = useT();
+  const { code } = useGrahaNames();
   const [years, setYears] = useState(1);
   const [showAll, setShowAll] = useState(false);
 
@@ -90,9 +89,9 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, calc
             <li key={`${hit.body}-${hit.natal}-${hit.relation}-${hit.time}`} className="flex items-center gap-2 py-1 text-[11px] font-mono">
               <span className="w-32 shrink-0 text-zinc-500 dark:text-zinc-400">{formatMoment(hit.time)}</span>
               <span className="min-w-0 flex-1 text-zinc-700 dark:text-zinc-200">
-                <span className="font-bold text-violet-600 dark:text-violet-400">{CODES[hit.body]}</span>
+                <span className="font-bold text-violet-600 dark:text-violet-400">{code(hit.body)}</span>
                 {` ${hit.relation === 1 ? t('over natal') : hit.relation === 5 ? t('5th from natal') : t('9th from natal')} `}
-                <span className="font-bold">{CODES[hit.natal]}</span>
+                <span className="font-bold">{code(hit.natal)}</span>
                 <span className="text-zinc-400 dark:text-zinc-500"> · {t('age')} {hit.ageYears.toFixed(1)}</span>
               </span>
               {onSetTarget && (

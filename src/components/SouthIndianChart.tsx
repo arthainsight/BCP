@@ -9,6 +9,7 @@ import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya
 import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { useT } from '@/lib/i18n';
+import { useGrahaNames } from '@/lib/grahaNames';
 import { dashaMark, dignityColor, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 
@@ -77,11 +78,6 @@ const COMPACT_CELL_HEADER = 9;
 const DEFAULT_GRID_WIDTH = 328;
 
 const SIGN_NAMES = ['', 'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
-const PLANET_CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me',
-  Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
-  Uranus: 'Ur', Neptune: 'Ne', Pluto: 'Pl',
-};
 const NAK_ABBR = [
   'Asw', 'Bha', 'Krt', 'Roh', 'Mrg', 'Ard',
   'Pun', 'Pus', 'Asl', 'Mag', 'PFa', 'UFa',
@@ -127,8 +123,9 @@ function getPlanetLabel(
   karakaByPlanet: Record<string, string>,
   nakshatraAdjust: number,
   mark = '',
+  codeOf: (name: string) => string = name => name.slice(0, 2),
 ): string {
-  const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
+  const code = codeOf(planet.name);
   const retroSuffix = !isTransit && planet.isRetrograde ? '℞' : '';
   const parts = [code + retroSuffix + mark];
   if (degreePrecision !== 'off') parts.push(formatDegree(planet.degree, degreePrecision));
@@ -219,6 +216,7 @@ export default function SouthIndianChart({
   selectedPlanet = null,
   onPlanetSelect,
 }: Props) {
+  const { code: grahaCode } = useGrahaNames();
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
   const fill = useChartFill();
@@ -304,7 +302,7 @@ export default function SouthIndianChart({
           planetsHere.forEach((p, index) => tokens.push({
             key: `${p.isTransit ? 'tr' : 'na'}-${p.name}-${index}`,
             group: p.isTransit ? 'transit' : 'natal',
-            text: getPlanetLabel(p, p.isTransit, degreePrecision, showNakshatra, showCharaKaraka, karakaByPlanet, nakshatraAdjust, p.isTransit ? '' : dashaMark(p.name, dashaLords)),
+            text: getPlanetLabel(p, p.isTransit, degreePrecision, showNakshatra, showCharaKaraka, karakaByPlanet, nakshatraAdjust, p.isTransit ? '' : dashaMark(p.name, dashaLords), grahaCode),
           }));
           specialHere.forEach((sl, index) => tokens.push({ key: `sl-${sl.name}-${index}`, group: 'special', text: sl.name }));
           const hasBnnLabel = (bnnMajorHouse > 0 && house === bnnMajorHouse) || (bnnMinorHouse > 0 && house === bnnMinorHouse);

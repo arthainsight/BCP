@@ -11,13 +11,14 @@ import TithiPravesaPanel from './TithiPravesaPanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
 import type { AnnualPlace } from './annualShared';
 import { useT } from '@/lib/i18n';
+import type { TransitLocation } from '@/hooks/useEventTransits';
 
 type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'tithi' | 'varsha';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'dasha', label: 'Dasha' },
   { key: 'summary', label: 'Summary' },
-  { key: 'transits', label: 'transit.hits' },
+  { key: 'transits', label: 'Transit Hits' },
   { key: 'signs', label: 'Sign changes' },
   { key: 'tithi', label: 'Tithi Praveśa' },
   { key: 'varsha', label: 'Varṣaphala' },
@@ -37,6 +38,11 @@ interface Props {
   chartDisplaySettings: ChartDisplaySettings;
   nakshatraAdjust?: number;
   ianaTimezone?: string;
+  /** Natal place and time zone, for the transits of an event's day. */
+  transitLocation?: TransitLocation;
+  /** The timing panel takes the whole width of a wide screen, with the chart hidden. */
+  wide?: boolean;
+  onToggleWide?: () => void;
 }
 
 /**
@@ -58,6 +64,9 @@ export default function TimingPanel({
   chartDisplaySettings,
   nakshatraAdjust = 0,
   ianaTimezone,
+  transitLocation,
+  wide = false,
+  onToggleWide,
 }: Props) {
   const t = useT();
   const chartStyle = chartDisplaySettings.chartStyle ?? 'north';
@@ -77,10 +86,25 @@ export default function TimingPanel({
             </button>
           ))}
         </div>
+        {onToggleWide && (
+          <button
+            type="button"
+            onClick={onToggleWide}
+            aria-pressed={wide}
+            title={t('Use the whole width, hiding the chart')}
+            className="ml-auto hidden shrink-0 rounded-md border border-zinc-200 px-2.5 py-1.5 text-[10px] font-mono text-zinc-500 hover:text-zinc-800 lg:inline-flex dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            {wide ? t('⤡ narrow') : t('⤢ wide')}
+          </button>
+        )}
       </div>
 
       {view === 'dasha' && (
         <DashaWorkspace
+          chart={chart}
+          chartDisplaySettings={chartDisplaySettings}
+          transitLocation={transitLocation}
+          calculationSettings={calculationSettings}
           targetDate={targetDate}
           bcp={bcp}
           planets={chart.planets}

@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import type { ChartData, PlanetData } from '@/types';
 import { TARAS, buildNavatara, type TaraQuality } from '@/lib/navatara';
 import { useT } from '@/lib/i18n';
+import { useGrahaNames } from '@/lib/grahaNames';
 
 type Props = {
   chart: ChartData;
@@ -12,9 +13,6 @@ type Props = {
 };
 
 const GRAHAS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
-const CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Asc: 'Asc',
-};
 
 const QUALITY_STYLE: Record<TaraQuality, string> = {
   good: 'border-emerald-300 dark:border-emerald-800 bg-emerald-50/60 dark:bg-emerald-950/20',
@@ -30,6 +28,7 @@ const QUALITY_LABEL: Record<TaraQuality, string> = { good: 'favourable', mixed: 
  */
 export default function NavataraPanel({ chart, transitPlanets = [], nakshatraAdjust = 0 }: Props) {
   const t = useT();
+  const { code, name: grahaFullName } = useGrahaNames();
   const [from, setFrom] = useState<'Moon' | 'Asc'>('Moon');
   const [showTransit, setShowTransit] = useState(false);
 
@@ -63,8 +62,8 @@ export default function NavataraPanel({ chart, transitPlanets = [], nakshatraAdj
 
       <div className="flex flex-wrap items-center gap-1">
         <span className="mr-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('count from')}</span>
-        <button type="button" aria-pressed={from === 'Moon'} onClick={() => setFrom('Moon')} className={chip(from === 'Moon')}>{t('Moon')}</button>
-        <button type="button" aria-pressed={from === 'Asc'} onClick={() => setFrom('Asc')} className={chip(from === 'Asc')}>{t('Ascendant')}</button>
+        <button type="button" aria-pressed={from === 'Moon'} onClick={() => setFrom('Moon')} className={chip(from === 'Moon')}>{grahaFullName('Moon')}</button>
+        <button type="button" aria-pressed={from === 'Asc'} onClick={() => setFrom('Asc')} className={chip(from === 'Asc')}>{grahaFullName('Asc')}</button>
         <span className="mx-1 self-stretch border-l border-zinc-200 dark:border-zinc-700" />
         <button type="button" aria-pressed={showTransit} disabled={transitPlanets.length === 0} onClick={() => setShowTransit(v => !v)} className={`${chip(showTransit)} disabled:opacity-40`}>
           {t('Transit')}
@@ -73,7 +72,7 @@ export default function NavataraPanel({ chart, transitPlanets = [], nakshatraAdj
 
       <div className="text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
         {t('Janma nakshatra')}: <span className="font-bold">{groups[0].nakshatras[0].name}</span>
-        <span className="text-zinc-400 dark:text-zinc-500"> ({from === 'Moon' ? t('Moon') : t('Ascendant')})</span>
+        <span className="text-zinc-400 dark:text-zinc-500"> ({from === 'Moon' ? grahaFullName('Moon') : grahaFullName('Asc')})</span>
       </div>
 
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3" data-reference={reference}>
@@ -89,8 +88,8 @@ export default function NavataraPanel({ chart, transitPlanets = [], nakshatraAdj
                   <span className="w-5 shrink-0 text-right text-[9px] text-zinc-400 dark:text-zinc-500">{nak.count}</span>
                   <span className="min-w-0 break-words">{nak.name}</span>
                   <span className="flex flex-wrap gap-x-1">
-                    {nak.natal.map(name => <span key={`n-${name}`} className="font-bold text-zinc-900 dark:text-zinc-50">{CODES[name]}</span>)}
-                    {nak.transit.map(name => <span key={`t-${name}`} className="font-bold text-rose-500">{CODES[name]}↗</span>)}
+                    {nak.natal.map(name => <span key={`n-${name}`} className="font-bold text-zinc-900 dark:text-zinc-50">{code(name)}</span>)}
+                    {nak.transit.map(name => <span key={`t-${name}`} className="font-bold text-rose-500">{code(name)}↗</span>)}
                   </span>
                 </li>
               ))}

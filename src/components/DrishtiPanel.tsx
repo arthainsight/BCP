@@ -3,20 +3,12 @@
 import { ChartData, PlanetData } from '@/types';
 import { buildDrishti, calculateGrahaDrishti, calculateRashiDrishti } from '@/lib/drishti';
 import CollapsibleCard from './CollapsibleCard';
-
-const PLANET_CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me',
-  Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
-};
+import { useGrahaNames } from '@/lib/grahaNames';
 
 const SIGN_ABBR: Record<number, string> = {
   1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
   7: 'Li', 8: 'Sc', 9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
 };
-
-function code(name: string): string {
-  return PLANET_CODES[name] ?? name.slice(0, 2);
-}
 
 interface Props {
   chart?: ChartData;
@@ -33,6 +25,7 @@ export default function DrishtiPanel({
   showGrahaDrishti = true,
   showRashiDrishti = true,
 }: Props) {
+  const { code } = useGrahaNames();
   const sourcePlanets = planets ?? chart?.planets ?? [];
   const sourceAscendantSign = ascendantSign ?? chart?.ascendant?.sign ?? 1;
 

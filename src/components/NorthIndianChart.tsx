@@ -9,6 +9,7 @@ import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya
 import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { useT } from '@/lib/i18n';
+import { useGrahaNames } from '@/lib/grahaNames';
 import { dashaMark, dignityColor, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, polygonSpanAt, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
 
@@ -71,12 +72,6 @@ interface Props {
   /** Called with the kind and name of any natal or transit label that is clicked. */
   onPlanetSelect?: (selection: { kind: 'natal' | 'transit'; name: string }) => void;
 }
-
-const PLANET_CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me',
-  Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
-  Uranus: 'Ur', Neptune: 'Ne', Pluto: 'Pl',
-};
 
 const NAK_ABBR = [
   'Asw', 'Bha', 'Krt', 'Roh', 'Mrg', 'Ard',
@@ -303,15 +298,16 @@ export default function NorthIndianChart({
   const parayaColors = isDark ? PARAYA_COLORS_DARK : PARAYA_COLORS_LIGHT;
 
 
+  const { code: grahaCode } = useGrahaNames();
   const natalLabel = (planet: PlanetData) => {
-    const parts = [(PLANET_CODES[planet.name] ?? planet.name.slice(0, 2)) + (planet.isRetrograde ? '℞' : '') + dashaMark(planet.name, dashaLords)];
+    const parts = [grahaCode(planet.name) + (planet.isRetrograde ? '℞' : '') + dashaMark(planet.name, dashaLords)];
     if (degreePrecision !== 'off') parts.push(formatDegree(planet.degree, degreePrecision));
     if (showCharaKaraka && karakaByPlanet[planet.name]) parts.push(karakaByPlanet[planet.name]);
     if (showNakshatra) parts.push(getNakAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
     return parts.join(' ');
   };
   const transitLabel = (planet: PlanetData) => {
-    const code = PLANET_CODES[planet.name] ?? planet.name.slice(0, 2);
+    const code = grahaCode(planet.name);
     return degreePrecision !== 'off' ? `${code} ${formatDegree(planet.degree, degreePrecision)}` : code;
   };
 

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
 import { findTransitHits, type LongitudeSeries, type TransitHit } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
+import { useGrahaNames } from '@/lib/grahaNames';
 
 type Props = {
   chart: ChartData;
@@ -13,9 +14,6 @@ type Props = {
   onSetTransit?: (value: string) => void;
 };
 
-const CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Asc: 'Asc',
-};
 const NATAL = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 const FIRST_ROWS = 12;
 
@@ -33,6 +31,7 @@ function formatDay(time: number): string {
  */
 export default function TransitHitsPanel({ chart, targetDate, calculationSettings, onSetTransit }: Props) {
   const t = useT();
+  const { code } = useGrahaNames();
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const [data, setData] = useState<{ key: string; series: Series } | null>(null);
@@ -108,9 +107,9 @@ export default function TransitHitsPanel({ chart, targetDate, calculationSetting
                 <li key={`${hit.transit}-${hit.natal}-${hit.time}`} className="flex items-center gap-2 py-1 text-[11px] font-mono">
                   <span className="w-20 shrink-0 text-zinc-500 dark:text-zinc-400">{formatDay(hit.time)}</span>
                   <span className="min-w-0 flex-1 text-zinc-700 dark:text-zinc-200">
-                    <span className="font-bold text-rose-500">{CODES[hit.transit]}{hit.retrograde ? '℞' : ''}</span>
+                    <span className="font-bold text-rose-500">{code(hit.transit)}{hit.retrograde ? '℞' : ''}</span>
                     {` ${t('over natal')} `}
-                    <span className="font-bold">{CODES[hit.natal]}</span>
+                    <span className="font-bold">{code(hit.natal)}</span>
                   </span>
                   {onSetTransit && (
                     <button

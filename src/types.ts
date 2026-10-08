@@ -143,6 +143,8 @@ export interface ChartDisplaySettings {
   dashaMarkSystem: 'vimshottari' | 'vds' | 'yogini' | 'ashtottari';
   /** Interface language. */
   language: 'en' | 'fi';
+  /** Names of the grahas: English or Sanskrit. */
+  grahaNames: GrahaNameStyle;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -167,7 +169,11 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showDashaLords: true,
   dashaMarkSystem: 'vimshottari',
   language: 'en',
+  grahaNames: 'english',
 };
+
+/** How the grahas are named on screen: English (Sun, Moon …) or Sanskrit (Sūrya, Candra …). */
+export type GrahaNameStyle = 'english' | 'sanskrit';
 
 /** How the Nāḍī Paraya walks a graha through the signs: alternating long and short stays (Saturn 3 / 2 years, Rahu 2 / 1) or the same stay in every sign (2.5 and 1.5 years). */
 export type ParayaSpeed = 'alternating' | 'even';
