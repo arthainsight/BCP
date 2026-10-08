@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v2.50',
+    date: '2026-10-08',
+    title: 'All Arudha padas at once',
+    changes: [
+      'The arudha padas section of the ··· menu has an all button beside none, which marks AL and AL2 … AL12 on the charts in one go.',
+      'Updated the application version to v2.50.',
+    ],
+  },
+  {
     version: 'v2.49',
     date: '2026-10-08',
     title: 'Arudha padas on the charts',

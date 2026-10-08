@@ -262,9 +262,24 @@ export default function ChartSection({
                   <div className="border-t border-zinc-200 dark:border-zinc-700" />
                   <div className="flex items-baseline justify-between">
                     <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('arudha padas')}</div>
-                    {arudhaPadas.length > 0 && (
-                      <button type="button" onClick={() => setArudhaPadas([])} className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">{t('none')}</button>
-                    )}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setArudhaPadas([...ARUDHA_PADAS])}
+                        disabled={arudhaPadas.length === ARUDHA_PADAS.length}
+                        className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-zinc-200"
+                      >
+                        {t('all')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setArudhaPadas([])}
+                        disabled={arudhaPadas.length === 0}
+                        className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-zinc-200"
+                      >
+                        {t('none')}
+                      </button>
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-1" role="group" aria-label={t('arudha padas')}>
                     {ARUDHA_PADAS.map(house => {
