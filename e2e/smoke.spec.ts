@@ -431,6 +431,40 @@ test('ANALYSIS Special Sphutas lists the special lagnas and follows the sunrise 
   expect(errors).toEqual([]);
 });
 
+test('the Arudha padas AL, AL2 … can be marked on the charts', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const chartText = async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
+  expect(await chartText()).not.toMatch(/AL\d*/);
+
+  // The ··· menu has a chip for each pada.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  const padas = visible(page, page.getByRole('group', { name: 'arudha padas' }));
+  await padas.getByRole('button', { name: 'AL', exact: true }).click();
+  await padas.getByRole('button', { name: 'AL12', exact: true }).click();
+  await expect(padas.getByRole('button', { name: 'AL12', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(chartText).toMatch(/AL(?!\d)/);
+  expect(await chartText()).toMatch(/AL12/);
+
+  // The divisional charts work the padas out in their own division.
+  await visible(page, page.getByRole('group', { name: 'divisional charts' }).getByRole('button', { name: 'D9', exact: true })).click();
+  await visible(page, page.getByRole('group', { name: 'divisional charts' }).getByRole('button', { name: 'D1', exact: true })).click();
+  await expect.poll(async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '').toMatch(/AL(?!\d)/);
+
+  // None clears them again.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'none', exact: true })).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '').not.toMatch(/AL\d*/);
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

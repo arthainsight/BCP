@@ -121,6 +121,8 @@ export const FI: Record<string, string> = {
   'show fewer': 'näytä vähemmän',
   'show all': 'näytä kaikki',
   'Sign changes': 'Merkinvaihdot',
+  'arudha padas': 'āruḍha-padat',
+  'none': 'ei mitään',
   'Special Sphutas': 'Erikoissphuṭat',
   'manual sunrise': 'oma auringonnousu',
   'Use another sunrise (HH:MM:SS)': 'Käytä toista auringonnousua (HH:MM:SS)',

@@ -9,6 +9,8 @@ import TargetDateBar from './TargetDateBar';
 import ChartDivisionBar from './ChartDivisionBar';
 import ChartDivisionsView from './ChartDivisionsView';
 import { useChartDivisions } from '@/hooks/useChartDivisions';
+import { useArudhaPadas } from '@/hooks/useArudhaPadas';
+import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPadas';
 import { buildLayerControls, CHART_LAYER_LABELS, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
@@ -94,6 +96,8 @@ export default function ChartSection({
   const [showDisplay, setShowDisplay] = useState(false);
   // Which divisional charts are shown; D1 alone is the full chart with its layers.
   const [divisions, setDivisions] = useChartDivisions();
+  // The Āruḍha padas the viewer marks on the charts.
+  const [arudhaPadas, setArudhaPadas] = useArudhaPadas();
   const chartRef = useRef<HTMLDivElement>(null);
 
   // Full screen is an overlay over the whole app, plus the browser's own full
@@ -155,6 +159,12 @@ export default function ChartSection({
     );
   }
 
+  // The special lagnas of the chart, and the Āruḍha padas that are marked.
+  const arudhaMarks = arudhaPadas.length > 0
+    ? calculateArudhaPadas(chart.ascendant.sign, chart.planets).filter(pada => arudhaPadas.includes(pada.house))
+    : [];
+  const d1SpecialLagnas = [...(chartDisplaySettings.showSpecialLagnas ? chart.specialLagnas ?? [] : []), ...arudhaMarks];
+  const d1ShowSpecialLagnas = chartDisplaySettings.showSpecialLagnas || arudhaMarks.length > 0;
   const showBcp = chartDisplaySettings.showBcpHighlight === true;
   const dashaLords = chartDisplaySettings.showDashaLords !== false ? dashaLordsFromParent : null;
   const yearHouse = showBcp ? bcp.activeYearHouse : 0;
@@ -250,6 +260,31 @@ export default function ChartSection({
                     <ChartDisplayToggle key={control.key} label={t(CHART_LAYER_LABELS[control.key])} value={control.on} onToggle={control.onToggle} />
                   ))}
                   <div className="border-t border-zinc-200 dark:border-zinc-700" />
+                  <div className="flex items-baseline justify-between">
+                    <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('arudha padas')}</div>
+                    {arudhaPadas.length > 0 && (
+                      <button type="button" onClick={() => setArudhaPadas([])} className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">{t('none')}</button>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-1" role="group" aria-label={t('arudha padas')}>
+                    {ARUDHA_PADAS.map(house => {
+                      const on = arudhaPadas.includes(house);
+                      return (
+                        <button
+                          key={house}
+                          type="button"
+                          aria-pressed={on}
+                          onClick={() => setArudhaPadas(on ? arudhaPadas.filter(item => item !== house) : [...arudhaPadas, house])}
+                          className={`rounded-sm border px-2 py-1.5 text-[10px] font-mono sm:px-1.5 sm:py-0.5 sm:text-[9px] ${on
+                            ? 'border-amber-500 bg-amber-500 text-white dark:border-amber-600 dark:bg-amber-600'
+                            : 'border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'}`}
+                        >
+                          {arudhaName(house)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="border-t border-zinc-200 dark:border-zinc-700" />
                   <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('chart display')}</div>
                   <ChartDisplayToggle label={t('nakshatra')} value={chartDisplaySettings.showNakshatra} onToggle={() => onToggleChartDisplay?.('showNakshatra')} />
                   <ChartDisplayToggle label={t('karaka')} value={chartDisplaySettings.showCharaKaraka} onToggle={() => onToggleChartDisplay?.('showCharaKaraka')} />
@@ -312,7 +347,7 @@ export default function ChartSection({
           ascendantSign={chart.ascendant.sign}
           ascendantDegree={chart.ascendant.degree}
           planets={chart.planets}
-          specialLagnas={chart.specialLagnas ?? []}
+          specialLagnas={d1SpecialLagnas}
           transitPlanets={transitPlanets}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
@@ -321,7 +356,7 @@ export default function ChartSection({
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
           showOuterPlanets={chartDisplaySettings.showOuterPlanets}
-          showSpecialLagnas={chartDisplaySettings.showSpecialLagnas}
+          showSpecialLagnas={d1ShowSpecialLagnas}
           karakaByPlanet={karakaByPlanet}
           nakshatraAdjust={nakshatraAdjust}
           bnnMajorHouse={bnnMajorHouse}
@@ -339,7 +374,7 @@ export default function ChartSection({
           ascendantSign={chart.ascendant.sign}
           ascendantDegree={chart.ascendant.degree}
           planets={chart.planets}
-          specialLagnas={chart.specialLagnas ?? []}
+          specialLagnas={d1SpecialLagnas}
           transitPlanets={transitPlanets}
           showSigns={chartDisplaySettings.showSigns}
           showNatalPlanets={chartDisplaySettings.showNatalPlanets}
@@ -348,7 +383,7 @@ export default function ChartSection({
           showCharaKaraka={chartDisplaySettings.showCharaKaraka}
           showNakshatra={chartDisplaySettings.showNakshatra}
           showOuterPlanets={chartDisplaySettings.showOuterPlanets}
-          showSpecialLagnas={chartDisplaySettings.showSpecialLagnas}
+          showSpecialLagnas={d1ShowSpecialLagnas}
           showBcpHighlights={showBcp}
           karakaByPlanet={karakaByPlanet}
           nakshatraAdjust={nakshatraAdjust}
