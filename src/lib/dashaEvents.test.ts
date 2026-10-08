@@ -46,8 +46,9 @@ assert.equal(variantOf(startLord('utpanna')).levels[0].value, 'Mercury');
 assert.equal(variantOf(startLord('kshema')).levels[0].value, 'Saturn');
 assert.equal(variantOf(startLord('adhana')).levels[0].value, 'Sun');
 assert.match(variantOf(startLord('utpanna')).label, /Utpanna/);
-// Auto picks one of the three and names it.
-assert.match(variantOf(startLord('auto')).label, /^Vimsottari (Utpanna|Kshema|Adhana)$/);
+// Auto follows the house of the Moon: here Gemini with the Lagna in Cancer is the 12th house, which gives Adhana.
+assert.equal(variantOf(startLord('auto')).label, 'Vimsottari Adhana');
+assert.equal(variantOf(startLord('auto')).levels[0].value, 'Sun');
 
 const beforeBirth = calculateDashaEventSnapshots({
   birthDate: new Date(2000, 0, 1),

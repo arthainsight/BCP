@@ -9,7 +9,7 @@ import { DASHA_EVENT_CATEGORIES, DASHA_EVENT_CATEGORY_LABELS, parseStoredDashaEv
 
 type SnapshotKey = DashaEventSnapshot['key'];
 const KEY_TO_SETTING: Record<SnapshotKey, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
-const SYSTEM_LABELS: Record<SnapshotKey, string> = { vimshottari: 'Vimsottari', vimshottariVariant: 'Vimsottari Utpanna / Kshema / Adhana', vds: 'Vimsottari Original', chara: 'Chara', yogini: 'Yogini', ashtottari: 'Ashtottari', kalaChakra: 'Kalachakra', narayana: 'Narayana', moola: 'Mula', sthira: 'Sthira' };
+const SYSTEM_LABELS: Record<SnapshotKey, string> = { vimshottari: 'Vimsottari', vimshottariVariant: 'Vimsottari Utpanna / Kshema / Adhana', vds: 'Vimsottari Original (U K Jha)', chara: 'Chara', yogini: 'Yogini', ashtottari: 'Ashtottari', kalaChakra: 'Kalachakra', narayana: 'Narayana', moola: 'Mula', sthira: 'Sthira' };
 
 interface Props { planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashaSettings: DashaSettings; }
 interface EventRow { event: StoredDashaEvent; snapshots: DashaEventSnapshot[]; }

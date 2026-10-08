@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.55',
+    date: '2026-10-08',
+    title: 'Utpanna / Kshema / Adhana by the Moon’s house; U K Jha on VDS',
+    changes: [
+      'The Vimsottari Utpanna / Kshema / Adhana now picks its start by the house of the Moon, as Sanjay Rath teaches: Moon in the 3rd or 11th house gives Utpanna, in the 2nd or 6th Kshema and in the 8th or 12th Adhana. In the other houses (1, 4, 5, 7, 9, 10) there is no such rule, so the strongest of the three is used as before. The card tells which rule decided.',
+      'Settings → dasha methods → start from: the first choice is now by the Moon (auto); Utpanna, Kshema and Adhana can still be fixed.',
+      'The VDS daśā, Vimsottari Original, carries the name of its author, U K Jha, in Settings, the daśā cards, the event views, the date finder and the dasha lords from choice.',
+      'Updated the application version to v2.55.',
+    ],
+  },
+  {
     version: 'v2.54',
     date: '2026-10-08',
     title: 'Vimsottari Utpanna / Kshema / Adhana',

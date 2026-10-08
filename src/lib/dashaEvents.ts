@@ -76,7 +76,7 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
   if (eventDate < birthDate) return [
     { key: 'vimshottari', label: 'Vimsottari', levels: [], note: 'Date is before birth' },
     { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', levels: [], note: 'Date is before birth' },
-    { key: 'vds', label: 'Vimsottari Original', levels: [], note: 'Date is before birth' },
+    { key: 'vds', label: 'Vimsottari Original (U K Jha)', levels: [], note: 'Date is before birth' },
     { key: 'chara', label: 'Chara Dasha', levels: [], note: 'Date is before birth' },
     { key: 'yogini', label: 'Yogini Dasha', levels: [], note: 'Date is before birth' },
     { key: 'ashtottari', label: 'Ashtottari Dasha', levels: [], note: 'Date is before birth' },
@@ -96,13 +96,13 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
   } : { key: 'vimshottari', label: 'Vimsottari', levels: [], note: 'Moon unavailable' });
 
   if (moon) {
-    const variant = calculateVimshottariVariant(moon.longitude, planets, birthDate, variantChoice);
+    const variant = calculateVimshottariVariant(moon.longitude, planets, birthDate, variantChoice, ascendant.sign);
     snapshots.push({ key: 'vimshottariVariant', label: `Vimsottari ${VARIANT_LABELS[variant.variant]}`, levels: vimshottariLevels(variant.entries, eventDate), mdRange: activeRange(variant.entries, eventDate) });
   } else snapshots.push({ key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', levels: [], note: 'Moon unavailable' });
 
   const planetLongitudes = Object.fromEntries(planets.map((planet) => [planet.name, planet.longitude]));
   const vds = moon && sun ? calculateVds({ moonLongitude: moon.longitude, sunLongitude: sun.longitude, lagnaLongitude: ascendant.longitude, lagnaSign: ascendant.sign, lagnaDegree: ascendant.degree, birthDate, planetLongitudes }) : null;
-  snapshots.push({ key: 'vds', label: 'Vimsottari Original', levels: vds ? vimshottariLevels(vds.entries, eventDate) : [], mdRange: vds ? activeRange(vds.entries, eventDate) : undefined, note: vds ? undefined : 'Calculation unavailable' });
+  snapshots.push({ key: 'vds', label: 'Vimsottari Original (U K Jha)', levels: vds ? vimshottariLevels(vds.entries, eventDate) : [], mdRange: vds ? activeRange(vds.entries, eventDate) : undefined, note: vds ? undefined : 'Calculation unavailable' });
 
   const chara = calculateCleanCharaMD(planets, ascendant.sign, birthDate, charaOptions);
   snapshots.push({ key: 'chara', label: 'Chara Dasha', levels: chara ? charaLevels(chara.entries, eventDate, charaOptions) : [], mdRange: chara ? activeRange(chara.entries, eventDate) : undefined, note: chara ? undefined : 'Calculation unavailable' });
@@ -143,7 +143,7 @@ export type GrahaDashaSystem = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'y
 export const GRAHA_DASHA_SYSTEMS: { key: GrahaDashaSystem; label: string; short: string }[] = [
   { key: 'vimshottari', label: 'Vimśottarī', short: 'Vimś' },
   { key: 'vimshottariVariant', label: 'Vimśottarī Utpanna / Kṣema / Ādhāna', short: 'Utp/Ksh/Adh' },
-  { key: 'vds', label: 'Vimśottarī Original', short: 'VDS' },
+  { key: 'vds', label: 'Vimśottarī Original (U K Jha)', short: 'VDS' },
   { key: 'yogini', label: 'Yoginī', short: 'Yog' },
   { key: 'ashtottari', label: 'Aṣṭottarī', short: 'Aṣṭ' },
 ];
@@ -173,7 +173,7 @@ export function runningGrahaDashaLords(
     case 'vimshottari':
       return fromEntries(calculateVimshottari(moon.longitude, birthDate).entries, calculateSubDashas);
     case 'vimshottariVariant':
-      return fromEntries(calculateVimshottariVariant(moon.longitude, planets, birthDate, variantChoice).entries, calculateSubDashas);
+      return fromEntries(calculateVimshottariVariant(moon.longitude, planets, birthDate, variantChoice, ascendant.sign).entries, calculateSubDashas);
     case 'vds': {
       if (!sun) return null;
       const planetLongitudes = Object.fromEntries(planets.map(p => [p.name, p.longitude]));
