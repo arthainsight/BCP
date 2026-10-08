@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { BcpResult, CalculationSettings, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
+import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import ChartExportButtons from './ChartExportButtons';
@@ -22,10 +22,8 @@ export interface ChartSectionProps {
   transitPlanets: PlanetData[];
   chartDisplaySettings: ChartDisplaySettings;
   karakaByPlanet: Record<string, string>;
-  onTransitDatetimeChange: (v: string) => void;
   transitLoading: boolean;
   nakshatraAdjust?: number;
-  birthDatetime?: string;
   targetDate?: string;
   onTargetDateChange?: (value: string) => void;
   /** Time of the target moment, HH:MM; the transits are calculated for it. */
@@ -37,8 +35,6 @@ export interface ChartSectionProps {
   nadiParayaHousesFromParent?: NadiParayaHouseActivation[];
   /** Vimshottari lords running at the target date. */
   dashaLordsFromParent?: DashaLordMarks | null;
-  calculationSettings?: CalculationSettings;
-  ianaTimezone?: string;
   onToggleChartDisplay?: (key: keyof ChartDisplaySettings) => void;
   onUpdateChartDisplay?: (update: Partial<ChartDisplaySettings>) => void;
 }
@@ -70,10 +66,8 @@ export default function ChartSection({
   transitPlanets,
   chartDisplaySettings,
   karakaByPlanet,
-  onTransitDatetimeChange,
   transitLoading = false,
   nakshatraAdjust = 0,
-  birthDatetime,
   targetDate,
   onTargetDateChange,
   targetTime,
@@ -82,8 +76,6 @@ export default function ChartSection({
   bnnMinorHouseFromParent = 0,
   nadiParayaHousesFromParent = [],
   dashaLordsFromParent = null,
-  calculationSettings,
-  ianaTimezone,
   onToggleChartDisplay,
   onUpdateChartDisplay,
 }: ChartSectionProps) {
@@ -378,7 +370,6 @@ export default function ChartSection({
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
           nadiParayaHouses={parayaHouses}
-          layerControls={layerControls}
           dashaLords={dashaLords}
           selectedPlanet={selectedPlanet}
           onPlanetSelect={setSelectedPlanet}
@@ -406,7 +397,6 @@ export default function ChartSection({
           bnnMajorHouse={bnnMajorHouse}
           bnnMinorHouse={bnnMinorHouse}
           nadiParayaHouses={parayaHouses}
-          layerControls={layerControls}
           dashaLords={dashaLords}
           selectedPlanet={selectedPlanet}
           onPlanetSelect={setSelectedPlanet}

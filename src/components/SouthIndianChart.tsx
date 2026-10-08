@@ -8,9 +8,8 @@ import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya';
 import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
-import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
-import { dashaHouseBorders, dashaMark, dignityColor, type ChartLayerControl, type ChartLayerKey, type DashaLordMarks } from './chartLayers';
+import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
@@ -48,14 +47,11 @@ interface Props {
   bnnMajorHouse?: number;
   bnnMinorHouse?: number;
   nadiParayaHouses?: NadiParayaHouseActivation[];
-  legendLayers?: { bcp?: boolean; bnn?: boolean; transit?: boolean };
-  /** Makes the layer entries in the legend clickable switches. */
-  layerControls?: ChartLayerControl[];
   /** Running dasha lords to mark on the natal planets. */
   dashaLords?: DashaLordMarks | null;
   /** Colours natal planets by dignity in their sign (used in the Varga grid). */
   colorByDignity?: boolean;
-  /** Small-chart mode for side-by-side grids: tighter cells, no legend. */
+  /** Small-chart mode for side-by-side grids: tighter cells */
   compact?: boolean;
   /** Natal planet drawn highlighted, by name. */
   highlightPlanet?: string | null;
@@ -206,8 +202,6 @@ export default function SouthIndianChart({
   bnnMajorHouse = 0,
   bnnMinorHouse = 0,
   nadiParayaHouses = [],
-  legendLayers,
-  layerControls,
   dashaLords = null,
   colorByDignity = false,
   compact = false,
