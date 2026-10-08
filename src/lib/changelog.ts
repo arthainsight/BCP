@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.42',
+    date: '2026-10-08',
+    title: 'Transit hits to the 5th and 9th',
+    changes: [
+      'Transit hits now also lists when Jupiter, Saturn, Rahu and Ketu reach the same degree in the 5th and the 9th sign from each natal graha and the ascendant, not only the point itself. The buttons 1, 5 and 9 above the list choose which houses count; all three are on to start with.',
+      'The Summary view lists the same hits.',
+      'Updated the application version to v2.42.',
+    ],
+  },
+  {
     version: 'v2.41',
     date: '2026-10-08',
     title: 'Nava-Tara chakra and the direction chart',

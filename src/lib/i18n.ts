@@ -94,11 +94,15 @@ export const FI: Record<string, string> = {
   'Target date': 'Tavoitepäivä',
   'Calculating…': 'Lasketaan…',
   'transit hits · 12 months from target': 'transiittiosumat · 12 kk tavoitepäivästä',
-  'Jupiter, Saturn, Rahu and Ketu crossing a natal graha or the ascendant, to the day. ℞ marks a retrograde pass.':
-    'Jupiter, Saturnus, Rahu ja Ketu ylittämässä natal-grahan tai lagnan, päivän tarkkuudella. ℞ merkitsee retrogradista ylitystä.',
+  'Jupiter, Saturn, Rahu and Ketu crossing a natal graha or the ascendant, to the day, and the same degree in its 5th and 9th sign. ℞ marks a retrograde pass.':
+    'Jupiter, Saturnus, Rahu ja Ketu ylittämässä natal-grahan tai lagnan päivän tarkkuudella sekä saman asteen sen 5. ja 9. merkissä. ℞ merkitsee retrogradista ylitystä.',
   'Could not load transits:': 'Transiittien lataus epäonnistui:',
   'No crossings in these twelve months.': 'Ei ylityksiä näiden kahdentoista kuukauden aikana.',
   'over natal': 'ylittää natal',
+  '5th from natal': '5. natalista',
+  '9th from natal': '9. natalista',
+  'houses from natal': 'talo natalista',
+  'houses from the natal graha': 'talo natal-grahasta',
   'set transit': 'aseta transiitti',
   'show fewer': 'näytä vähemmän',
   'show all': 'näytä kaikki',

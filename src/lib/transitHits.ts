@@ -19,11 +19,20 @@ export interface NatalPoint {
   longitude: number;
 }
 
+/** Which house from the natal point the transiting graha stands in: 1 is the point itself, 5 and 9 are its trines. */
+export type HitRelation = 1 | 5 | 9;
+
+/** Degrees ahead of the natal point, in the zodiac: the 5th sign is 120° on, the 9th 240°. */
+export const RELATION_OFFSET: Record<HitRelation, number> = { 1: 0, 5: 120, 9: 240 };
+
+export const HIT_RELATIONS: readonly HitRelation[] = [1, 5, 9];
+
 export interface TransitHit {
   transit: string;
   natal: string;
   time: number;
   retrograde: boolean;
+  relation: HitRelation;
 }
 
 /** Signed angle from b to a, in (-180, 180]. */
@@ -50,13 +59,23 @@ export function findCrossings(series: LongitudeSeries, target: number): { time: 
   return hits;
 }
 
-/** All crossings of every transiting body over every natal point, in time order. */
-export function findTransitHits(series: Record<string, LongitudeSeries>, natal: NatalPoint[]): TransitHit[] {
+/**
+ * All crossings of every transiting body over every natal point, and with
+ * `relations` over the same degree in its 5th and 9th sign too, in time order.
+ */
+export function findTransitHits(
+  series: Record<string, LongitudeSeries>,
+  natal: NatalPoint[],
+  relations: readonly HitRelation[] = [1],
+): TransitHit[] {
   const hits: TransitHit[] = [];
   for (const [transit, s] of Object.entries(series)) {
     for (const point of natal) {
-      for (const crossing of findCrossings(s, point.longitude)) {
-        hits.push({ transit, natal: point.name, ...crossing });
+      for (const relation of relations) {
+        const target = (point.longitude + RELATION_OFFSET[relation]) % 360;
+        for (const crossing of findCrossings(s, target)) {
+          hits.push({ transit, natal: point.name, relation, ...crossing });
+        }
       }
     }
   }
