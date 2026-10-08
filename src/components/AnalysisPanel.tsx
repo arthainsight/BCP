@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { ChartData, ChartDisplaySettings } from '@/types';
+import type { ChartData, ChartDisplaySettings, PlanetData } from '@/types';
 import type { DashaLordMarks } from './chartLayers';
 import GrahasPanel from './GrahasPanel';
 import VargaGridPanel from './VargaGridPanel';
@@ -9,9 +9,11 @@ import VargaMatrix from '@/pages/VargaMatrix';
 import NadiAmsaPanel from './NadiAmsaPanel';
 import AshtakavargaPanel from './AshtakavargaPanel';
 import DrishtiPanel from './DrishtiPanel';
+import NavataraPanel from './NavataraPanel';
+import DirectionChartPanel from './DirectionChartPanel';
 import { useT } from '@/lib/i18n';
 
-type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti';
+type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tara' | 'dik';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'grahas', label: 'Grahas' },
@@ -19,6 +21,8 @@ const VIEWS: { key: View; label: string }[] = [
   { key: 'nadi', label: 'Nāḍī' },
   { key: 'ashtakavarga', label: 'Aṣṭakavarga' },
   { key: 'drishti', label: 'Dṛṣṭi' },
+  { key: 'tara', label: 'Nava-Tara' },
+  { key: 'dik', label: 'Directions' },
 ];
 
 interface Props {
@@ -28,6 +32,8 @@ interface Props {
   nakshatraAdjust?: number;
   birthDatetime?: string;
   dashaLords: DashaLordMarks | null;
+  /** Transiting grahas at the target moment, for the Nava-Tara and direction charts. */
+  transitPlanets?: PlanetData[];
 }
 
 /**
@@ -42,6 +48,7 @@ export default function AnalysisPanel({
   nakshatraAdjust = 0,
   birthDatetime = '',
   dashaLords,
+  transitPlanets = [],
 }: Props) {
   const t = useT();
   const chartStyle = chartDisplaySettings.chartStyle ?? 'north';
@@ -57,7 +64,7 @@ export default function AnalysisPanel({
         <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
           {VIEWS.map((item) => (
             <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-              {item.key === 'grahas' ? t(item.label) : item.label}
+              {item.key === 'grahas' || item.key === 'dik' ? t(item.label) : item.label}
             </button>
           ))}
         </div>
@@ -116,6 +123,14 @@ export default function AnalysisPanel({
 
       {view === 'drishti' && (
         <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} showGrahaDrishti={chartDisplaySettings.showGrahaDrishti ?? true} showRashiDrishti={chartDisplaySettings.showRashiDrishti ?? true} /></div>
+      )}
+
+      {view === 'tara' && (
+        <NavataraPanel chart={chart} transitPlanets={transitPlanets} nakshatraAdjust={nakshatraAdjust} />
+      )}
+
+      {view === 'dik' && (
+        <DirectionChartPanel chart={chart} transitPlanets={transitPlanets} />
       )}
     </div>
   );

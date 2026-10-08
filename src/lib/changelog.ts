@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.41',
+    date: '2026-10-08',
+    title: 'Nava-Tara chakra and the direction chart',
+    changes: [
+      'New Nava-Tara view in ANALYSIS: the 27 nakshatras in nine Taras (Janma, Sampat, Vipat, Kshema, Pratyari, Sadhaka, Vadha, Mitra, Ati-Mitra), counted from the Moon’s nakshatra or from the ascendant’s, with the natal grahas standing in them. The Transit button adds the transiting grahas.',
+      'New Directions view in ANALYSIS: a large cross with the north, east, south and west, and the grahas standing in each, by sign (fire east, earth south, air west, water north) or by house from the ascendant (1st east, 4th north, 7th west, 10th south). A star marks a graha in the direction where it has Dig Bala. The Transit button adds the transits.',
+      'Updated the application version to v2.41.',
+    ],
+  },
+  {
     version: 'v2.40',
     date: '2026-10-08',
     title: 'Timing summary',
