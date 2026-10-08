@@ -1,27 +1,16 @@
+'use client';
+
 import { ChartData, PlanetData, SpecialLagna } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import { normalizeDegrees } from '@/lib/angles';
+import { grahaCode, grahaCodeFromEnglishCode, grahaName, useGrahaNames } from '@/lib/grahaNames';
+import type { GrahaNameStyle } from '@/types';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 
 const SIGN_ABBR: Record<number, string> = {
   1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
   7: 'Li', 8: 'Sc', 9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
-};
-
-const GRAHA_NAMES: Record<string, { code: string; name: string }> = {
-  Sun:     { code: 'Su', name: 'Sūrya' },
-  Moon:    { code: 'Mo', name: 'Chandra' },
-  Mars:    { code: 'Ma', name: 'Maṅgala' },
-  Mercury: { code: 'Me', name: 'Budha' },
-  Jupiter: { code: 'Ju', name: 'Guru' },
-  Venus:   { code: 'Ve', name: 'Śukra' },
-  Saturn:  { code: 'Sa', name: 'Śani' },
-  Rahu:    { code: 'Ra', name: 'Rāhu' },
-  Ketu:    { code: 'Ke', name: 'Ketu' },
-  Uranus:  { code: 'Ur', name: 'Uranus' },
-  Neptune: { code: 'Ne', name: 'Neptune' },
-  Pluto:   { code: 'Pl', name: 'Pluto' },
 };
 
 const NAKSHATRAS = [
@@ -87,8 +76,8 @@ function getD108(longitude: number) {
   return { sign: d108Sign, part };
 }
 
-function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>, adjLon: (l: number) => number, precision: DegreePrecision) {
-  const graha = GRAHA_NAMES[planet.name] ?? { code: planet.name.slice(0, 2), name: planet.name };
+function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>, adjLon: (l: number) => number, precision: DegreePrecision, style: GrahaNameStyle) {
+  const graha = { code: grahaCode(planet.name, style), name: grahaName(planet.name, style) };
   const nak = getNakshatra(adjLon(planet.longitude));
   const d108 = getD108(planet.longitude);
   return {
@@ -96,7 +85,7 @@ function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, strin
     name: graha.name,
     karaka: karakaByPlanet[planet.name] ?? '',
     position: `${SIGN_ABBR[planet.sign]} ${tableFormatDeg(planet.degree, precision)}`,
-    nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
+    nakshatra: `${nak.name}(${nak.number}) ${grahaCodeFromEnglishCode(nak.lord, style)}`,
     pada: nak.pada,
     pada108: nak.pada108,
     d108: `${SIGN_ABBR[d108.sign]} (${d108.part})`,
@@ -126,6 +115,7 @@ export default function JyotishGrahaTable({
   showNakshatra = true,
   nakshatraAdjust = 0,
 }: Props) {
+  const { style } = useGrahaNames();
   const adjLon = (lon: number) => normalizeDegrees(lon + nakshatraAdjust);
   const ascNak = getNakshatra(adjLon(chart.ascendant.longitude));
   const ascD108 = getD108(chart.ascendant.longitude);
@@ -138,7 +128,7 @@ export default function JyotishGrahaTable({
       name: sl.name,
       karaka: '',
       position: `${SIGN_ABBR[sl.sign]} ${tableFormatDeg(sl.degree, degreePrecision)}`,
-      nakshatra: `${nak.name}(${nak.number}) ${nak.lord}`,
+      nakshatra: `${nak.name}(${nak.number}) ${grahaCodeFromEnglishCode(nak.lord, style)}`,
       pada: nak.pada,
       pada108: nak.pada108,
       d108: `${SIGN_ABBR[d108.sign]} (${d108.part})`,
@@ -156,13 +146,13 @@ export default function JyotishGrahaTable({
       name: 'Lagna',
       karaka: '',
       position: `${SIGN_ABBR[chart.ascendant.sign]} ${tableFormatDeg(chart.ascendant.degree, degreePrecision)}`,
-      nakshatra: `${ascNak.name}(${ascNak.number}) ${ascNak.lord}`,
+      nakshatra: `${ascNak.name}(${ascNak.number}) ${grahaCodeFromEnglishCode(ascNak.lord, style)}`,
       pada: ascNak.pada,
       pada108: ascNak.pada108,
       d108: `${SIGN_ABBR[ascD108.sign]} (${ascD108.part})`,
       isSpecial: false,
     },
-    ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet, adjLon, degreePrecision), isSpecial: false })),
+    ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet, adjLon, degreePrecision, style), isSpecial: false })),
     ...(showSpecialLagnas ? (chart.specialLagnas ?? []).map(buildSpecialLagnaRow) : []),
   ];
 

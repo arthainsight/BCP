@@ -165,6 +165,18 @@ export default function SettingsPanel(props: Props) {
             </select>
           </label>
 
+          <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400">
+            {t('graha names')}
+            <select
+              className={`${SELECT} mt-1`}
+              value={chartDisplaySettings.grahaNames ?? 'english'}
+              onChange={e => onUpdateChartDisplay?.({ grahaNames: e.target.value as 'english' | 'sanskrit' })}
+            >
+              <option value="english">{t('English (Sun, Moon, Mars …)')}</option>
+              <option value="sanskrit">{t('Sanskrit (Sūrya, Candra, Maṅgala …)')}</option>
+            </select>
+          </label>
+
           <div className="space-y-2">
             <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
               {t('calculations')}

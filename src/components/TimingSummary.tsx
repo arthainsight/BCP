@@ -10,6 +10,7 @@ import { collectTimingEvents, type TimingEvent } from '@/lib/signChanges';
 import { findTransitHits, type LongitudeSeries } from '@/lib/transitHits';
 import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 import { useT } from '@/lib/i18n';
+import { useGrahaNames } from '@/lib/grahaNames';
 
 type Props = {
   chart: ChartData;
@@ -19,9 +20,6 @@ type Props = {
   calculationSettings?: CalculationSettings;
 };
 
-const CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Asc: 'Asc',
-};
 const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 // The Moon changes sign every two to three days and would crowd the list out.
 const BODIES = ['Sun', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
@@ -43,6 +41,7 @@ const moment = (time: number) => { const d = new Date(time); return `${day(time)
  */
 export default function TimingSummary({ chart, birthDatetime, targetDate, dashaSettings, calculationSettings }: Props) {
   const t = useT();
+  const { code, translate } = useGrahaNames();
   const house = (sign: number) => ((sign - chart.ascendant.sign + 12) % 12) + 1;
 
   const dashas = useMemo(() => {
@@ -111,7 +110,7 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
             <li key={snapshot.key} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 py-1 text-[11px] font-mono">
               <span className="w-36 shrink-0 font-semibold text-zinc-700 dark:text-zinc-200">{snapshot.label}</span>
               <span className="min-w-0 break-words text-zinc-600 dark:text-zinc-300">
-                {snapshot.levels.length > 0 ? snapshot.levels.map(level => level.value).join(' – ') : snapshot.note}
+                {snapshot.levels.length > 0 ? translate(snapshot.levels.map(level => level.value).join(' – ')) : snapshot.note}
               </span>
               {snapshot.mdRange && (
                 <span className="text-zinc-400 dark:text-zinc-500">MD {day(snapshot.mdRange.startDate.getTime())} – {day(snapshot.mdRange.endDate.getTime())}</span>
@@ -131,7 +130,7 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
             <li key={`${event.kind}-${event.body}-${event.time}`} className="flex items-baseline gap-2 py-1 text-[11px] font-mono">
               <span className="w-32 shrink-0 text-zinc-500 dark:text-zinc-400">{moment(event.time)}</span>
               <span className="min-w-0 text-zinc-700 dark:text-zinc-200">
-                <span className="font-bold text-rose-500">{CODES[event.body]}{event.kind === 'sign' && event.retrograde ? '℞' : ''}</span>
+                <span className="font-bold text-rose-500">{code(event.body)}{event.kind === 'sign' && event.retrograde ? '℞' : ''}</span>
                 {event.kind === 'sign' && <> → <span className="whitespace-nowrap"><span className="font-bold">{SIGNS[event.to - 1]}</span> <span className="text-zinc-400 dark:text-zinc-500">H{house(event.to)}</span></span></>}
                 {event.kind === 'station' && <> {event.turnsTo === 'retrograde' ? `${t('turns retrograde')} ℞` : t('turns direct')} <span className="whitespace-nowrap text-zinc-400 dark:text-zinc-500">{SIGNS[event.sign - 1]} H{house(event.sign)}</span></>}
                 {event.kind === 'combust' && <> {event.combust ? t('becomes combust') : t('leaves combustion')}</>}
@@ -151,9 +150,9 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
             <li key={`${hit.transit}-${hit.natal}-${hit.relation}-${hit.time}`} className="flex items-baseline gap-2 py-1 text-[11px] font-mono">
               <span className="w-32 shrink-0 text-zinc-500 dark:text-zinc-400">{day(hit.time)}</span>
               <span className="min-w-0 text-zinc-700 dark:text-zinc-200">
-                <span className="font-bold text-rose-500">{CODES[hit.transit]}{hit.retrograde ? '℞' : ''}</span>
+                <span className="font-bold text-rose-500">{code(hit.transit)}{hit.retrograde ? '℞' : ''}</span>
                 {` ${hit.relation === 1 ? t('over natal') : hit.relation === 5 ? t('5th from natal') : t('9th from natal')} `}
-                <span className="font-bold">{CODES[hit.natal]}</span>
+                <span className="font-bold">{code(hit.natal)}</span>
               </span>
             </li>
           ))}

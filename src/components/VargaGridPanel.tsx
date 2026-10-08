@@ -21,13 +21,10 @@ import ChartExportButtons from './ChartExportButtons';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import { useT } from '@/lib/i18n';
+import { useGrahaNames } from '@/lib/grahaNames';
 
 const STORAGE_KEY = 'vargaGrid';
 const PLANET_ORDER = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
-const PLANET_CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke',
-};
-
 type Props = {
   chart: ChartData;
   chartStyle: 'north' | 'south';
@@ -45,6 +42,7 @@ const PILL_OFF = 'text-zinc-500 dark:text-zinc-400';
 
 export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null }: Props) {
   const t = useT();
+  const { code } = useGrahaNames();
   const [selection, setSelection] = useState<VargaGridSelection>(DEFAULT_VARGA_GRID);
   const [highlight, setHighlight] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -140,7 +138,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
               ? 'bg-cyan-600 text-white dark:bg-cyan-500 dark:text-zinc-950'
               : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300'}`}
           >
-            {PLANET_CODES[name]}
+            {code(name)}
           </button>
         ))}
       </div>

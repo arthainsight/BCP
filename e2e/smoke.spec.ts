@@ -206,7 +206,7 @@ test('transit.hits also lists the Paraya hits, to the 1st, 5th and 9th from each
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'transit.hits', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Transit Hits', exact: true })).click();
 
   const paraya = visible(page, page.getByRole('region', { name: 'paraya hits' }));
   await expect(paraya).toBeVisible();
@@ -229,7 +229,7 @@ test('the Paraya options in Settings change the Paraya hits', async ({ page }) =
   await calculateChart(page);
   const hitsText = async () => {
     await selectWorkspace(page, 'TIMING');
-    await visible(page, page.getByRole('button', { name: 'transit.hits', exact: true })).click();
+    await visible(page, page.getByRole('button', { name: 'Transit Hits', exact: true })).click();
     const paraya = visible(page, page.getByRole('region', { name: 'paraya hits' }));
     await paraya.getByRole('button', { name: '10 yr', exact: true }).click();
     await paraya.getByRole('button', { name: /^show all/ }).click();
@@ -245,6 +245,148 @@ test('the Paraya options in Settings change the Paraya hits', async ({ page }) =
 
   expect(after).not.toEqual(before);
   expect(after).toMatch(/age \d+\.\d/);
+
+  expect(errors).toEqual([]);
+});
+
+test('the graha names in Settings switch between English and Sanskrit', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  const table = visible(page, page.locator('table').filter({ hasText: 'Graha' }));
+  // English to start with.
+  await expect(table).toContainText('Mercury');
+  await expect(table).not.toContainText('Budha');
+
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.locator('select').filter({ has: page.locator('option', { hasText: /^Sanskrit/ }) })).selectOption('sanskrit');
+  await selectWorkspace(page, 'ANALYSIS');
+  const sanskrit = visible(page, page.locator('table').filter({ hasText: 'Graha' }));
+  await expect(sanskrit).toContainText('Budha');
+  await expect(sanskrit).toContainText('Candra');
+  await expect(sanskrit).not.toContainText('Mercury');
+
+  // The chart labels follow: Mercury is Bu, Jupiter Gu.
+  await selectWorkspace(page, 'CHART');
+  await expect(visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'))).toContainText('Gu');
+
+  expect(errors).toEqual([]);
+});
+
+test('Systems stand side by side in columns, and each daśā keeps a note', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+
+  // A note on the Vimsottari daśā is kept in the browser with the chart's birth moment.
+  const vimshottari = visible(page, page.getByRole('button', { name: /^Vimsottari/ }));
+  await vimshottari.click();
+  await visible(page, page.getByRole('textbox', { name: /Vimsottari notes/ })).fill('Saturn return period');
+  await expect(visible(page, page.getByLabel('has a note'))).toBeVisible();
+  const stored = await page.evaluate(() => localStorage.getItem('bhrigu:dasha-notes:15.08.1947 09.15.00'));
+  expect(JSON.parse(stored ?? '{}')).toEqual({ vimshottari: 'Saturn return period' });
+  await vimshottari.click();
+
+  if (info.project.name === 'desktop') {
+    // Two columns: the first two cards sit on the same row.
+    const columns = visible(page, page.getByText('columns', { exact: true })).locator('..');
+    await columns.getByRole('button', { name: '2', exact: true }).click();
+    const first = await visible(page, page.getByRole('button', { name: /^Vimsottari/ })).boundingBox();
+    const second = await visible(page, page.getByRole('button', { name: /^Yogin/ })).boundingBox();
+    expect(Math.abs((first?.y ?? 0) - (second?.y ?? 99))).toBeLessThan(4);
+    expect((second?.x ?? 0)).toBeGreaterThan((first?.x ?? 0) + 50);
+  }
+
+  expect(errors).toEqual([]);
+});
+
+test('the Dasha Slider and the Yearly table show the running daśās through time', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+
+  // Slider: dragging changes the date and the running periods.
+  await visible(page, page.getByRole('button', { name: 'Slider', exact: true })).click();
+  const slider = visible(page, page.getByRole('slider', { name: 'dasha slider' }));
+  await expect(slider).toBeVisible();
+  const section = visible(page, page.getByRole('region', { name: 'dasha slider' }));
+  const before = await section.innerText();
+  await slider.fill('3000');
+  await expect(section).not.toHaveText(before);
+  await expect(section).toContainText(/age 8\.\d/);
+  await expect(section).toContainText('Vimsottari');
+
+  // Yearly: a row for each year, and the changes of MD marked.
+  await visible(page, page.getByRole('button', { name: 'Yearly', exact: true })).click();
+  const yearly = visible(page, page.getByRole('region', { name: 'yearly dashas' }));
+  await expect(yearly.locator('tbody tr')).toHaveCount(21);
+  await expect(yearly.locator('thead th', { hasText: 'Vimsottari' })).toBeVisible();
+  await expect(yearly.locator('td.font-bold').first()).toBeVisible();
+  await yearly.getByRole('button', { name: '+10 yr' }).click();
+  await expect(yearly.locator('tbody tr').first()).toContainText('2026');
+
+  expect(errors).toEqual([]);
+});
+
+test('an event shows the transits of its day on the charts', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('textbox', { name: 'Event name' })).fill('Moved abroad');
+  await visible(page, page.getByLabel('Event date')).fill('2015-06-15');
+  await visible(page, page.getByRole('button', { name: 'Add', exact: true })).click();
+
+  // The Transits button keeps the preview open: the natal chart with the transits of that day.
+  await visible(page, page.getByRole('button', { name: 'Transits on the charts' })).click();
+  const preview = visible(page, page.getByRole('region', { name: 'event transits' }));
+  await expect(preview).toContainText('15.06.2015 12:00');
+  await expect(preview.locator('svg[aria-label="North Indian Jyotish chart"]')).toBeVisible({ timeout: 15_000 });
+  // The transiting grahas are drawn in the transit colour.
+  await expect(preview.locator('svg tspan[fill="#f43f5e"]').first()).toBeVisible();
+
+  // It follows the divisional charts: D9 next to D1.
+  await preview.getByRole('group', { name: 'divisional charts' }).getByRole('button', { name: 'D9', exact: true }).click();
+  await expect(preview.locator('svg[aria-label="North Indian Jyotish chart"]')).toHaveCount(2);
+
+  // With a pointer (the desktop), resting on the event is enough; unpinned, it closes again.
+  if (info.project.name === 'desktop') {
+    await visible(page, page.getByRole('button', { name: 'Transits on the charts' })).click();
+    await expect(page.getByRole('region', { name: 'event transits' })).toHaveCount(0);
+    await visible(page, page.locator('details').filter({ hasText: 'Moved abroad' })).hover();
+    await expect(visible(page, page.getByRole('region', { name: 'event transits' }))).toBeVisible({ timeout: 5_000 });
+  }
+
+  expect(errors).toEqual([]);
+});
+
+test('the timing panel can take the whole width on a wide screen', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'the wide mode is for a wide screen');
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  const chart = visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
+  await expect(chart).toBeVisible();
+
+  await visible(page, page.getByRole('button', { name: '⤢ wide' })).click();
+  await expect(page.locator('svg[aria-label="North Indian Jyotish chart"]').locator('visible=true')).toHaveCount(0);
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  const panel = await visible(page, page.getByRole('button', { name: /^Vimsottari/ })).boundingBox();
+  expect(panel?.width ?? 0).toBeGreaterThan(900);
+
+  await visible(page, page.getByRole('button', { name: '⤡ narrow' })).click();
+  await expect(chart).toBeVisible();
 
   expect(errors).toEqual([]);
 });
@@ -313,7 +455,7 @@ test('TIMING exposes Dasha, Summary, Transit Hits, Sign changes, Tithi Praveśa 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
 
-  const dashaLabels = ['Dasha', 'Summary', 'transit.hits', 'Sign changes', 'Tithi Praveśa', 'Varṣaphala'];
+  const dashaLabels = ['Dasha', 'Summary', 'Transit Hits', 'Sign changes', 'Tithi Praveśa', 'Varṣaphala'];
   for (const tab of dashaLabels) {
     await visible(page, page.getByRole('button', { name: tab, exact: true })).click();
     await expect(visible(page, page.getByRole('button', { name: tab, exact: true }))).toBeVisible();

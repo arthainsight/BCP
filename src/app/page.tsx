@@ -22,6 +22,7 @@ import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentTo
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
 import { LanguageContext, type Language } from '@/lib/i18n';
+import { GrahaNamesContext } from '@/lib/grahaNames';
 
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
@@ -538,6 +539,27 @@ export default function Home() {
     onUpdateDashaSettings: updateDashaSettings,
   };
 
+  // Natal place and time zone: the transits of an event's day are counted for them.
+  const transitLocation = useMemo(() => {
+    const lat = parseFloat(manualLat);
+    const lng = parseFloat(manualLng);
+    return Number.isNaN(lat) || Number.isNaN(lng) || effectiveTzOffset === null ? undefined : { lat, lng, tzOffset: effectiveTzOffset };
+  }, [manualLat, manualLng, effectiveTzOffset]);
+
+  // The timing panel can take the whole width of a wide screen, hiding the chart.
+  const [timingWide, setTimingWide] = useState(false);
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (localStorage.getItem('timingWide') === 'true') setTimingWide(true);
+    } catch {}
+  }, []);
+  const toggleTimingWide = () => setTimingWide(value => {
+    try { localStorage.setItem('timingWide', String(!value)); } catch {}
+    return !value;
+  });
+  const wideTiming = timingWide && desktopTab === 'dasha';
+
   const language: Language = chartDisplaySettings.language === 'fi' ? 'fi' : 'en';
 
   // Keep the document language in step with the interface for screen readers.
@@ -545,6 +567,7 @@ export default function Home() {
 
   return (
     <LanguageContext.Provider value={language}>
+    <GrahaNamesContext.Provider value={chartDisplaySettings.grahaNames ?? 'english'}>
     <div className="min-h-screen overflow-x-clip bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
       <AppHeader
         activeChartName={activeChartName}
@@ -564,9 +587,9 @@ export default function Home() {
       <PrimaryNav active={desktopToWorkspace(desktopTab)} onChange={selectWorkspace} variant="top" />
 
       {/* ── DESKTOP: 2-column grid (full width for Public) ────────── */}
-      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'public' ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
+      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'public' || wideTiming ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
         {/* Left: Chart + optional BCP summary + optional Panchang (hidden on Public) */}
-        <div className={`space-y-3 ${desktopTab === 'public' ? 'hidden' : ''}`}>
+        <div className={`space-y-3 ${desktopTab === 'public' || wideTiming ? 'hidden' : ''}`}>
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
             <ChartSection {...chartSectionProps} />
           </div>
@@ -596,7 +619,7 @@ export default function Home() {
             )}
             {desktopTab === 'dasha' && (
               bcpResult && chartData
-                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} />
+                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} wide={wideTiming} onToggleWide={toggleTimingWide} />
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
@@ -661,7 +684,7 @@ export default function Home() {
             )}
             <Panel>
               {bcpResult && chartData
-                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} />
+                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={dashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} />
                 : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
               }
             </Panel>
@@ -684,6 +707,7 @@ export default function Home() {
         {APP_NAME} {APP_VERSION}
       </footer>
     </div>
+    </GrahaNamesContext.Provider>
     </LanguageContext.Provider>
   );
 }

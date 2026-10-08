@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v2.46',
+    date: '2026-10-08',
+    title: 'Daśā columns and notes, Slider, Yearly, event transits, graha names',
+    changes: [
+      'Systems: the daśā systems can stand side by side, 1 to 4 columns (columns buttons, from a tablet up). The ⤢ wide button above the timing tabs gives the timing panel the whole width of a wide screen and hides the chart. A system whose mahādaśā ends within a year shows a flag “MD changes 03.2027” in its header.',
+      'Every daśā system has a note field at the top of its open card, kept in the browser with the chart. A ✎ in the header shows that a note exists. (The events already had their own notes.)',
+      'New Slider view: drag through time, from birth to 100 years on, and read the running MD – AD – PD of every system. New Yearly view: a table with a row for each year (21 at a time) and a column for each system; a new MD (amber) or AD (blue) is marked.',
+      'Events: the Transits on the charts button, or resting the pointer on an event, shows the transits of the event’s day (noon, natal time zone) on the natal charts in the chosen divisional charts (D1, D9, D10 …).',
+      'The tab transit.hits is now called Transit Hits.',
+      'Graha names are in English: the graha table (ANALYSIS → Grahas) and the Finnish interface no longer show Sūrya, Chandra, Kuu, Saturnus and so on. Settings → graha names switches to the Sanskrit names (Sūrya, Candra, Maṅgala, Budha, Guru, Śukra, Śani, Rāhu, Ketu) and their short codes (Su Ch Ma Bu Gu Sk Sa Ra Ke) on the charts, the graha table, the daśā periods and the new views.',
+      'Updated the application version to v2.46.',
+    ],
+  },
+  {
     version: 'v2.45',
     date: '2026-10-08',
     title: 'Paraya speed options',

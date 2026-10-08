@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import type { ChartData, PlanetData } from '@/types';
 import { DIRECTIONS, placeByDirection, type Direction, type DirectionMode, type DirectionPlacement } from '@/lib/directions';
 import { useT } from '@/lib/i18n';
+import { useGrahaNames } from '@/lib/grahaNames';
 
 type Props = {
   chart: ChartData;
@@ -11,9 +12,6 @@ type Props = {
 };
 
 const GRAHAS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
-const CODES: Record<string, string> = {
-  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Asc: 'Asc',
-};
 const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const SIGNS_OF: Record<Direction, string> = {
   East: 'Ar · Le · Sg', South: 'Ta · Vi · Cp', West: 'Ge · Li · Aq', North: 'Cn · Sc · Pi',
@@ -34,6 +32,7 @@ const SYMBOL: Record<Direction, string> = { North: 'N', East: 'E', South: 'S', W
  */
 export default function DirectionChartPanel({ chart, transitPlanets = [] }: Props) {
   const t = useT();
+  const { code, name: grahaFullName } = useGrahaNames();
   const [mode, setMode] = useState<DirectionMode>('sign');
   const [showTransit, setShowTransit] = useState(false);
 
@@ -71,7 +70,7 @@ export default function DirectionChartPanel({ chart, transitPlanets = [] }: Prop
               ? 'border-rose-300 text-rose-500 dark:border-rose-800'
               : 'border-zinc-200 font-bold text-zinc-800 dark:border-zinc-700 dark:text-zinc-100'}`}
           >
-            {CODES[item.name]}{item.transit ? '↗' : ''}
+            {code(item.name)}{item.transit ? '↗' : ''}
             <span className="font-normal text-zinc-400 dark:text-zinc-500"> {SIGN_ABBR[item.sign - 1]}{mode === 'house' ? ` H${item.house}` : ''}</span>
             {item.digBala && <span className="text-amber-500"> ★</span>}
           </li>
@@ -105,7 +104,7 @@ export default function DirectionChartPanel({ chart, transitPlanets = [] }: Prop
         {arm('North', 'col-start-2 row-start-1')}
         {arm('West', 'col-start-1 row-start-2')}
         <div className="col-start-2 row-start-2 flex min-w-0 flex-col items-center justify-center rounded-lg border border-dashed border-zinc-300 p-2 text-center dark:border-zinc-600">
-          <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{t('Ascendant')}</span>
+          <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">{grahaFullName('Asc')}</span>
           <span className="text-sm font-mono font-bold text-zinc-700 dark:text-zinc-200">{SIGN_ABBR[chart.ascendant.sign - 1]}</span>
           <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-500">{mode === 'sign' ? t(DIRECTIONS.find(d => placed[d].some(p => p.name === 'Asc' && !p.transit)) ?? 'East') : t('East')}</span>
         </div>
