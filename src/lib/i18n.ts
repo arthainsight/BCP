@@ -121,6 +121,7 @@ export const FI: Record<string, string> = {
   'show fewer': 'näytä vähemmän',
   'show all': 'näytä kaikki',
   'Sign changes': 'Merkinvaihdot',
+  'dasha houses': 'daśā-talot',
   'chara karaka scheme': 'chara-karakat',
   '8 karakas (with Rahu and Pitṛkāraka)': '8 karakaa (Rahu ja Pitṛkāraka mukana)',
   '7 karakas (without Rahu)': '7 karakaa (ilman Rahua)',

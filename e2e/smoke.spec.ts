@@ -480,6 +480,52 @@ test('the Arudha padas AL, AL2 … can be marked on the charts', async ({ page }
   expect(errors).toEqual([]);
 });
 
+test('the houses of the running daśā lords get a border that can be switched off', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const northChart = () => visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
+  await expect(northChart().locator('title', { hasText: 'Mahadasha lord' })).toHaveCount(1);
+  await expect(northChart().locator('title', { hasText: 'Antardasha lord' })).toHaveCount(1);
+
+  // The ··· menu switches the borders off without touching the ᴹ/ᴬ marks.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'dasha houses' })).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect(northChart().locator('title', { hasText: 'Mahadasha lord' })).toHaveCount(0);
+  await expect.poll(async () => (await northChart().textContent()) ?? '').toMatch(/[ᴹᴬ]/);
+
+  expect(errors).toEqual([]);
+});
+
+test('the chara karakas can be seven or eight, ranked by degrees or minutes', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const chartText = async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'karaka', exact: true })).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  // Eight karakas include the Pitṛkāraka; the Rahu leg is there too.
+  await expect.poll(chartText).toMatch(/PiK/);
+
+  await selectWorkspace(page, '⚙');
+  const scheme = visible(page, page.locator('select', { has: page.getByRole('option', { name: '7 karakas (without Rahu)' }) }));
+  await scheme.selectOption('7');
+  await visible(page, page.locator('select', { has: page.getByRole('option', { name: 'Highest minute' }) })).selectOption('minute');
+
+  await selectWorkspace(page, 'CHART');
+  await expect.poll(chartText).not.toMatch(/PiK/);
+  expect(await chartText()).toMatch(/AK/);
+  expect(await chartText()).toMatch(/DK/);
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

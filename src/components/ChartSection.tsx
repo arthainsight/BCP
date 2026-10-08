@@ -11,7 +11,7 @@ import ChartDivisionsView from './ChartDivisionsView';
 import { useChartDivisions } from '@/hooks/useChartDivisions';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPadas';
-import { buildLayerControls, CHART_LAYER_LABELS, type DashaLordMarks } from './chartLayers';
+import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 import { useT } from '@/lib/i18n';
@@ -166,7 +166,7 @@ export default function ChartSection({
   const d1SpecialLagnas = [...(chartDisplaySettings.showSpecialLagnas ? chart.specialLagnas ?? [] : []), ...arudhaMarks];
   const d1ShowSpecialLagnas = chartDisplaySettings.showSpecialLagnas || arudhaMarks.length > 0;
   const showBcp = chartDisplaySettings.showBcpHighlight === true;
-  const dashaLords = chartDisplaySettings.showDashaLords !== false ? dashaLordsFromParent : null;
+  const dashaLords = withDashaLayers(dashaLordsFromParent, chartDisplaySettings);
   const yearHouse = showBcp ? bcp.activeYearHouse : 0;
   const monthHouse = showBcp ? bcp.activeMonthHouse : 0;
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
@@ -176,6 +176,7 @@ export default function ChartSection({
   const layerControls = buildLayerControls(chartDisplaySettings, {
     bcp: true,
     dasha: dashaLordsFromParent !== null,
+    dashaHouses: dashaLordsFromParent !== null,
     transit: transitPlanets.length > 0,
     bnnMajor: bnnHouses.major > 0,
     bnnMinor: bnnHouses.minor > 0,

@@ -21,6 +21,7 @@ import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
+import { withDashaLayers } from '@/components/chartLayers';
 import { LanguageContext, type Language } from '@/lib/i18n';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 
@@ -549,6 +550,9 @@ export default function Home() {
     return Number.isNaN(lat) || Number.isNaN(lng) || effectiveTzOffset === null ? undefined : { lat, lng, tzOffset: effectiveTzOffset };
   }, [manualLat, manualLng, effectiveTzOffset]);
 
+  // The dasha marks and house borders of the extra charts follow the same layer switches as the main chart.
+  const chartDashaLords = useMemo(() => withDashaLayers(dashaLords, chartDisplaySettings), [dashaLords, chartDisplaySettings]);
+
   // The daśā calculations find the Ātmakāraka the way the charts do.
   const timingDashaSettings = useMemo(() => ({
     ...dashaSettings,
@@ -626,7 +630,7 @@ export default function Home() {
             )}
             {desktopTab === 'grahas' && (
               chartData
-                ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
+                ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
                 : <EmptyState message="Calculate a chart to see graha positions" />
             )}
             {desktopTab === 'dasha' && (
@@ -677,7 +681,7 @@ export default function Home() {
         {activeTab === 'grahas' && (
           <Panel>
             {chartData
-              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
+              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
               : <EmptyState message="Calculate a chart in Data to see graha positions" />
             }
           </Panel>
@@ -691,7 +695,7 @@ export default function Home() {
                 chartDisplaySettings={chartDisplaySettings}
                 karakaByPlanet={karakaByPlanet}
                 nakshatraAdjust={nakshatraAdjust}
-                dashaLords={dashaLords}
+                dashaLords={chartDashaLords}
               />
             )}
             <Panel>
