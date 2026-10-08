@@ -382,18 +382,18 @@ export default function SouthIndianChart({
                 {/* BNN labels */}
                 {bnnBothLabel ? (
                   <span className="truncate text-[8px] leading-tight font-bold" style={{ color: isDark ? '#e879f9' : '#a21caf' }}>
-                    BNN Maj+Min
+                    RSN Maj+Min
                   </span>
                 ) : (
                   <>
                     {isBnnMaj && (
                       <span className="truncate text-[8px] leading-tight font-bold" style={{ color: bnnMajColor }}>
-                        BNN Maj
+                        RSN Maj
                       </span>
                     )}
                     {isBnnMin && (
                       <span className="truncate text-[8px] leading-tight font-bold" style={{ color: bnnMinColor }}>
-                        BNN Min
+                        RSN Min
                       </span>
                     )}
                   </>

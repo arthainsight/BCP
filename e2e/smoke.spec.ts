@@ -106,14 +106,14 @@ test('normal transit overlay toggles on and off in CHART', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('BNN Major and BNN Minor labels render in the North Indian chart', async ({ page }) => {
+test('RSN Major and RSN Minor labels render in the North Indian chart', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
 
-  await expect(visible(page, page.locator('svg').locator('text', { hasText: /BNN Maj/ }))).toBeVisible();
-  await expect(visible(page, page.locator('svg').locator('text', { hasText: /BNN Min/ }))).toBeVisible();
+  await expect(visible(page, page.locator('svg').locator('text', { hasText: /RSN Maj/ }))).toBeVisible();
+  await expect(visible(page, page.locator('svg').locator('text', { hasText: /RSN Min/ }))).toBeVisible();
 
   expect(errors).toEqual([]);
 });
@@ -361,6 +361,8 @@ test('an event shows the transits of its day on the charts', async ({ page }, in
   // With a pointer (the desktop), resting on the event is enough; unpinned, it closes again.
   if (info.project.name === 'desktop') {
     await visible(page, page.getByRole('button', { name: 'Transits on the charts' })).click();
+    // The pointer is still over the event, so move it away before it can close.
+    await page.mouse.move(2, 2);
     await expect(page.getByRole('region', { name: 'event transits' })).toHaveCount(0);
     await visible(page, page.locator('details').filter({ hasText: 'Moved abroad' })).hover();
     await expect(visible(page, page.getByRole('region', { name: 'event transits' }))).toBeVisible({ timeout: 5_000 });

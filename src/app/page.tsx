@@ -71,7 +71,7 @@ export default function Home() {
   const [birthDatetime, setBirthDatetime] = useState('');
   const [city, setCity] = useState('');
   const [targetDate, setTargetDate] = useState(getTodayString());
-  // The target moment: BCP, BNN, Paraya and the dasha lords read its date,
+  // The target moment: BCP, RSN, Paraya and the dasha lords read its date,
   // and the transits are calculated for the full date and time.
   const [targetTime, setTargetTime] = useState(getNowTimeString());
   const transitDatetime = useMemo(() => targetMomentToTransit(targetDate, targetTime), [targetDate, targetTime]);

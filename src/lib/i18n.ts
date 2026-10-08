@@ -262,8 +262,9 @@ export const FI: Record<string, string> = {
   'BCP year/month': 'BCP vuosi/kuukausi',
   'dasha lords': 'daśā-herrat',
   'transit': 'transiitti',
-  'BNN major': 'BNN major',
-  'BNN minor': 'BNN minor',
+  'RSN major': 'RSN major',
+  'RSN minor': 'RSN minor',
+  'RSN is the Rao Sir System of Nadi: the major (Jupiterian round) and minor progressions, and the Paraya.': 'RSN on Rao Sir System of Nadi: major (Jupiterin kierros) ja minor etenemiset sekä Paraya.',
   'paraya Ju Sa Ke Ra': 'paraya Ju Sa Ke Ra',
   'dasha lords from': 'daśā-herrat järjestelmästä',
   'ᴹ marks the mahādaśā lord, ᴬ the antardaśā lord, at the target date. Rāśi daśās run by signs, so they are not offered.':

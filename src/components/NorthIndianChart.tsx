@@ -333,11 +333,11 @@ export default function NorthIndianChart({
           const isBnnMin = bnnMinorHouse > 0 && item.house === bnnMinorHouse;
           const bnnLabels: { text: string; color: string }[] = [];
           if (isBnnMaj && isBnnMin) {
-            bnnLabels.push({ text: 'BNN Maj', color: bnnMajColor }, { text: 'BNN Min', color: bnnMinColor });
+            bnnLabels.push({ text: 'RSN Maj', color: bnnMajColor }, { text: 'RSN Min', color: bnnMinColor });
           } else if (isBnnMaj) {
-            bnnLabels.push({ text: 'BNN Maj', color: bnnMajColor });
+            bnnLabels.push({ text: 'RSN Maj', color: bnnMajColor });
           } else if (isBnnMin) {
-            bnnLabels.push({ text: 'BNN Min', color: bnnMinColor });
+            bnnLabels.push({ text: 'RSN Min', color: bnnMinColor });
           }
 
           const tokens: LabelToken[] = [];
