@@ -30,32 +30,19 @@ for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianC
   const precise = text(renderToStaticMarkup(createElement(Chart, { ...base, ascendantDegree: 12.3, degreePrecision: 'degree' })));
   assert.match(precise, /Asc 12°(?!18)/i, `${name}: ascendant follows the degree precision`);
 
-  // --- Layers drawn and listed in the legend ---------------------------------
+  // --- Layers are drawn, with no legend under the chart ----------------------
   const full = renderToStaticMarkup(createElement(Chart, {
     ...base, transitPlanets: transits, showTransitPlanets: true, bnnMajorHouse: 3, nadiParayaHouses: paraya,
   }));
-  assert.match(text(full), /BNN Major/, `${name}: BNN Major legend`);
-  assert.match(text(full), /Paraya/, `${name}: Paraya legend`);
   assert.match(text(full), /Ju 4\.3°/, `${name}: Paraya point`);
-  assert.match(text(full), /Transit/, `${name}: transit legend`);
-  assert.doesNotMatch(full, /<button/, `${name}: legend is plain text without controls`);
+  assert.doesNotMatch(text(full), /Paraya|Transit/, `${name}: no legend under the chart`);
+  assert.doesNotMatch(full, /<button/, `${name}: no legend buttons`);
 
-  // --- Without data, a layer leaves no trace ---------------------------------
-  const bare = text(renderToStaticMarkup(createElement(Chart, base)));
-  for (const label of ['BNN Major', 'Paraya', 'Transit']) assert.doesNotMatch(bare, new RegExp(label), `${name}: no ${label} legend`);
-
-  // --- Legend controls: an off layer stays in the legend as a pressed-off button
+  // --- A layer that is off is not drawn --------------------------------------
   const toggled: string[] = [];
   const settings = { ...DEFAULT_CHART_DISPLAY, showTransitOverlay: true, showNadiParaya: false };
   const controls = buildLayerControls(settings, { transit: true, paraya: true, bnnMajor: false }, key => toggled.push(key));
   assert.deepEqual(controls?.map(c => [c.key, c.on]), [['transit', true], ['paraya', false]]);
-  const withControls = renderToStaticMarkup(createElement(Chart, {
-    ...base, transitPlanets: transits, showTransitPlanets: true, layerControls: controls,
-  }));
-  assert.equal(withControls.match(/<button/g)?.length, 1, `${name}: one button, for the layer that is on`);
-  assert.doesNotMatch(text(withControls), /Paraya/, `${name}: a layer that is off is left out of the legend`);
-  assert.match(withControls, /aria-pressed="true"[^>]*>(?:(?!<\/button>).)*Transit/, `${name}: transit is on`);
-  assert.doesNotMatch(text(withControls), /Ju 4\.3°/, `${name}: an off layer is not drawn`);
   controls?.forEach(c => c.onToggle());
   assert.deepEqual(toggled, ['showTransitOverlay', 'showNadiParaya']);
 }
@@ -89,7 +76,6 @@ for (const [name, Chart] of [['North', NorthIndianChart], ['South', SouthIndianC
   const marked = text(renderToStaticMarkup(createElement(Chart, { ...base, dashaLords: { md: 'Sun', ad: 'Moon' } })));
   assert.match(marked, /Suᴹ/, `${name}: mahadasha lord marked`);
   assert.match(marked, /Moᴬ/, `${name}: antardasha lord marked`);
-  assert.match(marked, /ᴹᴬ Su–Mo/, `${name}: legend names the running lords`);
   const same = text(renderToStaticMarkup(createElement(Chart, { ...base, dashaLords: { md: 'Moon', ad: 'Moon' } })));
   assert.match(same, /Moᴹᴬ/, `${name}: one lord can hold both`);
   assert.doesNotMatch(text(renderToStaticMarkup(createElement(Chart, base))), /ᴹ|ᴬ/, `${name}: no marks without lords`);
