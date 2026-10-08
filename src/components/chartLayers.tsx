@@ -20,8 +20,8 @@ export const CHART_LAYER_LABELS: Record<ChartLayerKey, string> = {
   bcp: 'BCP year/month',
   dasha: 'dasha lords',
   transit: 'transit',
-  bnnMajor: 'BNN major',
-  bnnMinor: 'BNN minor',
+  bnnMajor: 'RSN major',
+  bnnMinor: 'RSN minor',
   paraya: 'paraya Ju Sa Ke Ra',
 };
 

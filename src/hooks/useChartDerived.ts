@@ -36,7 +36,7 @@ export function useChartDerived(
     return mainAyanamsa - siderealAyanamsa;
   }, [chartData?.debug, calculationSettings.nakshatraMode]);
 
-  // BNN: age at the target date
+  // RSN: age at the target date
   const bnnAge = useMemo(() => {
     const birth = parseDateTime(birthDatetime);
     const target = parseTargetDateString(targetDate);

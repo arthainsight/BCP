@@ -18,7 +18,7 @@ const BUTTON = 'min-h-8 rounded border border-zinc-200 px-1.5 text-[10px] font-m
 const FIELD = 'min-h-8 rounded border border-zinc-300 bg-white px-1.5 text-xs font-mono text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200';
 
 /**
- * The target moment. BCP, BNN, Paraya and the dasha lords read its date, and
+ * The target moment. BCP, RSN, Paraya and the dasha lords read its date, and
  * the transits are calculated for the date and time. Step it by an hour, day,
  * month or year, type it, or jump to now.
  */

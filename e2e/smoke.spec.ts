@@ -106,14 +106,14 @@ test('normal transit overlay toggles on and off in CHART', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('BNN Major and BNN Minor labels render in the North Indian chart', async ({ page }) => {
+test('RSN Major and RSN Minor labels render in the North Indian chart', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
 
-  await expect(visible(page, page.locator('svg').locator('text', { hasText: /BNN Maj/ }))).toBeVisible();
-  await expect(visible(page, page.locator('svg').locator('text', { hasText: /BNN Min/ }))).toBeVisible();
+  await expect(visible(page, page.locator('svg').locator('text', { hasText: /RSN Maj/ }))).toBeVisible();
+  await expect(visible(page, page.locator('svg').locator('text', { hasText: /RSN Min/ }))).toBeVisible();
 
   expect(errors).toEqual([]);
 });

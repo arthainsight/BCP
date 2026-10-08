@@ -326,6 +326,9 @@ export default function SettingsPanel(props: Props) {
                 </div>
               ))}
             </div>
+            <div className="mt-2 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+              {t('RSN is the Rao Sir System of Nadi: the major (Jupiterian round) and minor progressions, and the Paraya.')}
+            </div>
             <label className="mt-3 block text-xs font-mono text-zinc-500 dark:text-zinc-400">
               {t('dasha lords from')}
               <select

@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v2.47',
+    date: '2026-10-08',
+    title: 'Rao Sir System of Nadi',
+    changes: [
+      'The Nadi system is now named the Rao Sir System of Nadi (RSN) instead of BNN: the chart labels (RSN Maj, RSN Min), the layer names (RSN major, RSN minor) and the texts. Settings → chart layers explains the abbreviation. The calculations are unchanged.',
+      'Updated the application version to v2.47.',
+    ],
+  },
+  {
     version: 'v2.46',
     date: '2026-10-08',
     title: 'Daśā columns and notes, Slider, Yearly, event transits, graha names',
