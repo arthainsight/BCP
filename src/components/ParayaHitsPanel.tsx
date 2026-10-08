@@ -5,7 +5,7 @@ import type { ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { findParayaHits } from '@/lib/bnn/parayaHits';
-import { HIT_RELATIONS, type HitRelation } from '@/lib/transitHits';
+import { HIT_RELATIONS } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 
 type Props = {
@@ -40,7 +40,6 @@ const formatMoment = (time: number) => {
  */
 export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, onSetTarget }: Props) {
   const t = useT();
-  const [relations, setRelations] = useState<HitRelation[]>([...HIT_RELATIONS]);
   const [years, setYears] = useState(1);
   const [showAll, setShowAll] = useState(false);
 
@@ -53,9 +52,9 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, onSe
       birthTime: birth.getTime(),
       fromTime: from.getTime(),
       toTime: from.getTime() + years * YEAR_MS,
-      relations,
+      relations: HIT_RELATIONS,
     });
-  }, [chart, birthDatetime, targetDate, relations, years]);
+  }, [chart, birthDatetime, targetDate, years]);
 
   const rows = showAll ? hits : hits.slice(0, FIRST_ROWS);
   const chip = (on: boolean) =>
@@ -72,28 +71,6 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, onSe
         {t('Paraya Ju Sa Ra Ke, moved by age, reaching a natal graha or the ascendant, and the same degree in its 5th and 9th sign.')}
       </p>
       <div className="flex flex-wrap items-center gap-1">
-        <div role="group" aria-label={t('houses from the natal graha (paraya)')} className="flex items-center gap-1">
-          <span className="mr-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('houses from natal')}</span>
-          {HIT_RELATIONS.map(relation => {
-            const on = relations.includes(relation);
-            return (
-              <button
-                key={relation}
-                type="button"
-                aria-pressed={on}
-                onClick={() => {
-                  // At least one stays on.
-                  setRelations(current => on ? (current.length > 1 ? current.filter(r => r !== relation) : current) : [...current, relation].sort((a, b) => a - b));
-                  setShowAll(false);
-                }}
-                className={chip(on)}
-              >
-                {relation}
-              </button>
-            );
-          })}
-        </div>
-        <span className="mx-1 self-stretch border-l border-zinc-200 dark:border-zinc-700" />
         {RANGES.map(range => (
           <button key={range.years} type="button" aria-pressed={years === range.years} onClick={() => { setYears(range.years); setShowAll(false); }} className={chip(years === range.years)}>
             {t(range.label)}

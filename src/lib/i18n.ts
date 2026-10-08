@@ -94,8 +94,8 @@ export const FI: Record<string, string> = {
   'Target date': 'Tavoitepäivä',
   'Calculating…': 'Lasketaan…',
   'transit hits · 12 months from target': 'transiittiosumat · 12 kk tavoitepäivästä',
-  'Jupiter, Saturn, Rahu and Ketu crossing a natal graha or the ascendant, to the day, and the same degree in its 5th and 9th sign. ℞ marks a retrograde pass.':
-    'Jupiter, Saturnus, Rahu ja Ketu ylittämässä natal-grahan tai lagnan päivän tarkkuudella sekä saman asteen sen 5. ja 9. merkissä. ℞ merkitsee retrogradista ylitystä.',
+  'Jupiter, Saturn, Rahu and Ketu crossing a natal graha or the ascendant, to the day. ℞ marks a retrograde pass.':
+    'Jupiter, Saturnus, Rahu ja Ketu ylittämässä natal-grahan tai lagnan, päivän tarkkuudella. ℞ merkitsee retrogradista ylitystä.',
   'Could not load transits:': 'Transiittien lataus epäonnistui:',
   'No crossings in these twelve months.': 'Ei ylityksiä näiden kahdentoista kuukauden aikana.',
   'over natal': 'ylittää natal',
@@ -103,7 +103,6 @@ export const FI: Record<string, string> = {
   'paraya hits': 'paraya-osumat',
   'paraya hits · from target': 'paraya-osumat · tavoitepäivästä alkaen',
   'Paraya Ju Sa Ra Ke, moved by age, reaching a natal graha or the ascendant, and the same degree in its 5th and 9th sign.': 'Paraya Ju Sa Ra Ke, iän mukaan liikkuvina, saavuttamassa natal-grahan tai lagnan sekä saman asteen sen 5. ja 9. merkissä.',
-  'houses from the natal graha (paraya)': 'talo natal-grahasta (paraya)',
   'No paraya hits in this period.': 'Ei paraya-osumia tällä jaksolla.',
   'set target': 'aseta tavoite',
   'age': 'ikä',
@@ -111,8 +110,6 @@ export const FI: Record<string, string> = {
   '3 yr': '3 v',
   '10 yr': '10 v',
   '9th from natal': '9. natalista',
-  'houses from natal': 'talo natalista',
-  'houses from the natal graha': 'talo natal-grahasta',
   'set transit': 'aseta transiitti',
   'show fewer': 'näytä vähemmän',
   'show all': 'näytä kaikki',

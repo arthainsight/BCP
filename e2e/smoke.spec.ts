@@ -210,10 +210,6 @@ test('transit.hits also lists the Paraya hits, to the 1st, 5th and 9th from each
 
   const paraya = visible(page, page.getByRole('region', { name: 'paraya hits' }));
   await expect(paraya).toBeVisible();
-  const relations = paraya.getByRole('group', { name: 'houses from the natal graha (paraya)' });
-  for (const relation of ['1', '5', '9']) {
-    await expect(relations.getByRole('button', { name: relation, exact: true })).toHaveAttribute('aria-pressed', 'true');
-  }
 
   // Ten years hold every kind of hit: the point itself and its 5th and 9th sign.
   await paraya.getByRole('button', { name: '10 yr', exact: true }).click();
@@ -222,12 +218,6 @@ test('transit.hits also lists the Paraya hits, to the 1st, 5th and 9th from each
   await expect(paraya).toContainText('5th from natal');
   await expect(paraya).toContainText('9th from natal');
   await expect(paraya).toContainText(/age \d+\.\d/);
-
-  // With only the 1st left the trines disappear.
-  await relations.getByRole('button', { name: '5', exact: true }).click();
-  await relations.getByRole('button', { name: '9', exact: true }).click();
-  await expect(paraya).not.toContainText('5th from natal');
-  await expect(paraya).not.toContainText('9th from natal');
 
   expect(errors).toEqual([]);
 });

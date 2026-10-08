@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v2.44',
+    date: '2026-10-08',
+    title: 'No 1 / 5 / 9 buttons',
+    changes: [
+      'Removed the 1, 5 and 9 buttons from transit.hits. The transit hits are the point itself, as before v2.42; the Paraya hits always include the 1st, 5th and 9th.',
+      'Updated the application version to v2.44.',
+    ],
+  },
+  {
     version: 'v2.43',
     date: '2026-10-08',
     title: 'Paraya hits',
