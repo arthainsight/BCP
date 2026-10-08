@@ -35,8 +35,8 @@ export default function TransitHitsPanel({ chart, targetDate, calculationSetting
   const t = useT();
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  // Which houses from the natal point count: 1 is the point itself, 5 and 9 its trines.
-  const [relations, setRelations] = useState<HitRelation[]>([...HIT_RELATIONS]);
+  // Which houses from the natal point count: 1 is the point itself, 5 and 9 its trines (off to start with).
+  const [relations, setRelations] = useState<HitRelation[]>([1]);
   const [data, setData] = useState<{ key: string; series: Series } | null>(null);
   const [error, setError] = useState('');
 

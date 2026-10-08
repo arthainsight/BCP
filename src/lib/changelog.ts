@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.43',
+    date: '2026-10-08',
+    title: 'Paraya hits',
+    changes: [
+      'transit.hits has a new Paraya hits section: when the Paraya Jupiter, Saturn, Rahu and Ketu (moved by age) reach each natal graha or the ascendant, and the same degree in its 5th and 9th sign. Each row has the date, the age and a “set target” button. The buttons 1, 5 and 9 choose the houses, and 1, 3 or 10 years the period from the target date.',
+      'The 5th and 9th buttons added to the real transit hits in v2.42 stay, but are off to start with, so that list is as it was; the Summary lists only the point itself again.',
+      'Updated the application version to v2.43.',
+    ],
+  },
+  {
     version: 'v2.42',
     date: '2026-10-08',
     title: 'Transit hits to the 5th and 9th',

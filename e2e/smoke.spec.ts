@@ -200,26 +200,34 @@ test('ANALYSIS Nava-Tara chakra and the direction chart show the grahas', async 
   expect(errors).toEqual([]);
 });
 
-test('transit hits list the 1st, 5th and 9th from each natal graha', async ({ page }) => {
+test('transit.hits also lists the Paraya hits, to the 1st, 5th and 9th from each natal graha', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
   await visible(page, page.getByRole('button', { name: 'transit.hits', exact: true })).click();
-  await visible(page, page.getByRole('button', { name: /transit hits/ })).click();
 
-  const hits = visible(page, page.locator('ul').filter({ hasText: 'natal' }));
-  await expect(hits).toContainText('natal', { timeout: 15_000 });
-  const group = visible(page, page.getByRole('group', { name: 'houses from the natal graha' }));
-  await expect(group.getByRole('button', { name: '1', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  const paraya = visible(page, page.getByRole('region', { name: 'paraya hits' }));
+  await expect(paraya).toBeVisible();
+  const relations = paraya.getByRole('group', { name: 'houses from the natal graha (paraya)' });
+  for (const relation of ['1', '5', '9']) {
+    await expect(relations.getByRole('button', { name: relation, exact: true })).toHaveAttribute('aria-pressed', 'true');
+  }
 
-  // The trines are in the list by default; with only the 1st left they disappear.
-  await visible(page, page.getByRole('button', { name: 'show all' })).click();
-  await expect(visible(page, page.locator('ul').filter({ hasText: 'natal' }))).toContainText(/5th from natal|9th from natal/);
-  await group.getByRole('button', { name: '5', exact: true }).click();
-  await group.getByRole('button', { name: '9', exact: true }).click();
-  await expect(visible(page, page.locator('ul').filter({ hasText: 'natal' }))).not.toContainText(/5th from natal|9th from natal/);
+  // Ten years hold every kind of hit: the point itself and its 5th and 9th sign.
+  await paraya.getByRole('button', { name: '10 yr', exact: true }).click();
+  await paraya.getByRole('button', { name: /^show all/ }).click();
+  await expect(paraya).toContainText('over natal');
+  await expect(paraya).toContainText('5th from natal');
+  await expect(paraya).toContainText('9th from natal');
+  await expect(paraya).toContainText(/age \d+\.\d/);
+
+  // With only the 1st left the trines disappear.
+  await relations.getByRole('button', { name: '5', exact: true }).click();
+  await relations.getByRole('button', { name: '9', exact: true }).click();
+  await expect(paraya).not.toContainText('5th from natal');
+  await expect(paraya).not.toContainText('9th from natal');
 
   expect(errors).toEqual([]);
 });
