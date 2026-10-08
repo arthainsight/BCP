@@ -7,7 +7,7 @@ import { calculateDashaEventSnapshots } from '@/lib/dashaEvents';
 import { parseDateTime } from '@/lib/bcp';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { collectTimingEvents, type TimingEvent } from '@/lib/signChanges';
-import { HIT_RELATIONS, findTransitHits, type LongitudeSeries } from '@/lib/transitHits';
+import { findTransitHits, type LongitudeSeries } from '@/lib/transitHits';
 import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 import { useT } from '@/lib/i18n';
 
@@ -83,7 +83,7 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
       ...chart.planets.filter(p => NATAL.includes(p.name)).map(p => ({ name: p.name, longitude: p.longitude })),
       { name: 'Asc', longitude: chart.ascendant.longitude },
     ];
-    return findTransitHits(series, natal, HIT_RELATIONS).slice(0, HIT_ROWS);
+    return findTransitHits(series, natal).slice(0, HIT_ROWS);
   }, [hits.data, chart]);
 
   const heading = 'text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600';
