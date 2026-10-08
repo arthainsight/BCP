@@ -247,6 +247,7 @@ export default function Home() {
           ayanamsa: calculationSettings.ayanamsa,
           ayanamsaOffset: String(calculationSettings.ayanamsaOffsetDegrees ?? 0),
           nodeMode: calculationSettings.nodeMode,
+          sunrise: calculationSettings.sunriseMode ?? 'mean',
         });
 
         const res = await fetch('/api/chart?' + params.toString());
@@ -268,7 +269,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [calculationSettings.ayanamsa, calculationSettings.ayanamsaOffsetDegrees, calculationSettings.nodeMode]
+    [calculationSettings.ayanamsa, calculationSettings.ayanamsaOffsetDegrees, calculationSettings.nodeMode, calculationSettings.sunriseMode]
   );
 
   const handleCalculate = useCallback(async (options?: CalculationOptions) => {
@@ -297,6 +298,7 @@ export default function Home() {
       calculationSettings.ayanamsa,
       calculationSettings.ayanamsaOffsetDegrees,
       calculationSettings.nodeMode,
+      calculationSettings.sunriseMode,
     ].join('|');
 
     if (previousCalculationKeyRef.current === calculationKey) return;
@@ -314,6 +316,7 @@ export default function Home() {
     calculationSettings.ayanamsa,
     calculationSettings.ayanamsaOffsetDegrees,
     calculationSettings.nodeMode,
+    calculationSettings.sunriseMode,
     handleCalculate,
   ]);
 
@@ -614,7 +617,7 @@ export default function Home() {
             )}
             {desktopTab === 'grahas' && (
               chartData
-                ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} />
+                ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
                 : <EmptyState message="Calculate a chart to see graha positions" />
             )}
             {desktopTab === 'dasha' && (
@@ -665,7 +668,7 @@ export default function Home() {
         {activeTab === 'grahas' && (
           <Panel>
             {chartData
-              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} />
+              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={dashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
               : <EmptyState message="Calculate a chart in Data to see graha positions" />
             }
           </Panel>

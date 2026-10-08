@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { ChartData, ChartDisplaySettings, PlanetData } from '@/types';
+import type { CalculationSettings, ChartData, ChartDisplaySettings, PlanetData } from '@/types';
 import type { DashaLordMarks } from './chartLayers';
 import GrahasPanel from './GrahasPanel';
 import VargaGridPanel from './VargaGridPanel';
@@ -11,9 +11,10 @@ import AshtakavargaPanel from './AshtakavargaPanel';
 import DrishtiPanel from './DrishtiPanel';
 import NavataraPanel from './NavataraPanel';
 import DirectionChartPanel from './DirectionChartPanel';
+import SpecialSphutasPanel from './SpecialSphutasPanel';
 import { useT } from '@/lib/i18n';
 
-type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tara' | 'dik';
+type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tara' | 'dik' | 'sphutas';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'grahas', label: 'Grahas' },
@@ -23,6 +24,7 @@ const VIEWS: { key: View; label: string }[] = [
   { key: 'drishti', label: 'Dṛṣṭi' },
   { key: 'tara', label: 'Nava-Tara' },
   { key: 'dik', label: 'Directions' },
+  { key: 'sphutas', label: 'Special Sphutas' },
 ];
 
 interface Props {
@@ -34,6 +36,8 @@ interface Props {
   dashaLords: DashaLordMarks | null;
   /** Transiting grahas at the target moment, for the Nava-Tara and direction charts. */
   transitPlanets?: PlanetData[];
+  /** The sunrise choice for the special sphutas. */
+  calculationSettings?: CalculationSettings;
 }
 
 /**
@@ -49,6 +53,7 @@ export default function AnalysisPanel({
   birthDatetime = '',
   dashaLords,
   transitPlanets = [],
+  calculationSettings,
 }: Props) {
   const t = useT();
   const chartStyle = chartDisplaySettings.chartStyle ?? 'north';
@@ -64,7 +69,7 @@ export default function AnalysisPanel({
         <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
           {VIEWS.map((item) => (
             <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-              {item.key === 'grahas' || item.key === 'dik' ? t(item.label) : item.label}
+              {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' ? t(item.label) : item.label}
             </button>
           ))}
         </div>
@@ -131,6 +136,10 @@ export default function AnalysisPanel({
 
       {view === 'dik' && (
         <DirectionChartPanel chart={chart} transitPlanets={transitPlanets} />
+      )}
+
+      {view === 'sphutas' && (
+        <SpecialSphutasPanel chart={chart} calculationSettings={calculationSettings} nakshatraAdjust={nakshatraAdjust} />
       )}
     </div>
   );

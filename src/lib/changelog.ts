@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.48',
+    date: '2026-10-08',
+    title: 'Special Sphutas',
+    changes: [
+      'New Special Sphutas view in ANALYSIS: Bhava, Hora, Ghati and Pranapada Lagna, Sree Lagna, Bhrigu Bindu, Arudha Lagna, the 22nd Drekkana, the 64th Navamsa, Indu Lagna, Varnada Lagna and Vighati Lagna, each with its sign, longitude (to hundredths of a second), nakshatra and pada.',
+      'The special lagnas on the charts (HL, BL, GL, SL, PP, ViL) are now worked out properly. Before, the time-based ones ran on the clock time of the day and Sree Lagna was the midpoint of the Lagna and the Moon. Now Bhava, Hora, Ghati, Vighati and Prana run on the time since sunrise from the Sun at birth (6, 12, 30 and 1800° and 4° per ghati), and Sree Lagna turns the Lagna by the fraction of its nakshatra the Moon has passed.',
+      'Settings: the sunrise for the special lagnas, mean-time (the true sunrise plus the equation of time, the default) or the true sunrise. The Special Sphutas view also has a field for typing in another sunrise, for example the one another program shows.',
+      'Updated the application version to v2.48.',
+    ],
+  },
+  {
     version: 'v2.47',
     date: '2026-10-08',
     title: 'Rao Sir System of Nadi',

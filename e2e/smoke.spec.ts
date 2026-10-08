@@ -393,6 +393,44 @@ test('the timing panel can take the whole width on a wide screen', async ({ page
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Special Sphutas lists the special lagnas and follows the sunrise choice', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Special Sphutas', exact: true })).click();
+
+  const table = visible(page, page.locator('table').filter({ hasText: 'Sphuta' }));
+  for (const name of ['Bhava Lagna', 'Hora Lagna', 'Ghati Lagna', 'Pranapada Lagna', 'Sree Lagna', 'Bhrigu Bindu', 'Arudha Lagna', '22nd Drekkana', '64th Navamsa', 'Indu Lagna', 'Varnada Lagna']) {
+    await expect(table).toContainText(name);
+  }
+  // Degrees, minutes and seconds to hundredths, then the nakshatra and pada.
+  await expect(table.locator('tbody tr').first()).toContainText(/\d+° \d+' \d+\.\d{2}"/);
+  const hora = async () => (await table.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ');
+  const mean = await hora();
+  await expect(visible(page, page.getByText(/mean-time sunrise \d{2}:\d{2}:\d{2}/))).toBeVisible();
+
+  // The true sunrise moves the lagnas that run on the time since sunrise.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.locator('select').filter({ has: page.locator('option', { hasText: /^True sunrise$/ }) })).selectOption('true');
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Special Sphutas', exact: true })).click();
+  const trueTable = visible(page, page.locator('table').filter({ hasText: 'Sphuta' }));
+  await expect(visible(page, page.getByText(/true sunrise \d{2}:\d{2}:\d{2}/))).toBeVisible();
+  expect((await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ')).not.toEqual(mean);
+
+  // A sunrise typed in replaces the calculated one in the table.
+  const trueHora = (await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ');
+  await visible(page, page.getByRole('textbox', { name: 'manual sunrise' })).fill('06:28:31');
+  await expect(visible(page, page.getByText(/manual sunrise 06:28:31/))).toBeVisible();
+  expect((await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ')).not.toEqual(trueHora);
+  await visible(page, page.getByRole('textbox', { name: 'manual sunrise' })).fill('26:99');
+  await expect(visible(page, page.getByText('Not a time of day'))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

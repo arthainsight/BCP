@@ -30,12 +30,15 @@ export async function GET(request: NextRequest) {
     getCookie(request, "bcp_nodeMode") ||
     "mean";
 
+  // The sunrise the special lagnas are counted from: the mean-time one (the default) or the true sunrise.
+  const sunriseMode = searchParams.get("sunrise") === "true" ? "true" : "mean";
+
   if (!year || !month || !day) {
     return NextResponse.json({ error: "Missing required parameters: year, month, day" }, { status: 400 });
   }
 
   try {
-    const chart = await calculateChart(year, month, day, hour, minute, second, lat, lng, tz, ayanamsa, nodeMode, ayanamsaOffset);
+    const chart = await calculateChart(year, month, day, hour, minute, second, lat, lng, tz, ayanamsa, nodeMode, ayanamsaOffset, sunriseMode);
     return NextResponse.json(chart);
   } catch (error) {
     console.error("Chart calculation error:", error);
