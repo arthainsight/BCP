@@ -9,6 +9,7 @@ import { applyAyanamsaOffset, resolveAyanamsaMode } from './ayanamsas';
 import { calculateSunTimes } from './sunTimes';
 import { normalizeDegrees } from './angles';
 import { lunarMonthAt } from './lunisolar';
+import { calculateSpecialSphutas, equationOfTimeMinutes, ishtaGhatis, type SunriseMode } from './specialSphutas';
 
 const PLANET_NAMES: Record<number, string> = {
   [SE_SUN]: "Sun",
@@ -95,7 +96,8 @@ export async function calculateChart(
   timezoneOffset: number,
   ayanamsaSetting: string = 'lahiri',
   nodeModeSetting: string = 'mean',
-  ayanamsaOffsetDegrees: number = 0
+  ayanamsaOffsetDegrees: number = 0,
+  sunriseMode: SunriseMode = 'mean',
 ): Promise<ChartData> {
   const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
   const nodeMode = resolveNodeMode(nodeModeSetting);
@@ -121,22 +123,8 @@ export async function calculateChart(
   }
 
   const localHours = hour + minute / 60 + second / 3600;
-  const dayFraction = localHours / 24;
   const sun = planets.find((p) => p.name === 'Sun')!;
   const moon = planets.find((p) => p.name === 'Moon')!;
-
-  function sl(lon: number): SpecialLagna & { name: string } {
-    return { name: '', longitude: lon, sign: Math.floor(lon / 30) + 1, degree: lon % 30 };
-  }
-
-  const specialLagnas: SpecialLagna[] = [
-    { ...sl(normalize(sun.longitude + dayFraction * 360)), name: 'HL' },
-    { ...sl(normalize(ascLon + dayFraction * 360)), name: 'BL' },
-    { ...sl(normalize(ascLon + dayFraction * 720)), name: 'GL' },
-    { ...sl(normalize((ascLon + moon.longitude) / 2)), name: 'SL' },
-    { ...sl(normalize(ascLon + dayFraction * 1080)), name: 'PP' },
-    { ...sl(normalize(ascLon + dayFraction * 1440)), name: 'ViL' },
-  ];
 
   // Sunrise and sunset for the birth date, needed by Natonnata and Tribhāga
   // Bala. Computed from local midnight so the returned hours are local.
@@ -148,6 +136,24 @@ export async function calculateChart(
   const previousDay = await calculateSunTimes(jdLocalMidnight - 1, lat, lng);
   const previousSunset = previousDay.sunset !== undefined ? previousDay.sunset - 24 : undefined;
   const previousSunrise = previousDay.sunrise !== undefined ? previousDay.sunrise - 24 : undefined;
+
+  // The special lagnas run on the ishṭa, the time from sunrise to birth.
+  const rahu = planets.find((p) => p.name === 'Rahu')!;
+  const sunriseForLagnas = sunTimes.sunrise ?? 6;
+  const ishta = ishtaGhatis(localHours, sunriseForLagnas, sunriseMode, equationOfTimeMinutes(utc.year, utc.month, utc.day, utc.totalHours));
+  const sphutas = calculateSpecialSphutas({
+    ascendantLongitude: ascLon,
+    sunLongitude: sun.longitude,
+    moonLongitude: moon.longitude,
+    rahuLongitude: rahu.longitude,
+    planets: planets.map((p) => ({ name: p.name, sign: p.sign, degree: p.degree })),
+    ishta,
+  });
+  // The ones the charts mark, in the order they are marked.
+  const specialLagnas: SpecialLagna[] = ['HL', 'BL', 'GL', 'SL', 'PP', 'ViL'].map((key) => {
+    const sphuta = sphutas.find((item) => item.key === key)!;
+    return { name: key, longitude: sphuta.longitude, sign: sphuta.sign, degree: sphuta.degree };
+  });
   const lunarMonth = await lunarMonthAt(jd, ayanamsaSetting, ayanamsaOffsetDegrees);
 
   const pad = (n: number) => String(n).padStart(2, '0');

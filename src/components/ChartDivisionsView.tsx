@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { ChartData, ChartDisplaySettings, PlanetData } from '@/types';
 import { VARGA_NAMES, VARGA_SIGNIFICATIONS } from '@/lib/vargaChart';
 import { vargaChartProps } from '@/lib/vargaChartProps';
+import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import type { DashaLordMarks } from './chartLayers';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
@@ -29,6 +30,7 @@ type Props = {
  */
 export default function ChartDivisionsView({ chart, divisions, chartStyle, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, transitPlanets, onFocus }: Props) {
   const [highlight, setHighlight] = useState<string | null>(null);
+  const [arudhaPadas] = useArudhaPadas();
   const toggleHighlight = (name: string) => setHighlight(current => (current === name ? null : name));
   const Chart = chartStyle === 'south' ? SouthIndianChart : NorthIndianChart;
   // A single chart is drawn full size with the display settings, like D1.
@@ -48,7 +50,7 @@ export default function ChartDivisionsView({ chart, divisions, chartStyle, chart
               <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-200">D{division}</span>
               <span className="truncate text-[9px] text-zinc-400 dark:text-zinc-500">{VARGA_NAMES[division]}</span>
             </button>
-            <Chart {...vargaChartProps({ chart, division, compact, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, highlight, onPlanetClick: toggleHighlight, transitPlanets })} />
+            <Chart {...vargaChartProps({ chart, division, compact, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, highlight, onPlanetClick: toggleHighlight, transitPlanets, arudhaPadas })} />
           </div>
         ))}
       </div>

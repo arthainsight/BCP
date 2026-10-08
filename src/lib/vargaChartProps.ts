@@ -1,6 +1,7 @@
 import type { ChartData, ChartDisplaySettings, PlanetData } from '@/types';
 import type { DashaLordMarks } from '@/components/chartLayers';
 import { buildVargaChart } from './vargaChart';
+import { calculateArudhaPadas } from './arudhaPadas';
 
 interface Options {
   chart: ChartData;
@@ -14,13 +15,20 @@ interface Options {
   onPlanetClick?: (name: string) => void;
   /** Transiting grahas to draw on the chart, given in the rāśi and projected into the division. */
   transitPlanets?: PlanetData[];
+  /** The Āruḍha padas to mark (1 = AL … 12 = AL12), worked out in this division. */
+  arudhaPadas?: number[];
 }
 
 /** Props for a North or South Indian chart drawing one divisional chart. */
 export function vargaChartProps({
-  chart, division, compact, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null, highlight = null, onPlanetClick, transitPlanets,
+  chart, division, compact, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null, highlight = null, onPlanetClick, transitPlanets, arudhaPadas = [],
 }: Options) {
   const varga = buildVargaChart(chart, division);
+  const showLagnas = !compact && chartDisplaySettings.showSpecialLagnas;
+  // The padas the viewer chose are marked in the division itself, small charts included.
+  const padas = arudhaPadas.length > 0
+    ? calculateArudhaPadas(varga.ascendantSign, varga.planets).filter(pada => arudhaPadas.includes(pada.house))
+    : [];
   return {
     activeYearHouse: 0,
     activeMonthHouse: 0,
@@ -37,8 +45,8 @@ export function vargaChartProps({
     karakaByPlanet,
     showNakshatra: !compact && division === 1 && chartDisplaySettings.showNakshatra,
     nakshatraAdjust,
-    specialLagnas: varga.specialLagnas,
-    showSpecialLagnas: !compact && chartDisplaySettings.showSpecialLagnas,
+    specialLagnas: [...(showLagnas ? varga.specialLagnas : []), ...padas],
+    showSpecialLagnas: showLagnas || padas.length > 0,
     dashaLords,
     colorByDignity: true,
     compact,

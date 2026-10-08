@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ChartData, ChartDisplaySettings } from '@/types';
 import { VARGA_DIVISIONS, VARGA_NAMES, VARGA_SIGNIFICATIONS, buildVargaChart } from '@/lib/vargaChart';
 import { vargaChartProps } from '@/lib/vargaChartProps';
+import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import {
   DEFAULT_VARGA_GRID,
   VARGA_GRID_MAX,
@@ -43,6 +44,7 @@ const PILL_OFF = 'text-zinc-500 dark:text-zinc-400';
 export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null }: Props) {
   const t = useT();
   const { code } = useGrahaNames();
+  const [arudhaPadas] = useArudhaPadas();
   const [selection, setSelection] = useState<VargaGridSelection>(DEFAULT_VARGA_GRID);
   const [highlight, setHighlight] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -68,7 +70,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
   const chartProps = (division: number, compact: boolean) =>
     vargaChartProps({
       chart, division, compact, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords,
-      highlight, onPlanetClick: toggleHighlight,
+      highlight, onPlanetClick: toggleHighlight, arudhaPadas,
     });
 
   const renderChart = (division: number, compact: boolean) =>

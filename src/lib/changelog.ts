@@ -1,5 +1,27 @@
 export const CHANGELOG = [
   {
+    version: 'v2.49',
+    date: '2026-10-08',
+    title: 'Arudha padas on the charts',
+    changes: [
+      'The Āruḍha padas can be marked on the charts: AL (the pada of the 1st house) and AL2 … AL12 (the padas of the other houses; AL12 is the Upapada). Choose them in the ··· menu of the chart, under arudha padas; the chips switch each pada on and off, and none clears them.',
+      'The padas are worked out in each chart: the divisional charts (D9, D10 …), the Vargas grid and the pinned chart mark them in their own division. The choice is remembered and shared by all the charts.',
+      'Each pada stands as far from the house lord as the lord stands from the house, with the lord’s degree; a pada that falls in the house itself or its 7th gives way to the 10th from it.',
+      'Updated the application version to v2.49.',
+    ],
+  },
+  {
+    version: 'v2.48',
+    date: '2026-10-08',
+    title: 'Special Sphutas',
+    changes: [
+      'New Special Sphutas view in ANALYSIS: Bhava, Hora, Ghati and Pranapada Lagna, Sree Lagna, Bhrigu Bindu, Arudha Lagna, the 22nd Drekkana, the 64th Navamsa, Indu Lagna, Varnada Lagna and Vighati Lagna, each with its sign, longitude (to hundredths of a second), nakshatra and pada.',
+      'The special lagnas on the charts (HL, BL, GL, SL, PP, ViL) are now worked out properly. Before, the time-based ones ran on the clock time of the day and Sree Lagna was the midpoint of the Lagna and the Moon. Now Bhava, Hora, Ghati, Vighati and Prana run on the time since sunrise from the Sun at birth (6, 12, 30 and 1800° and 4° per ghati), and Sree Lagna turns the Lagna by the fraction of its nakshatra the Moon has passed.',
+      'Settings: the sunrise for the special lagnas, mean-time (the true sunrise plus the equation of time, the default) or the true sunrise. The Special Sphutas view also has a field for typing in another sunrise, for example the one another program shows.',
+      'Updated the application version to v2.48.',
+    ],
+  },
+  {
     version: 'v2.47',
     date: '2026-10-08',
     title: 'Rao Sir System of Nadi',
