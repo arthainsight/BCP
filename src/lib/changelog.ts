@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.40',
+    date: '2026-10-08',
+    title: 'Timing summary',
+    changes: [
+      'New Summary view in TIMING: for the target day, the running daśā periods of every enabled system, the next sign changes, stations and combustions, and the next transit hits, all on one page.',
+      'The Print / PDF button prints only the summary, so the browser can save it as a PDF.',
+      'Updated the application version to v2.40.',
+    ],
+  },
+  {
     version: 'v2.39',
     date: '2026-10-08',
     title: 'Pinned chart on the phone',

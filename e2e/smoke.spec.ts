@@ -174,6 +174,24 @@ test('on a phone the chart stays pinned at the top while the daśās scroll', as
   expect(errors).toEqual([]);
 });
 
+test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Summary', exact: true })).click();
+
+  const summary = visible(page, page.locator('#timing-summary'));
+  await expect(summary).toContainText('Summary for');
+  await expect(summary).toContainText(/Vimsottari\s*\w+ – \w+/);
+  await expect(summary).toContainText('→', { timeout: 15_000 });
+  await expect(summary).toContainText('over natal', { timeout: 15_000 });
+  await expect(summary.getByRole('button', { name: 'Print / PDF' })).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Systems lists the daśā systems closed and opens one on click', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -213,14 +231,14 @@ test('ANALYSIS exposes Grahas, Varga, Nāḍī, Aṣṭakavarga and Dṛṣṭi'
   expect(errors).toEqual([]);
 });
 
-test('TIMING exposes Dasha, Transit Hits, Sign changes, Tithi Praveśa and Varṣaphala', async ({ page }) => {
+test('TIMING exposes Dasha, Summary, Transit Hits, Sign changes, Tithi Praveśa and Varṣaphala', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
 
-  const dashaLabels = ['Dasha', 'transit.hits', 'Sign changes', 'Tithi Praveśa', 'Varṣaphala'];
+  const dashaLabels = ['Dasha', 'Summary', 'transit.hits', 'Sign changes', 'Tithi Praveśa', 'Varṣaphala'];
   for (const tab of dashaLabels) {
     await visible(page, page.getByRole('button', { name: tab, exact: true })).click();
     await expect(visible(page, page.getByRole('button', { name: tab, exact: true }))).toBeVisible();
