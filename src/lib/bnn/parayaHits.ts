@@ -1,6 +1,6 @@
 import type { ChartData } from '@/types';
 import { RELATION_OFFSET, type HitRelation } from '@/lib/transitHits';
-import { findParayaAgesForPosition, type ParayaBody } from './nadiParaya';
+import { findParayaAgesForPosition, type ParayaBody, type ParayaOptions } from './nadiParaya';
 
 // When the Nāḍī Paraya grahas (Jupiter, Saturn, Rahu and Ketu, moved by age
 // through the signs) reach a natal graha: the same degree in its own sign, or
@@ -32,8 +32,9 @@ export function findParayaHits(params: {
   fromTime: number;
   toTime: number;
   relations: readonly HitRelation[];
+  options?: ParayaOptions;
 }): ParayaHit[] {
-  const { chart, birthTime, fromTime, toTime, relations } = params;
+  const { chart, birthTime, fromTime, toTime, relations, options } = params;
   const jupiter = chart.planets.find(p => p.name === 'Jupiter');
   const saturn = chart.planets.find(p => p.name === 'Saturn');
   const rahu = chart.planets.find(p => p.name === 'Rahu');
@@ -63,6 +64,7 @@ export function findParayaHits(params: {
           jupiterRetrograde: Boolean(jupiter.isRetrograde),
           saturnRetrograde: Boolean(saturn.isRetrograde),
           maxAge: Math.ceil(toAge) + 1,
+          options,
         });
         for (const match of matches) {
           if (match.ageYears < fromAge || match.ageYears > toAge) continue;

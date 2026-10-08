@@ -169,12 +169,19 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   language: 'en',
 };
 
+/** How the Nāḍī Paraya walks a graha through the signs: alternating long and short stays (Saturn 3 / 2 years, Rahu 2 / 1) or the same stay in every sign (2.5 and 1.5 years). */
+export type ParayaSpeed = 'alternating' | 'even';
+
 export interface CalculationSettings {
   ayanamsa: string;
   ayanamsaOffsetDegrees: number;
   nodeMode: string;
   nakshatraMode: 'sidereal' | 'tropical';
   charaKarakaRankMode: 'degree' | 'minute';
+  /** Paraya Saturn: 3 / 2 years alternating, or 2.5 years in every sign. */
+  parayaSaturn: ParayaSpeed;
+  /** Paraya Rahu and Ketu: 2 / 1 years alternating, or 1.5 years in every sign. */
+  parayaRahu: ParayaSpeed;
 }
 
 export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
@@ -183,6 +190,8 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   nodeMode: 'mean',
   nakshatraMode: 'sidereal',
   charaKarakaRankMode: 'degree',
+  parayaSaturn: 'alternating',
+  parayaRahu: 'alternating',
 };
 
 export interface CharaOptions {

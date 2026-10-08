@@ -1,7 +1,7 @@
 import type { ChartData } from '@/types';
 import { calculateJupiterianRounds } from './jupiterianRounds';
 import { calculateMinorProgression } from './jupiterMinorProgression';
-import { calculateNadiParaya, type NadiParayaHouseActivation } from './nadiParaya';
+import { calculateNadiParaya, type NadiParayaHouseActivation, type ParayaOptions } from './nadiParaya';
 
 // Where the BNN progressions and the Nāḍī Paraya points fall in a natal chart,
 // as houses counted from the ascendant. The chart highlights and the legend
@@ -38,7 +38,7 @@ export function calculateBnnHouses(chart: ChartData | null, ageYears: number): B
   };
 }
 
-export function calculateParayaHouses(chart: ChartData | null, ageYears: number): NadiParayaHouseActivation[] {
+export function calculateParayaHouses(chart: ChartData | null, ageYears: number, options?: ParayaOptions): NadiParayaHouseActivation[] {
   if (!chart) return [];
   const jupiter = chart.planets.find(p => p.name === 'Jupiter');
   const saturn = chart.planets.find(p => p.name === 'Saturn');
@@ -51,6 +51,7 @@ export function calculateParayaHouses(chart: ChartData | null, ageYears: number)
     natalRahuSignIndex: rahu.sign - 1,
     jupiterRetrograde: Boolean(jupiter.isRetrograde),
     saturnRetrograde: Boolean(saturn.isRetrograde),
+    options,
   });
   const asc = chart.ascendant.sign;
   return [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu].map(period => ({

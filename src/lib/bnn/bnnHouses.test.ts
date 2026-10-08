@@ -43,3 +43,15 @@ for (const age of [0, 5.5, 23, 47.9]) {
 const a = calculateBnnHouses(chart(1), 23);
 const b = calculateBnnHouses(chart(2), 23);
 assert.equal(b.minor, ((a.minor - 2 + 12) % 12) + 1);
+
+// The Paraya houses follow the speed options: at 3 years alternating Saturn has moved to its 2nd sign,
+// while at 2.5 years per sign it is already in its 2nd sign at 2.5 and its 3rd at 5.
+const saturnHouse = (age: number, saturn: 'alternating' | 'even') =>
+  calculateParayaHouses(chart(1), age, { saturn, rahu: 'alternating' }).find(h => h.body === 'Saturn')?.house;
+assert.equal(saturnHouse(2.6, 'alternating'), 8, 'alternating: still in the natal sign (3 years) at 2.6');
+assert.equal(saturnHouse(2.6, 'even'), 9, 'even: already in the next sign (2.5 years) at 2.6');
+assert.equal(saturnHouse(2.6, 'alternating'), calculateParayaHouses(chart(1), 2.6).find(h => h.body === 'Saturn')?.house, 'alternating is the default');
+const rahuHouse = (age: number, rahu: 'alternating' | 'even') =>
+  calculateParayaHouses(chart(1), age, { saturn: 'alternating', rahu }).find(h => h.body === 'Rahu')?.house;
+assert.equal(rahuHouse(1.6, 'alternating'), 12, 'alternating: still in the natal sign (2 years) at 1.6');
+assert.equal(rahuHouse(1.6, 'even'), 11, 'even: has gone back a sign (1.5 years) at 1.6');
