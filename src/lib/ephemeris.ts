@@ -9,6 +9,7 @@ import { applyAyanamsaOffset, resolveAyanamsaMode } from './ayanamsas';
 import { calculateSunTimes } from './sunTimes';
 import { normalizeDegrees } from './angles';
 import { lunarMonthAt } from './lunisolar';
+import { SATURN_PORTION_MOMENTS, saturnPortion, saturnPortionHour } from './upagrahas';
 import { calculateSpecialSphutas, equationOfTimeMinutes, ishtaGhatis, type SunriseMode } from './specialSphutas';
 
 const PLANET_NAMES: Record<number, string> = {
@@ -154,6 +155,25 @@ export async function calculateChart(
     const sphuta = sphutas.find((item) => item.key === key)!;
     return { name: key, longitude: sphuta.longitude, sign: sphuta.sign, degree: sphuta.degree };
   });
+
+  // Gulika and Māndi: the Lagna rising in Saturn's part of the day or night.
+  const portion = saturnPortion({
+    birthHours: localHours,
+    weekday: new Date(Date.UTC(year, month - 1, day)).getUTCDay(),
+    sunrise: sunTimes.sunrise,
+    sunset: sunTimes.sunset,
+    nextSunrise: sunTimes.nextSunrise,
+    previousSunset,
+  });
+  let saturnPortionLagnas: ChartData['saturnPortion'];
+  if (portion) {
+    const ascendants = { begin: 0, middle: 0, end: 0 };
+    for (const moment of SATURN_PORTION_MOMENTS) {
+      const tropical = await sweGetAscendant(jdLocalMidnight + saturnPortionHour(portion, moment) / 24, lat, lng);
+      ascendants[moment] = useTropical ? normalize(tropical) : normalize(tropical - ayanamsa);
+    }
+    saturnPortionLagnas = { night: portion.night, weekday: portion.weekday, portion: portion.portion, ascendants };
+  }
   const lunarMonth = await lunarMonthAt(jd, ayanamsaSetting, ayanamsaOffsetDegrees);
 
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -183,6 +203,7 @@ export async function calculateChart(
     },
     planets,
     specialLagnas,
+    saturnPortion: saturnPortionLagnas,
     lunarMonth: { masaIndex: lunarMonth.masaIndex, adhika: lunarMonth.adhika },
     debug,
   };

@@ -1,4 +1,5 @@
 import type { DegreePrecision } from '@/lib/formatDegree';
+import type { SaturnPortionLagnas } from '@/lib/upagrahas';
 export type { DegreePrecision };
 
 export interface GeoResult {
@@ -81,6 +82,8 @@ export interface ChartData {
   };
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
+  /** The Lagna at the beginning, middle and end of Saturn's part of the day or night (Gulika and Māndi); missing when the Sun neither rises nor sets. */
+  saturnPortion?: SaturnPortionLagnas;
   /** The amānta lunar month running at the chart moment. */
   lunarMonth?: {
     /** 0 = Chaitra … 11 = Phālguna. */
