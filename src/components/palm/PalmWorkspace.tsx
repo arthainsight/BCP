@@ -160,7 +160,7 @@ export default function PalmWorkspace({ wide = false, onToggleWide }: { wide?: b
               title={t('Use the whole width, hiding the chart')}
               className={`${pick} hidden border-zinc-300 bg-white text-zinc-600 hover:bg-zinc-50 lg:inline-flex lg:items-center dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300`}
             >
-              {wide ? t('⤡ narrow') : t('⤢ wide')}
+              {wide ? t('⤡ narrow') : t('⤢ full')}
             </button>
           )}
           <label className={`${pick} border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 dark:border-green-600 dark:bg-green-600`}>

@@ -15,6 +15,7 @@ import SpecialSphutasPanel from './SpecialSphutasPanel';
 import GocharaPanel from './GocharaPanel';
 import ArgalaPanel from './ArgalaPanel';
 import BhavaChalitPanel from './BhavaChalitPanel';
+import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 
 type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas';
@@ -44,6 +45,9 @@ interface Props {
   transitPlanets?: PlanetData[];
   /** The sunrise choice for the special sphutas. */
   calculationSettings?: CalculationSettings;
+  /** The analysis takes the whole width of a wide screen, with the chart hidden. */
+  wide?: boolean;
+  onToggleWide?: () => void;
 }
 
 /**
@@ -60,6 +64,8 @@ export default function AnalysisPanel({
   dashaLords,
   transitPlanets = [],
   calculationSettings,
+  wide = false,
+  onToggleWide,
 }: Props) {
   const t = useT();
   const chartStyle = chartDisplaySettings.chartStyle ?? 'north';
@@ -71,14 +77,17 @@ export default function AnalysisPanel({
 
   return (
     <div className="min-w-0 space-y-3">
-      <div className="flex items-center gap-1 min-w-0 overflow-x-auto">
-        <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
-          {VIEWS.map((item) => (
-            <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-              {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' || item.key === 'gochara' ? t(item.label) : item.label}
-            </button>
-          ))}
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="min-w-0 flex-1 overflow-x-auto">
+          <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
+            {VIEWS.map((item) => (
+              <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
+                {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' || item.key === 'gochara' ? t(item.label) : item.label}
+              </button>
+            ))}
+          </div>
         </div>
+        {onToggleWide && <FullWidthToggle wide={wide} onToggle={onToggleWide} />}
       </div>
 
       {view === 'grahas' && (

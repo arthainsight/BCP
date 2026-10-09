@@ -11,6 +11,7 @@ import TithiPravesaPanel from './TithiPravesaPanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
 import MuhurtaPanel from './MuhurtaPanel';
 import type { AnnualPlace } from './annualShared';
+import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
@@ -80,25 +81,17 @@ export default function TimingPanel({
 
   return (
     <div className="min-w-0 space-y-3">
-      <div className="flex items-center gap-1 min-w-0 overflow-x-auto">
-        <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
-          {VIEWS.map((item) => (
-            <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-              {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' || item.key === 'muhurta' ? t(item.label) : item.label}
-            </button>
-          ))}
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="min-w-0 flex-1 overflow-x-auto">
+          <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
+            {VIEWS.map((item) => (
+              <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
+                {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' || item.key === 'muhurta' ? t(item.label) : item.label}
+              </button>
+            ))}
+          </div>
         </div>
-        {onToggleWide && (
-          <button
-            type="button"
-            onClick={onToggleWide}
-            aria-pressed={wide}
-            title={t('Use the whole width, hiding the chart')}
-            className="ml-auto hidden shrink-0 rounded-md border border-zinc-200 px-2.5 py-1.5 text-[10px] font-mono text-zinc-500 hover:text-zinc-800 lg:inline-flex dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100"
-          >
-            {wide ? t('⤡ narrow') : t('⤢ wide')}
-          </button>
-        )}
+        {onToggleWide && <FullWidthToggle wide={wide} onToggle={onToggleWide} />}
       </div>
 
       {view === 'dasha' && (
