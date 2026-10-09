@@ -441,7 +441,7 @@ test('ANALYSIS Special Sphutas also lists the upagrahas, Karakamsa and the Arudh
 
   // Gulika and Maandi from Saturn's part of the day, and the five Sun-based ones.
   const upagrahas = visible(page, page.locator('table').filter({ hasText: 'Upagraha' }));
-  for (const key of ['Gu', 'Ma', 'Dh', 'Vy', 'Pa', 'In', 'Uk']) {
+  for (const key of ['Gu', 'Md', 'Dh', 'Vy', 'Pa', 'In', 'Uk']) {
     await expect(upagrahas.locator(`tr[data-upagraha="${key}"]`)).toContainText(/\d+° \d+' \d+\.\d{2}"/);
   }
   const gulika = async () => (await upagrahas.locator('tr[data-upagraha="Gu"]').innerText()).replace(/\s+/g, ' ');
@@ -462,6 +462,53 @@ test('ANALYSIS Special Sphutas also lists the upagrahas, Karakamsa and the Arudh
     await expect(visible(page, page.locator(`tr[data-pada="${name}"]`))).toBeVisible();
   }
   await expect(visible(page, page.locator('tr[data-pada="AL12"]'))).toContainText('UL');
+
+  expect(errors).toEqual([]);
+});
+
+test('the upagrahas and Karakamsa can be marked on the charts', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const chartText = async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
+  expect(await chartText()).not.toMatch(/Gu|Md|KA/);
+
+  // The ··· menu has a chip for each point.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  const points = visible(page, page.getByRole('group', { name: 'upagrahas and karakamsa' }));
+  await points.getByRole('button', { name: 'Gu', exact: true }).click();
+  await points.getByRole('button', { name: 'KA', exact: true }).click();
+  await expect(points.getByRole('button', { name: 'KA', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(chartText).toMatch(/Gu/);
+  expect(await chartText()).toMatch(/KA/);
+
+  // The Navamsa chart marks Gulika in its own division; Karakamsa is a rāśi sign and stays out.
+  const divisionBar = () => visible(page, page.getByRole('group', { name: 'divisional charts' }));
+  await divisionBar().getByRole('button', { name: 'D9', exact: true }).click();
+  await divisionBar().getByRole('button', { name: 'D1', exact: true }).click();
+  await expect.poll(chartText).toMatch(/Gu/);
+  expect(await chartText()).not.toMatch(/KA/);
+  await divisionBar().getByRole('button', { name: 'D1', exact: true }).click();
+  await divisionBar().getByRole('button', { name: 'D9', exact: true }).click();
+  await expect.poll(chartText).toMatch(/KA/);
+
+  // All switches the eight on at once, none clears them.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'all', exact: true }).last()).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(async () => {
+    const text = await chartText();
+    return ['Gu', 'Md', 'Dh', 'Vy', 'Pa', 'In', 'Uk', 'KA'].every(code => text.includes(code));
+  }).toBe(true);
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'none', exact: true }).last()).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(chartText).not.toMatch(/Gu|Md|KA/);
 
   expect(errors).toEqual([]);
 });
@@ -656,6 +703,110 @@ test('Utpanna / Kshema / Adhana is not used when the Moon stands in a house with
   await expect(visible(page, page.getByText('not applicable for this chart'))).toBeVisible();
   await visible(page, page.getByLabel('dasha lords from')).selectOption('vimshottari');
   await expect(visible(page, page.getByText('not applicable for this chart'))).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
+test('TIMING Muhurta lists Rahu Kala, Yamaganda, Gulika Kala, Abhijit and the Choghadiya, for the birthplace or another place', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Muhurta', exact: true })).click();
+
+  // The three kālas and Abhijit, each with a clock range, then eight Choghaḍiyā by day and eight by night.
+  for (const key of ['rahu', 'yamaganda', 'gulika', 'abhijit']) {
+    await expect(visible(page, page.locator(`tr[data-muhurta="${key}"]`))).toContainText(/\d{2}:\d{2}:\d{2} – \d{2}:\d{2}:\d{2}/);
+  }
+  await expect(visible(page, page.locator('[data-muhurta="sun"]'))).toContainText(/\d{2}:\d{2}:\d{2}/);
+  await expect(page.locator('li[data-choghadiya]:visible')).toHaveCount(16);
+
+  // Abhijit is the midday muhurta: it starts between ten and thirteen o'clock.
+  const abhijit = (await visible(page, page.locator('tr[data-muhurta="abhijit"]')).innerText()).match(/(\d{2}):\d{2}:\d{2} –/);
+  expect(Number(abhijit?.[1])).toBeGreaterThanOrEqual(10);
+  expect(Number(abhijit?.[1])).toBeLessThanOrEqual(13);
+
+  // Another place can be looked up (the lookup is answered locally with New Delhi).
+  await visible(page, page.getByRole('button', { name: 'residence…' })).click();
+  await visible(page, page.getByPlaceholder('City of residence that year')).fill('Delhi');
+  await visible(page, page.getByRole('button', { name: 'lookup' })).click();
+  await visible(page, page.getByRole('button', { name: /New Delhi, India/ })).click();
+  await expect(visible(page, page.getByText(/New Delhi, India \(28\.61, 77\.21\)/))).toBeVisible();
+  await expect(page.locator('li[data-choghadiya]:visible')).toHaveCount(16);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Gochara reads the transits against the Moon and the Ashtakavarga bindus', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Gochara', exact: true })).click();
+
+  // One row for each of the nine grahas, with the house from the Lagna and from the Moon.
+  const transits = visible(page, page.locator('table[data-gochara="transits"]'));
+  await expect(transits.locator('tr[data-graha]')).toHaveCount(9);
+  await expect(transits.locator('tr[data-graha="Saturn"]')).toContainText(/\d+\s*(?:✓|✗)/);
+  // Rahu and Ketu have no Ashtakavarga of their own.
+  await expect(transits.locator('tr[data-graha="Rahu"]')).toContainText('—');
+
+  // The grid gives every graha's bindus in the twelve signs, the sign it is in marked, and the Sarva adds to 337.
+  const grid = visible(page, page.locator('table[data-gochara="grid"]'));
+  await expect(grid.locator('td[data-here="true"]')).toHaveCount(7);
+  const sav = (await grid.locator('tr', { has: page.locator('th', { hasText: 'SAV' }) }).locator('td').allInnerTexts()).map(Number);
+  expect(sav).toHaveLength(12);
+  expect(sav.reduce((sum, value) => sum + value, 0)).toBe(337);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Argala lists the intervening and opposing grahas of every house and graha', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Argala', exact: true })).click();
+
+  // The twelve houses from the Lagna, each with the 2nd, 4th, 11th and 5th argala.
+  const houses = visible(page, page.locator('table[data-argala-view="houses"]'));
+  await expect(houses.locator('tr[data-argala-row]')).toHaveCount(12);
+  await expect(houses.locator('tr[data-argala-row="1"] td')).toHaveCount(4);
+  // The chart has grahas in the argala houses, and some argalas stand while others are obstructed.
+  await expect(houses.locator('td[data-argala="effective"]').first()).toBeVisible();
+  await expect(houses.locator('td[data-argala="obstructed"]').first()).toBeVisible();
+
+  // The same for each graha, counted from its own sign.
+  await visible(page, page.getByRole('group', { name: 'argala view' })).getByRole('button', { name: 'Grahas', exact: true }).click();
+  const grahas = visible(page, page.locator('table[data-argala-view="grahas"]'));
+  await expect(grahas.locator('tr[data-argala-row]')).toHaveCount(9);
+  await expect(grahas.locator('tr[data-argala-row="Saturn"] td')).toHaveCount(4);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Bhava Chalit places the grahas by bhava, with Sripati or equal bhavas', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Bhava Chalit', exact: true })).click();
+
+  // The chart and the twelve bhavas; the 1st has the Lagna (Virgo 12°18′) as its middle.
+  await expect(visible(page, page.locator('[data-chalit="chart"] svg'))).toBeVisible();
+  const table = visible(page, page.locator('table[data-chalit="table"]'));
+  await expect(table.locator('tr[data-bhava]')).toHaveCount(12);
+  await expect(table.locator('tr[data-bhava="1"]')).toContainText('Vi 12°18′');
+  await expect(visible(page, page.locator('[data-chalit="moved"]'))).toContainText(/No graha changes house|rasi house \d+ → bhava \d+/);
+
+  // The equal bhavas put the 4th madhya exactly 90° on from the Lagna.
+  await visible(page, page.getByLabel('bhava system')).selectOption('equal');
+  await expect(table.locator('tr[data-bhava="4"]')).toContainText('Sg 12°18′');
+  await expect(table.locator('tr[data-bhava="10"]')).toContainText('Ge 12°18′');
 
   expect(errors).toEqual([]);
 });

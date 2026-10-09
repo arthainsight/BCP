@@ -7,7 +7,9 @@ import {
 } from '@/lib/specialSphutas';
 import { calculateArudhaPadas } from '@/lib/arudhaPadas';
 import { calculateCharaKarakas } from '@/lib/karakas';
-import { aprakashaUpagrahas, SATURN_PORTION_MOMENTS, type SaturnPortionMoment } from '@/lib/upagrahas';
+import { karakamsa as karakamsaOf, upagrahaPoints } from '@/lib/chartPoints';
+import { setGulikaMoment, setMaandiMoment, useChartPoints } from '@/hooks/useChartPoints';
+import { SATURN_PORTION_MOMENTS, type SaturnPortionMoment } from '@/lib/upagrahas';
 import { getVargaSignIndex } from '@/lib/varga';
 import { useT } from '@/lib/i18n';
 
@@ -54,9 +56,8 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
   // A sunrise typed in (for example the one another program shows) replaces the calculated one in this table.
   const [manualText, setManualText] = useState('');
   const manual = parseClock(manualText);
-  // Traditions take the Lagna at different moments of Saturn's part for Gulika and Maandi.
-  const [gulikaAt, setGulikaAt] = useState<SaturnPortionMoment>('begin');
-  const [maandiAt, setMaandiAt] = useState<SaturnPortionMoment>('middle');
+  // Traditions take the Lagna at different moments of Saturn's part for Gulika and Maandi; the charts follow the same choice.
+  const { gulikaAt, maandiAt } = useChartPoints();
 
   const result = useMemo(() => {
     const debug = chart.debug;
@@ -84,35 +85,24 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
   }, [chart, mode, manual]);
 
   // Gulika, Maandi and the Sun-based upagrahas.
-  const upagrahas = useMemo(() => {
-    const sun = chart.planets.find(planet => planet.name === 'Sun');
-    const portion = chart.saturnPortion;
-    const points: { key: string; name: string; longitude: number }[] = [];
-    if (portion) {
-      points.push({ key: 'Gu', name: 'Gulika', longitude: portion.ascendants[gulikaAt] });
-      points.push({ key: 'Ma', name: 'Maandi', longitude: portion.ascendants[maandiAt] });
-    }
-    if (sun) points.push(...aprakashaUpagrahas(sun.longitude));
-    return points.map(point => {
+  const upagrahas = useMemo(
+    () => upagrahaPoints(chart, gulikaAt, maandiAt).map(point => {
       const sign = Math.floor(point.longitude / 30) + 1;
       return { ...point, sign, degree: point.longitude % 30, house: houseFrom(chart.ascendant.sign, sign) };
-    });
-  }, [chart, gulikaAt, maandiAt]);
+    }),
+    [chart, gulikaAt, maandiAt],
+  );
 
   // Karakamsa and Svamsa: the sign the Atmakaraka holds in the Navamsa.
   const karakamsa = useMemo(() => {
     const ak = calculateCharaKarakas(chart.planets, calculationSettings?.charaKarakaRankMode, calculationSettings?.charaKarakaCount).find(item => item.karaka === 'AK');
-    const planet = ak ? chart.planets.find(item => item.name === ak.planet) : undefined;
-    if (!planet) return null;
-    const sign = getVargaSignIndex(planet.longitude, 9) + 1;
+    const found = karakamsaOf(chart.planets, ak?.planet);
+    if (!found) return null;
     const navamsaLagna = getVargaSignIndex(chart.ascendant.longitude, 9) + 1;
-    const stride = 30 / 9;
     return {
-      planet: planet.name,
-      sign,
-      degree: ((planet.longitude % 30) % stride) / stride * 30,
-      houseFromLagna: houseFrom(chart.ascendant.sign, sign),
-      houseFromNavamsaLagna: houseFrom(navamsaLagna, sign),
+      ...found,
+      houseFromLagna: houseFrom(chart.ascendant.sign, found.sign),
+      houseFromNavamsaLagna: houseFrom(navamsaLagna, found.sign),
     };
   }, [chart, calculationSettings?.charaKarakaRankMode, calculationSettings?.charaKarakaCount]);
 
@@ -221,7 +211,7 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
                 {t('Gulika and Maandi are the Lagna rising in the part of the day or night that belongs to Saturn. This chart')}: {chart.saturnPortion.portion + 1}/8 {chart.saturnPortion.night ? t('of the night') : t('of the day')}.
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                {([['Gulika', gulikaAt, setGulikaAt], ['Maandi', maandiAt, setMaandiAt]] as const).map(([name, value, setValue]) => (
+                {([['Gulika', gulikaAt, setGulikaMoment], ['Maandi', maandiAt, setMaandiMoment]] as const).map(([name, value, setValue]) => (
                   <label key={name} className="flex items-center gap-2">
                     <span>{name}</span>
                     <select

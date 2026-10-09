@@ -1,5 +1,58 @@
 export const CHANGELOG = [
   {
+    version: 'v2.61',
+    date: '2026-10-09',
+    title: 'Bhava Chalit',
+    changes: [
+      'New Bhava Chalit view in ANALYSIS: the chart with the grahas placed by the bhava they stand in, a North Indian chart and a table of the twelve bhavas with their madhya (middle point) and the sandhis that border them. The grahas that stand in another house than at the rasi are picked out (marked * in the table), and listed above it as rasi house → bhava.',
+      'Two bhava systems: Sripati (the Porphyry cusps: the Lagna, IC, Descendant and Midheaven are fixed and each quadrant is divided into three equal arcs) and Equal (the Lagna in the middle of the 1st, each next bhava thirty degrees on). Each bhava runs from the sandhi halfway to the middle of the one before to the sandhi halfway to the middle of the next.',
+      'The chart now carries the Midheaven (sidereal), which the Sripati bhavas need; a chart calculated before this version says to calculate it again.',
+      'Updated the application version to v2.61.',
+    ],
+  },
+  {
+    version: 'v2.60',
+    date: '2026-10-09',
+    title: 'Argala and Virodhargala',
+    changes: [
+      'New Argala view in ANALYSIS (Jaimini): for each of the twelve houses from the Lagna, or for each graha, the grahas in the 2nd, 4th and 11th from it that intervene by argala (and in the 5th, as a secondary argala), and the grahas in the 12th, 10th, 3rd and 9th that oppose them by virodhargala.',
+      'An argala stands, in bold green, when the grahas causing it outnumber those opposing it; it is struck out as obstructed when the opposing grahas are as many or more. Rahu and Ketu count as grahas.',
+      'Updated the application version to v2.60.',
+    ],
+  },
+  {
+    version: 'v2.59',
+    date: '2026-10-09',
+    title: 'Gochara with the Ashtakavarga',
+    changes: [
+      'New Gochara view in ANALYSIS: for each transiting graha at the target moment its sign, its house from the natal Lagna and from the natal Moon, whether the house from the Moon is a favourable one for it (Phaladeepika), the bindus its own Bhinnashtakavarga gives that sign (5 or more strong, 4 average, 3 or fewer weak) and the Sarvashtakavarga of the sign. Rahu and Ketu have no Ashtakavarga of their own.',
+      'Below it a grid of every graha’s bindus in all twelve signs, the sign each graha is transiting marked, and the Sarvashtakavarga with the transits under it.',
+      'Updated the application version to v2.59.',
+    ],
+  },
+  {
+    version: 'v2.58',
+    date: '2026-10-09',
+    title: 'Muhurta times',
+    changes: [
+      'New Muhurta view in TIMING: Rahu Kala, Yamaganda, Gulika Kala and Abhijit of the target date, and the eight Choghadiya of the day and of the night, from the true sunrise and sunset of that date. The part that is running now is marked.',
+      'The place is the birthplace; residence… looks up another city, so the times can be read for where you are now. The daylight-saving time of the date is taken into account.',
+      'Rahu Kala, Yamaganda and Gulika Kala are one eighth of the day each, a different one for each weekday; Abhijit is the 8th of the fifteen muhurtas of the day; the Choghadiya follow the printed tables (the day starts from the lord of the weekday, the night from the fifth lord from it).',
+      'Updated the application version to v2.58.',
+    ],
+  },
+  {
+    version: 'v2.57',
+    date: '2026-10-09',
+    title: 'Upagrahas and Karakamsa on the charts',
+    changes: [
+      'The upagrahas and Karakamsa can be marked on the charts: Gu (Gulika), Md (Maandi), Dh (Dhuma), Vy (Vyatipata), Pa (Parivesha), In (Indrachapa), Uk (Upaketu) and KA (Karakamsa). Choose them in the ··· menu of the chart, under upagrahas and karakamsa; the chips switch each on and off, and all and none do the lot.',
+      'The divisional charts (D9, D10 …), the Vargas grid and the pinned chart mark the upagrahas in their own division, as they do the Arudha padas. Karakamsa is a sign of the rasi chart, so it is marked in the rasi chart only (the Atmakaraka follows the chosen karaka scheme).',
+      'The moment of Saturn’s part Gulika and Maandi are taken at (beginning, middle or end) is now one choice for the Special Sphutas table and for every chart. Maandi is called Md, so that it does not mix with Mars (Ma).',
+      'Updated the application version to v2.57.',
+    ],
+  },
+  {
     version: 'v2.56',
     date: '2026-10-08',
     title: 'Utpanna / Kshema / Adhana only where Rath uses it',

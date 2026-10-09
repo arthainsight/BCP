@@ -3,7 +3,7 @@ import {
   SE_SUN, SE_MOON, SE_MARS, SE_MERCURY, SE_JUPITER, SE_VENUS, SE_SATURN,
   SE_URANUS, SE_NEPTUNE, SE_PLUTO,
   SE_MEAN_NODE, SE_TRUE_NODE,
-  sweJulday, sweGetAyanamsa, sweCalcUt, sweCalcUtEquatorial, sweGetAscendant,
+  sweJulday, sweGetAyanamsa, sweCalcUt, sweCalcUtEquatorial, sweGetAscendant, sweGetAngles,
 } from "./ephemerisAdapter";
 import { applyAyanamsaOffset, resolveAyanamsaMode } from './ayanamsas';
 import { calculateSunTimes } from './sunTimes';
@@ -113,8 +113,9 @@ export async function calculateChart(
   const planets = await calculatePlanetPositions(jd, ayanamsa, useTropical);
   await addNodes(planets, jd, ayanamsa, useTropical, nodeMode);
 
-  const ascTropical = await sweGetAscendant(jd, lat, lng);
+  const { ascendant: ascTropical, midheaven: mcTropical } = await sweGetAngles(jd, lat, lng);
   const ascLon = useTropical ? normalize(ascTropical) : normalize(ascTropical - ayanamsa);
+  const midheaven = useTropical ? normalize(mcTropical) : normalize(mcTropical - ayanamsa);
   const ascSignIndex = Math.floor(ascLon / 30);
   const ascDegree = ascLon % 30;
 
@@ -204,6 +205,7 @@ export async function calculateChart(
     planets,
     specialLagnas,
     saturnPortion: saturnPortionLagnas,
+    midheaven,
     lunarMonth: { masaIndex: lunarMonth.masaIndex, adhika: lunarMonth.adhika },
     debug,
   };

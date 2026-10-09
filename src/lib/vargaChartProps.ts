@@ -1,7 +1,8 @@
 import type { ChartData, ChartDisplaySettings, PlanetData } from '@/types';
 import type { DashaLordMarks } from '@/components/chartLayers';
-import { buildVargaChart } from './vargaChart';
+import { buildVargaChart, project } from './vargaChart';
 import { calculateArudhaPadas } from './arudhaPadas';
+import { atmakarakaOf, pointsForDivision, selectedChartPoints, type ChartPointsSelection } from './chartPoints';
 
 interface Options {
   chart: ChartData;
@@ -17,17 +18,23 @@ interface Options {
   transitPlanets?: PlanetData[];
   /** The Āruḍha padas to mark (1 = AL … 12 = AL12), worked out in this division. */
   arudhaPadas?: number[];
+  /** The upagrahas and Karakāṁśa to mark, projected into this division. */
+  points?: ChartPointsSelection;
 }
 
 /** Props for a North or South Indian chart drawing one divisional chart. */
 export function vargaChartProps({
-  chart, division, compact, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null, highlight = null, onPlanetClick, transitPlanets, arudhaPadas = [],
+  chart, division, compact, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null, highlight = null, onPlanetClick, transitPlanets, arudhaPadas = [], points,
 }: Options) {
   const varga = buildVargaChart(chart, division);
   const showLagnas = !compact && chartDisplaySettings.showSpecialLagnas;
   // The padas the viewer chose are marked in the division itself, small charts included.
   const padas = arudhaPadas.length > 0
     ? calculateArudhaPadas(varga.ascendantSign, varga.planets).filter(pada => arudhaPadas.includes(pada.house))
+    : [];
+  const marks = points
+    ? pointsForDivision(selectedChartPoints(chart, points, atmakarakaOf(karakaByPlanet)), division)
+        .map(mark => ({ name: mark.name, ...project(mark.longitude, division) }))
     : [];
   return {
     activeYearHouse: 0,
@@ -45,8 +52,8 @@ export function vargaChartProps({
     karakaByPlanet,
     showNakshatra: !compact && division === 1 && chartDisplaySettings.showNakshatra,
     nakshatraAdjust,
-    specialLagnas: [...(showLagnas ? varga.specialLagnas : []), ...padas],
-    showSpecialLagnas: showLagnas || padas.length > 0,
+    specialLagnas: [...(showLagnas ? varga.specialLagnas : []), ...padas, ...marks],
+    showSpecialLagnas: showLagnas || padas.length > 0 || marks.length > 0,
     dashaLords,
     colorByDignity: true,
     compact,

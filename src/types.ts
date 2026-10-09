@@ -83,6 +83,8 @@ export interface ChartData {
   };
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
+  /** Sidereal longitude of the Midheaven (the 10th cusp), for the Śrīpati bhāvas. */
+  midheaven?: number;
   /** The Lagna at the beginning, middle and end of Saturn's part of the day or night (Gulika and Māndi); missing when the Sun neither rises nor sets. */
   saturnPortion?: SaturnPortionLagnas;
   /** The amānta lunar month running at the chart moment. */

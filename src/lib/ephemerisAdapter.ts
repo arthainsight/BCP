@@ -91,3 +91,9 @@ export async function sweSidtime(jd: number): Promise<number> {
 export async function sweGetAscendant(jd: number, lat: number, lng: number): Promise<number> {
   return (await getSwe()).houses(jd, lat, lng, 'W').ascmc[0];
 }
+
+/** The tropical Ascendant and Midheaven. */
+export async function sweGetAngles(jd: number, lat: number, lng: number): Promise<{ ascendant: number; midheaven: number }> {
+  const { ascmc } = (await getSwe()).houses(jd, lat, lng, 'W');
+  return { ascendant: ascmc[0], midheaven: ascmc[1] };
+}

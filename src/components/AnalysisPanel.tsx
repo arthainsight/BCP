@@ -12,16 +12,22 @@ import DrishtiPanel from './DrishtiPanel';
 import NavataraPanel from './NavataraPanel';
 import DirectionChartPanel from './DirectionChartPanel';
 import SpecialSphutasPanel from './SpecialSphutasPanel';
+import GocharaPanel from './GocharaPanel';
+import ArgalaPanel from './ArgalaPanel';
+import BhavaChalitPanel from './BhavaChalitPanel';
 import { useT } from '@/lib/i18n';
 
-type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'drishti' | 'tara' | 'dik' | 'sphutas';
+type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'grahas', label: 'Grahas' },
   { key: 'varga', label: 'Varga' },
   { key: 'nadi', label: 'Nāḍī' },
   { key: 'ashtakavarga', label: 'Aṣṭakavarga' },
+  { key: 'gochara', label: 'Gochara' },
   { key: 'drishti', label: 'Dṛṣṭi' },
+  { key: 'argala', label: 'Argala' },
+  { key: 'chalit', label: 'Bhava Chalit' },
   { key: 'tara', label: 'Nava-Tara' },
   { key: 'dik', label: 'Directions' },
   { key: 'sphutas', label: 'Special Sphutas' },
@@ -69,7 +75,7 @@ export default function AnalysisPanel({
         <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
           {VIEWS.map((item) => (
             <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-              {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' ? t(item.label) : item.label}
+              {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' || item.key === 'gochara' ? t(item.label) : item.label}
             </button>
           ))}
         </div>
@@ -126,8 +132,20 @@ export default function AnalysisPanel({
         <div className="min-w-0 overflow-x-auto"><AshtakavargaPanel chart={chart} /></div>
       )}
 
+      {view === 'gochara' && (
+        <GocharaPanel chart={chart} transitPlanets={transitPlanets} />
+      )}
+
       {view === 'drishti' && (
         <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} showGrahaDrishti={chartDisplaySettings.showGrahaDrishti ?? true} showRashiDrishti={chartDisplaySettings.showRashiDrishti ?? true} /></div>
+      )}
+
+      {view === 'argala' && (
+        <div className="min-w-0 overflow-x-auto"><ArgalaPanel chart={chart} /></div>
+      )}
+
+      {view === 'chalit' && (
+        <BhavaChalitPanel chart={chart} />
       )}
 
       {view === 'tara' && (
