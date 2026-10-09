@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.59',
+    date: '2026-10-09',
+    title: 'Gochara with the Ashtakavarga',
+    changes: [
+      'New Gochara view in ANALYSIS: for each transiting graha at the target moment its sign, its house from the natal Lagna and from the natal Moon, whether the house from the Moon is a favourable one for it (Phaladeepika), the bindus its own Bhinnashtakavarga gives that sign (5 or more strong, 4 average, 3 or fewer weak) and the Sarvashtakavarga of the sign. Rahu and Ketu have no Ashtakavarga of their own.',
+      'Below it a grid of every graha’s bindus in all twelve signs, the sign each graha is transiting marked, and the Sarvashtakavarga with the transits under it.',
+      'Updated the application version to v2.59.',
+    ],
+  },
+  {
     version: 'v2.58',
     date: '2026-10-09',
     title: 'Muhurta times',

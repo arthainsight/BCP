@@ -738,6 +738,31 @@ test('TIMING Muhurta lists Rahu Kala, Yamaganda, Gulika Kala, Abhijit and the Ch
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Gochara reads the transits against the Moon and the Ashtakavarga bindus', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Gochara', exact: true })).click();
+
+  // One row for each of the nine grahas, with the house from the Lagna and from the Moon.
+  const transits = visible(page, page.locator('table[data-gochara="transits"]'));
+  await expect(transits.locator('tr[data-graha]')).toHaveCount(9);
+  await expect(transits.locator('tr[data-graha="Saturn"]')).toContainText(/\d+\s*(?:✓|✗)/);
+  // Rahu and Ketu have no Ashtakavarga of their own.
+  await expect(transits.locator('tr[data-graha="Rahu"]')).toContainText('—');
+
+  // The grid gives every graha's bindus in the twelve signs, the sign it is in marked, and the Sarva adds to 337.
+  const grid = visible(page, page.locator('table[data-gochara="grid"]'));
+  await expect(grid.locator('td[data-here="true"]')).toHaveCount(7);
+  const sav = (await grid.locator('tr', { has: page.locator('th', { hasText: 'SAV' }) }).locator('td').allInnerTexts()).map(Number);
+  expect(sav).toHaveLength(12);
+  expect(sav.reduce((sum, value) => sum + value, 0)).toBe(337);
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
