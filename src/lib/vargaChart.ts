@@ -62,7 +62,8 @@ function vargaDegree(longitude: number, division: number): number {
   return (withinPart / partSize) * 30;
 }
 
-function project(longitude: number, division: number): { sign: number; degree: number; longitude: number } {
+/** A longitude in the given division: its sign, its degree inside that sign and the longitude that follows. */
+export function project(longitude: number, division: number): { sign: number; degree: number; longitude: number } {
   const signIndex = getVargaSignIndex(longitude, division);
   const degree = vargaDegree(longitude, division);
   return { sign: signIndex + 1, degree, longitude: signIndex * 30 + degree };

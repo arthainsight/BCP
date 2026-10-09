@@ -121,6 +121,7 @@ export const FI: Record<string, string> = {
   'show fewer': 'näytä vähemmän',
   'show all': 'näytä kaikki',
   'Sign changes': 'Merkinvaihdot',
+  'upagrahas and karakamsa': 'upagrahat ja karakamsa',
   'this daśā is not used': 'tätä daśāa ei käytetä',
   'used with the Moon in houses': 'käytetään, kun Kuu on taloissa',
   'The nakshatra counted from the Moon, with the balance taken from the Moon. By Sanjay Rath the Moon in the 3rd or 11th house gives Utpanna, in the 2nd or 6th Kshema and in the 8th or 12th Adhana; in the other houses none of them is used.': 'Nakshatra lasketaan Kuusta ja saldo otetaan Kuusta. Sanjay Rathin mukaan Kuu 3. tai 11. talossa antaa Utpannan, 2. tai 6. talossa Kshemän ja 8. tai 12. talossa Adhanan; muissa taloissa mitään niistä ei käytetä.',

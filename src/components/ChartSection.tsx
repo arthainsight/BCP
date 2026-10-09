@@ -10,6 +10,8 @@ import ChartDivisionBar from './ChartDivisionBar';
 import ChartDivisionsView from './ChartDivisionsView';
 import { useChartDivisions } from '@/hooks/useChartDivisions';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
+import { setChartPointKeys, useChartPoints } from '@/hooks/useChartPoints';
+import { atmakarakaOf, POINT_KEYS, POINT_NAMES, selectedChartPoints } from '@/lib/chartPoints';
 import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPadas';
 import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
 import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
@@ -91,6 +93,8 @@ export default function ChartSection({
   const [divisions, setDivisions] = useChartDivisions();
   // The Āruḍha padas the viewer marks on the charts.
   const [arudhaPadas, setArudhaPadas] = useArudhaPadas();
+  // The upagrahas and Karakāṁśa the viewer marks on the charts.
+  const points = useChartPoints();
   const chartRef = useRef<HTMLDivElement>(null);
 
   // Full screen is an overlay over the whole app, plus the browser's own full
@@ -156,8 +160,9 @@ export default function ChartSection({
   const arudhaMarks = arudhaPadas.length > 0
     ? calculateArudhaPadas(chart.ascendant.sign, chart.planets).filter(pada => arudhaPadas.includes(pada.house))
     : [];
-  const d1SpecialLagnas = [...(chartDisplaySettings.showSpecialLagnas ? chart.specialLagnas ?? [] : []), ...arudhaMarks];
-  const d1ShowSpecialLagnas = chartDisplaySettings.showSpecialLagnas || arudhaMarks.length > 0;
+  const pointMarks = selectedChartPoints(chart, points, atmakarakaOf(karakaByPlanet));
+  const d1SpecialLagnas = [...(chartDisplaySettings.showSpecialLagnas ? chart.specialLagnas ?? [] : []), ...arudhaMarks, ...pointMarks];
+  const d1ShowSpecialLagnas = chartDisplaySettings.showSpecialLagnas || arudhaMarks.length > 0 || pointMarks.length > 0;
   const showBcp = chartDisplaySettings.showBcpHighlight === true;
   const dashaLords = withDashaLayers(dashaLordsFromParent, chartDisplaySettings);
   const yearHouse = showBcp ? bcp.activeYearHouse : 0;
@@ -304,6 +309,47 @@ export default function ChartSection({
                             : 'border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'}`}
                         >
                           {arudhaName(house)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="border-t border-zinc-200 dark:border-zinc-700" />
+                  <div className="flex items-baseline justify-between">
+                    <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('upagrahas and karakamsa')}</div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setChartPointKeys([...POINT_KEYS])}
+                        disabled={points.keys.length === POINT_KEYS.length}
+                        className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-zinc-200"
+                      >
+                        {t('all')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setChartPointKeys([])}
+                        disabled={points.keys.length === 0}
+                        className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-zinc-200"
+                      >
+                        {t('none')}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1" role="group" aria-label={t('upagrahas and karakamsa')}>
+                    {POINT_KEYS.map(key => {
+                      const on = points.keys.includes(key);
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          aria-pressed={on}
+                          title={POINT_NAMES[key]}
+                          onClick={() => setChartPointKeys(on ? points.keys.filter(item => item !== key) : [...points.keys, key])}
+                          className={`rounded-sm border px-2 py-1.5 text-[10px] font-mono sm:px-1.5 sm:py-0.5 sm:text-[9px] ${on
+                            ? 'border-violet-500 bg-violet-500 text-white dark:border-violet-600 dark:bg-violet-600'
+                            : 'border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'}`}
+                        >
+                          {key}
                         </button>
                       );
                     })}

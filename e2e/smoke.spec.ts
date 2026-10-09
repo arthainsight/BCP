@@ -441,7 +441,7 @@ test('ANALYSIS Special Sphutas also lists the upagrahas, Karakamsa and the Arudh
 
   // Gulika and Maandi from Saturn's part of the day, and the five Sun-based ones.
   const upagrahas = visible(page, page.locator('table').filter({ hasText: 'Upagraha' }));
-  for (const key of ['Gu', 'Ma', 'Dh', 'Vy', 'Pa', 'In', 'Uk']) {
+  for (const key of ['Gu', 'Md', 'Dh', 'Vy', 'Pa', 'In', 'Uk']) {
     await expect(upagrahas.locator(`tr[data-upagraha="${key}"]`)).toContainText(/\d+° \d+' \d+\.\d{2}"/);
   }
   const gulika = async () => (await upagrahas.locator('tr[data-upagraha="Gu"]').innerText()).replace(/\s+/g, ' ');
@@ -462,6 +462,53 @@ test('ANALYSIS Special Sphutas also lists the upagrahas, Karakamsa and the Arudh
     await expect(visible(page, page.locator(`tr[data-pada="${name}"]`))).toBeVisible();
   }
   await expect(visible(page, page.locator('tr[data-pada="AL12"]'))).toContainText('UL');
+
+  expect(errors).toEqual([]);
+});
+
+test('the upagrahas and Karakamsa can be marked on the charts', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const chartText = async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
+  expect(await chartText()).not.toMatch(/Gu|Md|KA/);
+
+  // The ··· menu has a chip for each point.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  const points = visible(page, page.getByRole('group', { name: 'upagrahas and karakamsa' }));
+  await points.getByRole('button', { name: 'Gu', exact: true }).click();
+  await points.getByRole('button', { name: 'KA', exact: true }).click();
+  await expect(points.getByRole('button', { name: 'KA', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(chartText).toMatch(/Gu/);
+  expect(await chartText()).toMatch(/KA/);
+
+  // The Navamsa chart marks Gulika in its own division; Karakamsa is a rāśi sign and stays out.
+  const divisionBar = () => visible(page, page.getByRole('group', { name: 'divisional charts' }));
+  await divisionBar().getByRole('button', { name: 'D9', exact: true }).click();
+  await divisionBar().getByRole('button', { name: 'D1', exact: true }).click();
+  await expect.poll(chartText).toMatch(/Gu/);
+  expect(await chartText()).not.toMatch(/KA/);
+  await divisionBar().getByRole('button', { name: 'D1', exact: true }).click();
+  await divisionBar().getByRole('button', { name: 'D9', exact: true }).click();
+  await expect.poll(chartText).toMatch(/KA/);
+
+  // All switches the eight on at once, none clears them.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'all', exact: true }).last()).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(async () => {
+    const text = await chartText();
+    return ['Gu', 'Md', 'Dh', 'Vy', 'Pa', 'In', 'Uk', 'KA'].every(code => text.includes(code));
+  }).toBe(true);
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'none', exact: true }).last()).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(chartText).not.toMatch(/Gu|Md|KA/);
 
   expect(errors).toEqual([]);
 });

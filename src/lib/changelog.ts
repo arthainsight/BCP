@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.57',
+    date: '2026-10-09',
+    title: 'Upagrahas and Karakamsa on the charts',
+    changes: [
+      'The upagrahas and Karakamsa can be marked on the charts: Gu (Gulika), Md (Maandi), Dh (Dhuma), Vy (Vyatipata), Pa (Parivesha), In (Indrachapa), Uk (Upaketu) and KA (Karakamsa). Choose them in the ··· menu of the chart, under upagrahas and karakamsa; the chips switch each on and off, and all and none do the lot.',
+      'The divisional charts (D9, D10 …), the Vargas grid and the pinned chart mark the upagrahas in their own division, as they do the Arudha padas. Karakamsa is a sign of the rasi chart, so it is marked in the rasi chart only (the Atmakaraka follows the chosen karaka scheme).',
+      'The moment of Saturn’s part Gulika and Maandi are taken at (beginning, middle or end) is now one choice for the Special Sphutas table and for every chart. Maandi is called Md, so that it does not mix with Mars (Ma).',
+      'Updated the application version to v2.57.',
+    ],
+  },
+  {
     version: 'v2.56',
     date: '2026-10-08',
     title: 'Utpanna / Kshema / Adhana only where Rath uses it',
