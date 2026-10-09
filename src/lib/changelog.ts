@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.71',
+    date: '2026-10-09',
+    title: 'The directional chart of the Nadi',
+    changes: [
+      'ANALYSIS → Directions is drawn like the directional chart of the Nadi books. On the left the South Indian chart, where the signs stand still (Pisces in the top left corner, then clockwise), with the direction of each sign at its edge and every graha with its degree and an R when it is retrograde; the middle is empty and the ascendant is marked in its sign. On the right the compass: north above, east on the right, south below and west on the left, the grahas of each direction written in ascending order of their degree from the left.',
+      'A red arrow over a graha points to the right when it is direct and to the left when it is retrograde (the nodes always go left). A retrograde graha also casts its aspect on the 12th sign, so it is written once more in brackets in the direction of that sign: Mercury retrograde in Pisces is [Mer] in the west, Jupiter retrograde in Leo is [Jup] in the north. Purple arrows show the clockwise turn of the directions.',
+      'By sign (the tattva of the sign) and by house from the ascendant are both still there, and so is the transit switch. The stars of Dig Bala are gone from the picture; a graha\'s tooltip still says if it has Dig Bala.',
+      'Updated the application version to v2.71.',
+    ],
+  },
+  {
     version: 'v2.70',
     date: '2026-10-09',
     title: 'Yoga detection shut at first',
