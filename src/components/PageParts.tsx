@@ -21,6 +21,23 @@ export function Panel({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * One workspace of the split view. It scrolls by itself, so a long list in one pane
+ * does not carry the others away.
+ */
+export function SplitPane({ id, label, className = '', children }: { id: string; label: string; className?: string; children: ReactNode }) {
+  const t = useT();
+  return (
+    <section
+      data-pane={id}
+      aria-label={t(label)}
+      className={`min-w-0 space-y-3 lg:overflow-y-auto ${className}`}
+    >
+      {children}
+    </section>
+  );
+}
+
 export function CalcSummaryBar({ ayanamsa, ayanamsaOffsetDegrees, nodeMode, ianaTimezone }: {
   ayanamsa: string;
   ayanamsaOffsetDegrees: number;
