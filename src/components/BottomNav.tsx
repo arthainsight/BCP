@@ -1,7 +1,7 @@
 'use client';
 import { useT } from '@/lib/i18n';
 
-export type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
+export type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'palm' | 'public' | 'settings';
 
 interface Tab {
   id: TabId;

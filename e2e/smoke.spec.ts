@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { deflateSync } from 'node:zlib';
+import { readFileSync } from 'node:fs';
 
 // Smoke test for the current navigation: CHART / TIMING / ANALYSIS + Settings.
 // Fails on any uncaught page error. The city lookup is answered locally so the
@@ -807,6 +809,154 @@ test('ANALYSIS Bhava Chalit places the grahas by bhava, with Sripati or equal bh
   await visible(page, page.getByLabel('bhava system')).selectOption('equal');
   await expect(table.locator('tr[data-bhava="4"]')).toContainText('Sg 12°18′');
   await expect(table.locator('tr[data-bhava="10"]')).toContainText('Ge 12°18′');
+
+  expect(errors).toEqual([]);
+});
+
+/** A small PNG made on the spot: a diagonal gradient, so the photograph is not a flat colour. */
+function makePng(width: number, height: number): Buffer {
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc = (bytes: Buffer) => {
+    let c = 0xffffffff;
+    for (const byte of bytes) c = crcTable[(c ^ byte) & 255] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunk = (type: string, data: Buffer) => {
+    const body = Buffer.concat([Buffer.from(type), data]);
+    const out = Buffer.alloc(body.length + 8);
+    out.writeUInt32BE(data.length, 0);
+    body.copy(out, 4);
+    out.writeUInt32BE(crc(body), body.length + 4);
+    return out;
+  };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header[8] = 8; // bit depth
+  header[9] = 2; // RGB
+  const rows: Buffer[] = [];
+  for (let y = 0; y < height; y++) {
+    const row = Buffer.alloc(1 + width * 3);
+    for (let x = 0; x < width; x++) {
+      row[1 + x * 3] = 200 - Math.floor((x / width) * 80);
+      row[2 + x * 3] = 150 - Math.floor((y / height) * 60);
+      row[3 + x * 3] = 120;
+    }
+    rows.push(row);
+  }
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', header), chunk('IDAT', deflateSync(Buffer.concat(rows))), chunk('IEND', Buffer.alloc(0))]);
+}
+
+test('PALM: upload a palm photograph, draw on it, number the notes, show it to the client and save it as a picture', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/');
+  await selectWorkspace(page, 'PALM');
+  await expect(visible(page, page.getByText('Upload or drop a photograph of a palm to begin.'))).toBeVisible();
+
+  // Upload a photograph: it opens in the editor with an empty drawing.
+  await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'maria-right.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  const canvas = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(canvas).toBeVisible();
+  await expect(visible(page, page.getByLabel('Name of the photograph'))).toHaveValue('maria-right');
+  const shapes = (kind: string) => canvas.locator(`g[data-kind="${kind}"]`);
+
+  // On a phone the toolbar scrolls out of view, so the photograph is brought into view before the pointer moves over it.
+  const boxOf = async () => {
+    await canvas.scrollIntoViewIfNeeded();
+    return (await canvas.boundingBox())!;
+  };
+  const drag = async (from: [number, number], to: [number, number]) => {
+    const box = await boxOf();
+    await page.mouse.move(box.x + box.width * from[0], box.y + box.height * from[1]);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * ((from[0] + to[0]) / 2), box.y + box.height * ((from[1] + to[1]) / 2) + 6, { steps: 4 });
+    await page.mouse.move(box.x + box.width * to[0], box.y + box.height * to[1], { steps: 4 });
+    await page.mouse.up();
+  };
+  const tool = (name: string) => visible(page, page.getByRole('button', { name, exact: true })).click();
+
+  // A pen stroke along a line of the palm, an arrow and a circle.
+  await tool('Pen');
+  await drag([0.4, 0.3], [0.45, 0.7]);
+  await expect(shapes('pen')).toHaveCount(1);
+  await tool('Arrow');
+  await drag([0.7, 0.25], [0.55, 0.45]);
+  await expect(shapes('arrow')).toHaveCount(1);
+  await tool('Circle');
+  await drag([0.3, 0.75], [0.5, 0.9]);
+  await expect(shapes('ellipse')).toHaveCount(1);
+
+  // A pin is numbered at once and waits for its note.
+  await tool('Pin');
+  const box = await boxOf();
+  await page.mouse.click(box.x + box.width * 0.45, box.y + box.height * 0.5);
+  await expect(shapes('pin')).toHaveCount(1);
+  await expect(visible(page, page.getByLabel('Note', { exact: true }))).toBeFocused();
+  await page.keyboard.type('Career turns at 35');
+  await expect(visible(page, page.locator('[data-palm="notes"] [data-note="1"]'))).toContainText('Career turns at 35');
+
+  // Select can move a drawing and delete it; undo brings it back.
+  await tool('Select');
+  await boxOf();
+  const before = await shapes('ellipse').locator('ellipse').getAttribute('cx');
+  const ellipseBox = (await shapes('ellipse').locator('ellipse').boundingBox())!;
+  await page.mouse.move(ellipseBox.x + ellipseBox.width / 2, ellipseBox.y + 1);
+  await page.mouse.down();
+  await page.mouse.move(ellipseBox.x + ellipseBox.width / 2 + 30, ellipseBox.y + 1, { steps: 4 });
+  await page.mouse.up();
+  await expect(visible(page, page.locator('[data-palm="properties"]'))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Delete', exact: true })).click();
+  await expect(shapes('ellipse')).toHaveCount(0);
+  await visible(page, page.getByRole('button', { name: 'Undo', exact: true })).click();
+  await expect(shapes('ellipse')).toHaveCount(1);
+  expect(before).not.toBeNull();
+
+  // Everything is kept on this device: after a reload the photograph and its drawing are back.
+  await page.waitForTimeout(600);
+  await page.reload();
+  await selectWorkspace(page, 'PALM');
+  const again = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(again).toBeVisible();
+  await expect(again.locator('g[data-kind="pen"]')).toHaveCount(1);
+  await expect(again.locator('g[data-kind="arrow"]')).toHaveCount(1);
+  await expect(again.locator('g[data-kind="ellipse"]')).toHaveCount(1);
+  await expect(again.locator('g[data-kind="pin"]')).toHaveCount(1);
+  await expect(visible(page, page.locator('[data-palm="notes"] [data-note="1"]'))).toContainText('Career turns at 35');
+
+  // The client view: large, with the numbered notes; a note zooms to its place.
+  await visible(page, page.getByRole('button', { name: 'Client view', exact: true })).click();
+  const client = visible(page, page.getByRole('dialog', { name: 'Client view' }));
+  await expect(client).toBeVisible();
+  const zoom = () => client.locator('[data-palm="zoom"]').innerText();
+  const overview = await zoom();
+  await client.locator('[data-client-note="1"]').click();
+  await expect.poll(zoom).not.toEqual(overview);
+  await client.getByRole('button', { name: 'Whole palm' }).click();
+  await expect.poll(zoom).toEqual(overview);
+  await page.keyboard.press('Escape');
+  await expect(client).toBeHidden();
+
+  // Save the picture, drawing and notes together.
+  const download = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download PNG', exact: true })).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe('maria-right.png');
+  const bytes = readFileSync(await file.path());
+  expect([...bytes.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+  expect(bytes.length).toBeGreaterThan(2000);
+
+  // Rename, then delete the photograph.
+  await visible(page, page.getByLabel('Name of the photograph')).fill('Maria, oikea käsi');
+  await expect(visible(page, page.locator('[data-palm="records"]'))).toContainText('Maria, oikea käsi');
+  await visible(page, page.getByRole('button', { name: 'Delete photograph' })).click();
+  await visible(page, page.getByRole('button', { name: 'Delete this photograph?' })).click();
+  await expect(visible(page, page.getByText('Upload or drop a photograph of a palm to begin.'))).toBeVisible();
 
   expect(errors).toEqual([]);
 });

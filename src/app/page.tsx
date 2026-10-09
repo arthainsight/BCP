@@ -15,6 +15,7 @@ import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
 import type { ChartSnapshot } from '@/components/FileActions';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
+import PalmWorkspace from '@/components/palm/PalmWorkspace';
 import { EmptyState, Panel } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
 import PinnedChart from '@/components/PinnedChart';
@@ -26,7 +27,7 @@ import { LanguageContext, type Language } from '@/lib/i18n';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 
 
-type DesktopTab = 'data' | 'grahas' | 'dasha' | 'public' | 'settings';
+type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'public' | 'settings';
 
 type CalculationOptions = {
   preserveCurrentPanel?: boolean;
@@ -39,18 +40,21 @@ const WORKSPACE_TO_DESKTOP: Record<Workspace, DesktopTab> = {
   chart: 'data',
   timing: 'dasha',
   analysis: 'grahas',
+  palm: 'palm',
   settings: 'settings',
 };
 const WORKSPACE_TO_MOBILE: Record<Workspace, TabId> = {
   chart: 'chart',
   timing: 'dasha',
   analysis: 'grahas',
+  palm: 'palm',
   settings: 'settings',
 };
 function desktopToWorkspace(tab: DesktopTab): Workspace {
   switch (tab) {
     case 'dasha': return 'timing';
     case 'grahas': return 'analysis';
+    case 'palm': return 'palm';
     case 'settings': return 'settings';
     default: return 'chart'; // 'data' and 'public' land on CHART for now
   }
@@ -599,9 +603,9 @@ export default function Home() {
       <PrimaryNav active={desktopToWorkspace(desktopTab)} onChange={selectWorkspace} variant="top" />
 
       {/* ── DESKTOP: 2-column grid (full width for Public) ────────── */}
-      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'public' || wideTiming ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
+      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'public' || desktopTab === 'palm' || wideTiming ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
         {/* Left: Chart + optional BCP summary + optional Panchang (hidden on Public) */}
-        <div className={`space-y-3 ${desktopTab === 'public' || wideTiming ? 'hidden' : ''}`}>
+        <div className={`space-y-3 ${desktopTab === 'public' || desktopTab === 'palm' || wideTiming ? 'hidden' : ''}`}>
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
             <ChartSection {...chartSectionProps} />
           </div>
@@ -635,6 +639,7 @@ export default function Home() {
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
+            {desktopTab === 'palm' && <PalmWorkspace />}
             {desktopTab === 'settings' && (
               <SettingsPanel {...settingsProps} />
             )}
@@ -705,6 +710,10 @@ export default function Home() {
 
         {activeTab === 'public' && (
           <Panel><PublicChartsPanel /></Panel>
+        )}
+
+        {activeTab === 'palm' && (
+          <Panel><PalmWorkspace /></Panel>
         )}
 
         {activeTab === 'settings' && (
