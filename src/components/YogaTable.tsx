@@ -49,8 +49,7 @@ interface Props {
   showInactive?: boolean;
 }
 
-export default function YogaTable({ chart, showInactive = false }: Props) {
-  const [sortByStrength, setSortByStrength] = useState(false);
+function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props & { showInactive: boolean; sortByStrength: boolean; onSortChange: (value: boolean) => void }) {
 
   const raw     = calculateYogas(chart.planets, chart.ascendant.sign);
   const all     = qualifyYogas(raw, chart.planets);
@@ -66,21 +65,6 @@ export default function YogaTable({ chart, showInactive = false }: Props) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; yoga.detection</div>
-        <button
-          type="button"
-          onClick={() => setSortByStrength(v => !v)}
-          className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${
-            sortByStrength
-              ? 'border-emerald-400 dark:border-green-600 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-emerald-900/20'
-              : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-500 hover:border-zinc-400'
-          }`}
-        >
-          {sortByStrength ? '↓ strength' : 'sort by strength'}
-        </button>
-      </div>
-
       {sorted.length === 0 ? (
         <p className="text-xs font-mono text-zinc-400 dark:text-zinc-600 py-4 text-center">
           No active yogas found.
@@ -93,7 +77,7 @@ export default function YogaTable({ chart, showInactive = false }: Props) {
                 <th className="p-2 text-left whitespace-nowrap">Yoga</th>
                 <th
                   className="p-2 text-left whitespace-nowrap cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-300"
-                  onClick={() => setSortByStrength(v => !v)}
+                  onClick={() => onSortChange(!sortByStrength)}
                   title="Click to sort by strength"
                 >
                   Strength {sortByStrength ? '↓' : ''}
@@ -167,6 +151,42 @@ export default function YogaTable({ chart, showInactive = false }: Props) {
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+/** The yoga table, shut until it is opened: the table is long, and the other analysis comes first. */
+export default function YogaTable({ chart, showInactive = false }: Props) {
+  const [expanded, setExpanded] = useState(false);
+  const [sortByStrength, setSortByStrength] = useState(false);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setExpanded(value => !value)}
+          aria-expanded={expanded}
+          className="flex min-w-0 flex-1 items-center justify-between text-left"
+        >
+          <span className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; yoga.detection</span>
+          <span className="text-[10px] font-mono text-zinc-400">{expanded ? 'collapse' : 'expand'}</span>
+        </button>
+        {expanded && (
+          <button
+            type="button"
+            onClick={() => setSortByStrength(v => !v)}
+            className={`text-[10px] font-mono px-2 py-0.5 rounded border transition-colors ${
+              sortByStrength
+                ? 'border-emerald-400 dark:border-green-600 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-emerald-900/20'
+                : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-500 hover:border-zinc-400'
+            }`}
+          >
+            {sortByStrength ? '↓ strength' : 'sort by strength'}
+          </button>
+        )}
+      </div>
+      {expanded && <YogaRows chart={chart} showInactive={showInactive} sortByStrength={sortByStrength} onSortChange={setSortByStrength} />}
     </div>
   );
 }

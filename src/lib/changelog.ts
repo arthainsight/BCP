@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v2.70',
+    date: '2026-10-09',
+    title: 'Yoga detection shut at first',
+    changes: [
+      'In ANALYSIS → Grahas the yoga.detection table is a closed line when the page opens, like the avasthas and the sahams: the line says expand, and opening it shows the table and the sort by strength button. The yogas are not worked out until it is opened.',
+      'Updated the application version to v2.70.',
+    ],
+  },
+  {
     version: 'v2.69',
     date: '2026-10-09',
     title: 'Split view on a phone, panes shown in full',

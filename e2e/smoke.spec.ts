@@ -1441,6 +1441,35 @@ test('TIMING Systems lists the daśā systems closed and opens one on click', as
   expect(errors).toEqual([]);
 });
 
+test('the yoga detection is shut until it is opened', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+
+  // The graha positions are open; the yoga table is a closed line.
+  await expect(visible(page, page.getByText('graha.positions'))).toBeVisible();
+  const toggle = visible(page, page.getByRole('button', { name: /yoga\.detection/ }));
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle).toContainText('expand');
+  await expect(page.locator('th').filter({ hasText: /^Yoga$/ }).locator('visible=true')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'sort by strength' }).locator('visible=true')).toHaveCount(0);
+
+  // Opening it shows the table and the sort button; closing it hides them again.
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(toggle).toContainText('collapse');
+  await expect(visible(page, page.locator('th').filter({ hasText: /^Yoga$/ }))).toBeVisible();
+  const sort = visible(page, page.getByRole('button', { name: 'sort by strength' }));
+  await sort.click();
+  await expect(visible(page, page.getByRole('button', { name: '↓ strength' }))).toBeVisible();
+  await toggle.click();
+  await expect(page.locator('th').filter({ hasText: /^Yoga$/ }).locator('visible=true')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('ANALYSIS exposes Grahas, Varga, Nāḍī, Aṣṭakavarga, Dṛṣṭi, Nava-Tara and Directions', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
