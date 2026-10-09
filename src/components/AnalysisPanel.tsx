@@ -162,7 +162,7 @@ export default function AnalysisPanel({
       )}
 
       {view === 'dik' && (
-        <DirectionChartPanel chart={chart} transitPlanets={transitPlanets} />
+        <DirectionChartPanel chart={chart} />
       )}
 
       {view === 'sphutas' && (

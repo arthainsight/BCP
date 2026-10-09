@@ -1,15 +1,14 @@
 'use client';
 
-import { useId, useMemo, useState } from 'react';
-import type { ChartData, PlanetData } from '@/types';
-import { DIRECTIONS, buildCompass, signDirection, type CompassItem, type Direction, type DirectionBody, type DirectionMode } from '@/lib/directions';
+import { useId, useMemo } from 'react';
+import type { ChartData } from '@/types';
+import { DIRECTIONS, buildCompass, signDirection, type CompassItem, type Direction, type DirectionBody } from '@/lib/directions';
 import { formatDegree } from '@/lib/formatDegree';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 
 type Props = {
   chart: ChartData;
-  transitPlanets?: PlanetData[];
 };
 
 const GRAHAS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
@@ -41,12 +40,11 @@ const LETTER_SIDE: Record<number, 'top' | 'right' | 'bottom' | 'left'> = {
   10: 'left', 11: 'left',
 };
 
-const NATAL_FILL = 'fill-blue-700 dark:fill-blue-300';
-const TRANSIT_FILL = 'fill-rose-600 dark:fill-rose-400';
+const NAME_FILL = 'fill-blue-700 dark:fill-blue-300';
 const CHAR_WIDTH = 9;
 const ARROW_RED = '#ef4444';
 
-type RowItem = { key: string; text: string; retro: boolean; transit: boolean; color?: string; title: string };
+type RowItem = { key: string; text: string; retro: boolean; color?: string; title: string };
 
 /** The x of each item of a row, centred on `centre`, and the width of the row. */
 function rowLayout(items: RowItem[], centre: number): { item: RowItem; x: number; width: number }[] {
@@ -76,32 +74,19 @@ function Arrow({ x, y, left }: { x: number; y: number; left: boolean }) {
  * a graha points to the right when it is direct and to the left when it is retrograde; a retrograde graha
  * also casts its aspect on the 12th sign, written in brackets in the direction of that sign.
  */
-export default function DirectionChartPanel({ chart, transitPlanets = [] }: Props) {
+export default function DirectionChartPanel({ chart }: Props) {
   const t = useT();
   const { style, code } = useGrahaNames();
   const ids = useId().replace(/:/g, '');
-  const [mode, setMode] = useState<DirectionMode>('sign');
-  const [showTransit, setShowTransit] = useState(false);
 
-  const bodies = useMemo<DirectionBody[]>(() => {
-    const toBody = (planet: PlanetData, transit: boolean): DirectionBody => ({
-      name: planet.name, sign: planet.sign, degree: planet.degree, retrograde: planet.isRetrograde === true, transit,
-    });
-    return [
-      ...chart.planets.filter(planet => GRAHAS.includes(planet.name)).map(planet => toBody(planet, false)),
-      ...(showTransit ? transitPlanets.filter(planet => GRAHAS.includes(planet.name)).map(planet => toBody(planet, true)) : []),
-    ];
-  }, [chart, transitPlanets, showTransit]);
-  const compass = useMemo(() => buildCompass(chart.ascendant.sign, bodies, mode), [chart.ascendant.sign, bodies, mode]);
+  const bodies = useMemo<DirectionBody[]>(() => chart.planets
+    .filter(planet => GRAHAS.includes(planet.name))
+    .map(planet => ({ name: planet.name, sign: planet.sign, degree: planet.degree, retrograde: planet.isRetrograde === true })), [chart]);
+  const compass = useMemo(() => buildCompass(bodies), [bodies]);
 
   const label = (name: string) => (style === 'sanskrit' ? code(name) : NADI_NAME[name] ?? code(name));
   const tooltip = (item: CompassItem) =>
-    `${item.name}${item.retrograde ? ' (R)' : ''} · ${SIGN_ABBR[item.sign - 1]} ${formatDegree(item.degree, 'minute')} · H${item.house}${item.digBala ? ' · Dig Bala' : ''}${item.transit ? ' · transit' : ''}`;
-
-  const chip = (on: boolean) =>
-    `rounded-md border px-2.5 py-1.5 text-[10px] font-mono sm:px-2 sm:py-1 ${on
-      ? 'border-emerald-500 bg-emerald-500 text-white dark:border-green-600 dark:bg-green-600'
-      : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400'}`;
+    `${item.name}${item.retrograde ? ' (R)' : ''} · ${SIGN_ABBR[item.sign - 1]} ${formatDegree(item.degree, 'minute')}`;
 
   // ── The South Indian chart, signs fixed, with the direction of each sign at its edge ─────────────
   const CELL_W = 96;
@@ -136,12 +121,12 @@ export default function DirectionChartPanel({ chart, transitPlanets = [] }: Prop
             )}
             {here.map((body, row) => (
               <text
-                key={`${body.name}-${body.transit ? 't' : 'n'}`}
+                key={body.name}
                 x={x + 5}
                 y={y + 14 + (row + (hasAsc ? 1 : 0)) * step}
                 fontSize={crowded ? 10.5 : 12.5}
                 fontWeight="700"
-                className={`font-mono ${body.transit ? TRANSIT_FILL : NATAL_FILL}`}
+                className={`font-mono ${NAME_FILL}`}
               >
                 {label(body.name)}
                 <tspan dy="-4" dx="2" fontSize="9" className="fill-purple-600 dark:fill-purple-400">
@@ -168,10 +153,9 @@ export default function DirectionChartPanel({ chart, transitPlanets = [] }: Prop
     East: { names: { x: 322, y: 152 }, brackets: { x: 322, y: 198 } },
   };
   const toRow = (items: CompassItem[], prefix: string): RowItem[] => items.map(item => ({
-    key: `${prefix}-${item.name}-${item.transit ? 't' : 'n'}`,
+    key: `${prefix}-${item.name}`,
     text: label(item.name),
     retro: item.retrograde,
-    transit: item.transit,
     color: BRACKET_COLOR[item.name],
     title: tooltip(item),
   }));
@@ -208,7 +192,7 @@ export default function DirectionChartPanel({ chart, transitPlanets = [] }: Prop
             <g key={item.key}>
               <title>{item.title}</title>
               <Arrow x={x + width / 2} y={place[direction].names.y - 20} left={item.retro} />
-              <text x={x} y={place[direction].names.y} fontSize="15" fontWeight="700" className={`font-mono ${item.transit ? TRANSIT_FILL : NATAL_FILL}`}>
+              <text x={x} y={place[direction].names.y} fontSize="15" fontWeight="700" className={`font-mono ${NAME_FILL}`}>
                 {item.text}
                 {item.retro && <tspan dy="-6" fontSize="9">R</tspan>}
               </text>
@@ -232,17 +216,8 @@ export default function DirectionChartPanel({ chart, transitPlanets = [] }: Prop
       <div>
         <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('Direction chart')}</div>
         <p className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-          {t('The directional chart of the Nadi. By sign: fire signs east, earth south, air west, water north. By house: 1st east, 4th north, 7th west, 10th south. In each direction the grahas stand in ascending order of their degree from the left.')}
+          {t('The directional chart of the Nadi. The direction belongs to the sign: fire signs east, earth south, air west, water north. In each direction the grahas stand in ascending order of their degree from the left.')}
         </p>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-1">
-        <button type="button" aria-pressed={mode === 'sign'} onClick={() => setMode('sign')} className={chip(mode === 'sign')}>{t('by sign')}</button>
-        <button type="button" aria-pressed={mode === 'house'} onClick={() => setMode('house')} className={chip(mode === 'house')}>{t('by house')}</button>
-        <span className="mx-1 self-stretch border-l border-zinc-200 dark:border-zinc-700" />
-        <button type="button" aria-pressed={showTransit} disabled={transitPlanets.length === 0} onClick={() => setShowTransit(v => !v)} className={`${chip(showTransit)} disabled:opacity-40`}>
-          {t('Transit')}
-        </button>
       </div>
 
       <div className="@container">
