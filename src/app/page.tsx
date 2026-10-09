@@ -25,6 +25,7 @@ import { useChartDerived } from '@/hooks/useChartDerived';
 import { withDashaLayers } from '@/components/chartLayers';
 import { LanguageContext, type Language } from '@/lib/i18n';
 import { GrahaNamesContext } from '@/lib/grahaNames';
+import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'public' | 'settings';
@@ -576,6 +577,22 @@ export default function Home() {
   });
   const wideTiming = timingWide && desktopTab === 'dasha';
 
+  // The palm workspace sits beside the chart; it can also take the whole width.
+  const [palmWide, setPalmWide] = useState(false);
+  useEffect(() => {
+    try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (localStorage.getItem('palmWide') === 'true') setPalmWide(true);
+    } catch {}
+  }, []);
+  const togglePalmWide = () => setPalmWide(value => {
+    try { localStorage.setItem('palmWide', String(!value)); } catch {}
+    return !value;
+  });
+  const widePalm = palmWide && desktopTab === 'palm';
+  // The chart column is left out when a panel takes the whole width.
+  const fullWidth = desktopTab === 'public' || wideTiming || widePalm;
+
   const language: Language = chartDisplaySettings.language === 'fi' ? 'fi' : 'en';
 
   // Keep the document language in step with the interface for screen readers.
@@ -584,6 +601,7 @@ export default function Home() {
   return (
     <LanguageContext.Provider value={language}>
     <GrahaNamesContext.Provider value={chartDisplaySettings.grahaNames ?? 'english'}>
+    <ChartFontContext.Provider value={clampFontScale(chartDisplaySettings.chartFontScale)}>
     <div className="min-h-screen overflow-x-clip bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
       <AppHeader
         activeChartName={activeChartName}
@@ -603,9 +621,9 @@ export default function Home() {
       <PrimaryNav active={desktopToWorkspace(desktopTab)} onChange={selectWorkspace} variant="top" />
 
       {/* ── DESKTOP: 2-column grid (full width for Public) ────────── */}
-      <div className={`hidden lg:grid gap-4 items-start p-4 ${desktopTab === 'public' || desktopTab === 'palm' || wideTiming ? 'lg:grid-cols-1' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
+      <div className={`hidden lg:grid gap-4 items-start p-4 ${fullWidth ? 'lg:grid-cols-1' : desktopTab === 'palm' ? 'lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
         {/* Left: Chart + optional BCP summary + optional Panchang (hidden on Public) */}
-        <div className={`space-y-3 ${desktopTab === 'public' || desktopTab === 'palm' || wideTiming ? 'hidden' : ''}`}>
+        <div className={`space-y-3 ${fullWidth ? 'hidden' : ''}`}>
           <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
             <ChartSection {...chartSectionProps} />
           </div>
@@ -639,7 +657,7 @@ export default function Home() {
                 : <EmptyState message="Calculate a chart to see Dasha analysis" />
             )}
             {desktopTab === 'public' && <PublicChartsPanel />}
-            {desktopTab === 'palm' && <PalmWorkspace />}
+            {desktopTab === 'palm' && <PalmWorkspace wide={widePalm} onToggleWide={togglePalmWide} />}
             {desktopTab === 'settings' && (
               <SettingsPanel {...settingsProps} />
             )}
@@ -728,6 +746,7 @@ export default function Home() {
         {APP_NAME} {APP_VERSION}
       </footer>
     </div>
+    </ChartFontContext.Provider>
     </GrahaNamesContext.Provider>
     </LanguageContext.Provider>
   );

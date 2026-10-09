@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useHydrated } from '@/lib/useHydrated';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
@@ -9,6 +9,7 @@ import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya
 import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { useChartFontScale } from '@/lib/chartFont';
 import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, polygonSpanAt, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
 
@@ -59,6 +60,12 @@ interface Props {
   colorByDignity?: boolean;
   /** Small-chart mode for side-by-side grids: bigger type */
   compact?: boolean;
+  /**
+   * Draws the labels at this size in screen pixels, whatever the width of the chart
+   * (it is measured), instead of the usual size that grows with the chart. Used when
+   * the chart sits inside another one and has to match its text.
+   */
+  fontPx?: number;
   /** Natal planet drawn highlighted, by name. */
   highlightPlanet?: string | null;
   /** Called with a natal planet's name when its label is clicked. */
@@ -116,6 +123,11 @@ const HOUSE_POLYGONS: Record<number, Point[]> = Object.fromEntries(
 
 // Monospace metrics matching layoutHouseLabels.
 const BNN_CHAR_WIDTH = 0.6;
+
+// The chart is drawn in a 550-unit square; its labels are at most 16 units tall.
+const VIEW_SIZE = 550;
+const BASE_LABEL_SIZE = 16;
+const DEFAULT_WIDTH = 330;
 const BNN_LINE_HEIGHT = 1.2;
 
 /**
@@ -132,8 +144,9 @@ function layoutBnnBlock(
   polygon: Point[],
   labels: { x: number; y: number; fontSize: number }[],
   texts: string[],
-  margin = 6,
+  scale = 1,
 ): { x: number; y: number; fontSize: number }[] {
+  const margin = 6 * scale;
   const ys = polygon.map(p => p[1]);
   const minY = Math.min(...ys);
   const maxY = Math.max(...ys);
@@ -147,7 +160,7 @@ function layoutBnnBlock(
   const maxChars = Math.max(...texts.map(t => Array.from(t).length));
 
   // Largest first: shrink until the block fits inside the polygon.
-  for (let fontSize = 8; fontSize >= 4; fontSize--) {
+  for (let fontSize = 8 * scale; fontSize >= 4 * scale; fontSize -= scale) {
     const lineHeight = fontSize * BNN_LINE_HEIGHT;
     const textWidth = maxChars * fontSize * BNN_CHAR_WIDTH;
     const gap = fontSize * 0.4;
@@ -174,7 +187,7 @@ function layoutBnnBlock(
 
   // Nothing fits below the cluster at any size: fall back to a single stacked
   // block at the minimum size, still inside the polygon.
-  const fontSize = 4;
+  const fontSize = 4 * scale;
   const lineHeight = fontSize * BNN_LINE_HEIGHT;
   const bottom = maxY - margin;
   return texts.map((_text, i) => {
@@ -269,6 +282,7 @@ export default function NorthIndianChart({
   dashaLords = null,
   colorByDignity = false,
   compact = false,
+  fontPx,
   highlightPlanet = null,
   onPlanetClick,
   selectedPlanet = null,
@@ -277,6 +291,20 @@ export default function NorthIndianChart({
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
   const fill = useChartFill();
+
+  // The labels are drawn in the 550-unit space of the chart; `k` stretches them: the text
+  // size chosen in Settings, or whatever makes them `fontPx` pixels on the screen as it is.
+  const userScale = useChartFontScale();
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(DEFAULT_WIDTH);
+  useEffect(() => {
+    const root = rootRef.current;
+    if (fontPx === undefined || !root || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(entries => setWidth(entries[0].contentRect.width));
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [fontPx]);
+  const k = fontPx !== undefined ? fontPx / (BASE_LABEL_SIZE * (Math.max(width, 1) / VIEW_SIZE)) : compact ? 1 : userScale;
   const isDark = !hydrated || resolvedTheme === 'dark';
 
   const visiblePlanets = filterOuterPlanets(planets, showOuterPlanets);
@@ -306,7 +334,7 @@ export default function NorthIndianChart({
   };
 
   return (
-    <div className={fill ? 'w-full mx-auto' : 'w-full max-w-[620px] mx-auto'} style={fill ? { maxWidth: FILL_MAX_WIDTH } : undefined}>
+    <div ref={rootRef} className={fill ? 'w-full mx-auto' : 'w-full max-w-[620px] mx-auto'} style={fill ? { maxWidth: FILL_MAX_WIDTH } : undefined}>
       <svg viewBox="-25 -25 550 550" className="w-full h-auto overflow-visible" role="img" aria-label="North Indian Jyotish chart">
         {HOUSES.map((item) => {
           const sign = getSignForHouse(ascendantSign, item.house);
@@ -345,26 +373,29 @@ export default function NorthIndianChart({
 
           // Keep labels clear of the sign and house number; BNN finds free
           // space around them afterwards (existing labels have priority).
-          const signHalf = compact ? 22 : 13;
-          const signBlockBottom = item.sign.y + (showHouseNumbers ? 14 : compact ? 14 : 8);
+          const signHalf = (compact ? 22 : 13) * k;
+          const signBlockBottom = item.sign.y + (showHouseNumbers ? 14 : compact ? 14 : 8) * k;
           const exclude: ExclusionBox[] = showSigns || showHouseNumbers
-            ? [{ x0: item.sign.x - signHalf, x1: item.sign.x + signHalf, y0: item.sign.y - (compact ? 15 : 9), y1: signBlockBottom }]
+            ? [{ x0: item.sign.x - signHalf, x1: item.sign.x + signHalf, y0: item.sign.y - (compact ? 15 : 9) * k, y1: signBlockBottom }]
             : [];
           const longNatal = natalInHouse.some(planet => natalLabel(planet).length > 3);
           const layout = layoutHouseLabels(
             tokens,
             { polygon: HOUSE_POLYGONS[item.house], exclude, anchorY: item.planet.y },
-            compact ? { maxFontSize: 44, minFontSize: 18 } : { maxFontSize: longNatal ? 13 : 16 },
+            compact
+              ? { maxFontSize: 44, minFontSize: 18 }
+              // At a set pixel size the labels are as big as in the other chart and shrink to fit like its own.
+              : { maxFontSize: (longNatal && fontPx === undefined ? 13 : BASE_LABEL_SIZE) * k, minFontSize: 7 * k },
           );
           // Place the BNN block directly below the existing label cluster,
           // inside the house polygon, shrinking the font until it fits. Existing
           // labels keep priority; the BNN block is not allowed to overlap them.
           const occupiedLabels = [
-            { x: item.sign.x, y: item.sign.y, fontSize: compact ? 24 : 13 },
+            { x: item.sign.x, y: item.sign.y, fontSize: (compact ? 24 : 13) * k },
             ...layout.rows.map(row => ({ x: row.x, y: row.y, fontSize: row.fontSize })),
           ];
           const bnnPositions = bnnLabels.length
-            ? layoutBnnBlock(HOUSE_POLYGONS[item.house], occupiedLabels, bnnLabels.map(l => l.text))
+            ? layoutBnnBlock(HOUSE_POLYGONS[item.house], occupiedLabels, bnnLabels.map(l => l.text), k)
             : [];
           const planetFill = getPlanetFill(item.house, activeYearHouse, activeMonthHouse, isDark, showBcpHighlights);
           const parayaFill = (key: string) => parayaColors[(key.slice('paraya-'.length)) as ParayaBody];
@@ -409,12 +440,12 @@ export default function NorthIndianChart({
                 />
               )}
               {showSigns && (
-                <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize={compact ? 24 : 13} fontWeight="600" fill={signFill}>
+                <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize={(compact ? 24 : 13) * k} fontWeight="600" fill={signFill}>
                   {SIGN_ABBR[sign]}
                 </text>
               )}
               {showHouseNumbers && (
-                <text x={item.sign.x} y={item.sign.y + 14} textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="600" fill={hNumFill}>
+                <text x={item.sign.x} y={item.sign.y + 14 * k} textAnchor="middle" dominantBaseline="middle" fontSize={9 * k} fontWeight="600" fill={hNumFill}>
                   H{item.house}
                 </text>
               )}

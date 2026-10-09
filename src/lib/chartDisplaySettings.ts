@@ -1,5 +1,6 @@
 import { DEFAULT_CHART_DISPLAY, type ChartDisplaySettings } from '@/types';
 import { PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
+import { clampFontScale } from '@/lib/chartFont';
 
 /**
  * Reads stored chart display settings. Keys that are no longer settings (the
@@ -13,6 +14,8 @@ export function migrateChartDisplaySettings(stored: unknown): ChartDisplaySettin
   for (const [key, fallback] of Object.entries(DEFAULT_CHART_DISPLAY)) {
     if (typeof parsed[key] === typeof fallback) result[key] = parsed[key];
   }
+  // The text size stays within what the chart can show.
+  result.chartFontScale = clampFontScale(result.chartFontScale);
   // Only the known chart styles are kept.
   if (!['north', 'south', 'both'].includes(result.chartStyle as string)) result.chartStyle = DEFAULT_CHART_DISPLAY.chartStyle;
   // The Paraya grahas that are drawn: only the four known ones are kept, in their order.

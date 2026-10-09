@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {
-  anchorOf, arrowHead, boundingBox, distanceToSegment, hitTest, isNumbered, moveAnnotation, newId, noteList, numbering,
+  STROKE_DEFAULT, STROKE_MAX, STROKE_MIN, anchorOf, arrowHead, boundingBox, clampStroke, distanceToSegment, hitTest, isNumbered, moveAnnotation, newId, noteList, numbering,
   pathData, pushHistory, redoHistory, sanitizeAnnotations, simplifyPath, startHistory, undoHistory, unitOf,
   type Annotation, type Point,
 } from './annotations';
@@ -148,3 +148,11 @@ near(centre.x, 1000, 'the box is centred (x)');
 near(centre.y, 500, 'the box is centred (y)');
 
 console.log('Palm annotation tests passed');
+
+// --- Stroke width ---------------------------------------------------------------
+assert.equal(clampStroke(6), 6);
+assert.equal(clampStroke(6.3), 6.5, 'in whole steps of half a unit');
+assert.equal(clampStroke(0), STROKE_MIN, 'a hairline is the thinnest');
+assert.equal(clampStroke(500), STROKE_MAX, 'a marker pen is the thickest');
+assert.equal(clampStroke(Number.NaN), STROKE_DEFAULT, 'not a number is the usual width');
+assert.ok(STROKE_MIN < STROKE_DEFAULT && STROKE_DEFAULT < STROKE_MAX);

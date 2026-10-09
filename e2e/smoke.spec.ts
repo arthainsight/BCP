@@ -124,6 +124,52 @@ test('North + South draws both charts, the North chart inside the South chart', 
   expect(errors).toEqual([]);
 });
 
+test('the text of North + South is the same size in both charts, and the text size can be changed', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await visible(page, page.getByRole('button', { name: 'N+S', exact: true })).click();
+  const centre = visible(page, page.locator('[data-chart="center"]'));
+  await expect(centre).toBeVisible();
+
+  // The largest label of each chart, in screen pixels.
+  const sizes = () => centre.evaluate((node) => {
+    const south = node.parentElement as HTMLElement;
+    const svg = node.querySelector('svg') as SVGSVGElement;
+    const unit = svg.getBoundingClientRect().width / 550;
+    const north = [...svg.querySelectorAll('text')].map(text => Number(text.getAttribute('font-size')) * unit);
+    const outer = [...south.querySelectorAll('div[style*="font-size"]')]
+      .filter(div => !node.contains(div) && div.classList.contains('whitespace-nowrap'))
+      .map(div => parseFloat(getComputedStyle(div).fontSize));
+    return { north: Math.max(...north), south: Math.max(...outer) };
+  });
+
+  await expect.poll(async () => Math.abs((await sizes()).north - (await sizes()).south)).toBeLessThan(0.8);
+  const usual = await sizes();
+  expect(usual.south).toBeGreaterThan(10);
+  expect(usual.south).toBeLessThanOrEqual(11.01);
+
+  // The text size is in the ··· menu; both charts follow it.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('slider', { name: 'text size' })).fill('1.3');
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(async () => (await sizes()).south).toBeGreaterThan(usual.south * 1.25);
+  const larger = await sizes();
+  expect(Math.abs(larger.north - larger.south)).toBeLessThan(0.8);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}').chartFontScale)).toBe(1.3);
+
+  // Reset brings the usual size back.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  await visible(page, page.getByRole('button', { name: 'reset', exact: true })).click();
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect.poll(async () => (await sizes()).south).toBeLessThan(usual.south * 1.05);
+
+  expect(errors).toEqual([]);
+});
+
 test('normal transit overlay toggles on and off in CHART', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -943,6 +989,76 @@ function makePng(width: number, height: number): Buffer {
   }
   return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', header), chunk('IDAT', deflateSync(Buffer.concat(rows))), chunk('IEND', Buffer.alloc(0))]);
 }
+
+test('PALM: the chart stays beside the palm on a wide screen, and the stroke width has a slider', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const chartSvg = () => page.locator('svg[aria-label="North Indian Jyotish chart"]').locator('visible=true');
+  await selectWorkspace(page, 'PALM');
+  await expect(visible(page, page.locator('[data-palm="workspace"]'))).toBeVisible();
+
+  // On a wide screen the chart is still there beside the palm; the wide button hides it and brings it back.
+  if (info.project.name === 'desktop') {
+    await expect(chartSvg()).toHaveCount(1);
+    const wide = visible(page, page.getByRole('button', { name: '⤢ wide', exact: true }));
+    await wide.click();
+    await expect(chartSvg()).toHaveCount(0);
+    await expect(visible(page, page.locator('[data-palm="workspace"]'))).toBeVisible();
+    await page.reload();
+    await selectWorkspace(page, 'PALM');
+    await expect(visible(page, page.getByRole('button', { name: '⤡ narrow', exact: true }))).toBeVisible();
+    await visible(page, page.getByRole('button', { name: '⤡ narrow', exact: true })).click();
+    await calculateChart(page);
+    await selectWorkspace(page, 'PALM');
+    await expect(chartSvg()).toHaveCount(1);
+  }
+
+  await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'stroke.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  const canvas = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(canvas).toBeVisible();
+  const slider = () => visible(page, page.getByRole('slider', { name: 'Stroke' }));
+  const strokes = () => canvas.locator('g[data-kind="pen"] path');
+  const widths = async () => (await strokes().evaluateAll(nodes => nodes.map(node => Math.round(Number(node.getAttribute('stroke-width')) * 100) / 100))).sort((a, b) => a - b);
+  const drag = async (from: [number, number], to: [number, number]) => {
+    await canvas.scrollIntoViewIfNeeded();
+    const box = (await canvas.boundingBox())!;
+    await page.mouse.move(box.x + box.width * from[0], box.y + box.height * from[1]);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * ((from[0] + to[0]) / 2), box.y + box.height * ((from[1] + to[1]) / 2) + 6, { steps: 4 });
+    await page.mouse.move(box.x + box.width * to[0], box.y + box.height * to[1], { steps: 4 });
+    await page.mouse.up();
+  };
+
+  // The photograph is 800 high, so a unit is 0.8 pixels of it: the usual width of 6 is 4.8.
+  await visible(page, page.getByRole('button', { name: 'Pen', exact: true })).click();
+  await drag([0.4, 0.3], [0.45, 0.7]);
+  await expect.poll(widths).toEqual([4.8]);
+
+  // A drawing is selected as soon as it is made, and the slider sets its width; one drag of the slider is one undo step.
+  await slider().fill('12');
+  await expect.poll(widths).toEqual([9.6]);
+  await visible(page, page.getByRole('button', { name: 'Undo', exact: true })).click();
+  await expect.poll(widths).toEqual([4.8]);
+
+  // The next stroke is drawn with the width that was last set.
+  await drag([0.7, 0.3], [0.75, 0.7]);
+  await expect.poll(widths).toEqual([4.8, 9.6]);
+  await expect(slider()).toHaveValue('12');
+
+  // Selecting the first stroke shows its own width on the slider.
+  await visible(page, page.getByRole('button', { name: 'Select', exact: true })).click();
+  await canvas.scrollIntoViewIfNeeded();
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.click(box.x + box.width * 0.425, box.y + box.height * 0.5);
+  await expect(visible(page, page.locator('[data-palm="properties"]'))).toBeVisible();
+  await expect(slider()).toHaveValue('6');
+  await slider().fill('3');
+  await expect.poll(widths).toEqual([2.4, 9.6]);
+
+  expect(errors).toEqual([]);
+});
 
 test('PALM: upload a palm photograph, draw on it, number the notes, show it to the client and save it as a picture', async ({ page }) => {
   const errors: string[] = [];
