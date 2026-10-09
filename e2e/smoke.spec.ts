@@ -707,6 +707,37 @@ test('Utpanna / Kshema / Adhana is not used when the Moon stands in a house with
   expect(errors).toEqual([]);
 });
 
+test('TIMING Muhurta lists Rahu Kala, Yamaganda, Gulika Kala, Abhijit and the Choghadiya, for the birthplace or another place', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Muhurta', exact: true })).click();
+
+  // The three kālas and Abhijit, each with a clock range, then eight Choghaḍiyā by day and eight by night.
+  for (const key of ['rahu', 'yamaganda', 'gulika', 'abhijit']) {
+    await expect(visible(page, page.locator(`tr[data-muhurta="${key}"]`))).toContainText(/\d{2}:\d{2}:\d{2} – \d{2}:\d{2}:\d{2}/);
+  }
+  await expect(visible(page, page.locator('[data-muhurta="sun"]'))).toContainText(/\d{2}:\d{2}:\d{2}/);
+  await expect(page.locator('li[data-choghadiya]:visible')).toHaveCount(16);
+
+  // Abhijit is the midday muhurta: it starts between ten and thirteen o'clock.
+  const abhijit = (await visible(page, page.locator('tr[data-muhurta="abhijit"]')).innerText()).match(/(\d{2}):\d{2}:\d{2} –/);
+  expect(Number(abhijit?.[1])).toBeGreaterThanOrEqual(10);
+  expect(Number(abhijit?.[1])).toBeLessThanOrEqual(13);
+
+  // Another place can be looked up (the lookup is answered locally with New Delhi).
+  await visible(page, page.getByRole('button', { name: 'residence…' })).click();
+  await visible(page, page.getByPlaceholder('City of residence that year')).fill('Delhi');
+  await visible(page, page.getByRole('button', { name: 'lookup' })).click();
+  await visible(page, page.getByRole('button', { name: /New Delhi, India/ })).click();
+  await expect(visible(page, page.getByText(/New Delhi, India \(28\.61, 77\.21\)/))).toBeVisible();
+  await expect(page.locator('li[data-choghadiya]:visible')).toHaveCount(16);
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

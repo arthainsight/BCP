@@ -9,17 +9,19 @@ import ParayaHitsPanel from './ParayaHitsPanel';
 import TimingSummary from './TimingSummary';
 import TithiPravesaPanel from './TithiPravesaPanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
+import MuhurtaPanel from './MuhurtaPanel';
 import type { AnnualPlace } from './annualShared';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
-type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'tithi' | 'varsha';
+type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'muhurta' | 'tithi' | 'varsha';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'dasha', label: 'Dasha' },
   { key: 'summary', label: 'Summary' },
   { key: 'transits', label: 'Transit Hits' },
   { key: 'signs', label: 'Sign changes' },
+  { key: 'muhurta', label: 'Muhurta' },
   { key: 'tithi', label: 'Tithi Praveśa' },
   { key: 'varsha', label: 'Varṣaphala' },
 ];
@@ -82,7 +84,7 @@ export default function TimingPanel({
         <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
           {VIEWS.map((item) => (
             <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-              {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' ? t(item.label) : item.label}
+              {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' || item.key === 'muhurta' ? t(item.label) : item.label}
             </button>
           ))}
         </div>
@@ -155,6 +157,10 @@ export default function TimingPanel({
           calculationSettings={calculationSettings}
           onSetTransit={onSetTransitDatetime}
         />
+      )}
+
+      {view === 'muhurta' && (
+        <MuhurtaPanel chart={chart} targetDate={targetDate ?? ''} ianaTimezone={ianaTimezone} />
       )}
 
       {view === 'tithi' && (

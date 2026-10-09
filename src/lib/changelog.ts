@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.58',
+    date: '2026-10-09',
+    title: 'Muhurta times',
+    changes: [
+      'New Muhurta view in TIMING: Rahu Kala, Yamaganda, Gulika Kala and Abhijit of the target date, and the eight Choghadiya of the day and of the night, from the true sunrise and sunset of that date. The part that is running now is marked.',
+      'The place is the birthplace; residence… looks up another city, so the times can be read for where you are now. The daylight-saving time of the date is taken into account.',
+      'Rahu Kala, Yamaganda and Gulika Kala are one eighth of the day each, a different one for each weekday; Abhijit is the 8th of the fifteen muhurtas of the day; the Choghadiya follow the printed tables (the day starts from the lord of the weekday, the night from the fifth lord from it).',
+      'Updated the application version to v2.58.',
+    ],
+  },
+  {
     version: 'v2.57',
     date: '2026-10-09',
     title: 'Upagrahas and Karakamsa on the charts',
