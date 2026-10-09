@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.67',
+    date: '2026-10-09',
+    title: 'Split view: one or two rows',
+    changes: [
+      'The split view has a rows choice next to the ⊞ split button: 1 puts all the panes in a single row, 2 puts them in two rows (four panes as two rows of two, three as two and then one across the second row, two one above the other), and auto leaves it to the width of the screen as before. With two rows every pane is half the height of the screen, so all of them are on the screen at once, also on a very wide one.',
+      'The choice is remembered with the rest of the split view. It is shown only when there is more than one pane.',
+      'Updated the application version to v2.67.',
+    ],
+  },
+  {
     version: 'v2.66',
     date: '2026-10-09',
     title: 'Split view: CHART, TIMING, ANALYSIS and PALM on one screen',

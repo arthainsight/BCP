@@ -209,13 +209,46 @@ test('split view: CHART, TIMING, ANALYSIS and PALM side by side on a wide screen
   expect(boxes[2].y).toBeGreaterThan(boxes[0].y + 100); // analysis on the second row
   for (const box of boxes) expect(box.y + box.height).toBeLessThanOrEqual(900); // all four are on the screen at once, each scrolling by itself
 
+  // The rows can be chosen: one row of four across the screen, two rows of two, or left to the width (auto).
+  const rowsButton = (rows: string) => page.locator(`[data-split-rows="${rows}"]`);
+  const layout = () => Promise.all(['chart', 'timing', 'analysis', 'palm'].map(async name => (await pane(name).boundingBox())!));
+  await expect(rowsButton('auto')).toHaveAttribute('aria-pressed', 'true');
+  await rowsButton('1').click();
+  await expect(rowsButton('1')).toHaveAttribute('aria-pressed', 'true');
+  const oneRow = await layout();
+  expect(new Set(oneRow.map(box => Math.round(box.y))).size).toBe(1);
+  expect(oneRow[3].x).toBeGreaterThan(oneRow[0].x + 3 * 200);
+  await rowsButton('2').click();
+  const twoRows = await layout();
+  expect(twoRows[2].y).toBeGreaterThan(twoRows[0].y + 100);
+  expect(twoRows[1].x).toBeGreaterThan(twoRows[0].x + 200);
+  for (const box of twoRows) expect(box.y + box.height).toBeLessThanOrEqual(900);
+  await rowsButton('auto').click();
+  expect((await layout())[2].y).toBeGreaterThan(twoRows[0].y + 100); // a screen of this width is two rows of two on its own
+  await rowsButton('2').click();
+
+  // On a very wide screen auto is one row of four; two rows stay two rows of two, all on the screen.
+  await page.setViewportSize({ width: 1920, height: 1000 });
+  await rowsButton('auto').click();
+  expect(new Set((await layout()).map(box => Math.round(box.y))).size).toBe(1);
+  await rowsButton('2').click();
+  const wideTwoRows = await layout();
+  expect(wideTwoRows[2].y).toBeGreaterThan(wideTwoRows[0].y + 100);
+  for (const box of wideTwoRows) expect(box.y + box.height).toBeLessThanOrEqual(1000);
+  await page.setViewportSize({ width: 1440, height: 900 });
+
   // Switching one off leaves the others; the last one cannot be switched off.
   await nav('analysis').click();
   await expect(pane('analysis')).toHaveCount(0);
   await expect(panes()).toHaveCount(3);
+  // Three panes in two rows: the third takes the whole second row.
+  const three = await Promise.all(['chart', 'timing', 'palm'].map(async name => (await pane(name).boundingBox())!));
+  expect(three[2].y).toBeGreaterThan(three[0].y + 100);
+  expect(three[2].width).toBeGreaterThan(three[0].width * 1.8);
   await nav('timing').click();
   await nav('palm').click();
   await expect(panes()).toHaveCount(1);
+  await expect(rowsButton('1')).toHaveCount(0); // one pane has nothing to arrange
   await nav('chart').click();
   await expect(panes()).toHaveCount(1);
   await nav('analysis').click();
@@ -224,7 +257,7 @@ test('split view: CHART, TIMING, ANALYSIS and PALM side by side on a wide screen
 
   // The choice is kept for the next visit.
   const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('splitView') ?? 'null'));
-  expect(await stored()).toEqual({ on: true, panes: ['chart', 'analysis', 'palm'] });
+  expect(await stored()).toEqual({ on: true, panes: ['chart', 'analysis', 'palm'], rows: 2 });
   await page.reload();
   await expect(panes()).toHaveCount(3);
   await expect(pane('palm')).toBeVisible();

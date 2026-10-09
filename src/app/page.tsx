@@ -691,14 +691,14 @@ export default function Home() {
         active={desktopToWorkspace(desktopTab)}
         onChange={handleNav}
         variant="top"
-        split={{ on: split.on, panes: split.panes, onToggle: toggleSplit }}
+        split={{ on: split.on, panes: split.panes, onToggle: toggleSplit, rows: split.rows, onRowsChange: (rows) => setSplitView({ rows }) }}
       />
 
       {/* ── DESKTOP, split view: the workspaces that are on, side by side ───────── */}
       {splitActive && (
-        <div data-split-view className={`hidden lg:grid gap-4 items-start p-4 ${paneGridClass(split.panes.length)}`}>
+        <div data-split-view className={`hidden lg:grid gap-4 items-start p-4 ${paneGridClass(split.panes.length, split.rows)}`}>
           {split.panes.map((workspace, index) => (
-            <SplitPane key={workspace} id={workspace} label={PANE_LABELS[workspace]} className={`${paneHeightClass(split.panes.length)} ${paneSpanClass(index, split.panes.length)}`}>
+            <SplitPane key={workspace} id={workspace} label={PANE_LABELS[workspace]} className={`${paneHeightClass(split.panes.length, split.rows)} ${paneSpanClass(index, split.panes.length, split.rows)}`}>
               {splitPane(workspace)}
             </SplitPane>
           ))}

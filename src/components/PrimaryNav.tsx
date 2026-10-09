@@ -2,6 +2,7 @@
 
 import { Fragment } from 'react';
 import { useT } from '@/lib/i18n';
+import { SPLIT_ROWS, type SplitRows } from '@/lib/splitView';
 
 // The primary workspaces plus the global Settings gear. This is the single
 // top-level navigation: CHART / TIMING / ANALYSIS / PALM, with Settings kept
@@ -27,7 +28,14 @@ interface Props {
    * Split view, on a wide screen: when it is on the workspaces are switches, and every one that
    * is on is shown side by side. Settings stays a screen of its own.
    */
-  split?: { on: boolean; panes: readonly Workspace[]; onToggle: () => void };
+  split?: {
+    on: boolean;
+    panes: readonly Workspace[];
+    onToggle: () => void;
+    /** How many rows the panes are laid out in; left to the screen when `auto`. */
+    rows: SplitRows;
+    onRowsChange: (rows: SplitRows) => void;
+  };
 }
 
 export default function PrimaryNav({ active, onChange, variant = 'top', split }: Props) {
@@ -63,9 +71,37 @@ export default function PrimaryNav({ active, onChange, variant = 'top', split }:
               {t('⊞ split')}
             </button>
           ) : null;
+          // Rows only make a difference when there is more than one pane.
+          const rowsControl = split && item.gear && split.on && split.panes.length > 1 ? (
+            <div
+              key="rows"
+              role="group"
+              aria-label={t('rows of panes')}
+              title={t('rows of panes')}
+              className="ml-1 hidden shrink-0 items-center gap-px rounded-md border border-zinc-200 p-px text-[10px] font-mono dark:border-zinc-700 lg:inline-flex"
+            >
+              {SPLIT_ROWS.map(rows => (
+                <button
+                  key={rows}
+                  type="button"
+                  data-split-rows={rows}
+                  aria-pressed={split.rows === rows}
+                  onClick={() => split.onRowsChange(rows)}
+                  className={`rounded-sm px-2 py-0.5 transition-colors ${
+                    split.rows === rows
+                      ? 'bg-emerald-500 text-white dark:bg-green-600'
+                      : 'text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100'
+                  }`}
+                >
+                  {rows === 'auto' ? t('auto') : rows}
+                </button>
+              ))}
+            </div>
+          ) : null;
           return (
             <Fragment key={item.id}>
               {toggle}
+              {rowsControl}
               <button
                 onClick={() => onChange(item.id)}
                 aria-current={!asSwitch && selected ? 'page' : undefined}
