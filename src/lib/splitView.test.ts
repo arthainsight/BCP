@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { DEFAULT_SPLIT, normalizePanes, paneGridClass, paneHeightClass, paneSpanClass, readSplit, togglePane } from './splitView';
+import { DEFAULT_SPLIT, normalizePanes, paneGridClass, paneSpanClass, readSplit, togglePane } from './splitView';
 
 // --- Reading what is stored -------------------------------------------------------
 assert.deepEqual(readSplit(null), DEFAULT_SPLIT, 'nothing stored is the default');
@@ -32,17 +32,12 @@ assert.equal(paneGridClass(4), 'lg:grid-cols-2 2xl:grid-cols-4', 'four panes are
 assert.equal(paneSpanClass(2, 3), 'lg:col-span-2 2xl:col-span-1', 'the third of three takes the second row');
 assert.equal(paneSpanClass(0, 3), '');
 assert.equal(paneSpanClass(2, 4), '');
-assert.equal(paneHeightClass(1), 'lg:max-h-[calc(100dvh-8rem)]', 'one row: the height of the screen');
-assert.equal(paneHeightClass(2), 'lg:max-h-[calc(100dvh-8rem)]');
-assert.match(paneHeightClass(4), /calc\(\(100dvh-10rem\)\/2\)/, 'two rows: half of it');
-assert.match(paneHeightClass(4), /2xl:max-h-\[calc\(100dvh-8rem\)\]/, 'one row again on a very wide screen');
 
 // --- One row ----------------------------------------------------------------------------
 assert.equal(paneGridClass(2, 1), 'lg:grid-cols-2');
 assert.equal(paneGridClass(3, 1), 'lg:grid-cols-3', 'a column for every pane');
 assert.equal(paneGridClass(4, 1), 'lg:grid-cols-4');
 assert.equal(paneSpanClass(2, 3, 1), '', 'nothing spans');
-assert.equal(paneHeightClass(4, 1), 'lg:max-h-[calc(100dvh-8rem)]', 'the whole height of the screen');
 
 // --- Two rows -----------------------------------------------------------------------------
 assert.equal(paneGridClass(2, 2), 'lg:grid-cols-1', 'two panes one above the other');
@@ -50,7 +45,4 @@ assert.equal(paneGridClass(3, 2), 'lg:grid-cols-2');
 assert.equal(paneGridClass(4, 2), 'lg:grid-cols-2', 'two rows of two, whatever the width');
 assert.equal(paneSpanClass(2, 3, 2), 'lg:col-span-2', 'the third takes the second row');
 assert.equal(paneSpanClass(1, 3, 2), '');
-assert.equal(paneHeightClass(4, 2), 'lg:max-h-[calc((100dvh-10rem)/2)]', 'half of the screen, also on a very wide one');
-assert.equal(paneHeightClass(2, 2), 'lg:max-h-[calc((100dvh-10rem)/2)]');
 assert.equal(paneGridClass(1, 2), 'lg:grid-cols-1', 'one pane has nothing to arrange');
-assert.equal(paneHeightClass(1, 2), 'lg:max-h-[calc(100dvh-8rem)]');

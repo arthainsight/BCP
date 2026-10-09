@@ -45,6 +45,9 @@ test('the primary navigation exposes CHART / TIMING / ANALYSIS / Settings', asyn
     await expect(visible(page, page.getByRole('button', { name: label, exact: true }))).toBeVisible();
   }
 
+  // The name of the app and its maker are at the bottom of the page.
+  await expect(page.getByRole('contentinfo')).toContainText('bhrigu.code by Riku Forsell');
+
   expect(errors).toEqual([]);
 });
 
@@ -230,15 +233,13 @@ test('split view: CHART, TIMING, ANALYSIS and PALM side by side on a wide screen
   await calculateChart(page);
   const split = page.getByRole('button', { name: '⊞ split', exact: true });
 
-  // A phone shows one workspace at a time: there is no split button.
-  if (info.project.name !== 'desktop') {
-    await expect(split).toBeHidden();
-    return;
-  }
+  // A phone has its own split view, tested below.
+  if (info.project.name !== 'desktop') return;
 
   const pane = (name: string) => page.locator(`[data-pane="${name}"]`);
   const panes = () => page.locator('[data-pane]');
-  const nav = (name: string) => page.locator(`[data-split-item="${name}"]`);
+  // The phone and the wide navigation are both in the page, one of them hidden.
+  const nav = (name: string) => visible(page, page.locator(`[data-split-item="${name}"]`));
 
   // Switching it on keeps the workspace that is open, and adds the usual second one.
   await expect(split).toHaveAttribute('aria-pressed', 'false');
@@ -260,10 +261,18 @@ test('split view: CHART, TIMING, ANALYSIS and PALM side by side on a wide screen
   const boxes = await Promise.all(['chart', 'timing', 'analysis', 'palm'].map(async name => (await pane(name).boundingBox())!));
   expect(boxes[0].x).toBeLessThan(boxes[1].x - 100); // chart left of timing, two columns of two
   expect(boxes[2].y).toBeGreaterThan(boxes[0].y + 100); // analysis on the second row
-  for (const box of boxes) expect(box.y + box.height).toBeLessThanOrEqual(900); // all four are on the screen at once, each scrolling by itself
+  // Every pane is shown in full (the page scrolls, the panes do not), and the chart pane has no form over the chart.
+  const clipped = () => page.locator('[data-pane]').evaluateAll(nodes => nodes.filter(node => node.scrollHeight > node.clientHeight + 1).length);
+  expect(await clipped()).toBe(0);
+  await expect(pane('chart').locator('[data-data-line]')).toContainText('15.08.1947 09.15.00');
+  await expect(pane('chart').getByPlaceholder('15.08.1947 09.15.00')).toHaveCount(0);
+  await pane('chart').locator('[data-data-line]').click();
+  await expect(pane('chart').getByPlaceholder('15.08.1947 09.15.00')).toBeVisible();
+  await pane('chart').locator('[data-data-line]').click();
+  await expect(pane('chart').getByPlaceholder('15.08.1947 09.15.00')).toHaveCount(0);
 
   // The rows can be chosen: one row of four across the screen, two rows of two, or left to the width (auto).
-  const rowsButton = (rows: string) => page.locator(`[data-split-rows="${rows}"]`);
+  const rowsButton = (rows: string) => visible(page, page.locator(`[data-split-rows="${rows}"]`));
   const layout = () => Promise.all(['chart', 'timing', 'analysis', 'palm'].map(async name => (await pane(name).boundingBox())!));
   await expect(rowsButton('auto')).toHaveAttribute('aria-pressed', 'true');
   await rowsButton('1').click();
@@ -275,19 +284,17 @@ test('split view: CHART, TIMING, ANALYSIS and PALM side by side on a wide screen
   const twoRows = await layout();
   expect(twoRows[2].y).toBeGreaterThan(twoRows[0].y + 100);
   expect(twoRows[1].x).toBeGreaterThan(twoRows[0].x + 200);
-  for (const box of twoRows) expect(box.y + box.height).toBeLessThanOrEqual(900);
   await rowsButton('auto').click();
   expect((await layout())[2].y).toBeGreaterThan(twoRows[0].y + 100); // a screen of this width is two rows of two on its own
   await rowsButton('2').click();
 
-  // On a very wide screen auto is one row of four; two rows stay two rows of two, all on the screen.
+  // On a very wide screen auto is one row of four; two rows stay two rows of two.
   await page.setViewportSize({ width: 1920, height: 1000 });
   await rowsButton('auto').click();
   expect(new Set((await layout()).map(box => Math.round(box.y))).size).toBe(1);
   await rowsButton('2').click();
   const wideTwoRows = await layout();
   expect(wideTwoRows[2].y).toBeGreaterThan(wideTwoRows[0].y + 100);
-  for (const box of wideTwoRows) expect(box.y + box.height).toBeLessThanOrEqual(1000);
   await page.setViewportSize({ width: 1440, height: 900 });
 
   // Switching one off leaves the others; the last one cannot be switched off.
@@ -327,6 +334,67 @@ test('split view: CHART, TIMING, ANALYSIS and PALM side by side on a wide screen
   await expect(split).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('[data-split-view]')).toHaveCount(0);
   await expect(panes()).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
+test('split view on a phone: the workspaces stacked and shown in full', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'the phone layout');
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const split = page.getByRole('button', { name: '⊞ split', exact: true });
+  const panes = page.locator('[data-mobile-pane]');
+  const nav = (name: string) => visible(page, page.locator(`[data-split-item="${name}"]`));
+
+  // On: the workspace on the screen stays, with the usual second one under it.
+  await expect(split).toHaveAttribute('aria-pressed', 'false');
+  await split.click();
+  await expect(split).toHaveAttribute('aria-pressed', 'true');
+  await expect(panes).toHaveCount(2);
+  const [top, bottom] = await Promise.all(['chart', 'analysis'].map(async name => (await page.locator(`[data-mobile-pane="${name}"]`).boundingBox())!));
+  expect(bottom.y).toBeGreaterThanOrEqual(top.y + top.height - 1); // one above the other
+  expect(Math.abs(bottom.x - top.x)).toBeLessThan(2);
+  // Each pane is shown in full: the page scrolls, the panes do not.
+  const clipped = () => page.locator('[data-mobile-pane]').evaluateAll(nodes => nodes.filter(node => node.scrollHeight > node.clientHeight + 1).length);
+  expect(await clipped()).toBe(0);
+  const chartBox = (await page.locator('[data-mobile-pane="chart"] svg[aria-label="North Indian Jyotish chart"]').boundingBox())!;
+  expect(chartBox.y + chartBox.height).toBeLessThanOrEqual(top.y + top.height + 1);
+  expect((await page.locator('[data-mobile-pane="chart"] [data-data-line]').boundingBox())!.height).toBeLessThan(40); // the birth data is one thin line
+  await expect(page.locator('[data-mobile-pane="chart"] [data-data-line]')).toContainText('15.08.1947 09.15.00');
+  await expect(page.locator('[data-mobile-pane="chart"]').getByPlaceholder('15.08.1947 09.15.00')).toHaveCount(0);
+  await expect(page.locator('[data-mobile-pane="analysis"]')).toContainText('Lagna');
+  await expect(nav('chart')).toHaveAttribute('aria-pressed', 'true');
+  await expect(nav('timing')).toHaveAttribute('aria-pressed', 'false');
+
+  // Every workspace is a switch here too; the rows choice is for wide screens only.
+  await nav('timing').click();
+  await nav('palm').click();
+  await expect(panes).toHaveCount(4);
+  await expect(page.locator('[data-split-rows]').locator('visible=true')).toHaveCount(0);
+  await nav('analysis').click();
+  await expect(panes).toHaveCount(3);
+  await nav('timing').click();
+  await nav('palm').click();
+  await expect(panes).toHaveCount(1);
+
+  await nav('chart').click();
+  await expect(panes).toHaveCount(1); // the last one stays
+
+  // The panes are remembered with the wide layout's; Settings is a screen of its own.
+  await nav('palm').click();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('splitView') ?? 'null').panes)).toEqual(['chart', 'palm']);
+  await visible(page, page.getByRole('button', { name: '⚙', exact: true })).click();
+  await expect(page.locator('[data-mobile-split]')).toHaveCount(0);
+  await expect(visible(page, page.getByText('ayanamsa', { exact: true }))).toBeVisible();
+  await nav('timing').click();
+  await expect(panes).toHaveCount(3);
+
+  // Off: one workspace at a time again.
+  await split.click();
+  await expect(split).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('[data-mobile-split]')).toHaveCount(0);
 
   expect(errors).toEqual([]);
 });

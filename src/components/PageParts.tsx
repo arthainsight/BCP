@@ -46,16 +46,37 @@ export function DataSummary({ birthDatetime, city, utcOffset, onEdit }: { birthD
 }
 
 /**
- * One workspace of the split view. It scrolls by itself, so a long list in one pane
- * does not carry the others away.
+ * The birth data as one thin line over the chart in the split view: the moment, the place and the UTC
+ * offset, and a toggle for the form. The form takes the room the chart needs, so it stays shut.
  */
-export function SplitPane({ id, label, className = '', children }: { id: string; label: string; className?: string; children: ReactNode }) {
+export function DataLine({ birthDatetime, city, utcOffset, open, onToggle }: { birthDatetime: string; city: string; utcOffset: number | null; open: boolean; onToggle: () => void }) {
   const t = useT();
+  const offset = utcOffset === null ? '' : `${utcOffset >= 0 ? '+' : ''}${utcOffset % 1 === 0 ? utcOffset.toFixed(0) : utcOffset.toFixed(1)}h UTC`;
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={open}
+      title={open ? t('▲ hide') : t('edit')}
+      data-data-line
+      className="flex w-full min-w-0 items-center gap-2 rounded-md px-1 py-0.5 text-left text-[10px] font-mono text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-100"
+    >
+      <span aria-hidden="true">{open ? '▾' : '▸'}</span>
+      <span className="min-w-0 truncate">{[birthDatetime, city, offset].filter(Boolean).join(' · ')}</span>
+    </button>
+  );
+}
+
+/** One workspace of the split view, shown in full: the page scrolls, not the pane. */
+export function SplitPane({ id, label, className = '', mobile = false, children }: { id: string; label: string; className?: string; mobile?: boolean; children: ReactNode }) {
+  const t = useT();
+  // The wide layout and the phone layout are both in the page (one of them hidden), so each marks its own panes.
+  const marker = mobile ? { 'data-mobile-pane': id } : { 'data-pane': id };
   return (
     <section
-      data-pane={id}
+      {...marker}
       aria-label={t(label)}
-      className={`min-w-0 space-y-3 lg:overflow-y-auto ${className}`}
+      className={`min-w-0 space-y-3 ${className}`}
     >
       {children}
     </section>

@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.69',
+    date: '2026-10-09',
+    title: 'Split view on a phone, panes shown in full',
+    changes: [
+      'The split view works on a phone too. A ⊞ button next to the settings gear in the navigation turns CHART, TIMING, ANALYSIS and PALM into switches, and every one that is on is shown at once, stacked one above the other. It is the same split view as on a wide screen: the panes you switched on are remembered and shared between the two layouts, Settings stays a screen of its own, and the rows choice is for wide screens only.',
+      'The panes are shown in full, on a phone and on a wide screen: they no longer have a fixed height with a scroll of their own, and the page scrolls instead. Four panes in two rows are not squeezed into one screen any more.',
+      'In the split view the birth data is one thin line over the chart (the moment, the place and the UTC offset) instead of a box; tapping it opens the form, and calculating closes it again. Before the first calculation the form is there as it was.',
+      'The name of the app and its maker, bhrigu.code by Riku Forsell, is at the bottom of the page, with the version. The top bar is one row on a phone now: the name of the chart, its file actions and the theme.',
+      'Updated the application version to v2.69.',
+    ],
+  },
+  {
     version: 'v2.68',
     date: '2026-10-09',
     title: 'Phone: a clearer CHART screen',
