@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.73',
+    date: '2026-10-09',
+    title: 'A plainer data panel, full in every workspace',
+    changes: [
+      'The data panel is as plain on a wide screen as it became on a phone: no "> data" heading, no "> LOCATION" heading and no grey TIMEZONE box. Under the birth date and the city there is one line with the coordinates and the time zone with its UTC offset (and the warnings: birth time missing, offset set by hand), and an edit button that opens the latitude, longitude and UTC offset fields when they are needed.',
+      'The wide button of TIMING and PALM says ⤢ full, like the chart\'s own full button, and ANALYSIS has it too: the analysis takes the whole width of the screen and the chart steps aside; ⤡ narrow brings the chart back. Each workspace remembers its own choice. The button sits beside the tabs, outside their scrolling row, so it is always in view.',
+      'Updated the application version to v2.73.',
+    ],
+  },
+  {
     version: 'v2.72',
     date: '2026-10-09',
     title: 'Screen recording',

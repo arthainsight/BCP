@@ -28,6 +28,7 @@ import { LanguageContext, type Language } from '@/lib/i18n';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
+import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
 
 
@@ -623,40 +624,22 @@ export default function Home() {
     },
   }), [dashaSettings, calculationSettings.charaKarakaRankMode, calculationSettings.charaKarakaCount]);
 
-  // The timing panel can take the whole width of a wide screen, hiding the chart.
-  const [timingWide, setTimingWide] = useState(false);
-  useEffect(() => {
-    try {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (localStorage.getItem('timingWide') === 'true') setTimingWide(true);
-    } catch {}
-  }, []);
-  const toggleTimingWide = () => setTimingWide(value => {
-    try { localStorage.setItem('timingWide', String(!value)); } catch {}
-    return !value;
-  });
-  const wideTiming = timingWide && desktopTab === 'dasha';
-
-  // The palm workspace sits beside the chart; it can also take the whole width.
-  const [palmWide, setPalmWide] = useState(false);
-  useEffect(() => {
-    try {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (localStorage.getItem('palmWide') === 'true') setPalmWide(true);
-    } catch {}
-  }, []);
-  const togglePalmWide = () => setPalmWide(value => {
-    try { localStorage.setItem('palmWide', String(!value)); } catch {}
-    return !value;
-  });
-  const widePalm = palmWide && desktopTab === 'palm';
+  // Timing, analysis and the palm can each take the whole width of a wide screen, hiding the chart.
+  const [timingFull, toggleTimingFull] = useStoredFlag('timingWide');
+  const [analysisFull, toggleAnalysisFull] = useStoredFlag('analysisWide');
+  const [palmFull, togglePalmFull] = useStoredFlag('palmWide');
+  const fullTiming = timingFull && desktopTab === 'dasha';
+  const fullAnalysis = analysisFull && desktopTab === 'grahas';
+  const fullPalm = palmFull && desktopTab === 'palm';
   // The chart column is left out when a panel takes the whole width.
-  const fullWidth = desktopTab === 'public' || wideTiming || widePalm;
+  const fullWidth = desktopTab === 'public' || fullTiming || fullAnalysis || fullPalm;
 
   // The workspace panels of the wide layouts: the one-at-a-time desktop layout and the split view.
-  const analysisPanel = chartData
-    ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
-    : <EmptyState message="Calculate a chart to see graha positions" />;
+  const analysisPanel = (fullControl?: { wide: boolean; onToggleWide: () => void }) => (
+    chartData
+      ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} {...fullControl} />
+      : <EmptyState message="Calculate a chart to see graha positions" />
+  );
   const timingPanel = (wideControl?: { wide: boolean; onToggleWide: () => void }) => (
     bcpResult && chartData
       ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} {...wideControl} />
@@ -674,25 +657,25 @@ export default function Home() {
     </Panel>
   );
   // In the split view the chart comes first, with the birth data as one thin line over it.
-  const splitChartPane = (compactData: boolean) => (
+  const splitChartPane = () => (
     <>
       {chartData ? (
         <>
           <DataLine birthDatetime={birthDatetime} city={chartSnapshot.city} utcOffset={effectiveTzOffset} open={splitDataOpen} onToggle={() => setSplitDataOpen(open => !open)} />
-          {splitDataOpen && <Panel><DataPanel {...dataProps} compact={compactData} /></Panel>}
+          {splitDataOpen && <Panel><DataPanel {...dataProps} /></Panel>}
           <Panel><ChartSection {...chartSectionProps} /></Panel>
         </>
       ) : (
-        <Panel><DataPanel {...dataProps} compact={compactData} /></Panel>
+        <Panel><DataPanel {...dataProps} /></Panel>
       )}
       {panchangPanel}
     </>
   );
-  const splitPane = (workspace: SplitWorkspace, mobile = false) => {
+  const splitPane = (workspace: SplitWorkspace) => {
     switch (workspace) {
-      case 'chart': return splitChartPane(mobile);
+      case 'chart': return splitChartPane();
       case 'timing': return <Panel>{timingPanel()}</Panel>;
-      case 'analysis': return <Panel>{analysisPanel}</Panel>;
+      case 'analysis': return <Panel>{analysisPanel()}</Panel>;
       case 'palm': return <Panel><PalmWorkspace /></Panel>;
     }
   };
@@ -775,10 +758,10 @@ export default function Home() {
               {desktopTab === 'data' && (
                 <DataPanel {...dataProps} />
               )}
-              {desktopTab === 'grahas' && analysisPanel}
-              {desktopTab === 'dasha' && timingPanel({ wide: wideTiming, onToggleWide: toggleTimingWide })}
+              {desktopTab === 'grahas' && analysisPanel({ wide: fullAnalysis, onToggleWide: toggleAnalysisFull })}
+              {desktopTab === 'dasha' && timingPanel({ wide: fullTiming, onToggleWide: toggleTimingFull })}
               {desktopTab === 'public' && <PublicChartsPanel />}
-              {desktopTab === 'palm' && <PalmWorkspace wide={widePalm} onToggleWide={togglePalmWide} />}
+              {desktopTab === 'palm' && <PalmWorkspace wide={fullPalm} onToggleWide={togglePalmFull} />}
               {desktopTab === 'settings' && (
                 <SettingsPanel {...settingsProps} />
               )}
@@ -793,7 +776,7 @@ export default function Home() {
           <div className="space-y-3 pb-6" data-mobile-split>
             {split.panes.map((workspace) => (
               <SplitPane key={workspace} id={workspace} mobile label={PANE_LABELS[workspace]}>
-                {splitPane(workspace, true)}
+                {splitPane(workspace)}
               </SplitPane>
             ))}
           </div>
@@ -805,7 +788,7 @@ export default function Home() {
                   <DataSummary birthDatetime={birthDatetime} city={chartSnapshot.city} utcOffset={effectiveTzOffset} onEdit={() => setDataOpen(true)} />
                 ) : (
                   <Panel>
-                    <DataPanel {...dataProps} compact onCollapse={chartData ? () => setDataOpen(false) : undefined} />
+                    <DataPanel {...dataProps} onCollapse={chartData ? () => setDataOpen(false) : undefined} />
                   </Panel>
                 )}
                 {chartData && (
@@ -829,7 +812,7 @@ export default function Home() {
 
             {activeTab === 'data' && (
               <Panel>
-                <DataPanel {...dataProps} compact />
+                <DataPanel {...dataProps} />
               </Panel>
             )}
 

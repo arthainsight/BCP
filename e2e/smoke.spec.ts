@@ -801,7 +801,8 @@ test('the timing panel can take the whole width on a wide screen', async ({ page
   const chart = visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
   await expect(chart).toBeVisible();
 
-  await visible(page, page.getByRole('button', { name: '⤢ wide' })).click();
+  await expect(visible(page, page.getByRole('button', { name: '⤢ full' }))).toBeInViewport({ ratio: 1 });
+  await visible(page, page.getByRole('button', { name: '⤢ full' })).click();
   await expect(page.locator('svg[aria-label="North Indian Jyotish chart"]').locator('visible=true')).toHaveCount(0);
   await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
   const panel = await visible(page, page.getByRole('button', { name: /^Vimsottari/ })).boundingBox();
@@ -809,6 +810,68 @@ test('the timing panel can take the whole width on a wide screen', async ({ page
 
   await visible(page, page.getByRole('button', { name: '⤡ narrow' })).click();
   await expect(chart).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
+test('the analysis can take the whole width on a wide screen, as the timing and the palm can', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'the full mode is for a wide screen');
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  const chart = page.locator('svg[aria-label="North Indian Jyotish chart"]').locator('visible=true');
+  await expect(chart).toHaveCount(1);
+
+  // The same ⤢ full button as in TIMING and PALM, in view beside the tabs: the chart steps aside and the analysis is as wide as the screen.
+  await expect(visible(page, page.getByRole('button', { name: '⤢ full', exact: true }))).toBeInViewport({ ratio: 1 });
+  await visible(page, page.getByRole('button', { name: '⤢ full', exact: true })).click();
+  await expect(chart).toHaveCount(0);
+  const table = await visible(page, page.getByRole('button', { name: 'Varga', exact: true })).boundingBox();
+  expect(table).toBeTruthy();
+  const analysis = await visible(page, page.getByText('graha.positions')).locator('xpath=ancestor::div[contains(@class,"space-y-3")][1]').boundingBox();
+  expect(analysis?.width ?? 0).toBeGreaterThan(1000);
+
+  // The choice is remembered, and ⤡ narrow brings the chart back.
+  expect(await page.evaluate(() => localStorage.getItem('analysisWide'))).toBe('true');
+  await visible(page, page.getByRole('button', { name: '⤡ narrow', exact: true })).click();
+  await expect(chart).toHaveCount(1);
+  expect(await page.evaluate(() => localStorage.getItem('analysisWide'))).toBe('false');
+
+  // The other two have the same button, and one workspace's full mode does not leak into another.
+  await selectWorkspace(page, 'TIMING');
+  await expect(visible(page, page.getByRole('button', { name: '⤢ full', exact: true }))).toBeVisible();
+  await expect(chart).toHaveCount(1);
+  await selectWorkspace(page, 'PALM');
+  await expect(visible(page, page.getByRole('button', { name: '⤢ full', exact: true }))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
+test('the data panel has no heading and no time zone box: the place is one line', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.route('**/api/geocode**', (route) =>
+    route.fulfill({ json: { results: [{ name: 'Kotka', country: 'Finland', latitude: 60.4664, longitude: 26.94582, timezone: 'Europe/Helsinki' }] } })
+  );
+  await page.goto('/');
+  await visible(page, page.getByPlaceholder('15.08.1947 09.15.00')).fill('13.10.1987 00.15.00');
+  await visible(page, page.getByPlaceholder('e.g. New Delhi')).fill('Kotka, Finland');
+  await visible(page, page.getByRole('button', { name: 'lookup' })).click();
+
+  const place = visible(page, page.locator('[data-location-summary]'));
+  await expect(place).toContainText('60.4664, 26.9458');
+  await expect(place).toContainText('Europe/Helsinki');
+  await expect(place).toContainText('+2h UTC');
+  // Not the "> data" heading, not the "> LOCATION" one, not the grey TIMEZONE box with its override field.
+  await expect(page.getByText('> data', { exact: true }).locator('visible=true')).toHaveCount(0);
+  await expect(page.getByText('> location', { exact: true }).locator('visible=true')).toHaveCount(0);
+  await expect(page.getByText('timezone', { exact: true }).locator('visible=true')).toHaveCount(0);
+  await expect(page.getByText('override UTC offset (leave blank for auto)').locator('visible=true')).toHaveCount(0);
+  await place.getByRole('button', { name: 'edit', exact: true }).click();
+  await expect(visible(page, page.getByText('override UTC offset (leave blank for auto)'))).toBeVisible();
 
   expect(errors).toEqual([]);
 });
@@ -1335,7 +1398,7 @@ test('PALM: the chart stays beside the palm on a wide screen, and the stroke wid
   // On a wide screen the chart is still there beside the palm; the wide button hides it and brings it back.
   if (info.project.name === 'desktop') {
     await expect(chartSvg()).toHaveCount(1);
-    const wide = visible(page, page.getByRole('button', { name: '⤢ wide', exact: true }));
+    const wide = visible(page, page.getByRole('button', { name: '⤢ full', exact: true }));
     await wide.click();
     await expect(chartSvg()).toHaveCount(0);
     await expect(visible(page, page.locator('[data-palm="workspace"]'))).toBeVisible();
