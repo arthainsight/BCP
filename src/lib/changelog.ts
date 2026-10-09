@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.65',
+    date: '2026-10-09',
+    title: 'Text size of the charts, PALM beside the chart, stroke width slider',
+    changes: [
+      'In the North + South chart both charts now draw their text at the same size on the screen. Before, the inner North chart used the large type meant for small charts and the South cells a small fixed size.',
+      'New text size setting for the full-size charts: a slider in the ··· menu of the chart (text size) and in Settings under chart style, from 70 % to 160 %, with a reset. It applies to the North, South and North + South charts alike, and is remembered with the other chart display settings. The small charts of the divisional grid keep their own size.',
+      'PALM no longer takes the whole page on a wide screen: the chart (and the panchang, when it is on) stays on the left and the palm workspace is on the right. The ⤢ wide button gives the palm the whole width again, and the choice is remembered. Inside the palm workspace the notes sit beside the photograph when there is room, and under it when there is not. On a phone nothing has changed.',
+      'The stroke width in the palm drawing tool is a slider (1 to 24) instead of three buttons. It sets the width of the next drawings and of the selected line or shape, and a drag of the slider is one undo step.',
+      'Updated the application version to v2.65.',
+    ],
+  },
+  {
     version: 'v2.64',
     date: '2026-10-09',
     title: 'North + South chart',

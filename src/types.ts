@@ -156,6 +156,8 @@ export interface ChartDisplaySettings {
   language: 'en' | 'fi';
   /** Names of the grahas: English or Sanskrit. */
   grahaNames: GrahaNameStyle;
+  /** Text size of the full-size charts, as a multiple of the usual size (1 = usual). */
+  chartFontScale: number;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -183,6 +185,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   dashaMarkSystem: 'vimshottari',
   language: 'en',
   grahaNames: 'english',
+  chartFontScale: 1,
 };
 
 /** How the grahas are named on screen: English (Sun, Moon …) or Sanskrit (Sūrya, Candra …). */

@@ -33,7 +33,7 @@ function Thumbnail({ blob, alt }: { blob: Blob; alt: string }) {
  * The PALM workspace: photographs of palms, kept on this device, drawn on and
  * explained with numbered notes, then shown to the client or saved as a picture.
  */
-export default function PalmWorkspace() {
+export default function PalmWorkspace({ wide = false, onToggleWide }: { wide?: boolean; onToggleWide?: () => void }) {
   const t = useT();
   const [records, setRecords] = useState<PalmRecord[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -152,6 +152,17 @@ export default function PalmWorkspace() {
           </p>
         </div>
         <div className="ml-auto flex flex-wrap gap-2">
+          {onToggleWide && (
+            <button
+              type="button"
+              onClick={onToggleWide}
+              aria-pressed={wide}
+              title={t('Use the whole width, hiding the chart')}
+              className={`${pick} hidden border-zinc-300 bg-white text-zinc-600 hover:bg-zinc-50 lg:inline-flex lg:items-center dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300`}
+            >
+              {wide ? t('⤡ narrow') : t('⤢ wide')}
+            </button>
+          )}
           <label className={`${pick} border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 dark:border-green-600 dark:bg-green-600`}>
             {busy ? '…' : t('Upload photos')}
             <input type="file" accept="image/*" multiple className="sr-only" aria-label={t('Upload palm photographs')} onChange={event => { void addFiles(event.target.files ?? []); event.target.value = ''; }} />

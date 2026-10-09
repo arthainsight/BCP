@@ -9,6 +9,7 @@ import type { NadiParayaHouseActivation, ParayaBody } from '@/lib/bnn/nadiParaya
 import { normalizeDegrees } from '@/lib/angles';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { useChartFontScale } from '@/lib/chartFont';
 import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 
@@ -74,6 +75,8 @@ const COMPACT_CELL_PADDING = 2;
 const COMPACT_CELL_HEADER = 9;
 // Grid width before it is measured: a 360px phone.
 const DEFAULT_GRID_WIDTH = 328;
+/** The largest a label is drawn, in pixels, at the usual text size of a full-size chart. */
+export const LABEL_PX = 11;
 
 const SIGN_NAMES = ['', 'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const NAK_ABBR = [
@@ -218,6 +221,9 @@ export default function SouthIndianChart({
   const hydrated = useHydrated();
   const fill = useChartFill();
   const isDark = !hydrated || resolvedTheme === 'dark';
+  // The text size chosen in Settings; the small charts of a grid keep their own.
+  const userScale = useChartFontScale();
+  const k = compact ? 1 : userScale;
 
   const gridRef = useRef<HTMLDivElement>(null);
   const [gridWidth, setGridWidth] = useState(DEFAULT_GRID_WIDTH);
@@ -266,7 +272,7 @@ export default function SouthIndianChart({
   const cellSize = (gridWidth - 3 * GRID_GAP) / 4;
   const padding = compact ? COMPACT_CELL_PADDING : CELL_PADDING;
   const contentWidth = cellSize - 2 * padding;
-  const contentHeight = cellSize - 2 * padding - (compact ? COMPACT_CELL_HEADER : CELL_HEADER);
+  const contentHeight = cellSize - 2 * padding - (compact ? COMPACT_CELL_HEADER : CELL_HEADER) * k;
 
   return (
     <div className={fill ? 'w-full mx-auto' : centerContent ? 'w-full max-w-[680px] mx-auto' : 'w-full max-w-[520px] mx-auto'} style={fill ? { maxWidth: FILL_MAX_WIDTH } : undefined}>
@@ -309,11 +315,11 @@ export default function SouthIndianChart({
           }));
           specialHere.forEach((sl, index) => tokens.push({ key: `sl-${sl.name}-${index}`, group: 'special', text: sl.name }));
           const hasBnnLabel = (bnnMajorHouse > 0 && house === bnnMajorHouse) || (bnnMinorHouse > 0 && house === bnnMinorHouse);
-          const cellHeight = contentHeight - (hasBnnLabel ? 10 : 0);
+          const cellHeight = contentHeight - (hasBnnLabel ? 10 * k : 0);
           const layout = layoutHouseLabels(
             tokens,
             { polygon: [[0, 0], [contentWidth, 0], [contentWidth, cellHeight], [0, cellHeight]], anchorY: 0 },
-            { maxFontSize: compact ? 12 : 11, minFontSize: 6, padding: 0 },
+            { maxFontSize: (compact ? 12 : LABEL_PX) * k, minFontSize: 6, padding: 0 },
           );
 
           // BNN background tint — only when BCP is not active on this house
@@ -360,7 +366,7 @@ export default function SouthIndianChart({
                   style={{ inset: border.key === 'md' ? 0 : 3, border: `${border.key === 'md' ? 3 : 2}px solid ${border.color}`, zIndex: 12 }}
                 />
               ))}
-              <div className={`flex items-start justify-between gap-1 leading-none text-zinc-500 dark:text-zinc-400 ${compact ? 'text-[8px]' : 'text-[10px]'}`}>
+              <div className="flex items-start justify-between gap-1 leading-none text-zinc-500 dark:text-zinc-400" style={{ fontSize: `${(compact ? 8 : 10) * k}px` }}>
                 <span>{showSigns ? SIGN_NAMES[sign] : ''}</span>
                 {!compact && <span className="text-zinc-400 dark:text-zinc-600">H{house}</span>}
               </div>
@@ -394,18 +400,18 @@ export default function SouthIndianChart({
                 ))}
                 {/* BNN labels */}
                 {bnnBothLabel ? (
-                  <span className="truncate text-[8px] leading-tight font-bold" style={{ color: isDark ? '#e879f9' : '#a21caf' }}>
+                  <span className="block truncate leading-tight font-bold" style={{ color: isDark ? '#e879f9' : '#a21caf', fontSize: `${8 * k}px` }}>
                     RSN Maj+Min
                   </span>
                 ) : (
                   <>
                     {isBnnMaj && (
-                      <span className="truncate text-[8px] leading-tight font-bold" style={{ color: bnnMajColor }}>
+                      <span className="block truncate leading-tight font-bold" style={{ color: bnnMajColor, fontSize: `${8 * k}px` }}>
                         RSN Maj
                       </span>
                     )}
                     {isBnnMin && (
-                      <span className="truncate text-[8px] leading-tight font-bold" style={{ color: bnnMinColor }}>
+                      <span className="block truncate leading-tight font-bold" style={{ color: bnnMinColor, fontSize: `${8 * k}px` }}>
                         RSN Min
                       </span>
                     )}

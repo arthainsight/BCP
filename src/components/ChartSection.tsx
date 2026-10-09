@@ -15,6 +15,8 @@ import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPada
 import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
 import { PARAYA_BODIES, type ParayaBody } from '@/lib/bnn/nadiParaya';
 import ParayaChips from './ParayaChips';
+import RangeField from './RangeField';
+import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP, clampFontScale, fontScaleLabel } from '@/lib/chartFont';
 import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
@@ -402,6 +404,20 @@ export default function ChartSection({
                       ))}
                     </div>
                   </div>
+                  {onUpdateChartDisplay && (
+                    <RangeField
+                      label={t('text size')}
+                      value={chartDisplaySettings.chartFontScale}
+                      min={FONT_SCALE_MIN}
+                      max={FONT_SCALE_MAX}
+                      step={FONT_SCALE_STEP}
+                      format={fontScaleLabel}
+                      onChange={(value) => onUpdateChartDisplay({ chartFontScale: clampFontScale(value) })}
+                      onReset={() => onUpdateChartDisplay({ chartFontScale: 1 })}
+                      resetLabel={t('reset')}
+                      resetDisabled={chartDisplaySettings.chartFontScale === 1}
+                    />
+                  )}
                 </div>
               </>
             )}

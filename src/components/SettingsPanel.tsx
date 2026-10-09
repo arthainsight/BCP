@@ -8,6 +8,8 @@ import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
 import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
 import { PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
 import ParayaChips from './ParayaChips';
+import RangeField from './RangeField';
+import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP, clampFontScale, fontScaleLabel } from '@/lib/chartFont';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
@@ -323,6 +325,22 @@ export default function SettingsPanel(props: Props) {
                 className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'both' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
                 {t('North + South')}
               </button>
+            </div>
+            <RangeField
+              className="mt-3"
+              label={t('text size of the charts')}
+              value={chartDisplaySettings.chartFontScale}
+              min={FONT_SCALE_MIN}
+              max={FONT_SCALE_MAX}
+              step={FONT_SCALE_STEP}
+              format={fontScaleLabel}
+              onChange={(value) => onUpdateChartDisplay?.({ chartFontScale: clampFontScale(value) })}
+              onReset={() => onUpdateChartDisplay?.({ chartFontScale: 1 })}
+              resetLabel={t('reset')}
+              resetDisabled={chartDisplaySettings.chartFontScale === 1}
+            />
+            <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+              {t('The text of the full-size charts. In North + South both charts are drawn with the same size of text.')}
             </div>
           </SubSection>
 

@@ -3,18 +3,20 @@
 import type { ComponentProps } from 'react';
 import type { ChartStyle } from '@/types';
 import NorthIndianChart from './NorthIndianChart';
-import SouthIndianChart from './SouthIndianChart';
+import SouthIndianChart, { LABEL_PX } from './SouthIndianChart';
+import { useChartFontScale } from '@/lib/chartFont';
 
 type ChartProps = ComponentProps<typeof NorthIndianChart>;
 
 /**
  * Both charts at once: the South Indian chart, whose twelve sign cells frame
- * the outside, with the North Indian chart in the empty middle. The outer chart
- * follows the display settings; the inner one is kept to planet codes, since it
- * has half the room.
+ * the outside, with the North Indian chart in the empty middle. The inner chart
+ * is kept to planet codes, since it has half the room, and its labels are drawn
+ * as large on the screen as the outer chart's, whatever the width.
  */
 export function CombinedChart(props: ChartProps) {
-  const inner: ChartProps = { ...props, compact: true, degreePrecision: 'off', showCharaKaraka: false, showNakshatra: false };
+  const labelPx = LABEL_PX * useChartFontScale();
+  const inner: ChartProps = { ...props, compact: false, fontPx: labelPx, degreePrecision: 'off', showCharaKaraka: false, showNakshatra: false };
   return <SouthIndianChart {...props} centerContent={<NorthIndianChart {...inner} />} />;
 }
 

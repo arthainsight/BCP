@@ -38,9 +38,15 @@ export const DEFAULT_COLOR = COLORS[0];
 /** One unit: a thousandth of the longer side of the photo. */
 export const unitOf = (width: number, height: number) => Math.max(width, height) / 1000;
 
-/** The stroke widths on offer, in units. */
-export const STROKE_UNITS = { thin: 3, normal: 6, thick: 11 } as const;
-export type StrokeSize = keyof typeof STROKE_UNITS;
+/** The stroke widths on offer, in units: from a fine line to a marker pen. */
+export const STROKE_MIN = 1;
+export const STROKE_MAX = 24;
+export const STROKE_STEP = 0.5;
+export const STROKE_DEFAULT = 6;
+
+/** A stroke width brought into the range on offer, in whole steps. */
+export const clampStroke = (units: number) =>
+  Number.isFinite(units) ? Math.min(STROKE_MAX, Math.max(STROKE_MIN, Math.round(units / STROKE_STEP) * STROKE_STEP)) : STROKE_DEFAULT;
 
 /** Radius of the number badge, the size of free text and the size of a label, in units. */
 export const BADGE_UNITS = 22;

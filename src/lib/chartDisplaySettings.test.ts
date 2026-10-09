@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { DEFAULT_CHART_DISPLAY } from '@/types';
+import { FONT_SCALE_MAX, FONT_SCALE_MIN, clampFontScale, fontScaleLabel } from '@/lib/chartFont';
 import { migrateChartDisplaySettings } from './chartDisplaySettings';
 
 // --- Stored settings ----------------------------------------------------------
@@ -36,6 +37,16 @@ assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: 'Jupiter' }).paraya
 assert.equal(migrateChartDisplaySettings({ chartStyle: 'both' }).chartStyle, 'both', 'North + South is a style');
 assert.equal(migrateChartDisplaySettings({ chartStyle: 'south' }).chartStyle, 'south');
 assert.equal(migrateChartDisplaySettings({ chartStyle: 'round' }).chartStyle, 'north', 'an unknown style falls back to North');
+
+assert.equal(DEFAULT_CHART_DISPLAY.chartFontScale, 1, 'the usual text size by default');
+assert.equal(migrateChartDisplaySettings({}).chartFontScale, 1, 'settings from before the text size use the usual one');
+assert.equal(migrateChartDisplaySettings({ chartFontScale: 1.25 }).chartFontScale, 1.25);
+assert.equal(migrateChartDisplaySettings({ chartFontScale: 9 }).chartFontScale, FONT_SCALE_MAX, 'too large is brought into range');
+assert.equal(migrateChartDisplaySettings({ chartFontScale: 0.1 }).chartFontScale, FONT_SCALE_MIN, 'too small is brought into range');
+assert.equal(migrateChartDisplaySettings({ chartFontScale: 'big' }).chartFontScale, 1, 'a value of the wrong type is ignored');
+assert.equal(clampFontScale(Number.NaN), 1);
+assert.equal(clampFontScale(1.234), 1.23, 'rounded to whole percents');
+assert.equal(fontScaleLabel(1.25), '125%');
 
 // --- Every setting does something ---------------------------------------------
 // v2.21 shipped a transit switch that nothing read. Each setting must be read
