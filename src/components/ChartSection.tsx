@@ -14,6 +14,8 @@ import { setChartPointKeys, useChartPoints } from '@/hooks/useChartPoints';
 import { atmakarakaOf, POINT_KEYS, POINT_NAMES, selectedChartPoints } from '@/lib/chartPoints';
 import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPadas';
 import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
+import { PARAYA_BODIES, type ParayaBody } from '@/lib/bnn/nadiParaya';
+import ParayaChips from './ParayaChips';
 import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
@@ -170,7 +172,10 @@ export default function ChartSection({
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
   const showTransit = chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0;
-  const parayaHouses = chartDisplaySettings.showNadiParaya !== false ? nadiParayaHousesFromParent : [];
+  const parayaBodies = chartDisplaySettings.parayaBodies ?? PARAYA_BODIES;
+  const parayaHouses = chartDisplaySettings.showNadiParaya !== false ? nadiParayaHousesFromParent.filter(activation => parayaBodies.includes(activation.body)) : [];
+  // Choosing a Paraya graha switches the layer on, so the choice shows at once.
+  const chooseParaya = (next: ParayaBody[]) => onUpdateChartDisplay?.({ parayaBodies: next, ...(next.length > 0 ? { showNadiParaya: true } : {}) });
   const layerControls = buildLayerControls(chartDisplaySettings, {
     bcp: true,
     dasha: dashaLordsFromParent !== null,
@@ -258,6 +263,9 @@ export default function ChartSection({
                   {(layerControls ?? []).map((control) => (
                     <ChartDisplayToggle key={control.key} label={t(CHART_LAYER_LABELS[control.key])} value={control.on} onToggle={control.onToggle} />
                   ))}
+                  {onUpdateChartDisplay && nadiParayaHousesFromParent.length > 0 && (
+                    <ParayaChips bodies={parayaBodies} onChange={chooseParaya} />
+                  )}
                   {onUpdateChartDisplay && (
                     <label className="block text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
                       {t('dasha lords from')}

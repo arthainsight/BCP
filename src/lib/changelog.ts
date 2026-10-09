@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.63',
+    date: '2026-10-09',
+    title: 'Paraya grahas one at a time',
+    changes: [
+      'The Paraya layer can draw the grahas one at a time or all together: the ··· menu of the chart has a paraya grahas row with a chip for each of Ju, Sa, Ra and Ke, and all and none. The same chips are in Settings, under the chart layers. Choosing a graha switches the Paraya layer on.',
+      'The choice is remembered with the other chart display settings; settings from before it draw all four, as before.',
+      'Updated the application version to v2.63.',
+    ],
+  },
+  {
     version: 'v2.62',
     date: '2026-10-09',
     title: 'PALM: palm photographs with drawings and notes',

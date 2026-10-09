@@ -468,6 +468,58 @@ test('ANALYSIS Special Sphutas also lists the upagrahas, Karakamsa and the Arudh
   expect(errors).toEqual([]);
 });
 
+test('the Paraya grahas can be drawn one at a time, or all', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const chartText = async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
+  // The Paraya labels carry a degree ("Ju 4.5°"); the natal grahas show none by default.
+  const parayas = async () => [...new Set([...(await chartText()).matchAll(/(Ju|Sa|Ra|Ke) \d+\.\d°/g)].map(match => match[1]))].sort();
+  const all = await parayas();
+  expect(all.length).toBeGreaterThanOrEqual(2);
+
+  const group = () => visible(page, page.getByRole('group', { name: 'paraya grahas' }));
+  const open = async () => { await visible(page, page.getByRole('button', { name: '···' })).click(); };
+  const close = async () => { await page.keyboard.press('Escape'); await page.mouse.click(2, 2); };
+
+  // None draws none of them.
+  await open();
+  await visible(page, page.getByRole('button', { name: 'none', exact: true }).first()).click();
+  await close();
+  await expect.poll(parayas).toEqual([]);
+
+  // One chip draws that graha alone.
+  const one = all[0];
+  await open();
+  await group().getByRole('button', { name: one, exact: true }).click();
+  await expect(group().getByRole('button', { name: one, exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await close();
+  await expect.poll(parayas).toEqual([one]);
+
+  // A second chip adds it; all brings back every one.
+  const two = all[1];
+  await open();
+  await group().getByRole('button', { name: two, exact: true }).click();
+  await close();
+  await expect.poll(parayas).toEqual([one, two].sort());
+  await open();
+  await visible(page, page.getByRole('button', { name: 'all', exact: true }).first()).click();
+  await close();
+  await expect.poll(parayas).toEqual(all);
+
+  // The choice is kept after a reload.
+  await open();
+  await visible(page, page.getByRole('button', { name: 'none', exact: true }).first()).click();
+  await close();
+  await page.waitForTimeout(300);
+  await page.reload();
+  await expect(visible(page, page.getByPlaceholder('15.08.1947 09.15.00'))).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}').parayaBodies)).toEqual([]);
+
+  expect(errors).toEqual([]);
+});
+
 test('the upagrahas and Karakamsa can be marked on the charts', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

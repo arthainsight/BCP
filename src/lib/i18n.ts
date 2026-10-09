@@ -121,6 +121,7 @@ export const FI: Record<string, string> = {
   'show fewer': 'näytä vähemmän',
   'show all': 'näytä kaikki',
   'Sign changes': 'Merkinvaihdot',
+  'paraya grahas': 'paraya-grahat',
   'Clearing the browser data deletes them, so save the picture to keep a copy.': 'Selaimen tietojen tyhjennys poistaa ne, joten tallenna kuva kopioksi.',
   'PALM': 'KÄMMEN',
   'Palm photograph': 'Kämmenen valokuva',

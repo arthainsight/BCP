@@ -3,6 +3,9 @@ import type { ParayaSpeed } from '@/types';
 
 export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu';
 
+/** The four Paraya grahas, in the order they are listed. */
+export const PARAYA_BODIES: readonly ParayaBody[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
+
 /** The choices for how Saturn and Rahu (and so Ketu) stay in each sign. */
 export interface ParayaOptions {
   saturn: ParayaSpeed;

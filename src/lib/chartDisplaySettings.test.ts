@@ -25,6 +25,14 @@ for (const removed of ['showBnnAlpha', 'showSanskrit', 'showTransitPlanets', 'sh
 }
 assert.equal(migrateChartDisplaySettings({ showDegrees: true, degreePrecision: 'second' }).degreePrecision, 'second');
 
+// --- The Paraya grahas that are drawn ------------------------------------------
+assert.deepEqual(DEFAULT_CHART_DISPLAY.parayaBodies, ['Jupiter', 'Saturn', 'Rahu', 'Ketu'], 'all four by default');
+assert.deepEqual(migrateChartDisplaySettings({}).parayaBodies, ['Jupiter', 'Saturn', 'Rahu', 'Ketu'], 'settings from before the choice draw all four');
+assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: ['Ketu', 'Saturn'] }).parayaBodies, ['Saturn', 'Ketu'], 'kept, in the usual order');
+assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: [] }).parayaBodies, [], 'none is a choice too');
+assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: ['Mars', 'Rahu', 7] }).parayaBodies, ['Rahu'], 'only the four known ones');
+assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: 'Jupiter' }).parayaBodies, ['Jupiter', 'Saturn', 'Rahu', 'Ketu'], 'a value of the wrong type is ignored');
+
 // --- Every setting does something ---------------------------------------------
 // v2.21 shipped a transit switch that nothing read. Each setting must be read
 // somewhere outside its own definition.

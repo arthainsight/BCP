@@ -1,6 +1,7 @@
 import type { DegreePrecision } from '@/lib/formatDegree';
 import type { SaturnPortionLagnas } from '@/lib/upagrahas';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
+import type { ParayaBody } from '@/lib/bnn/nadiParaya';
 export type { DegreePrecision };
 
 export interface GeoResult {
@@ -141,6 +142,8 @@ export interface ChartDisplaySettings {
   showBnnMinorHighlight: boolean;
   showTransitOverlay: boolean;
   showNadiParaya: boolean;
+  /** Which of Jupiter, Saturn, Rahu and Ketu the Paraya layer draws. */
+  parayaBodies: ParayaBody[];
   /** BCP running year and month houses; off by default since v1.80 removed them from the chart. */
   showBcpHighlight: boolean;
   /** Marks the running Vimshottari mahadasha and antardasha lords. */
@@ -173,6 +176,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showBnnMinorHighlight: true,
   showTransitOverlay: false,
   showNadiParaya: true,
+  parayaBodies: ['Jupiter', 'Saturn', 'Rahu', 'Ketu'],
   showBcpHighlight: false,
   showDashaLords: true,
   showDashaHouses: true,

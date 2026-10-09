@@ -6,6 +6,8 @@ import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
 import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
+import { PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
+import ParayaChips from './ParayaChips';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
@@ -358,6 +360,12 @@ export default function SettingsPanel(props: Props) {
                   <MiniToggle value={Boolean(chartDisplaySettings[key])} onToggle={() => onToggleChartDisplay(key)} />
                 </div>
               ))}
+            </div>
+            <div className="mt-3">
+              <ParayaChips
+                bodies={chartDisplaySettings.parayaBodies ?? PARAYA_BODIES}
+                onChange={next => onUpdateChartDisplay?.({ parayaBodies: next, ...(next.length > 0 ? { showNadiParaya: true } : {}) })}
+              />
             </div>
             <div className="mt-2 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
               {t('RSN is the Rao Sir System of Nadi: the major (Jupiterian round) and minor progressions, and the Paraya.')}
