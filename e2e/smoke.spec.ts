@@ -399,6 +399,93 @@ test('split view on a phone: the workspaces stacked and shown in full', async ({
   expect(errors).toEqual([]);
 });
 
+test('screen recording: the screen and the voice are recorded to a video that can be downloaded', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop', 'a phone browser cannot record the screen');
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // The browser's own picker and its microphone question cannot be answered in a test: the "screen" is a canvas
+  // that keeps changing and the "voice" is a tone. The recorder itself, the MediaRecorder, is the real one.
+  await page.addInitScript(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 320;
+    canvas.height = 180;
+    const context = canvas.getContext('2d')!;
+    let frame = 0;
+    setInterval(() => { frame += 1; context.fillStyle = `hsl(${(frame * 7) % 360} 70% 50%)`; context.fillRect(0, 0, 320, 180); }, 50);
+    const calls = { screen: 0, mic: 0 };
+    (window as unknown as { __calls: typeof calls }).__calls = calls;
+    navigator.mediaDevices.getDisplayMedia = async () => { calls.screen += 1; return canvas.captureStream(15); };
+    navigator.mediaDevices.getUserMedia = async () => {
+      calls.mic += 1;
+      const audio = new AudioContext();
+      const tone = audio.createOscillator();
+      const out = audio.createMediaStreamDestination();
+      tone.connect(out);
+      tone.start();
+      return out.stream;
+    };
+  });
+  await page.goto('/');
+
+  const calls = () => page.evaluate(() => (window as unknown as { __calls: { screen: number; mic: number } }).__calls);
+  const idle = visible(page, page.locator('[data-recorder="idle"]'));
+  const active = visible(page, page.locator('[data-recorder="active"]'));
+  const clock = () => visible(page, page.locator('[data-recorder-clock]')).innerText();
+  const mic = visible(page, page.getByRole('button', { name: 'record the microphone' }));
+
+  // The microphone is on to begin with; recording asks for the screen and the voice.
+  await expect(idle).toBeVisible();
+  await expect(mic).toHaveAttribute('aria-pressed', 'true');
+  await visible(page, page.getByRole('button', { name: 'rec', exact: true })).click();
+  await expect(active).toBeVisible();
+  await expect.poll(clock).toMatch(/^0:0[1-9]$/);
+  expect(await calls()).toEqual({ screen: 1, mic: 1 });
+
+  // Pausing holds the clock; continuing runs it again.
+  await visible(page, page.getByRole('button', { name: 'pause', exact: true })).click();
+  const held = await clock();
+  await page.waitForTimeout(1200);
+  expect(await clock()).toBe(held);
+  await visible(page, page.getByRole('button', { name: 'continue', exact: true })).click();
+  await expect.poll(clock).not.toBe(held);
+
+  // Stopping leaves the video in a card in the corner, with its length and size.
+  await visible(page, page.getByTitle('Stop the recording')).click();
+  const panel = page.locator('[data-recording-panel]');
+  await expect(panel).toBeVisible();
+  await expect(panel.locator('[data-recording-info]')).toHaveText(/^\d:\d\d · \d+(\.\d)? (kB|MB) · (webm|mp4)$/);
+  expect(await panel.locator('video').getAttribute('src')).toMatch(/^blob:/);
+  await expect(idle).toBeVisible();
+  await expect(panel).toContainText('lost if you close the page');
+
+  // Download saves a real file with a name from the date.
+  const [download] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Download video' }).click()]);
+  expect(download.suggestedFilename()).toMatch(/^bhrigu-code-\d{4}-\d\d-\d\d-\d{4}\.(webm|mp4)$/);
+  const saved = await download.path();
+  expect(saved).toBeTruthy();
+  expect(readFileSync(saved!).length).toBeGreaterThan(1000);
+  await expect(panel).toContainText('Saved to your downloads.');
+  await panel.getByRole('button', { name: 'Discard' }).click();
+  await expect(panel).toHaveCount(0);
+
+  // With the microphone off the voice is not asked for, and the choice is remembered.
+  await mic.click();
+  await expect(mic).toHaveAttribute('aria-pressed', 'false');
+  expect(await page.evaluate(() => localStorage.getItem('screenRecorderMic'))).toBe('false');
+  await visible(page, page.getByRole('button', { name: 'rec', exact: true })).click();
+  await expect(active).toBeVisible();
+  await page.waitForTimeout(1200);
+  await visible(page, page.getByTitle('Stop the recording')).click();
+  await expect(panel).toBeVisible();
+  expect(await calls()).toEqual({ screen: 2, mic: 1 });
+  await panel.getByRole('button', { name: 'Discard' }).click();
+  await page.reload();
+  await expect(visible(page, page.getByRole('button', { name: 'record the microphone' }))).toHaveAttribute('aria-pressed', 'false');
+
+  expect(errors).toEqual([]);
+});
+
 test('normal transit overlay toggles on and off in CHART', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

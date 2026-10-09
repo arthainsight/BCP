@@ -18,6 +18,7 @@ import PublicChartsPanel from '@/components/PublicChartsPanel';
 import PalmWorkspace from '@/components/palm/PalmWorkspace';
 import { DataLine, DataSummary, EmptyState, Panel, SplitPane } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
+import { RecordingPanel } from '@/components/ScreenRecorder';
 import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
@@ -877,6 +878,9 @@ export default function Home() {
           </>
         )}
       </div>
+
+      {/* What a screen recording leaves behind: the video, to download or to throw away */}
+      <RecordingPanel />
 
       {/* Footer: the name of the app and who made it */}
       <footer className="pb-8 pt-4 text-center text-xs font-mono text-zinc-400 dark:text-zinc-600 lg:py-6">
