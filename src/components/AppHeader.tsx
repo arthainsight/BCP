@@ -3,6 +3,7 @@
 import type { ComponentProps } from 'react';
 import FileActions from './FileActions';
 import ThemeToggle from './ThemeToggle';
+import { RecordButton } from './ScreenRecorder';
 import { useT } from '@/lib/i18n';
 
 type Props = {
@@ -26,6 +27,7 @@ export default function AppHeader({ activeChartName, displayChartName, fileActio
         </span>
         <div className="flex items-center gap-3">
           <FileActions {...fileActions} />
+          <RecordButton />
           <ThemeToggle />
         </div>
       </header>
@@ -40,7 +42,10 @@ export default function AppHeader({ activeChartName, displayChartName, fileActio
           )}
           <FileActions {...fileActions} compact />
         </div>
-        <ThemeToggle icon />
+        <div className="flex shrink-0 items-center gap-2">
+          <RecordButton />
+          <ThemeToggle icon />
+        </div>
       </header>
     </>
   );

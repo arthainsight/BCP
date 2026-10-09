@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v2.72',
+    date: '2026-10-09',
+    title: 'Screen recording',
+    changes: [
+      'A rec button in the top bar records the screen and your voice to a video, so a chart can be explained aloud, or a palm drawn on and talked about. The browser asks what to record: choose this tab for the chart or the palm drawing (or a window, or the whole screen), and allow the microphone. The mouse pointer is in the video.',
+      'The microphone has its own switch next to the button (the choice is remembered): off records the screen only. If the microphone cannot be used the video is made without a voice, and the card says so. A shared tab\'s own sound is mixed in with the voice.',
+      'While recording the button shows the running time and stops the recording when pressed; the pause button holds the clock and the video, and continue goes on. Stopping the sharing in the browser\'s own bar ends the recording too.',
+      'The finished video appears in a card in the corner to watch, with its length and size: Download video saves it as a file named from the date (bhrigu-code-2026-10-09-1432.webm; Safari makes mp4), Discard throws it away. Nothing is uploaded anywhere: the video is kept in memory on this device, so closing the page before downloading it loses it, and the browser warns about that.',
+      'The button is shown where the browser can record the screen: the desktop browsers (Chrome, Edge, Firefox, Safari). The browsers of phones and tablets cannot, so there it is left out; use the phone\'s own screen recorder instead.',
+      'Updated the application version to v2.72.',
+    ],
+  },
+  {
     version: 'v2.71',
     date: '2026-10-09',
     title: 'The directional chart of the Nadi',
