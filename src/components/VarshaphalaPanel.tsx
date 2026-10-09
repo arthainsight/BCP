@@ -5,8 +5,7 @@ import type { CalculationSettings, ChartData, ChartDisplaySettings, ChartStyle }
 // Types only: the route does the ephemeris work.
 import type { OfficeBearer, PanchaVargiyaBala } from '@/lib/varshaphala';
 import { formatDegree } from '@/lib/formatDegree';
-import NorthIndianChart from './NorthIndianChart';
-import SouthIndianChart from './SouthIndianChart';
+import StyledChart from './StyledChart';
 import {
   AnnualDashaList,
   AnnualPlaceControl,
@@ -109,9 +108,7 @@ export default function VarshaphalaPanel({
 
       {shown && (
         <div className={`space-y-3 ${loading ? 'opacity-60' : ''}`}>
-          {chartStyle === 'south'
-            ? <SouthIndianChart {...annualChartProps(shown.chart, chart, showNatal, chartDisplaySettings, nakshatraAdjust)} />
-            : <NorthIndianChart {...annualChartProps(shown.chart, chart, showNatal, chartDisplaySettings, nakshatraAdjust)} />}
+          <StyledChart style={chartStyle} {...annualChartProps(shown.chart, chart, showNatal, chartDisplaySettings, nakshatraAdjust)} />
 
           <div className="space-y-2">
             <Row label="begins" value={`${fmtLocal(shown.local)} (${fmtOffset(shown.tzOffset)}) · ${shown.dayYear ? 'day' : 'night'}`} />

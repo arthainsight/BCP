@@ -2,8 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
-import NorthIndianChart from './NorthIndianChart';
-import SouthIndianChart from './SouthIndianChart';
+import StyledChart from './StyledChart';
 import ChartExportButtons from './ChartExportButtons';
 import TargetDateBar from './TargetDateBar';
 import ChartDivisionBar from './ChartDivisionBar';
@@ -14,6 +13,8 @@ import { setChartPointKeys, useChartPoints } from '@/hooks/useChartPoints';
 import { atmakarakaOf, POINT_KEYS, POINT_NAMES, selectedChartPoints } from '@/lib/chartPoints';
 import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPadas';
 import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
+import { PARAYA_BODIES, type ParayaBody } from '@/lib/bnn/nadiParaya';
+import ParayaChips from './ParayaChips';
 import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
@@ -136,7 +137,7 @@ export default function ChartSection({
   useEffect(() => {
     const handleChartStyleChange = (event: Event) => {
       const customEvent = event as CustomEvent<ChartStyle>;
-      if (customEvent.detail === 'north' || customEvent.detail === 'south') {
+      if (customEvent.detail === 'north' || customEvent.detail === 'south' || customEvent.detail === 'both') {
         setChartStyle(customEvent.detail);
       }
     };
@@ -170,7 +171,10 @@ export default function ChartSection({
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
   const bnnMinorHouse = chartDisplaySettings.showBnnMinorHighlight ? bnnHouses.minor : 0;
   const showTransit = chartDisplaySettings.showTransitOverlay !== false && transitPlanets.length > 0;
-  const parayaHouses = chartDisplaySettings.showNadiParaya !== false ? nadiParayaHousesFromParent : [];
+  const parayaBodies = chartDisplaySettings.parayaBodies ?? PARAYA_BODIES;
+  const parayaHouses = chartDisplaySettings.showNadiParaya !== false ? nadiParayaHousesFromParent.filter(activation => parayaBodies.includes(activation.body)) : [];
+  // Choosing a Paraya graha switches the layer on, so the choice shows at once.
+  const chooseParaya = (next: ParayaBody[]) => onUpdateChartDisplay?.({ parayaBodies: next, ...(next.length > 0 ? { showNadiParaya: true } : {}) });
   const layerControls = buildLayerControls(chartDisplaySettings, {
     bcp: true,
     dasha: dashaLordsFromParent !== null,
@@ -238,6 +242,22 @@ export default function ChartSection({
             >
               S
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setChartStyle('both');
+                onUpdateChartDisplay?.({ chartStyle: 'both' });
+              }}
+              aria-pressed={chartStyle === 'both'}
+              title={t('North and South together')}
+              className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors border-l border-zinc-200 dark:border-zinc-700 ${
+                chartStyle === 'both'
+                  ? 'bg-emerald-600 dark:bg-green-700 text-white'
+                  : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
+              }`}
+            >
+              N+S
+            </button>
           </div>
           <div className="relative shrink-0">
             <button
@@ -258,6 +278,9 @@ export default function ChartSection({
                   {(layerControls ?? []).map((control) => (
                     <ChartDisplayToggle key={control.key} label={t(CHART_LAYER_LABELS[control.key])} value={control.on} onToggle={control.onToggle} />
                   ))}
+                  {onUpdateChartDisplay && nadiParayaHousesFromParent.length > 0 && (
+                    <ParayaChips bodies={parayaBodies} onChange={chooseParaya} />
+                  )}
                   {onUpdateChartDisplay && (
                     <label className="block text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
                       {t('dasha lords from')}
@@ -410,34 +433,9 @@ export default function ChartSection({
           dashaLords={dashaLords}
           onFocus={(division) => setDivisions([division])}
         />
-        ) : chartStyle === 'south' ? (
-        <SouthIndianChart
-          activeYearHouse={yearHouse}
-          activeMonthHouse={monthHouse}
-          ascendantSign={chart.ascendant.sign}
-          ascendantDegree={chart.ascendant.degree}
-          planets={chart.planets}
-          specialLagnas={d1SpecialLagnas}
-          transitPlanets={transitPlanets}
-          showSigns={chartDisplaySettings.showSigns}
-          showNatalPlanets={chartDisplaySettings.showNatalPlanets}
-          showTransitPlanets={showTransit}
-          degreePrecision={chartDisplaySettings.degreePrecision ?? 'off'}
-          showCharaKaraka={chartDisplaySettings.showCharaKaraka}
-          showNakshatra={chartDisplaySettings.showNakshatra}
-          showOuterPlanets={chartDisplaySettings.showOuterPlanets}
-          showSpecialLagnas={d1ShowSpecialLagnas}
-          karakaByPlanet={karakaByPlanet}
-          nakshatraAdjust={nakshatraAdjust}
-          bnnMajorHouse={bnnMajorHouse}
-          bnnMinorHouse={bnnMinorHouse}
-          nadiParayaHouses={parayaHouses}
-          dashaLords={dashaLords}
-          selectedPlanet={selectedPlanet}
-          onPlanetSelect={setSelectedPlanet}
-        />
         ) : (
-        <NorthIndianChart
+        <StyledChart
+          style={chartStyle}
           activeYearHouse={yearHouse}
           activeMonthHouse={monthHouse}
           ascendantSign={chart.ascendant.sign}

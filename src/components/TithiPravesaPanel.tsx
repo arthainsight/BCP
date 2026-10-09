@@ -6,8 +6,7 @@ import type { CalculationSettings, ChartData, ChartDisplaySettings, ChartStyle }
 // bundled for the browser. The calculation runs in /api/tithi-pravesha.
 import type { TithiPravesaMethod, TithiPravesaResult, VedicDay } from '@/lib/tithiPravesha';
 import { formatDegree } from '@/lib/formatDegree';
-import NorthIndianChart from './NorthIndianChart';
-import SouthIndianChart from './SouthIndianChart';
+import StyledChart from './StyledChart';
 import {
   AnnualDashaList,
   AnnualPlaceControl,
@@ -126,9 +125,7 @@ export default function TithiPravesaPanel({
 
       {shown && (
         <div className={`space-y-3 ${loading ? 'opacity-60' : ''}`}>
-          {chartStyle === 'south'
-            ? <SouthIndianChart {...annualChartProps(shown.chart, chart, showNatal, chartDisplaySettings, nakshatraAdjust)} />
-            : <NorthIndianChart {...annualChartProps(shown.chart, chart, showNatal, chartDisplaySettings, nakshatraAdjust)} />}
+          <StyledChart style={chartStyle} {...annualChartProps(shown.chart, chart, showNatal, chartDisplaySettings, nakshatraAdjust)} />
 
           <div className="space-y-2">
             <Row label="begins" value={`${fmtLocal(shown.local)} (${fmtOffset(shown.tzOffset)})`} />

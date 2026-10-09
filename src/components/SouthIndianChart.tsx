@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useHydrated } from '@/lib/useHydrated';
 import { useTheme } from 'next-themes';
 import { PlanetData, SpecialLagna } from '@/types';
@@ -61,6 +61,8 @@ interface Props {
   selectedPlanet?: { kind: 'natal' | 'transit'; name: string } | null;
   /** Called with the kind and name of any natal or transit label that is clicked. */
   onPlanetSelect?: (selection: { kind: 'natal' | 'transit'; name: string }) => void;
+  /** Drawn in the empty middle of the chart, over its four central cells; the chart may then be wider. */
+  centerContent?: ReactNode;
 }
 
 // Grid gap (gap-1), cell padding (p-1.5) and the sign / house header plus its
@@ -209,6 +211,7 @@ export default function SouthIndianChart({
   onPlanetClick,
   selectedPlanet = null,
   onPlanetSelect,
+  centerContent,
 }: Props) {
   const { code: grahaCode } = useGrahaNames();
   const { resolvedTheme } = useTheme();
@@ -266,7 +269,7 @@ export default function SouthIndianChart({
   const contentHeight = cellSize - 2 * padding - (compact ? COMPACT_CELL_HEADER : CELL_HEADER);
 
   return (
-    <div className={fill ? 'w-full mx-auto' : 'w-full max-w-[520px] mx-auto'} style={fill ? { maxWidth: FILL_MAX_WIDTH } : undefined}>
+    <div className={fill ? 'w-full mx-auto' : centerContent ? 'w-full max-w-[680px] mx-auto' : 'w-full max-w-[520px] mx-auto'} style={fill ? { maxWidth: FILL_MAX_WIDTH } : undefined}>
       <div
         ref={gridRef}
         className="grid gap-1 aspect-square"
@@ -277,6 +280,12 @@ export default function SouthIndianChart({
       >
         {GRID.map((sign, idx) => {
           if (!sign) {
+            if (centerContent) {
+              // The four central cells are one place, drawn once from the first of them.
+              return idx === 5
+                ? <div key="center" data-chart="center" className="min-h-0 min-w-0 p-0.5" style={{ gridColumn: '2 / span 2', gridRow: '2 / span 2' }}>{centerContent}</div>
+                : null;
+            }
             return <div key={`empty-${idx}`} className="w-full h-full min-w-0 min-h-0 border border-transparent" aria-hidden="true" />;
           }
 

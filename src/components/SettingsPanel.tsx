@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ChartDisplaySettings, CalculationSettings, CharaOptions, DashaSettings, DEFAULT_DASHA_SETTINGS, RasiDashaOptions } from '@/types';
+import { ChartDisplaySettings, ChartStyle, CalculationSettings, CharaOptions, DashaSettings, DEFAULT_DASHA_SETTINGS, RasiDashaOptions } from '@/types';
 import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
 import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
+import { PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
+import ParayaChips from './ParayaChips';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
@@ -128,7 +130,7 @@ export default function SettingsPanel(props: Props) {
     saveDashaSettings({ ...dashaSettings, dashas: normalizedDashas, charaOptions, rasiOptions: { ...rasiOptions, [key]: value } });
   };
 
-  const updateChartStyle = (chartStyle: 'north' | 'south') => {
+  const updateChartStyle = (chartStyle: ChartStyle) => {
     onUpdateChartDisplay?.({ chartStyle });
     try {
       localStorage.setItem('chartDisplaySettings', JSON.stringify({ ...chartDisplaySettings, chartStyle }));
@@ -308,7 +310,7 @@ export default function SettingsPanel(props: Props) {
           </div>
 
           <SubSection label="chart style">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <button type="button" onClick={() => updateChartStyle('north')}
                 className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'north' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
                 {t('North Indian')}
@@ -316,6 +318,10 @@ export default function SettingsPanel(props: Props) {
               <button type="button" onClick={() => updateChartStyle('south')}
                 className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'south' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
                 {t('South Indian')}
+              </button>
+              <button type="button" onClick={() => updateChartStyle('both')}
+                className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'both' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
+                {t('North + South')}
               </button>
             </div>
           </SubSection>
@@ -358,6 +364,12 @@ export default function SettingsPanel(props: Props) {
                   <MiniToggle value={Boolean(chartDisplaySettings[key])} onToggle={() => onToggleChartDisplay(key)} />
                 </div>
               ))}
+            </div>
+            <div className="mt-3">
+              <ParayaChips
+                bodies={chartDisplaySettings.parayaBodies ?? PARAYA_BODIES}
+                onChange={next => onUpdateChartDisplay?.({ parayaBodies: next, ...(next.length > 0 ? { showNadiParaya: true } : {}) })}
+              />
             </div>
             <div className="mt-2 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
               {t('RSN is the Rao Sir System of Nadi: the major (Jupiterian round) and minor progressions, and the Paraya.')}

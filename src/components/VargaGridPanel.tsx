@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { ChartData, ChartDisplaySettings } from '@/types';
+import type { ChartData, ChartDisplaySettings, ChartStyle } from '@/types';
 import { VARGA_DIVISIONS, VARGA_NAMES, VARGA_SIGNIFICATIONS, buildVargaChart } from '@/lib/vargaChart';
 import { vargaChartProps } from '@/lib/vargaChartProps';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
@@ -20,8 +20,7 @@ import {
 import { followPlanet } from '@/lib/vargaFollow';
 import type { DashaLordMarks } from './chartLayers';
 import ChartExportButtons from './ChartExportButtons';
-import NorthIndianChart from './NorthIndianChart';
-import SouthIndianChart from './SouthIndianChart';
+import StyledChart from './StyledChart';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 
@@ -29,7 +28,7 @@ const STORAGE_KEY = 'vargaGrid';
 const PLANET_ORDER = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 type Props = {
   chart: ChartData;
-  chartStyle: 'north' | 'south';
+  chartStyle: ChartStyle;
   chartDisplaySettings: ChartDisplaySettings;
   karakaByPlanet?: Record<string, string>;
   nakshatraAdjust?: number;
@@ -75,10 +74,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
       highlight, onPlanetClick: toggleHighlight, arudhaPadas, points,
     });
 
-  const renderChart = (division: number, compact: boolean) =>
-    chartStyle === 'south'
-      ? <SouthIndianChart {...chartProps(division, compact)} />
-      : <NorthIndianChart {...chartProps(division, compact)} />;
+  const renderChart = (division: number, compact: boolean) => <StyledChart style={chartStyle} {...chartProps(division, compact)} />;
 
   return (
     <div className="min-w-0 space-y-3">
@@ -201,7 +197,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
       </div>
 
       <div className="@container">
-        <div className={`grid gap-2 ${chartStyle === 'south'
+        <div className={`grid gap-2 ${chartStyle !== 'north'
           // South Indian cells are a quarter of the chart wide, so small South
           // charts need a full phone width to stay readable.
           ? 'grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 @7xl:grid-cols-5'
