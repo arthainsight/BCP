@@ -305,6 +305,8 @@ export const FI: Record<string, string> = {
   'Use the whole width, hiding the chart': 'Käytä koko leveys, kartta piiloon',
   '⤢ wide': '⤢ leveä',
   '⤡ narrow': '⤡ kapea',
+  '⊞ split': '⊞ jaa',
+  'Show several workspaces side by side': 'Näytä useita työtiloja rinnakkain',
   'columns': 'sarakkeet',
   'MD changes': 'MD vaihtuu',
   'has a note': 'sisältää muistiinpanon',

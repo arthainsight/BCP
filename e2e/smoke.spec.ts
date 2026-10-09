@@ -170,6 +170,81 @@ test('the text of North + South is the same size in both charts, and the text si
   expect(errors).toEqual([]);
 });
 
+test('split view: CHART, TIMING, ANALYSIS and PALM side by side on a wide screen', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const split = page.getByRole('button', { name: '⊞ split', exact: true });
+
+  // A phone shows one workspace at a time: there is no split button.
+  if (info.project.name !== 'desktop') {
+    await expect(split).toBeHidden();
+    return;
+  }
+
+  const pane = (name: string) => page.locator(`[data-pane="${name}"]`);
+  const panes = () => page.locator('[data-pane]');
+  const nav = (name: string) => page.locator(`[data-split-item="${name}"]`);
+
+  // Switching it on keeps the workspace that is open, and adds the usual second one.
+  await expect(split).toHaveAttribute('aria-pressed', 'false');
+  await split.click();
+  await expect(split).toHaveAttribute('aria-pressed', 'true');
+  await expect(panes()).toHaveCount(2);
+  await expect(pane('chart').locator('svg[aria-label="North Indian Jyotish chart"]')).toBeVisible();
+  await expect(pane('analysis')).toContainText('Lagna');
+  await expect(nav('chart')).toHaveAttribute('aria-pressed', 'true');
+  await expect(nav('timing')).toHaveAttribute('aria-pressed', 'false');
+
+  // Every workspace is a switch: all four on the same screen, the chart still in view.
+  await nav('timing').click();
+  await nav('palm').click();
+  await expect(panes()).toHaveCount(4);
+  await expect(pane('timing')).toBeVisible();
+  await expect(pane('palm').locator('[data-palm="workspace"]')).toBeVisible();
+  await expect(pane('chart').locator('svg[aria-label="North Indian Jyotish chart"]')).toBeVisible();
+  const boxes = await Promise.all(['chart', 'timing', 'analysis', 'palm'].map(async name => (await pane(name).boundingBox())!));
+  expect(boxes[0].x).toBeLessThan(boxes[1].x - 100); // chart left of timing, two columns of two
+  expect(boxes[2].y).toBeGreaterThan(boxes[0].y + 100); // analysis on the second row
+  for (const box of boxes) expect(box.y + box.height).toBeLessThanOrEqual(900); // all four are on the screen at once, each scrolling by itself
+
+  // Switching one off leaves the others; the last one cannot be switched off.
+  await nav('analysis').click();
+  await expect(pane('analysis')).toHaveCount(0);
+  await expect(panes()).toHaveCount(3);
+  await nav('timing').click();
+  await nav('palm').click();
+  await expect(panes()).toHaveCount(1);
+  await nav('chart').click();
+  await expect(panes()).toHaveCount(1);
+  await nav('analysis').click();
+  await nav('palm').click();
+  await expect(panes()).toHaveCount(3);
+
+  // The choice is kept for the next visit.
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('splitView') ?? 'null'));
+  expect(await stored()).toEqual({ on: true, panes: ['chart', 'analysis', 'palm'] });
+  await page.reload();
+  await expect(panes()).toHaveCount(3);
+  await expect(pane('palm')).toBeVisible();
+
+  // Settings is a screen of its own; a workspace brings the panes back.
+  await visible(page, page.getByRole('button', { name: '⚙', exact: true })).click();
+  await expect(page.locator('[data-split-view]')).toHaveCount(0);
+  await expect(visible(page, page.getByText('ayanamsa', { exact: true }))).toBeVisible();
+  await nav('timing').click();
+  await expect(panes()).toHaveCount(4);
+
+  // Off: one workspace again, the last one touched.
+  await split.click();
+  await expect(split).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('[data-split-view]')).toHaveCount(0);
+  await expect(panes()).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('normal transit overlay toggles on and off in CHART', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

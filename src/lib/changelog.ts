@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.66',
+    date: '2026-10-09',
+    title: 'Split view: CHART, TIMING, ANALYSIS and PALM on one screen',
+    changes: [
+      'New ⊞ split button in the top navigation (wide screens). When it is on, CHART, TIMING, ANALYSIS and PALM are switches: every workspace that is on is shown side by side, and any of the four can be on at once. The last one cannot be switched off.',
+      'Layout: two panes are two columns; three are three columns on a very wide screen (otherwise two, with the third across the second row); four are two rows of two, or one row of four on a very wide screen. Every pane scrolls by itself, so a long list in one does not carry the others away, and with two rows all the panes are on the screen at once.',
+      'The CHART pane has the chart first and the birth data under it. TIMING, ANALYSIS and PALM are the same panels as before, so the chart and the target date can stay in view while the dashas, the analysis or the palm photographs are open.',
+      'Settings (⚙) stays a screen of its own; choosing a workspace brings the panes back. Turning the split off returns to one workspace at a time, the one last touched. The choice is remembered in the browser. A phone shows one workspace at a time, as before.',
+      'Updated the application version to v2.66.',
+    ],
+  },
+  {
     version: 'v2.65',
     date: '2026-10-09',
     title: 'Text size of the charts, PALM beside the chart, stroke width slider',
