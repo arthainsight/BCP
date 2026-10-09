@@ -504,14 +504,31 @@ test('ANALYSIS Nava-Tara chakra and the direction chart show the grahas', async 
   }
   await expect(visible(page, page.getByRole('region', { name: 'Janma', exact: true }))).toContainText('Mo');
 
-  // Directions: the cross with the four directions; every graha stands in one.
+  // Directions: the South Indian chart with the directions of its signs and the compass beside it; every graha stands in one direction.
   await visible(page, page.getByRole('button', { name: 'Directions', exact: true })).click();
+  const directions = visible(page, page.getByRole('group', { name: 'Direction chart' }));
   for (const direction of ['North', 'East', 'South', 'West']) {
-    await expect(visible(page, page.getByRole('region', { name: direction, exact: true }))).toBeVisible();
+    await expect(directions.locator(`[data-direction="${direction}"]`)).toHaveCount(1);
   }
-  await expect(visible(page, page.getByRole('group', { name: 'Direction chart' }))).toContainText('Mo');
+  // 15.08.1947 in Delhi: the Moon is in Cancer (water: north), the Sun in Cancer too, Saturn in Cancer; Jupiter in Libra (air: west).
+  const compass = (direction: string) => directions.locator(`[data-direction="${direction}"]`);
+  await expect(compass('North')).toContainText('Mo');
+  await expect(compass('North')).toContainText('Sun');
+  await expect(compass('West')).toContainText('Jup');
+  // Ketu is in Scorpio (north), Rahu in Taurus (south), Mars in Gemini (west); no graha is in a fire sign, so the east is empty.
+  await expect(compass('North')).toContainText('Ket');
+  await expect(compass('South')).toContainText('Rah');
+  await expect(compass('West')).toContainText('Mars');
+  await expect(compass('East')).toHaveText('');
+  // Every graha has a red arrow over its name: to the right when it is direct, to the left when it is retrograde (the nodes always go left).
+  expect(await compass('North').locator('path[stroke="#ef4444"]').count()).toBe(6);
+  expect(await compass('South').locator('path[stroke="#ef4444"]').count()).toBe(1);
+  // The signs have their directions at the edge of the grid, and the degrees stand beside the grahas.
+  await expect(directions.getByRole('img', { name: 'South Indian chart with the directions of the signs' })).toContainText("°");
   await visible(page, page.getByRole('button', { name: 'by house' })).click();
-  await expect(visible(page, page.getByRole('region', { name: 'East', exact: true }))).toContainText('Asc');
+  await expect(visible(page, page.getByRole('button', { name: 'by house' }))).toHaveAttribute('aria-pressed', 'true');
+  await expect(directions.locator('[data-direction]')).toHaveCount(4);
+  await expect(directions).toContainText('Mo');
 
   expect(errors).toEqual([]);
 });
@@ -1437,6 +1454,35 @@ test('TIMING Systems lists the daśā systems closed and opens one on click', as
   await vimshottari.click();
   await expect(vimshottari).toHaveAttribute('aria-expanded', 'true');
   await expect(page.locator('button[aria-expanded="true"]').filter({ hasText: '▼' })).toHaveCount(1);
+
+  expect(errors).toEqual([]);
+});
+
+test('the yoga detection is shut until it is opened', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+
+  // The graha positions are open; the yoga table is a closed line.
+  await expect(visible(page, page.getByText('graha.positions'))).toBeVisible();
+  const toggle = visible(page, page.getByRole('button', { name: /yoga\.detection/ }));
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle).toContainText('expand');
+  await expect(page.locator('th').filter({ hasText: /^Yoga$/ }).locator('visible=true')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'sort by strength' }).locator('visible=true')).toHaveCount(0);
+
+  // Opening it shows the table and the sort button; closing it hides them again.
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(toggle).toContainText('collapse');
+  await expect(visible(page, page.locator('th').filter({ hasText: /^Yoga$/ }))).toBeVisible();
+  const sort = visible(page, page.getByRole('button', { name: 'sort by strength' }));
+  await sort.click();
+  await expect(visible(page, page.getByRole('button', { name: '↓ strength' }))).toBeVisible();
+  await toggle.click();
+  await expect(page.locator('th').filter({ hasText: /^Yoga$/ }).locator('visible=true')).toHaveCount(0);
 
   expect(errors).toEqual([]);
 });
