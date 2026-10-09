@@ -2,10 +2,10 @@
 
 import { useT } from '@/lib/i18n';
 
-// The three primary workspaces plus the global Settings gear. This is the
-// single top-level navigation: CHART / TIMING / ANALYSIS, with Settings kept
-// apart as a separate global control (not a fourth workspace).
-export type Workspace = 'chart' | 'timing' | 'analysis' | 'settings';
+// The primary workspaces plus the global Settings gear. This is the single
+// top-level navigation: CHART / TIMING / ANALYSIS / PALM, with Settings kept
+// apart as a separate global control (not a workspace).
+export type Workspace = 'chart' | 'timing' | 'analysis' | 'palm' | 'settings';
 
 type Item = { id: Workspace; label: string; gear?: boolean };
 
@@ -13,6 +13,7 @@ const ITEMS: Item[] = [
   { id: 'chart', label: 'CHART' },
   { id: 'timing', label: 'TIMING' },
   { id: 'analysis', label: 'ANALYSIS' },
+  { id: 'palm', label: 'PALM' },
   { id: 'settings', label: '⚙', gear: true },
 ];
 

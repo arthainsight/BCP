@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v2.62',
+    date: '2026-10-09',
+    title: 'PALM: palm photographs with drawings and notes',
+    changes: [
+      'New PALM workspace in the top navigation. Upload photographs of palms (or take one with the phone camera, or drop them in), and draw on them to show the client where something happens and what.',
+      'Tools: pen, line, arrow, circle, pin and text, in nine colours and three stroke sizes, with undo and redo. Select moves a drawing or edits its text; the Move tool pans the photograph. The photograph zooms with the wheel, the + and − buttons or a two-finger pinch, and fits the window with ⤢.',
+      'Pins are numbered, and any drawing gets a number once it has a note. Each can also carry a short label on the photo (for example an age) and a longer note for the client; the numbered notes are listed beside the photograph, and a click zooms to that place on the palm.',
+      'Client view: the photograph large and full-screen with the numbered notes beside it; a note zooms to its place, the arrows step through the notes and Whole palm shows it all again. Download PNG saves the photograph with the drawing and, if you like, the notes under it.',
+      'Everything is kept in this browser (IndexedDB) and nothing is sent to a server. The photographs and drawings are saved as you go, and are not part of the chart backups; clearing the browser data removes them.',
+      'Updated the application version to v2.62.',
+    ],
+  },
+  {
     version: 'v2.61',
     date: '2026-10-09',
     title: 'Bhava Chalit',
