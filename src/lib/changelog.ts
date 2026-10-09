@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v2.74',
+    date: '2026-10-09',
+    title: 'Directions: by sign only',
+    changes: [
+      'The direction belongs to the sign, so ANALYSIS → Directions no longer has the by house choice or the Transit switch: the chart shows the natal grahas in the directions of their signs, as in the Nadi books. The house numbers in the tooltips and the Dig Bala mention (which goes by house) are gone with them.',
+      'Updated the application version to v2.74.',
+    ],
+  },
+  {
     version: 'v2.73',
     date: '2026-10-09',
     title: 'A plainer data panel, full in every workspace',

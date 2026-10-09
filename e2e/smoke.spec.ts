@@ -612,10 +612,12 @@ test('ANALYSIS Nava-Tara chakra and the direction chart show the grahas', async 
   expect(await compass('South').locator('path[stroke="#ef4444"]').count()).toBe(1);
   // The signs have their directions at the edge of the grid, and the degrees stand beside the grahas.
   await expect(directions.getByRole('img', { name: 'South Indian chart with the directions of the signs' })).toContainText("°");
-  await visible(page, page.getByRole('button', { name: 'by house' })).click();
-  await expect(visible(page, page.getByRole('button', { name: 'by house' }))).toHaveAttribute('aria-pressed', 'true');
+  // The direction belongs to the sign, so there is no choice of houses and no transits here.
+  for (const gone of ['by sign', 'by house', 'Transit']) {
+    await expect(page.getByRole('button', { name: gone, exact: true }).locator('visible=true')).toHaveCount(0);
+  }
+  await expect(directions).not.toContainText('Dig Bala');
   await expect(directions.locator('[data-direction]')).toHaveCount(4);
-  await expect(directions).toContainText('Mo');
 
   expect(errors).toEqual([]);
 });

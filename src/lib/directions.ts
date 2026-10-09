@@ -1,13 +1,7 @@
-// The compass directions of the zodiac and of the houses.
-//
-// The fire signs belong to the east, the earth signs to the south, the air
-// signs to the west and the water signs to the north. The houses follow the
-// same turn from the ascendant: the 1st house is east, the 10th south, the
-// 7th west and the 4th north, and the houses between them take the direction
-// of the sign that would stand there for an Aries ascendant.
+// The directions of the zodiac, as the directional chart of the Nadi uses them: the direction belongs to the
+// sign. The fire signs are east, the earth signs south, the air signs west and the water signs north.
 
 export type Direction = 'North' | 'East' | 'South' | 'West';
-export type DirectionMode = 'sign' | 'house';
 
 export const DIRECTIONS: Direction[] = ['North', 'East', 'South', 'West'];
 
@@ -16,19 +10,6 @@ export function signDirection(sign: number): Direction {
   return (['East', 'South', 'West', 'North'] as const)[(((sign - 1) % 4) + 4) % 4];
 }
 
-/** Direction of a house, 1–12, from the ascendant. */
-export function houseDirection(house: number): Direction {
-  return signDirection(house);
-}
-
-/** The direction in which a graha has Dig Bala (directional strength). */
-export const DIG_BALA_DIRECTION: Record<string, Direction> = {
-  Jupiter: 'East', Mercury: 'East',
-  Sun: 'South', Mars: 'South',
-  Saturn: 'West',
-  Moon: 'North', Venus: 'North',
-};
-
 export interface DirectionBody {
   name: string;
   /** Sign 1–12. */
@@ -36,15 +17,10 @@ export interface DirectionBody {
   /** Degrees within the sign, 0–30. */
   degree: number;
   retrograde: boolean;
-  transit?: boolean;
 }
 
 export interface CompassItem extends DirectionBody {
-  house: number;
   direction: Direction;
-  /** The graha stands in the direction where it has Dig Bala. */
-  digBala: boolean;
-  transit: boolean;
 }
 
 export interface AspectItem extends CompassItem {
@@ -65,39 +41,22 @@ const NODES = ['Rahu', 'Ketu'];
 const byDegree = <T extends { degree: number }>(a: T, b: T) => a.degree - b.degree;
 
 /**
- * The directional chart of the Nadi: every graha is written in the direction of its sign (or of its
- * house from the ascendant), the grahas of a direction in ascending order of their degree, from the left.
- * A retrograde graha (not the nodes) casts its aspect on the 12th sign, so it is also written, in brackets,
- * in the direction of that sign.
+ * The directional chart of the Nadi: every graha is written in the direction of its sign, the grahas of a
+ * direction in ascending order of their degree, from the left. A retrograde graha (not the nodes) casts its
+ * aspect on the 12th sign, so it is also written, in brackets, in the direction of that sign.
  */
-export function buildCompass(ascendantSign: number, bodies: DirectionBody[], mode: DirectionMode = 'sign'): Compass {
-  const houseOf = (sign: number) => ((sign - ascendantSign + 12) % 12) + 1;
-  const directionOf = (sign: number) => (mode === 'sign' ? signDirection(sign) : houseDirection(houseOf(sign)));
+export function buildCompass(bodies: DirectionBody[]): Compass {
   const result: Compass = {
     bodies: { North: [], East: [], South: [], West: [] },
     aspects: { North: [], East: [], South: [], West: [] },
   };
   for (const body of bodies) {
-    const direction = directionOf(body.sign);
-    result.bodies[direction].push({
-      ...body,
-      transit: body.transit === true,
-      house: houseOf(body.sign),
-      direction,
-      digBala: DIG_BALA_DIRECTION[body.name] === direction,
-    });
+    const direction = signDirection(body.sign);
+    result.bodies[direction].push({ ...body, direction });
     if (body.retrograde && !NODES.includes(body.name)) {
       const aspected = body.sign === 1 ? 12 : body.sign - 1;
-      const aspectDirection = directionOf(aspected);
-      result.aspects[aspectDirection].push({
-        ...body,
-        transit: body.transit === true,
-        sign: aspected,
-        fromSign: body.sign,
-        house: houseOf(aspected),
-        direction: aspectDirection,
-        digBala: false,
-      });
+      const aspectDirection = signDirection(aspected);
+      result.aspects[aspectDirection].push({ ...body, sign: aspected, fromSign: body.sign, direction: aspectDirection });
     }
   }
   for (const direction of DIRECTIONS) {
