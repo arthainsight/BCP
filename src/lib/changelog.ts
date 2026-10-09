@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.60',
+    date: '2026-10-09',
+    title: 'Argala and Virodhargala',
+    changes: [
+      'New Argala view in ANALYSIS (Jaimini): for each of the twelve houses from the Lagna, or for each graha, the grahas in the 2nd, 4th and 11th from it that intervene by argala (and in the 5th, as a secondary argala), and the grahas in the 12th, 10th, 3rd and 9th that oppose them by virodhargala.',
+      'An argala stands, in bold green, when the grahas causing it outnumber those opposing it; it is struck out as obstructed when the opposing grahas are as many or more. Rahu and Ketu count as grahas.',
+      'Updated the application version to v2.60.',
+    ],
+  },
+  {
     version: 'v2.59',
     date: '2026-10-09',
     title: 'Gochara with the Ashtakavarga',

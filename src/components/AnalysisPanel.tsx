@@ -13,9 +13,10 @@ import NavataraPanel from './NavataraPanel';
 import DirectionChartPanel from './DirectionChartPanel';
 import SpecialSphutasPanel from './SpecialSphutasPanel';
 import GocharaPanel from './GocharaPanel';
+import ArgalaPanel from './ArgalaPanel';
 import { useT } from '@/lib/i18n';
 
-type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'tara' | 'dik' | 'sphutas';
+type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'tara' | 'dik' | 'sphutas';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'grahas', label: 'Grahas' },
@@ -24,6 +25,7 @@ const VIEWS: { key: View; label: string }[] = [
   { key: 'ashtakavarga', label: 'Aṣṭakavarga' },
   { key: 'gochara', label: 'Gochara' },
   { key: 'drishti', label: 'Dṛṣṭi' },
+  { key: 'argala', label: 'Argala' },
   { key: 'tara', label: 'Nava-Tara' },
   { key: 'dik', label: 'Directions' },
   { key: 'sphutas', label: 'Special Sphutas' },
@@ -134,6 +136,10 @@ export default function AnalysisPanel({
 
       {view === 'drishti' && (
         <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} showGrahaDrishti={chartDisplaySettings.showGrahaDrishti ?? true} showRashiDrishti={chartDisplaySettings.showRashiDrishti ?? true} /></div>
+      )}
+
+      {view === 'argala' && (
+        <div className="min-w-0 overflow-x-auto"><ArgalaPanel chart={chart} /></div>
       )}
 
       {view === 'tara' && (

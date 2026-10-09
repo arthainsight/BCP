@@ -763,6 +763,31 @@ test('ANALYSIS Gochara reads the transits against the Moon and the Ashtakavarga 
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Argala lists the intervening and opposing grahas of every house and graha', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Argala', exact: true })).click();
+
+  // The twelve houses from the Lagna, each with the 2nd, 4th, 11th and 5th argala.
+  const houses = visible(page, page.locator('table[data-argala-view="houses"]'));
+  await expect(houses.locator('tr[data-argala-row]')).toHaveCount(12);
+  await expect(houses.locator('tr[data-argala-row="1"] td')).toHaveCount(4);
+  // The chart has grahas in the argala houses, and some argalas stand while others are obstructed.
+  await expect(houses.locator('td[data-argala="effective"]').first()).toBeVisible();
+  await expect(houses.locator('td[data-argala="obstructed"]').first()).toBeVisible();
+
+  // The same for each graha, counted from its own sign.
+  await visible(page, page.getByRole('group', { name: 'argala view' })).getByRole('button', { name: 'Grahas', exact: true }).click();
+  const grahas = visible(page, page.locator('table[data-argala-view="grahas"]'));
+  await expect(grahas.locator('tr[data-argala-row]')).toHaveCount(9);
+  await expect(grahas.locator('tr[data-argala-row="Saturn"] td')).toHaveCount(4);
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
