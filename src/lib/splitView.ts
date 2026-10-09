@@ -48,8 +48,6 @@ export function togglePane(panes: readonly SplitWorkspace[], workspace: SplitWor
 }
 
 const COLUMNS = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4' } as const;
-const FULL_HEIGHT = 'lg:max-h-[calc(100dvh-8rem)]';
-const HALF_HEIGHT = 'lg:max-h-[calc((100dvh-10rem)/2)]';
 
 /**
  * The columns of the pane grid. In one row there is a column for every pane; in two rows there are two
@@ -70,14 +68,4 @@ export function paneGridClass(count: number, rows: SplitRows = 'auto'): string {
 export function paneSpanClass(index: number, count: number, rows: SplitRows = 'auto'): string {
   if (count !== 3 || index !== 2 || rows === 1) return '';
   return rows === 2 ? 'lg:col-span-2' : 'lg:col-span-2 2xl:col-span-1';
-}
-
-/**
- * How tall a pane may be before it scrolls by itself: the height of the screen, or half of it
- * where there are two rows, so that every pane is on the screen at once.
- */
-export function paneHeightClass(count: number, rows: SplitRows = 'auto'): string {
-  if (count <= 1 || rows === 1) return FULL_HEIGHT;
-  if (rows === 2) return HALF_HEIGHT;
-  return count >= 3 ? `${HALF_HEIGHT} 2xl:max-h-[calc(100dvh-8rem)]` : FULL_HEIGHT;
 }

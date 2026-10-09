@@ -66,14 +66,16 @@ export default function PrimaryNav({ active, onChange, variant = 'top', show, sp
               type="button"
               onClick={split.onToggle}
               aria-pressed={split.on}
+              aria-label={t('⊞ split')}
               title={t('Show several workspaces side by side')}
-              className={`ml-auto hidden shrink-0 rounded-md border px-2.5 py-1 text-[10px] font-mono transition-colors lg:inline-flex ${
+              className={`ml-auto inline-flex shrink-0 rounded-md border px-2.5 py-1 text-[10px] font-mono transition-colors ${
                 split.on
                   ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-green-600 dark:bg-green-950/30 dark:text-green-400'
                   : 'border-zinc-200 text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100'
               }`}
             >
-              {t('⊞ split')}
+              <span className="lg:hidden" aria-hidden="true">⊞</span>
+              <span className="hidden lg:inline" aria-hidden="true">{t('⊞ split')}</span>
             </button>
           ) : null;
           // Rows only make a difference when there is more than one pane.
@@ -114,7 +116,7 @@ export default function PrimaryNav({ active, onChange, variant = 'top', show, sp
                 data-split-item={asSwitch ? item.id : undefined}
                 className={
                   item.gear
-                    ? `${variant === 'bottom' ? 'flex-1' : split ? 'ml-auto lg:ml-1' : 'ml-auto'} min-w-[44px] py-1.5 px-2 text-sm font-mono transition-colors ${
+                    ? `${variant === 'bottom' ? 'flex-1' : split ? 'ml-1' : 'ml-auto'} min-w-[44px] py-1.5 px-2 text-sm font-mono transition-colors ${
                         selected
                           ? 'text-emerald-700 dark:text-green-400 font-semibold'
                           : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'

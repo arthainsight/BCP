@@ -16,7 +16,7 @@ import PanchangPanel from '@/components/PanchangPanel';
 import type { ChartSnapshot } from '@/components/FileActions';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
 import PalmWorkspace from '@/components/palm/PalmWorkspace';
-import { DataSummary, EmptyState, Panel, SplitPane } from '@/components/PageParts';
+import { DataLine, DataSummary, EmptyState, Panel, SplitPane } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
 import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
@@ -27,7 +27,7 @@ import { LanguageContext, type Language } from '@/lib/i18n';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
-import { isSplitWorkspace, paneGridClass, paneHeightClass, paneSpanClass, togglePane, type SplitWorkspace } from '@/lib/splitView';
+import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
 
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'public' | 'settings';
@@ -83,6 +83,8 @@ export default function Home() {
   const [desktopTab, setDesktopTab] = useState<DesktopTab>('data');
   // On a phone the birth data folds into one line once the chart is calculated, to leave the room to the chart.
   const [dataOpen, setDataOpen] = useState(true);
+  // In the split view the birth data is a thin line over the chart, and the form opens from it.
+  const [splitDataOpen, setSplitDataOpen] = useState(false);
 
   // The primary nav drives both the mobile tab and the desktop right-column tab.
   const selectWorkspace = useCallback((ws: Workspace) => {
@@ -90,33 +92,41 @@ export default function Home() {
     setDesktopTab(WORKSPACE_TO_DESKTOP[ws]);
   }, []);
 
-  // Split view (wide screens): several workspaces side by side, each switched on and off in the nav.
+  // Split view: several workspaces at once, each switched on and off in the nav. Wide screens put the
+  // panes side by side, a phone stacks them; each layout leaves it for Settings on its own.
   const split = useSplitView();
   const splitActive = split.on && desktopTab !== 'settings';
-  const handleNav = useCallback((ws: Workspace) => {
+  const mobileSplitActive = split.on && activeTab !== 'settings';
+  const navigate = useCallback((ws: Workspace, settingsOpen: boolean) => {
     if (!split.on || !isSplitWorkspace(ws)) {
       selectWorkspace(ws);
       return;
     }
     // From Settings a workspace switches its screen back on; otherwise it is switched on or off.
-    const panes = desktopTab === 'settings'
+    const panes = settingsOpen
       ? (split.panes.includes(ws) ? split.panes : togglePane(split.panes, ws))
       : togglePane(split.panes, ws);
     setSplitView({ panes });
     // Leaving the split view later lands on a workspace that was on.
     selectWorkspace(panes.includes(ws) ? ws : panes[0]);
-  }, [split, desktopTab, selectWorkspace]);
-  const toggleSplit = useCallback(() => {
+  }, [split, selectWorkspace]);
+  const toggleSplit = useCallback((current: Workspace) => {
     if (split.on) {
       setSplitView({ on: false });
       return;
     }
     // The workspace on screen stays on when the split view opens; from Settings it opens on the panes.
-    const current = desktopToWorkspace(desktopTab);
     const panes = isSplitWorkspace(current) && !split.panes.includes(current) ? togglePane(split.panes, current) : split.panes;
     setSplitView({ on: true, panes });
     if (current === 'settings') selectWorkspace(panes[0]);
-  }, [split, desktopTab, selectWorkspace]);
+  }, [split, selectWorkspace]);
+  const splitNav = (current: Workspace) => ({
+    on: split.on,
+    panes: split.panes,
+    onToggle: () => toggleSplit(current),
+    rows: split.rows,
+    onRowsChange: (rows: SplitRows) => setSplitView({ rows }),
+  });
 
   // Birth data
   const [birthDatetime, setBirthDatetime] = useState('');
@@ -229,6 +239,7 @@ export default function Home() {
     setActiveTab('data');
     setDesktopTab('data');
     setDataOpen(true);
+    setSplitDataOpen(false);
     setActiveChartName(null);
   }, []);
 
@@ -314,6 +325,7 @@ export default function Home() {
             setActiveTab('chart');
             setDesktopTab('grahas');
             setDataOpen(false);
+            setSplitDataOpen(false);
           }
         }
       } catch (e) {
@@ -660,17 +672,24 @@ export default function Home() {
       />
     </Panel>
   );
-  // In the split view the chart comes first and the birth data below it: the data is needed less often than the chart.
-  const splitPane = (workspace: SplitWorkspace) => {
+  // In the split view the chart comes first, with the birth data as one thin line over it.
+  const splitChartPane = (compactData: boolean) => (
+    <>
+      {chartData ? (
+        <>
+          <DataLine birthDatetime={birthDatetime} city={chartSnapshot.city} utcOffset={effectiveTzOffset} open={splitDataOpen} onToggle={() => setSplitDataOpen(open => !open)} />
+          {splitDataOpen && <Panel><DataPanel {...dataProps} compact={compactData} /></Panel>}
+          <Panel><ChartSection {...chartSectionProps} /></Panel>
+        </>
+      ) : (
+        <Panel><DataPanel {...dataProps} compact={compactData} /></Panel>
+      )}
+      {panchangPanel}
+    </>
+  );
+  const splitPane = (workspace: SplitWorkspace, mobile = false) => {
     switch (workspace) {
-      case 'chart':
-        return (
-          <>
-            {chartData && <Panel><ChartSection {...chartSectionProps} /></Panel>}
-            {panchangPanel}
-            <Panel><DataPanel {...dataProps} /></Panel>
-          </>
-        );
+      case 'chart': return splitChartPane(mobile);
       case 'timing': return <Panel>{timingPanel()}</Panel>;
       case 'analysis': return <Panel>{analysisPanel}</Panel>;
       case 'palm': return <Panel><PalmWorkspace /></Panel>;
@@ -702,20 +721,26 @@ export default function Home() {
       />
 
       {/* Primary navigation: CHART / TIMING / ANALYSIS + Settings gear (desktop). */}
-      <PrimaryNav active={mobileToWorkspace(activeTab)} onChange={selectWorkspace} variant="top" show="mobile" />
+      <PrimaryNav
+        active={mobileToWorkspace(activeTab)}
+        onChange={(ws) => navigate(ws, activeTab === 'settings')}
+        variant="top"
+        show="mobile"
+        split={splitNav(mobileToWorkspace(activeTab))}
+      />
       <PrimaryNav
         active={desktopToWorkspace(desktopTab)}
-        onChange={handleNav}
+        onChange={(ws) => navigate(ws, desktopTab === 'settings')}
         variant="top"
         show="desktop"
-        split={{ on: split.on, panes: split.panes, onToggle: toggleSplit, rows: split.rows, onRowsChange: (rows) => setSplitView({ rows }) }}
+        split={splitNav(desktopToWorkspace(desktopTab))}
       />
 
       {/* ── DESKTOP, split view: the workspaces that are on, side by side ───────── */}
       {splitActive && (
         <div data-split-view className={`hidden lg:grid gap-4 items-start p-4 ${paneGridClass(split.panes.length, split.rows)}`}>
           {split.panes.map((workspace, index) => (
-            <SplitPane key={workspace} id={workspace} label={PANE_LABELS[workspace]} className={`${paneHeightClass(split.panes.length, split.rows)} ${paneSpanClass(index, split.panes.length, split.rows)}`}>
+            <SplitPane key={workspace} id={workspace} label={PANE_LABELS[workspace]} className={paneSpanClass(index, split.panes.length, split.rows)}>
               {splitPane(workspace)}
             </SplitPane>
           ))}
@@ -762,88 +787,101 @@ export default function Home() {
       )}
 
       {/* ── MOBILE: single panel + bottom nav ────────────────────────── */}
-      <div className="lg:hidden pb-20">
-        {activeTab === 'chart' && (
-          <div className="space-y-3">
-            {chartData && !dataOpen ? (
-              <DataSummary birthDatetime={birthDatetime} city={chartSnapshot.city} utcOffset={effectiveTzOffset} onEdit={() => setDataOpen(true)} />
-            ) : (
-              <Panel>
-                <DataPanel {...dataProps} compact onCollapse={chartData ? () => setDataOpen(false) : undefined} />
-              </Panel>
-            )}
-            {chartData && (
-              <Panel>
-                <ChartSection {...chartSectionProps} />
-              </Panel>
-            )}
-            {chartDisplaySettings.showPanchang && chartData && (
-              <Panel>
-                <PanchangPanel
-                  chart={chartData}
-                  birthDatetime={birthDatetime}
-                  utcOffsetHours={effectiveTzOffset ?? 0}
-                  ayanamsaName={calculationSettings.ayanamsa}
-                  nakshatraAdjust={nakshatraAdjust}
-                />
-              </Panel>
-            )}
+      <div className="lg:hidden pb-2">
+        {mobileSplitActive ? (
+          <div className="space-y-3 pb-6" data-mobile-split>
+            {split.panes.map((workspace) => (
+              <SplitPane key={workspace} id={workspace} mobile label={PANE_LABELS[workspace]}>
+                {splitPane(workspace, true)}
+              </SplitPane>
+            ))}
           </div>
-        )}
-
-        {activeTab === 'data' && (
-          <Panel>
-            <DataPanel {...dataProps} compact />
-          </Panel>
-        )}
-
-        {activeTab === 'grahas' && (
-          <Panel>
-            {chartData
-              ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
-              : <EmptyState message="Calculate a chart in Data to see graha positions" />
-            }
-          </Panel>
-        )}
-
-        {activeTab === 'dasha' && (
-          <div className="space-y-3">
-            {chartData && (
-              <PinnedChart
-                chart={chartData}
-                chartDisplaySettings={chartDisplaySettings}
-                karakaByPlanet={karakaByPlanet}
-                nakshatraAdjust={nakshatraAdjust}
-                dashaLords={chartDashaLords}
-              />
+        ) : (
+          <>
+            {activeTab === 'chart' && (
+              <div className="space-y-3">
+                {chartData && !dataOpen ? (
+                  <DataSummary birthDatetime={birthDatetime} city={chartSnapshot.city} utcOffset={effectiveTzOffset} onEdit={() => setDataOpen(true)} />
+                ) : (
+                  <Panel>
+                    <DataPanel {...dataProps} compact onCollapse={chartData ? () => setDataOpen(false) : undefined} />
+                  </Panel>
+                )}
+                {chartData && (
+                  <Panel>
+                    <ChartSection {...chartSectionProps} />
+                  </Panel>
+                )}
+                {chartDisplaySettings.showPanchang && chartData && (
+                  <Panel>
+                    <PanchangPanel
+                      chart={chartData}
+                      birthDatetime={birthDatetime}
+                      utcOffsetHours={effectiveTzOffset ?? 0}
+                      ayanamsaName={calculationSettings.ayanamsa}
+                      nakshatraAdjust={nakshatraAdjust}
+                    />
+                  </Panel>
+                )}
+              </div>
             )}
-            <Panel>
-              {bcpResult && chartData
-                ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} />
-                : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
-              }
-            </Panel>
-          </div>
-        )}
 
-        {activeTab === 'public' && (
-          <Panel><PublicChartsPanel /></Panel>
-        )}
+            {activeTab === 'data' && (
+              <Panel>
+                <DataPanel {...dataProps} compact />
+              </Panel>
+            )}
 
-        {activeTab === 'palm' && (
-          <Panel><PalmWorkspace /></Panel>
-        )}
+            {activeTab === 'grahas' && (
+              <Panel>
+                {chartData
+                  ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
+                  : <EmptyState message="Calculate a chart in Data to see graha positions" />
+                }
+              </Panel>
+            )}
 
-        {activeTab === 'settings' && (
-          <Panel>
-            <SettingsPanel {...settingsProps} />
-          </Panel>
+            {activeTab === 'dasha' && (
+              <div className="space-y-3">
+                {chartData && (
+                  <PinnedChart
+                    chart={chartData}
+                    chartDisplaySettings={chartDisplaySettings}
+                    karakaByPlanet={karakaByPlanet}
+                    nakshatraAdjust={nakshatraAdjust}
+                    dashaLords={chartDashaLords}
+                  />
+                )}
+                <Panel>
+                  {bcpResult && chartData
+                    ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} />
+                    : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
+                  }
+                </Panel>
+              </div>
+            )}
+
+            {activeTab === 'public' && (
+              <Panel><PublicChartsPanel /></Panel>
+            )}
+
+            {activeTab === 'palm' && (
+              <Panel><PalmWorkspace /></Panel>
+            )}
+
+            {activeTab === 'settings' && (
+              <Panel>
+                <SettingsPanel {...settingsProps} />
+              </Panel>
+            )}
+          </>
         )}
       </div>
 
-      {/* Footer (desktop only) */}
-      <footer className="hidden lg:block text-center text-xs font-mono text-zinc-400 dark:text-zinc-700 py-6">
-        {APP_NAME} {APP_VERSION}
+      {/* Footer: the name of the app and who made it */}
+      <footer className="pb-8 pt-4 text-center text-xs font-mono text-zinc-400 dark:text-zinc-600 lg:py-6">
+        <span className="font-bold text-emerald-700 dark:text-green-400">{APP_NAME}</span> by Riku Forsell
+        <span className="ml-2 text-zinc-300 dark:text-zinc-700">{APP_VERSION}</span>
       </footer>
     </div>
     </ChartFontContext.Provider>
