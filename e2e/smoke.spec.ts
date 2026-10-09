@@ -788,6 +788,29 @@ test('ANALYSIS Argala lists the intervening and opposing grahas of every house a
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Bhava Chalit places the grahas by bhava, with Sripati or equal bhavas', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Bhava Chalit', exact: true })).click();
+
+  // The chart and the twelve bhavas; the 1st has the Lagna (Virgo 12°18′) as its middle.
+  await expect(visible(page, page.locator('[data-chalit="chart"] svg'))).toBeVisible();
+  const table = visible(page, page.locator('table[data-chalit="table"]'));
+  await expect(table.locator('tr[data-bhava]')).toHaveCount(12);
+  await expect(table.locator('tr[data-bhava="1"]')).toContainText('Vi 12°18′');
+  await expect(visible(page, page.locator('[data-chalit="moved"]'))).toContainText(/No graha changes house|rasi house \d+ → bhava \d+/);
+
+  // The equal bhavas put the 4th madhya exactly 90° on from the Lagna.
+  await visible(page, page.getByLabel('bhava system')).selectOption('equal');
+  await expect(table.locator('tr[data-bhava="4"]')).toContainText('Sg 12°18′');
+  await expect(table.locator('tr[data-bhava="10"]')).toContainText('Ge 12°18′');
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Summary gathers the running daśās, sign changes and transit hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

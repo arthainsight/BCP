@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.61',
+    date: '2026-10-09',
+    title: 'Bhava Chalit',
+    changes: [
+      'New Bhava Chalit view in ANALYSIS: the chart with the grahas placed by the bhava they stand in, a North Indian chart and a table of the twelve bhavas with their madhya (middle point) and the sandhis that border them. The grahas that stand in another house than at the rasi are picked out (marked * in the table), and listed above it as rasi house → bhava.',
+      'Two bhava systems: Sripati (the Porphyry cusps: the Lagna, IC, Descendant and Midheaven are fixed and each quadrant is divided into three equal arcs) and Equal (the Lagna in the middle of the 1st, each next bhava thirty degrees on). Each bhava runs from the sandhi halfway to the middle of the one before to the sandhi halfway to the middle of the next.',
+      'The chart now carries the Midheaven (sidereal), which the Sripati bhavas need; a chart calculated before this version says to calculate it again.',
+      'Updated the application version to v2.61.',
+    ],
+  },
+  {
     version: 'v2.60',
     date: '2026-10-09',
     title: 'Argala and Virodhargala',
