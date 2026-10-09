@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.68',
+    date: '2026-10-09',
+    title: 'Phone: a clearer CHART screen',
+    changes: [
+      'The place is one line after the city lookup: the coordinates and the time zone with its UTC offset (and a warning when the birth time is missing or the offset is set by hand), with an edit button that opens the coordinate fields and the time zone box when they are needed. The "> data" heading is gone from the phone.',
+      'Once the chart is calculated the birth data folds into one card (the moment, the place and the UTC offset, with an edit button), so the chart is at the top of the screen and not under the form. Edit opens the form, with a hide button, and calculating folds it again. New chart opens the form.',
+      'The Calculate Chart button no longer floats over the fields: it was pinned a fixed distance above the bottom of the screen, which covered the time zone field.',
+      'The navigation on a phone showed ANALYSIS after a calculation although the screen was CHART. It now follows the phone\'s own screen, separately from the wide layout.',
+      'Updated the application version to v2.68.',
+    ],
+  },
+  {
     version: 'v2.67',
     date: '2026-10-09',
     title: 'Split view: one or two rows',

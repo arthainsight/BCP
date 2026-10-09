@@ -25,6 +25,11 @@ interface Props {
   /** Bottom-nav mode (fixed to the bottom on small screens). */
   variant?: 'top' | 'bottom';
   /**
+   * Which screens the navigation is drawn for. The phone and the wide layout keep their own current
+   * workspace (a calculation lands on CHART on a phone and on ANALYSIS beside the chart), so each has its own.
+   */
+  show?: 'mobile' | 'desktop';
+  /**
    * Split view, on a wide screen: when it is on the workspaces are switches, and every one that
    * is on is shown side by side. Settings stays a screen of its own.
    */
@@ -38,7 +43,7 @@ interface Props {
   };
 }
 
-export default function PrimaryNav({ active, onChange, variant = 'top', split }: Props) {
+export default function PrimaryNav({ active, onChange, variant = 'top', show, split }: Props) {
   const t = useT();
 
   return (
@@ -47,7 +52,7 @@ export default function PrimaryNav({ active, onChange, variant = 'top', split }:
       className={
         variant === 'bottom'
           ? 'fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 safe-bottom'
-          : 'sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800'
+          : `sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800${show === 'mobile' ? ' lg:hidden' : show === 'desktop' ? ' hidden lg:block' : ''}`
       }
     >
       <div className={variant === 'bottom' ? 'flex' : 'flex items-center gap-1 px-4 py-2'}>

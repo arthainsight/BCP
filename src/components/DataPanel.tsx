@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { GeoResult } from '@/types';
 import { useT } from '@/lib/i18n';
 
@@ -26,6 +27,14 @@ interface Props {
   loading: boolean;
   error: string;
   canCalculate: boolean;
+
+  /**
+   * The phone layout: the place is one line (coordinates and time zone, found from the city) with
+   * an edit button, instead of the coordinate fields and the time zone box.
+   */
+  compact?: boolean;
+  /** Folds the form away once there is a chart to look at; the button is left out when this is not given. */
+  onCollapse?: () => void;
 }
 
 const INPUT =
@@ -45,11 +54,27 @@ export default function DataPanel({
   ianaTimezone, autoTzOffset, tzOverride, onTzOverrideChange,
   onGeocode, onSelectGeo, onCalculate,
   loading, error, canCalculate,
+  compact = false, onCollapse,
 }: Props) {
   const t = useT();
+  const [editLocation, setEditLocation] = useState(false);
+  const lat = Number(manualLat);
+  const lng = Number(manualLng);
+  const coordinates = manualLat !== '' && manualLng !== '' && Number.isFinite(lat) && Number.isFinite(lng)
+    ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+    : `${manualLat}, ${manualLng}`;
   return (
     <div className="space-y-5">
-      <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">{t('> data')}</div>
+      {(!compact || onCollapse) && (
+        <div className="flex items-center justify-between gap-2 text-xs font-mono text-zinc-500 dark:text-zinc-500">
+          {compact ? <span /> : <span>{t('> data')}</span>}
+          {onCollapse && (
+            <button type="button" onClick={onCollapse} className="rounded border border-zinc-200 px-2 py-1 text-[10px] text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100">
+              {t('▲ hide')}
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Birth datetime */}
       <div>
@@ -114,57 +139,90 @@ export default function DataPanel({
       {/* Location + timezone */}
       {showCoords && (
         <div className="space-y-3 border-t border-zinc-200 dark:border-zinc-700 pt-4">
-          <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">{t('> location')}</div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">{t('lat')}</label>
-              <input type="number" step="any" value={manualLat} onChange={(e) => onManualLatChange(e.target.value)} placeholder="28.6139" className={INPUT} />
+          {compact ? (
+            <div className="flex items-start justify-between gap-3" data-location-summary>
+              <div className="min-w-0 space-y-0.5 text-xs font-mono text-zinc-600 dark:text-zinc-300">
+                <div>{coordinates}</div>
+                <div className="break-words">
+                  {tzOverride !== '' ? (
+                    <span className="text-amber-600 dark:text-amber-400">{t('UTC offset set by hand')}: {tzOverride}h</span>
+                  ) : ianaTimezone ? (
+                    <>
+                      {ianaTimezone}
+                      {autoTzOffset !== null && <span className="ml-2 text-emerald-600 dark:text-green-400">{fmtOffset(autoTzOffset)}</span>}
+                      {!birthDatetime && <span className="ml-2 text-amber-500 dark:text-amber-400">{t('— enter birth time to resolve DST')}</span>}
+                    </>
+                  ) : (
+                    <span className="text-zinc-400 dark:text-zinc-500">{t('geocode a city to auto-detect timezone')}</span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditLocation(open => !open)}
+                aria-expanded={editLocation}
+                className="shrink-0 rounded border border-zinc-200 px-2 py-1 text-[10px] font-mono text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100"
+              >
+                {editLocation ? t('Close') : t('edit')}
+              </button>
             </div>
-            <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">{t('lng')}</label>
-              <input type="number" step="any" value={manualLng} onChange={(e) => onManualLngChange(e.target.value)} placeholder="77.2090" className={INPUT} />
-            </div>
-          </div>
+          ) : (
+            <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">{t('> location')}</div>
+          )}
 
-          <div className="bg-zinc-100 dark:bg-zinc-800/60 rounded p-3 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">{t('timezone')}</span>
-              {autoTzOffset !== null && tzOverride === '' && (
-                <span className="text-xs font-mono text-emerald-600 dark:text-green-500">auto</span>
+          {(!compact || editLocation) && (
+            <>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">{t('lat')}</label>
+                <input type="number" step="any" value={manualLat} onChange={(e) => onManualLatChange(e.target.value)} placeholder="28.6139" className={INPUT} />
+              </div>
+              <div>
+                <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1 uppercase tracking-wide">{t('lng')}</label>
+                <input type="number" step="any" value={manualLng} onChange={(e) => onManualLngChange(e.target.value)} placeholder="77.2090" className={INPUT} />
+              </div>
+            </div>
+
+            <div className="bg-zinc-100 dark:bg-zinc-800/60 rounded p-3 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-mono text-zinc-500 dark:text-zinc-500 uppercase tracking-widest">{t('timezone')}</span>
+                {autoTzOffset !== null && tzOverride === '' && (
+                  <span className="text-xs font-mono text-emerald-600 dark:text-green-500">auto</span>
+                )}
+              </div>
+
+              {ianaTimezone ? (
+                <div className="text-xs font-mono text-zinc-700 dark:text-zinc-300">
+                  {ianaTimezone}
+                  {autoTzOffset !== null && (
+                    <span className="ml-2 text-emerald-600 dark:text-green-400">{fmtOffset(autoTzOffset)}</span>
+                  )}
+                  {!birthDatetime && (
+                    <span className="ml-2 text-amber-500 dark:text-amber-400">{t('— enter birth time to resolve DST')}</span>
+                  )}
+                </div>
+              ) : (
+                <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">
+                  {t('geocode a city to auto-detect timezone')}
+                </div>
               )}
-            </div>
 
-            {ianaTimezone ? (
-              <div className="text-xs font-mono text-zinc-700 dark:text-zinc-300">
-                {ianaTimezone}
-                {autoTzOffset !== null && (
-                  <span className="ml-2 text-emerald-600 dark:text-green-400">{fmtOffset(autoTzOffset)}</span>
-                )}
-                {!birthDatetime && (
-                  <span className="ml-2 text-amber-500 dark:text-amber-400">{t('— enter birth time to resolve DST')}</span>
-                )}
+              <div>
+                <label className="block text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-1">
+                  {t('override UTC offset (leave blank for auto)')}
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={tzOverride}
+                  onChange={(e) => onTzOverrideChange(e.target.value)}
+                  placeholder={autoTzOffset !== null ? String(autoTzOffset) : '5.5'}
+                  className="w-full px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500"
+                />
               </div>
-            ) : (
-              <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">
-                {t('geocode a city to auto-detect timezone')}
-              </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-mono text-zinc-400 dark:text-zinc-500 mb-1">
-                {t('override UTC offset (leave blank for auto)')}
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={tzOverride}
-                onChange={(e) => onTzOverrideChange(e.target.value)}
-                placeholder={autoTzOffset !== null ? String(autoTzOffset) : '5.5'}
-                className="w-full px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500"
-              />
             </div>
-          </div>
+            </>
+          )}
         </div>
       )}
 
@@ -179,7 +237,7 @@ export default function DataPanel({
       <button
         onClick={onCalculate}
         disabled={!canCalculate || loading}
-        className="w-full py-3 text-base font-mono font-bold bg-emerald-600 dark:bg-green-700 text-white rounded-lg shadow-lg hover:bg-emerald-700 dark:hover:bg-green-600 disabled:opacity-30 transition-colors md:sticky md:bottom-auto sticky bottom-24 z-20"
+        className="w-full py-3 text-base font-mono font-bold bg-emerald-600 dark:bg-green-700 text-white rounded-lg shadow-lg hover:bg-emerald-700 dark:hover:bg-green-600 disabled:opacity-30 transition-colors"
       >
         {loading ? t('Calculating...') : t('Calculate Chart')}
       </button>

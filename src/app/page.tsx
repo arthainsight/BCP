@@ -16,7 +16,7 @@ import PanchangPanel from '@/components/PanchangPanel';
 import type { ChartSnapshot } from '@/components/FileActions';
 import PublicChartsPanel from '@/components/PublicChartsPanel';
 import PalmWorkspace from '@/components/palm/PalmWorkspace';
-import { EmptyState, Panel, SplitPane } from '@/components/PageParts';
+import { DataSummary, EmptyState, Panel, SplitPane } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
 import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
@@ -65,11 +65,24 @@ function desktopToWorkspace(tab: DesktopTab): Workspace {
 
 
 
+// The phone's current screen as a workspace: the data and the chart are both CHART.
+function mobileToWorkspace(tab: TabId): Workspace {
+  switch (tab) {
+    case 'dasha': return 'timing';
+    case 'grahas': return 'analysis';
+    case 'palm': return 'palm';
+    case 'settings': return 'settings';
+    default: return 'chart';
+  }
+}
+
 const PANE_LABELS: Record<SplitWorkspace, string> = { chart: 'CHART', timing: 'TIMING', analysis: 'ANALYSIS', palm: 'PALM' };
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('data');
   const [desktopTab, setDesktopTab] = useState<DesktopTab>('data');
+  // On a phone the birth data folds into one line once the chart is calculated, to leave the room to the chart.
+  const [dataOpen, setDataOpen] = useState(true);
 
   // The primary nav drives both the mobile tab and the desktop right-column tab.
   const selectWorkspace = useCallback((ws: Workspace) => {
@@ -215,6 +228,7 @@ export default function Home() {
     previousCalculationKeyRef.current = '';
     setActiveTab('data');
     setDesktopTab('data');
+    setDataOpen(true);
     setActiveChartName(null);
   }, []);
 
@@ -299,6 +313,7 @@ export default function Home() {
           if (!options?.preserveCurrentPanel) {
             setActiveTab('chart');
             setDesktopTab('grahas');
+            setDataOpen(false);
           }
         }
       } catch (e) {
@@ -687,10 +702,12 @@ export default function Home() {
       />
 
       {/* Primary navigation: CHART / TIMING / ANALYSIS + Settings gear (desktop). */}
+      <PrimaryNav active={mobileToWorkspace(activeTab)} onChange={selectWorkspace} variant="top" show="mobile" />
       <PrimaryNav
         active={desktopToWorkspace(desktopTab)}
         onChange={handleNav}
         variant="top"
+        show="desktop"
         split={{ on: split.on, panes: split.panes, onToggle: toggleSplit, rows: split.rows, onRowsChange: (rows) => setSplitView({ rows }) }}
       />
 
@@ -748,9 +765,13 @@ export default function Home() {
       <div className="lg:hidden pb-20">
         {activeTab === 'chart' && (
           <div className="space-y-3">
-            <Panel>
-              <DataPanel {...dataProps} />
-            </Panel>
+            {chartData && !dataOpen ? (
+              <DataSummary birthDatetime={birthDatetime} city={chartSnapshot.city} utcOffset={effectiveTzOffset} onEdit={() => setDataOpen(true)} />
+            ) : (
+              <Panel>
+                <DataPanel {...dataProps} compact onCollapse={chartData ? () => setDataOpen(false) : undefined} />
+              </Panel>
+            )}
             {chartData && (
               <Panel>
                 <ChartSection {...chartSectionProps} />
@@ -772,7 +793,7 @@ export default function Home() {
 
         {activeTab === 'data' && (
           <Panel>
-            <DataPanel {...dataProps} />
+            <DataPanel {...dataProps} compact />
           </Panel>
         )}
 
