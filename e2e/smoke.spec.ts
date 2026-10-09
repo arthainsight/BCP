@@ -48,7 +48,7 @@ test('the primary navigation exposes CHART / TIMING / ANALYSIS / Settings', asyn
   expect(errors).toEqual([]);
 });
 
-test('CHART workspace shows the chart (and editable birth data), not only the form', async ({ page }) => {
+test('CHART workspace shows the chart (and editable birth data), not only the form', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -58,9 +58,62 @@ test('CHART workspace shows the chart (and editable birth data), not only the fo
   await selectWorkspace(page, 'CHART');
   await expect(visible(page, page.getByText(/Asc 12°18'|ASC 12°18'/))).toBeVisible();
 
-  // …while the birth-data form stays available for editing.
+  // …while the birth data stays available for editing: the form beside the chart on a wide screen,
+  // one line with an edit button on a phone.
+  if (info.project.name === 'phone') {
+    await expect(visible(page, page.locator('[data-data-summary]'))).toContainText('15.08.1947 09.15.00');
+    await expect(page.getByPlaceholder('15.08.1947 09.15.00').locator('visible=true')).toHaveCount(0);
+    await visible(page, page.getByRole('button', { name: 'edit', exact: true })).click();
+  }
   await expect(visible(page, page.getByPlaceholder('15.08.1947 09.15.00'))).toBeVisible();
   await expect(visible(page, page.getByRole('button', { name: 'Calculate Chart' }))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
+test('phone: the place is one line, the form folds away with the chart, and the navigation follows the screen', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'the phone layout');
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.route('**/api/geocode**', (route) =>
+    route.fulfill({ json: { results: [{ name: 'Kotka', country: 'Finland', latitude: 60.4664, longitude: 26.94582, timezone: 'Europe/Helsinki' }] } })
+  );
+  await page.goto('/');
+  await visible(page, page.getByPlaceholder('15.08.1947 09.15.00')).fill('13.10.1987 00.15.00');
+  await visible(page, page.getByPlaceholder('e.g. New Delhi')).fill('Kotka, Finland');
+  await visible(page, page.getByRole('button', { name: 'lookup' })).click();
+
+  // After the lookup the place is one line, and the coordinate fields and the time zone box are behind edit.
+  const place = visible(page, page.locator('[data-location-summary]'));
+  await expect(place).toContainText('60.4664, 26.9458');
+  await expect(place).toContainText('Europe/Helsinki');
+  await expect(place).toContainText('+2h UTC');
+  await expect(page.getByText('override UTC offset (leave blank for auto)').locator('visible=true')).toHaveCount(0);
+  await place.getByRole('button', { name: 'edit', exact: true }).click();
+  await expect(visible(page, page.getByText('override UTC offset (leave blank for auto)'))).toBeVisible();
+  await place.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.getByText('override UTC offset (leave blank for auto)').locator('visible=true')).toHaveCount(0);
+
+  // Calculating folds the form into one line, so the chart is at the top; the navigation says CHART, as the screen does.
+  await visible(page, page.getByRole('button', { name: 'Calculate Chart' })).click();
+  const summary = visible(page, page.locator('[data-data-summary]'));
+  await expect(summary).toContainText('13.10.1987 00.15.00');
+  await expect(summary).toContainText('Kotka, Finland');
+  await expect(visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'))).toBeVisible();
+  await expect(page.getByPlaceholder('15.08.1947 09.15.00').locator('visible=true')).toHaveCount(0);
+  const nav = page.getByRole('navigation', { name: 'Primary' }).locator('visible=true');
+  await expect(nav.getByRole('button', { name: 'CHART', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('button', { name: 'ANALYSIS', exact: true })).not.toHaveAttribute('aria-current', 'page');
+  const summaryBox = (await summary.boundingBox())!;
+  const chartBox = (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).boundingBox())!;
+  expect(chartBox.y).toBeLessThan(summaryBox.y + 600); // the chart starts under the one-line summary, not under the form
+
+  // Hide and edit: the form opens again with a hide button, and folds again.
+  await summary.getByRole('button', { name: 'edit', exact: true }).click();
+  await expect(visible(page, page.getByPlaceholder('15.08.1947 09.15.00'))).toHaveValue('13.10.1987 00.15.00');
+  await visible(page, page.getByRole('button', { name: '▲ hide', exact: true })).click();
+  await expect(visible(page, page.locator('[data-data-summary]'))).toBeVisible();
 
   expect(errors).toEqual([]);
 });

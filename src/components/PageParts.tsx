@@ -22,6 +22,30 @@ export function Panel({ children }: { children: ReactNode }) {
 }
 
 /**
+ * The birth data folded into one card, on a phone, once the chart is on the screen:
+ * the moment, the place and the UTC offset, with a button to open the form again.
+ */
+export function DataSummary({ birthDatetime, city, utcOffset, onEdit }: { birthDatetime: string; city: string; utcOffset: number | null; onEdit: () => void }) {
+  const t = useT();
+  const offset = utcOffset === null ? '' : `${utcOffset >= 0 ? '+' : ''}${utcOffset % 1 === 0 ? utcOffset.toFixed(0) : utcOffset.toFixed(1)}h UTC`;
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900" data-data-summary>
+      <div className="min-w-0 space-y-0.5 font-mono">
+        <div className="truncate text-sm font-semibold text-zinc-800 dark:text-zinc-100">{birthDatetime}</div>
+        <div className="truncate text-xs text-zinc-500 dark:text-zinc-400">{[city, offset].filter(Boolean).join(' · ')}</div>
+      </div>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="shrink-0 rounded-md border border-zinc-200 px-3 py-1.5 text-xs font-mono text-zinc-600 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:text-zinc-100"
+      >
+        {t('edit')}
+      </button>
+    </div>
+  );
+}
+
+/**
  * One workspace of the split view. It scrolls by itself, so a long list in one pane
  * does not carry the others away.
  */
