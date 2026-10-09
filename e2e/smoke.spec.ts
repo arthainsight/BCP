@@ -85,6 +85,45 @@ test('calculates a chart from the CHART workspace and switches North/South', asy
   expect(errors).toEqual([]);
 });
 
+test('North + South draws both charts, the North chart inside the South chart', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const north = () => visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
+  const both = visible(page, page.getByRole('button', { name: 'N+S', exact: true }));
+
+  await both.click();
+  await expect(both).toHaveAttribute('aria-pressed', 'true');
+
+  // The North chart sits in the middle of the South grid, which keeps its planets in the outer cells.
+  const centre = visible(page, page.locator('[data-chart="center"]'));
+  await expect(centre).toBeVisible();
+  await expect(centre.locator('svg[aria-label="North Indian Jyotish chart"]')).toBeVisible();
+  await expect(north()).toHaveCount(1);
+  const outer = await visible(page, page.locator('[data-chart="center"]').locator('xpath=..')).textContent();
+  expect(outer ?? '').toMatch(/H1/);
+
+  // Both charts show the ascendant and the grahas.
+  expect(await north().textContent()).toMatch(/Asc/);
+  expect(await centre.locator('xpath=..').textContent()).toMatch(/Su/);
+
+  // The choice is kept for the next chart, and N and S still switch to one chart.
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}').chartStyle)).toBe('both');
+  await calculateChart(page);
+  await expect(visible(page, page.locator('[data-chart="center"]'))).toBeVisible();
+
+  await visible(page, page.getByRole('button', { name: 'S', exact: true })).click();
+  await expect(page.locator('[data-chart="center"]').locator('visible=true')).toHaveCount(0);
+  await expect(north()).toHaveCount(0);
+  await visible(page, page.getByRole('button', { name: 'N', exact: true })).click();
+  await expect(north()).toBeVisible();
+  await expect(page.locator('[data-chart="center"]').locator('visible=true')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('normal transit overlay toggles on and off in CHART', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -592,13 +631,15 @@ test('the Arudha padas AL, AL2 … can be marked on the charts', async ({ page }
   await expect.poll(async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '').toMatch(/AL(?!\d)/);
 
   // All switches the twelve on at once.
+  // The Paraya grahas and the upagrahas have their own all and none, so these are scoped to the padas.
+  const padaHeader = () => visible(page, page.getByRole('group', { name: 'arudha padas' })).locator('xpath=preceding-sibling::div[1]');
   await visible(page, page.getByRole('button', { name: '···' })).click();
-  await visible(page, page.getByRole('button', { name: 'all', exact: true })).click();
+  await padaHeader().getByRole('button', { name: 'all', exact: true }).click();
   const allPadas = visible(page, page.getByRole('group', { name: 'arudha padas' }));
   for (const name of ['AL', 'AL2', 'AL5', 'AL9', 'AL12']) {
     await expect(allPadas.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true');
   }
-  await expect(visible(page, page.getByRole('button', { name: 'all', exact: true }))).toBeDisabled();
+  await expect(padaHeader().getByRole('button', { name: 'all', exact: true })).toBeDisabled();
   await page.keyboard.press('Escape');
   await page.mouse.click(2, 2);
   await expect.poll(async () => {
@@ -608,7 +649,7 @@ test('the Arudha padas AL, AL2 … can be marked on the charts', async ({ page }
 
   // None clears them again.
   await visible(page, page.getByRole('button', { name: '···' })).click();
-  await visible(page, page.getByRole('button', { name: 'none', exact: true })).click();
+  await padaHeader().getByRole('button', { name: 'none', exact: true }).click();
   await page.keyboard.press('Escape');
   await page.mouse.click(2, 2);
   await expect.poll(async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '').not.toMatch(/AL\d*/);

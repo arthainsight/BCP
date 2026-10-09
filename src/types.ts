@@ -122,7 +122,7 @@ export interface CharaKaraka {
   degree: number;
 }
 
-export type ChartStyle = 'north' | 'south';
+export type ChartStyle = 'north' | 'south' | 'both';
 
 export interface ChartDisplaySettings {
   chartStyle: ChartStyle;

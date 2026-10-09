@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.64',
+    date: '2026-10-09',
+    title: 'North + South chart',
+    changes: [
+      'A third chart style, N+S, shows both Indian charts at once: the South Indian chart is the frame, with the grahas in its twelve signs, and the North Indian chart sits inside it, in the middle. The N, S and N+S buttons are above the chart, and the same choice is in Settings.',
+      'It works for the main chart, the divisional charts (full size), Varshaphala and Tithi Pravesa. Where several small charts are shown side by side (the divisional grid) a South chart is drawn instead, as the two charts would be too small to read.',
+      'The choice is remembered with the other chart display settings.',
+      'Updated the application version to v2.64.',
+    ],
+  },
+  {
     version: 'v2.63',
     date: '2026-10-09',
     title: 'Paraya grahas one at a time',

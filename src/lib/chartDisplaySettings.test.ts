@@ -33,6 +33,10 @@ assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: [] }).parayaBodies,
 assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: ['Mars', 'Rahu', 7] }).parayaBodies, ['Rahu'], 'only the four known ones');
 assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: 'Jupiter' }).parayaBodies, ['Jupiter', 'Saturn', 'Rahu', 'Ketu'], 'a value of the wrong type is ignored');
 
+assert.equal(migrateChartDisplaySettings({ chartStyle: 'both' }).chartStyle, 'both', 'North + South is a style');
+assert.equal(migrateChartDisplaySettings({ chartStyle: 'south' }).chartStyle, 'south');
+assert.equal(migrateChartDisplaySettings({ chartStyle: 'round' }).chartStyle, 'north', 'an unknown style falls back to North');
+
 // --- Every setting does something ---------------------------------------------
 // v2.21 shipped a transit switch that nothing read. Each setting must be read
 // somewhere outside its own definition.
