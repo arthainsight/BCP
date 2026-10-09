@@ -306,6 +306,8 @@ export const FI: Record<string, string> = {
   '⤢ wide': '⤢ leveä',
   '⤡ narrow': '⤡ kapea',
   '⊞ split': '⊞ jaa',
+  'rows of panes': 'paneelien rivit',
+  'auto': 'auto',
   'Show several workspaces side by side': 'Näytä useita työtiloja rinnakkain',
   'columns': 'sarakkeet',
   'MD changes': 'MD vaihtuu',

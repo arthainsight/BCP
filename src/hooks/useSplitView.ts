@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { DEFAULT_SPLIT, normalizePanes, readSplit, type SplitView, type SplitWorkspace } from '@/lib/splitView';
+import { DEFAULT_SPLIT, normalizePanes, readSplit, type SplitRows, type SplitView, type SplitWorkspace } from '@/lib/splitView';
 
 // The split view is one for the whole page and is remembered in the browser.
 
@@ -29,11 +29,12 @@ function getSnapshot() {
 }
 
 /** Changes the split view; `panes` are put in their usual order and cannot be none. */
-export function setSplitView(next: { on?: boolean; panes?: readonly SplitWorkspace[] }) {
+export function setSplitView(next: { on?: boolean; panes?: readonly SplitWorkspace[]; rows?: SplitRows }) {
   load();
   current = {
     on: next.on ?? current.on,
     panes: next.panes ? normalizePanes(next.panes, current.panes) : current.panes,
+    rows: next.rows ?? current.rows,
   };
   try { localStorage.setItem(KEY, JSON.stringify(current)); } catch {}
   listeners.forEach(listener => listener());
