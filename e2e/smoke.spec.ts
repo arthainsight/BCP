@@ -1610,6 +1610,61 @@ test('TIMING Systems lists the daśā systems closed and opens one on click', as
   expect(errors).toEqual([]);
 });
 
+test('the graha table shows the karakas and the nakshatras whatever the chart shows, and the nakshatra zodiac follows the grahas', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // The chart's own labels have no nakshatras: the table does not follow them.
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('chartDisplaySettings')) localStorage.setItem('chartDisplaySettings', JSON.stringify({ showNakshatra: false, showCharaKaraka: false }));
+  });
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  const table = visible(page, page.locator('table', { has: page.locator('th', { hasText: 'Kāraka' }) }));
+  const moon = () => table.locator('tr', { hasText: 'Moon' });
+  await expect(table.locator('th', { hasText: 'Nakṣatra' })).toBeVisible();
+  await expect(table.locator('th', { hasText: 'Kāraka' })).toBeVisible();
+  await expect(moon()).toContainText('Puṣya');
+  // The chara karakas are in the Kāraka column: the 8 of the default scheme, on the 8 grahas with Rahu.
+  const karakas = (await table.locator('td[title]').allInnerTexts()).filter(text => text.trim() !== '');
+  expect(karakas).toHaveLength(8);
+  expect(karakas).toEqual(expect.arrayContaining(['AK', 'AmK', 'BK', 'MK', 'PiK', 'PuK', 'GK', 'DK']));
+
+  // The nakshatra zodiac: the grahas' ayanamsa to begin with; the tropical zodiac moves the Moon on to Maghā; Lahiri is the grahas' own here.
+  await selectWorkspace(page, '⚙');
+  const zodiac = visible(page, page.locator('select').filter({ has: page.locator('option[value="same"]') }));
+  await expect(zodiac).toHaveValue('same');
+  await expect(zodiac.locator('option[value="same"]')).toHaveText('Same ayanamsa as the grahas');
+  await zodiac.selectOption('tropical');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('calculationSettings') ?? '{}').nakshatraMode)).toBe('tropical');
+  await selectWorkspace(page, 'ANALYSIS');
+  await expect(moon()).toContainText('Maghā');
+  await selectWorkspace(page, '⚙');
+  await zodiac.selectOption('lahiri');
+  await selectWorkspace(page, 'ANALYSIS');
+  await expect(moon()).toContainText('Puṣya');
+  await selectWorkspace(page, '⚙');
+  await zodiac.selectOption('same');
+  await selectWorkspace(page, 'ANALYSIS');
+  await expect(moon()).toContainText('Puṣya');
+
+  expect(errors).toEqual([]);
+});
+
+test('a stored "sidereal" nakshatra zodiac, the old default, means the same ayanamsa as the grahas', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.addInitScript(() => {
+    localStorage.setItem('calculationSettings', JSON.stringify({ ayanamsa: 'lahiri', ayanamsaOffsetDegrees: 0, nodeMode: 'mean', nakshatraMode: 'sidereal' }));
+  });
+  await page.goto('/');
+  await selectWorkspace(page, '⚙');
+  await expect(visible(page, page.locator('select').filter({ has: page.locator('option[value="same"]') }))).toHaveValue('same');
+
+  expect(errors).toEqual([]);
+});
+
 test('the yoga detection is shut until it is opened', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

@@ -8,6 +8,12 @@ import type { GrahaNameStyle } from '@/types';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 
+// The Chara karakas, by their short names.
+const KARAKA_NAMES: Record<string, string> = {
+  AK: 'Ātmakāraka', AmK: 'Amātyakāraka', BK: 'Bhrātṛkāraka', MK: 'Mātṛkāraka',
+  PiK: 'Pitṛkāraka', PuK: 'Putrakāraka', GK: 'Jñātikāraka', DK: 'Dārakāraka',
+};
+
 const SIGN_ABBR: Record<number, string> = {
   1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
   7: 'Li', 8: 'Sc', 9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
@@ -98,6 +104,7 @@ interface Props {
   degreePrecision?: DegreePrecision;
   showOuterPlanets?: boolean;
   showSpecialLagnas?: boolean;
+  /** @deprecated The nakshatra column is always shown: the table does not follow the chart's labels. */
   showNakshatra?: boolean;
   /** @deprecated Pada columns removed */
   showNakshatraPada?: boolean;
@@ -112,7 +119,6 @@ export default function JyotishGrahaTable({
   degreePrecision = 'off',
   showOuterPlanets = false,
   showSpecialLagnas = true,
-  showNakshatra = true,
   nakshatraAdjust = 0,
 }: Props) {
   const { style } = useGrahaNames();
@@ -164,7 +170,8 @@ export default function JyotishGrahaTable({
             <th className="p-2 text-left">Code</th>
             <th className="p-2 text-left">Graha</th>
             <th className="p-2 text-left">Pos</th>
-            {showNakshatra && <th className="p-2 text-left">Nakṣatra</th>}
+            <th className="p-2 text-left">Kāraka</th>
+            <th className="p-2 text-left">Nakṣatra</th>
           </tr>
         </thead>
         <tbody>
@@ -173,7 +180,8 @@ export default function JyotishGrahaTable({
               <td className={`p-2 font-bold ${row.isSpecial ? 'text-violet-600 dark:text-violet-400' : 'text-emerald-700 dark:text-green-400'}`}>{row.code}</td>
               <td className="p-2 text-zinc-800 dark:text-zinc-100">{row.name}</td>
               <td className="p-2 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">{row.position}</td>
-              {showNakshatra && <td className="p-2 text-cyan-700 dark:text-cyan-300 whitespace-nowrap">{row.nakshatra}</td>}
+              <td className="p-2 font-bold text-amber-700 dark:text-amber-400 whitespace-nowrap" title={KARAKA_NAMES[row.karaka]}>{row.karaka}</td>
+              <td className="p-2 text-cyan-700 dark:text-cyan-300 whitespace-nowrap">{row.nakshatra}</td>
             </tr>
           ))}
         </tbody>

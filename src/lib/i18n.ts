@@ -478,6 +478,8 @@ export const FI: Record<string, string> = {
   'about': 'tietoja',
   'updates': 'päivitykset',
   'Sidereal (Lahiri)': 'Sideerinen (Lahiri)',
+  'Same ayanamsa as the grahas': 'Sama ayanamsa kuin grahoilla',
+  'The nakshatras follow the ayanamsa of the grahas unless you choose another here.': 'Nakṣatrat seuraavat grahojen ayanamsaa, ellet valitse tässä toista.',
   'Tropical': 'Trooppinen',
   'Minute mode compares the minute–second remainder; Rahu is measured in reverse.': 'Minuuttitila vertaa minuutti–sekunti-jäännöstä; Rahu mitataan käänteisesti.',
   'Full local backup': 'Täysi paikallinen varmuuskopio',

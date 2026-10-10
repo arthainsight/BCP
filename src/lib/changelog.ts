@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.75',
+    date: '2026-10-10',
+    title: 'Karakas and nakshatras in the graha table; nakshatras in the same ayanamsa as the grahas',
+    changes: [
+      'The graha.positions table in ANALYSIS → Grahas has a Kāraka column with the Chara karakas (AK, AmK, BK, MK, PiK, PuK, GK, DK, by the scheme chosen in Settings; the full name in the tooltip), and its Nakṣatra column is always shown. Both used to depend on the chart: the table follows the chart\'s own labels no longer, so the karakas and nakshatras are there even when the chart does not show them.',
+      'The nakṣatra zodiac in Settings has a new first choice, Same ayanamsa as the grahas, and it is the default: the nakshatras are counted in the ayanamsa the grahas stand in. Sidereal (Lahiri) and Tropical can still be chosen, for example to see the nakshatras in the tropical zodiac. The choice applies to the nakshatras everywhere they are shown (the charts, the table, the panchang, the Nava-Tara and the special sphutas).',
+      'A stored "sidereal" choice (the old default, which was called Sidereal (Lahiri)) now means the same ayanamsa as the grahas. With the Lahiri ayanamsa this changes nothing; with another ayanamsa the nakshatras now follow it, as asked, and Sidereal (Lahiri) is a choice of its own for those who want it.',
+      'Updated the application version to v2.75.',
+    ],
+  },
+  {
     version: 'v2.74',
     date: '2026-10-09',
     title: 'Directions: by sign only',

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { readNakshatraMode } from '@/lib/nakshatraZodiac';
 import { ChartDisplaySettings, ChartStyle, CalculationSettings, CharaOptions, DashaSettings, DEFAULT_DASHA_SETTINGS, RasiDashaOptions } from '@/types';
 import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
@@ -228,12 +229,16 @@ export default function SettingsPanel(props: Props) {
               <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('nakshatra zodiac')}</label>
               <select
                 className={SELECT}
-                value={calculationSettings.nakshatraMode ?? 'sidereal'}
-                onChange={(e) => onUpdateCalculationSettings({ nakshatraMode: e.target.value as 'sidereal' | 'tropical' })}
+                value={calculationSettings.nakshatraMode ?? 'same'}
+                onChange={(e) => onUpdateCalculationSettings({ nakshatraMode: readNakshatraMode(e.target.value) })}
               >
-                <option value="sidereal">{t('Sidereal (Lahiri)')}</option>
+                <option value="same">{t('Same ayanamsa as the grahas')}</option>
+                <option value="lahiri">{t('Sidereal (Lahiri)')}</option>
                 <option value="tropical">{t('Tropical')}</option>
               </select>
+              <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                {t('The nakshatras follow the ayanamsa of the grahas unless you choose another here.')}
+              </div>
             </div>
             <div>
               <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('rahu / ketu')}</label>

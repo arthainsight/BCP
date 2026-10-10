@@ -6,6 +6,7 @@ import {
   type CalculationSettings, type ChartDisplaySettings, type DashaSettings,
 } from '@/types';
 import { migrateChartDisplaySettings } from '@/lib/chartDisplaySettings';
+import { readNakshatraMode } from '@/lib/nakshatraZodiac';
 import { migrateDashaSettings } from '@/lib/dashaSettings';
 
 /**
@@ -30,7 +31,10 @@ export function useStoredSettings() {
         setChartDisplaySettings(migrateChartDisplaySettings(JSON.parse(ds)));
       }
       const cs = localStorage.getItem('calculationSettings');
-      if (cs) setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...JSON.parse(cs) });
+      if (cs) {
+        const stored = JSON.parse(cs);
+        setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...stored, nakshatraMode: readNakshatraMode(stored?.nakshatraMode) });
+      }
       const dash = localStorage.getItem('dashaSettings');
       if (dash) setDashaSettings(migrateDashaSettings(JSON.parse(dash)));
       // The simple / research / debug switcher (v2.25) and the workspace (v2.28) were removed.
