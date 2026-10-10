@@ -37,7 +37,6 @@ export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySetting
         degreePrecision={settings.degreePrecision ?? 'off'}
         showOuterPlanets={settings.showOuterPlanets}
         showSpecialLagnas={settings.showSpecialLagnas}
-        showNakshatra={settings.showNakshatra}
         showNakshatraPada={settings.showNakshatraPada}
         showD108={settings.showD108}
         nakshatraAdjust={nakshatraAdjust}

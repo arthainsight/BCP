@@ -6,6 +6,7 @@ import { parseDateTime } from '@/lib/bcp';
 import { calculateBnnHouses, calculateParayaHouses } from '@/lib/bnn/bnnHouses';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { calculateCharaKarakas, type CharaKaraka } from '@/lib/karakas';
+import { nakshatraAdjustFor } from '@/lib/nakshatraZodiac';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { GRAHA_DASHA_SYSTEMS, runningGrahaDashaLords, type GrahaDashaSystem } from '@/lib/dashaEvents';
 
@@ -29,14 +30,12 @@ export function useChartDerived(
     return map;
   }, [charaKarakas]);
 
-  // Nakshatra longitude adjustment: converts stored planet longitude to effective nakshatra longitude.
-  // Formula: tropicalLon = lon + mainAyanamsa; siderealLon (Lahiri) = tropicalLon - siderealAyanamsa
-  const nakshatraAdjust = useMemo(() => {
-    const mainAyanamsa = chartData?.debug?.ayanamsa ?? 0;
-    const siderealAyanamsa = chartData?.debug?.siderealAyanamsa ?? mainAyanamsa;
-    if (calculationSettings.nakshatraMode === 'tropical') return mainAyanamsa;
-    return mainAyanamsa - siderealAyanamsa;
-  }, [chartData?.debug, calculationSettings.nakshatraMode]);
+  // Nakshatra longitude adjustment: converts the stored graha longitude to the longitude the nakshatra is read
+  // from. By default it is the grahas' own ayanamsa (no adjustment); Lahiri and the tropical zodiac can be chosen.
+  const nakshatraAdjust = useMemo(
+    () => nakshatraAdjustFor(calculationSettings.nakshatraMode, chartData?.debug?.ayanamsa ?? 0, chartData?.debug?.siderealAyanamsa),
+    [chartData?.debug, calculationSettings.nakshatraMode],
+  );
 
   // RSN: age at the target date
   const bnnAge = useMemo(() => {

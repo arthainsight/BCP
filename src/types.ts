@@ -1,4 +1,5 @@
 import type { DegreePrecision } from '@/lib/formatDegree';
+import type { NakshatraMode } from '@/lib/nakshatraZodiac';
 import type { SaturnPortionLagnas } from '@/lib/upagrahas';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import type { ParayaBody } from '@/lib/bnn/nadiParaya';
@@ -198,7 +199,8 @@ export interface CalculationSettings {
   ayanamsa: string;
   ayanamsaOffsetDegrees: number;
   nodeMode: string;
-  nakshatraMode: 'sidereal' | 'tropical';
+  /** The zodiac the nakshatras are counted in: the grahas' ayanamsa (the default), Lahiri, or the tropical zodiac. */
+  nakshatraMode: NakshatraMode;
   charaKarakaRankMode: 'degree' | 'minute';
   /** Chara karakas: 8 with Rahu, or 7 without. */
   charaKarakaCount: 7 | 8;
@@ -214,7 +216,7 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   ayanamsa: 'lahiri',
   ayanamsaOffsetDegrees: 0,
   nodeMode: 'mean',
-  nakshatraMode: 'sidereal',
+  nakshatraMode: 'same',
   charaKarakaRankMode: 'degree',
   charaKarakaCount: 8,
   parayaSaturn: 'alternating',
