@@ -1756,3 +1756,90 @@ test('the interface switches to Finnish', async ({ page }) => {
 
   expect(errors).toEqual([]);
 });
+
+test('the top bar has a ? link that opens the user guide in a tab of its own', async ({ page, context }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/');
+  const link = visible(page, page.locator('[data-guide-link]'));
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute('href', '/help');
+  await expect(link).toHaveAttribute('target', '_blank');
+
+  const [guide] = await Promise.all([context.waitForEvent('page'), link.click()]);
+  await guide.waitForLoadState();
+  await expect(guide).toHaveURL(/\/help$/);
+  await expect(guide.getByRole('heading', { level: 1 })).toHaveText('Guide');
+
+  expect(errors).toEqual([]);
+});
+
+test('the user guide has sections, a search, addresses for the answers and both languages', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/help');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Guide');
+  await expect(page).toHaveTitle(/Guide/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+
+  // Every section is there, with its questions.
+  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(9);
+  await expect(page.getByRole('heading', { level: 3, name: 'How do I calculate a chart?' })).toBeVisible();
+
+  // The search narrows the answers, ignores diacritics and says so when nothing is found.
+  const search = page.getByRole('searchbox', { name: 'Search the guide' });
+  await search.fill('record screen');
+  await expect(page.locator('[data-faq="recording"]')).toBeVisible();
+  await expect(page.locator('[data-faq="first-chart"]')).toHaveCount(0);
+  await search.fill('dasa');
+  await expect(page.locator('[data-faq="dasha-systems"]')).toBeVisible();
+  await search.fill('zzzqqq');
+  await expect(page.locator('[data-help-empty]')).toHaveText('No answers match your search.');
+  await search.fill('');
+  await expect(page.locator('[data-faq]').first()).toBeVisible();
+
+  // An answer has an address of its own, and the section links lead to the sections.
+  await page.goto('/help#recording');
+  await expect(page.locator('#recording')).toBeInViewport();
+  await page.getByRole('link', { name: 'Palm', exact: true }).first().click();
+  await expect(page).toHaveURL(/#section-palm$/);
+
+  // The switch changes the language of the guide, and the app's setting with it.
+  await page.getByRole('button', { name: 'FI', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Käyttöohje');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fi');
+  await expect(page.getByRole('heading', { level: 3, name: 'Miten lasken kartan?' })).toBeVisible();
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}').language);
+  expect(stored).toBe('fi');
+  await page.getByRole('searchbox', { name: 'Hae oppaasta' }).fill('kämmen');
+  await expect(page.locator('[data-faq="palm-photos"]')).toBeVisible();
+
+  // The way back to the app.
+  await page.locator('[data-help-back]').click();
+  await expect(page).toHaveURL(/\/$/);
+
+  expect(errors).toEqual([]);
+});
+
+test('the user guide opens in the language chosen in the app', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.addInitScript(() => {
+    localStorage.setItem('chartDisplaySettings', JSON.stringify({ language: 'fi', chartStyle: 'south' }));
+  });
+  await page.goto('/help');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Käyttöohje');
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fi');
+
+  // Changing the language there leaves the other display settings as they were.
+  await page.getByRole('button', { name: 'EN', exact: true }).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Guide');
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}'));
+  expect(stored.language).toBe('en');
+  expect(stored.chartStyle).toBe('south');
+
+  expect(errors).toEqual([]);
+});

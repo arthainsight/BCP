@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.76',
+    date: '2026-10-11',
+    title: 'A user guide',
+    changes: [
+      'There is a user guide at /help, in English and in Finnish: questions and answers in sections (getting started, the chart, timing, analysis, palm, screen layout and recording, saving and privacy, settings, and what to do when something does not work). It follows the language chosen in Settings and has a language switch of its own.',
+      'The guide has a search box (it ignores capital letters and diacritics, so dasa finds daśā), a row of section links and a link to every answer, so one answer can be pointed to with its address.',
+      'The top bar has a ? button that opens the guide in a tab of its own, so the chart on the screen stays as it is.',
+      'Updated the application version to v2.76.',
+    ],
+  },
+  {
     version: 'v2.75',
     date: '2026-10-10',
     title: 'Karakas and nakshatras in the graha table; nakshatras in the same ayanamsa as the grahas',

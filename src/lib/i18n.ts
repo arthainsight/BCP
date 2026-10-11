@@ -487,6 +487,15 @@ export const FI: Record<string, string> = {
   'Download backup': 'Lataa varmuuskopio',
   'Choose backup': 'Valitse varmuuskopio',
   'Replace and restore': 'Korvaa ja palauta',
+
+  // User guide
+  'Guide': 'Käyttöohje',
+  'Open the user guide in a new tab': 'Avaa käyttöohje uuteen välilehteen',
+  'How to use the app: answers to the common questions, in the order you will meet them.': 'Miten sovellusta käytetään: vastaukset yleisiin kysymyksiin siinä järjestyksessä, jossa niihin törmää.',
+  'Search the guide': 'Hae oppaasta',
+  'Sections': 'Osiot',
+  'No answers match your search.': 'Hakuun ei löydy vastauksia.',
+  'Back to the app': 'Takaisin sovellukseen',
 };
 
 /** Translates English interface text; anything without a Finnish entry stays in English. */

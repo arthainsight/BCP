@@ -12,6 +12,24 @@ type Props = {
   fileActions: Omit<ComponentProps<typeof FileActions>, 'compact'>;
 };
 
+/** The way to the user guide, which opens in a tab of its own so the chart on the screen stays. */
+function GuideLink() {
+  const t = useT();
+  return (
+    <a
+      href="/help"
+      target="_blank"
+      rel="noopener"
+      aria-label={t('Guide')}
+      title={t('Open the user guide in a new tab')}
+      data-guide-link
+      className="rounded border border-zinc-300 px-2 py-1 text-xs font-mono text-zinc-500 transition-colors hover:border-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-200"
+    >
+      ?
+    </a>
+  );
+}
+
 /** The sticky top bar: the chart's name, its file actions and the theme, in one row. */
 export default function AppHeader({ activeChartName, displayChartName, fileActions }: Props) {
   const t = useT();
@@ -28,6 +46,7 @@ export default function AppHeader({ activeChartName, displayChartName, fileActio
         <div className="flex items-center gap-3">
           <FileActions {...fileActions} />
           <RecordButton />
+          <GuideLink />
           <ThemeToggle />
         </div>
       </header>
@@ -44,6 +63,7 @@ export default function AppHeader({ activeChartName, displayChartName, fileActio
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <RecordButton />
+          <GuideLink />
           <ThemeToggle icon />
         </div>
       </header>
