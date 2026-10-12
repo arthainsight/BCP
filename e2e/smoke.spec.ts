@@ -2173,3 +2173,58 @@ test('PALM: a ruler gives the photograph a scale in centimetres, and ages are ma
 
   expect(errors).toEqual([]);
 });
+
+test('PALM: two photographs side by side, with the zoom shared', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/');
+  await selectWorkspace(page, 'PALM');
+  const upload = visible(page, page.getByLabel('Upload palm photographs'));
+  await upload.setInputFiles({ name: 'one.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  await expect(visible(page, page.locator('[data-palm="canvas"]'))).toBeVisible();
+  // One photograph cannot be compared with anything.
+  await expect(visible(page, page.getByRole('button', { name: 'Compare', exact: true }))).toHaveCount(0);
+  await upload.setInputFiles({ name: 'two.png', mimeType: 'image/png', buffer: makePng(800, 600) });
+  await expect(visible(page, page.locator('[data-palm-record]').nth(1))).toBeVisible();
+
+  // The open photograph is a right hand, the other a left one: they are put side by side.
+  await visible(page, page.getByLabel('Hand', { exact: true })).selectOption('right');
+  await visible(page, page.locator('[data-palm-record]').nth(1)).click();
+  await visible(page, page.getByLabel('Hand', { exact: true })).selectOption('left');
+  await visible(page, page.locator('[data-palm-record]').nth(1)).click();
+  await visible(page, page.getByRole('button', { name: 'Compare', exact: true })).click();
+  const dialog = page.getByRole('dialog', { name: 'Compare palms' });
+  await expect(dialog).toBeVisible();
+  const left = dialog.getByRole('combobox', { name: 'photograph on the left' });
+  const right = dialog.getByRole('combobox', { name: 'photograph on the right' });
+  expect(await left.inputValue()).not.toEqual(await right.inputValue());
+  await expect(left.locator('option:checked')).toContainText('Right hand');
+  await expect(right.locator('option:checked')).toContainText('Left hand');
+  const zooms = dialog.locator('[data-palm="zoom"]');
+  await expect(zooms).toHaveCount(2);
+  await expect(zooms.first()).toHaveText('100%');
+  await expect(zooms.last()).toHaveText('100%');
+
+  // Zoom one and the other follows, though the photographs differ in shape.
+  await dialog.locator('[data-palm-side]').first().getByRole('button', { name: 'Zoom in' }).click();
+  await expect(zooms.first()).not.toHaveText('100%');
+  await expect.poll(async () => (await zooms.last().innerText())).toEqual(await zooms.first().innerText());
+  const together = await zooms.first().innerText();
+
+  // Unlinked, they move on their own.
+  await dialog.getByRole('checkbox', { name: 'link the zoom' }).uncheck();
+  await dialog.locator('[data-palm-side]').first().getByRole('button', { name: 'Zoom in' }).click();
+  await expect.poll(async () => (await zooms.first().innerText())).not.toEqual(together);
+  await expect(zooms.last()).toHaveText(together);
+
+  // Linked again, fitting one fits both.
+  await dialog.getByRole('checkbox', { name: 'link the zoom' }).check();
+  await dialog.locator('[data-palm-side]').last().getByRole('button', { name: 'Fit to window' }).click();
+  await expect(zooms.first()).toHaveText('100%');
+  await expect(zooms.last()).toHaveText('100%');
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  expect(errors).toEqual([]);
+});

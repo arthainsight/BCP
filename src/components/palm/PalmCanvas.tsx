@@ -6,7 +6,7 @@ import {
   handleAt, handlesOf, hitTest, moveAnnotation, newId, numbering, pathData, reshapeAnnotation, rulerGeometry, simplifyPath, snapPoint, snapTargets,
   unitOf, type Annotation, type Point,
 } from '@/lib/palm/annotations';
-import { MAX_ZOOM, fitTransform, focusTransform, toImage, zoomAt, type Transform } from '@/lib/palm/viewport';
+import { MAX_ZOOM, fitTransform, focusTransform, fromLinkedView, toImage, toLinkedView, zoomAt, type LinkedView, type Transform } from '@/lib/palm/viewport';
 import { useT } from '@/lib/i18n';
 
 export type PalmTool = 'view' | 'select' | 'pen' | 'line' | 'arrow' | 'circle' | 'ellipse' | 'ruler' | 'pin' | 'text' | 'eraser';
@@ -28,6 +28,12 @@ type Props = {
   snap?: boolean;
   /** Pixels of the photograph to a centimetre; rulers then give their lengths in centimetres. */
   scale?: number;
+  /**
+   * Two photographs side by side can share one view: this is the view the other one made, which is applied here,
+   * and `onViewChange` is told of every move or zoom made here.
+   */
+  linkedView?: LinkedView | null;
+  onViewChange?: (view: LinkedView) => void;
   selectedId: string | null;
   /** Zooms to this annotation whenever `focusNonce` changes. */
   focusId?: string | null;
@@ -161,11 +167,12 @@ function ZoomButton({ glyph, label, onClick }: { glyph: string; label: string; o
  */
 export default function PalmCanvas({
   imageUrl, width, height, annotations, tool, color, strokeUnits, eraserUnits = 14, rulerParts = RULER_DEFAULT_PARTS, snap = true, scale,
-  selectedId, focusId, focusNonce = 0, readOnly = false, onSelect, onCreate, onCommit,
+  linkedView, onViewChange, selectedId, focusId, focusNonce = 0, readOnly = false, onSelect, onCreate, onCommit,
 }: Props) {
   const t = useT();
   const unit = unitOf(width, height);
-  const clipId = `palm-clip-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const id = useId();
+  const clipId = `palm-clip-${id.replace(/[^a-zA-Z0-9]/g, '')}`;
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [view, setView] = useState<Transform>({ k: 1, tx: 0, ty: 0 });
@@ -178,6 +185,9 @@ export default function PalmCanvas({
   const [wipe, setWipe] = useState<Annotation[] | null>(null);
   const [eraserAt, setEraserAt] = useState<Point | null>(null);
   const [snapMark, setSnapMark] = useState<Point | null>(null);
+  // The view that was last taken from the other photograph, and the one it made here: only a view of our own is passed on.
+  const [lastLinked, setLastLinked] = useState<LinkedView | null | undefined>(linkedView);
+  const [applied, setApplied] = useState<Transform | null>(null);
 
   // Latest values for the event handlers that are added by hand.
   const live = useRef({ view, fit });
@@ -241,6 +251,26 @@ export default function PalmCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusNonce]);
 
+  if (linkedView !== lastLinked) {
+    setLastLinked(linkedView);
+    if (linkedView && linkedView.source !== id && fit) {
+      const next = fromLinkedView(linkedView, fit, size.w, size.h, width, height);
+      setApplied(next);
+      setView(next);
+    }
+  }
+  useEffect(() => {
+    if (applied) moved.current = true;
+  }, [applied]);
+
+  // Whatever the viewer does to the view is passed on, except what was just taken from the other photograph.
+  useEffect(() => {
+    if (!onViewChange || !fit || !moved.current || view === applied) return;
+    onViewChange(toLinkedView(view, fit, size.w, size.h, width, height, id));
+    // Only a change of the view counts, not every change of the props around it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
+
   const zoomBy = useCallback((factor: number) => {
     if (!fit) return;
     moved.current = true;
@@ -251,6 +281,7 @@ export default function PalmCanvas({
     if (!fit) return;
     moved.current = false;
     setView(fit);
+    onViewChange?.({ source: id, zoom: 1, cx: 0.5, cy: 0.5 });
   };
 
   /** A point of the photo, kept inside it: nothing is drawn beyond the edge. */

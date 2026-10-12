@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.81',
+    date: '2026-10-12',
+    title: 'PALM: compare two hands',
+    changes: [
+      'With two or more photographs in PALM, a Compare button opens two of them side by side with their drawings: the open photograph on the left and, when the hands have been named, the other hand on the right (otherwise the next photograph). Either side can be changed from its list, and Escape closes the view.',
+      'The zoom and the place are shared by default: zoom or move one photograph and the other goes to the same place at the same zoom, even when the photographs are of different shapes, and Fit to window on either fits both. Untick link the zoom to move them separately.',
+      'The note under the PALM heading now says that the photographs can also be saved with a backup in Settings.',
+      'Updated the application version to v2.81.',
+    ],
+  },
+  {
     version: 'v2.80',
     date: '2026-10-12',
     title: 'PALM: a scale in centimetres and ages along a line',

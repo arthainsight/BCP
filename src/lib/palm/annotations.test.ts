@@ -5,7 +5,7 @@ import {
   pathData, pushHistory, redoHistory, sanitizeAnnotations, simplifyPath, startHistory, undoHistory, unitOf,
   type Annotation, type LineAnnotation, type Point,
 } from './annotations';
-import { fitTransform, focusTransform, toImage, zoomAt } from './viewport';
+import { fitTransform, focusTransform, fromLinkedView, toImage, toLinkedView, zoomAt } from './viewport';
 
 const near = (actual: number, expected: number, message: string, epsilon = 1e-6) =>
   assert.ok(Math.abs(actual - expected) < epsilon, `${message}: ${actual} vs ${expected}`);
@@ -338,3 +338,30 @@ const kept = sanitizeAnnotations([
   { ...pin('pin', { x: 1, y: 1 }), ages: AGE_DEFAULT },
 ]);
 assert.deepEqual(kept.map(item => item.ages !== undefined), [true, true, false, false]);
+
+// --- Two photographs, one view -------------------------------------------------------------------
+{
+  // A wide window with a tall photograph, and a square window with a wide one.
+  const fitA = fitTransform(800, 600, 600, 800, 0);
+  const fitB = fitTransform(500, 500, 1000, 500, 0);
+  assert.deepEqual(toLinkedView(fitA, fitA, 800, 600, 600, 800, 'a'), { source: 'a', zoom: 1, cx: 0.5, cy: 0.5 }, 'the whole photograph: zoom 1, in the middle');
+  // Zoomed in three times on a place at 30% across and 20% down.
+  const zoomedA = { k: fitA.k * 3, tx: 400 - 0.3 * 600 * fitA.k * 3, ty: 300 - 0.2 * 800 * fitA.k * 3 };
+  const linked = toLinkedView(zoomedA, fitA, 800, 600, 600, 800, 'a');
+  near(linked.zoom, 3, 'three times');
+  near(linked.cx, 0.3, 'across');
+  near(linked.cy, 0.2, 'down');
+  // The other photograph shows the same place, three times in, in the middle of its own window.
+  const zoomedB = fromLinkedView(linked, fitB, 500, 500, 1000, 500);
+  near(zoomedB.k, fitB.k * 3, 'the same zoom beyond fitting');
+  const middleB = toImage(zoomedB, 250, 250);
+  near(middleB.x / 1000, 0.3, 'the same place across');
+  near(middleB.y / 500, 0.2, 'the same place down');
+  // And back again.
+  const back = toLinkedView(zoomedB, fitB, 500, 500, 1000, 500, 'b');
+  near(back.zoom, 3, 'round trip: zoom');
+  near(back.cx, 0.3, 'round trip: across');
+  // The zoom stays within what a window allows.
+  near(fromLinkedView({ source: 'a', zoom: 1000, cx: 0.5, cy: 0.5 }, fitB, 500, 500, 1000, 500).k, fitB.k * 12, 'no further than the most');
+  near(fromLinkedView({ source: 'a', zoom: 0.01, cx: 0.5, cy: 0.5 }, fitB, 500, 500, 1000, 500).k, fitB.k * 0.5, 'nor further out than half');
+}

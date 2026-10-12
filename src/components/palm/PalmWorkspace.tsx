@@ -7,21 +7,10 @@ import { deletePalm, listPalms, putPalm, storageAvailable, type PalmRecord, type
 import { useT } from '@/lib/i18n';
 import PalmEditor from './PalmEditor';
 import PalmClientView from './PalmClientView';
+import PalmCompareView from './PalmCompareView';
+import { useObjectUrl } from './useObjectUrl';
 
 const SIDES: PalmSide[] = ['right', 'left', 'other'];
-
-/** An object URL for a blob that is released when the blob changes or the component goes. */
-function useObjectUrl(blob: Blob | null): string {
-  const [url, setUrl] = useState('');
-  useEffect(() => {
-    if (!blob) return;
-    const created = URL.createObjectURL(blob);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setUrl(created);
-    return () => URL.revokeObjectURL(created);
-  }, [blob]);
-  return blob ? url : '';
-}
 
 function Thumbnail({ blob, alt }: { blob: Blob; alt: string }) {
   const url = useObjectUrl(blob);
@@ -40,6 +29,7 @@ export default function PalmWorkspace({ wide = false, onToggleWide }: { wide?: b
   const [error, setError] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [clientView, setClientView] = useState(false);
+  const [comparing, setComparing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -148,7 +138,7 @@ export default function PalmWorkspace({ wide = false, onToggleWide }: { wide?: b
         <div>
           <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('Palm')}</div>
           <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-            {t('Photographs stay on this device; nothing is sent anywhere.')} {t('Clearing the browser data deletes them, so save the picture to keep a copy.')}
+            {t('Photographs stay on this device; nothing is sent anywhere.')} {t('Clearing the browser data deletes them, so save the picture or make a backup in Settings.')}
           </p>
         </div>
         <div className="ml-auto flex flex-wrap gap-2">
@@ -161,6 +151,16 @@ export default function PalmWorkspace({ wide = false, onToggleWide }: { wide?: b
               className={`${pick} hidden border-zinc-300 bg-white text-zinc-600 hover:bg-zinc-50 lg:inline-flex lg:items-center dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300`}
             >
               {wide ? t('⤡ narrow') : t('⤢ full')}
+            </button>
+          )}
+          {records.length >= 2 && (
+            <button
+              type="button"
+              onClick={() => setComparing(true)}
+              title={t('Two photographs side by side, to compare the hands')}
+              className={`${pick} border-zinc-300 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300`}
+            >
+              {t('Compare')}
             </button>
           )}
           <label className={`${pick} border-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600 dark:border-green-600 dark:bg-green-600`}>
@@ -246,6 +246,10 @@ export default function PalmWorkspace({ wide = false, onToggleWide }: { wide?: b
               onScaleChange={scale => update(selected.id, { scale }, true)}
               onClientView={() => setClientView(true)}
             />
+          )}
+
+          {comparing && records.length >= 2 && (
+            <PalmCompareView records={records} firstId={selected.id} onClose={() => setComparing(false)} />
           )}
 
           {clientView && imageUrl && (

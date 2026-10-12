@@ -333,6 +333,22 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     },
   },
 
+  {
+    id: 'palm-compare',
+    section: 'palm',
+    q: { en: 'How do I compare two hands?', fi: 'Miten vertaan kahta kättä?' },
+    a: {
+      en: [
+        'With two or more photographs in PALM, the Compare button shows two of them side by side, with their drawings. The open photograph is on the left and, if you have said which hand each one is, the other hand on the right; either side can be changed from its list.',
+        'The zoom and the place are shared: zoom or move one photograph and the other goes to the same place at the same zoom, even when the two photographs are different shapes. Fit to window on either one fits both. Untick link the zoom to move them separately.',
+      ],
+      fi: [
+        'Kun KÄMMEN-näkymässä on kaksi tai useampi kuva, Vertaile-painike näyttää kaksi niistä vierekkäin piirroksineen. Avoin kuva on vasemmalla ja, jos olet kertonut, mikä käsi kukin on, toinen käsi oikealla; kumpaakin puolta voi vaihtaa sen omasta listasta.',
+        'Zoomaus ja paikka ovat yhteiset: lähennä tai siirrä toista kuvaa, ja toinen siirtyy samaan paikkaan samalle zoomille, vaikka kuvat olisivat eri muotoisia. Sovita ikkunaan kummalla tahansa sovittaa molemmat. Poista rasti kohdasta linkitä zoomaus, niin niitä voi liikuttaa erikseen.',
+      ],
+    },
+  },
+
   // ── Screen layout and recording ────────────────────────────────────
   {
     id: 'split',
