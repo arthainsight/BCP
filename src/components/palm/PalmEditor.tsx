@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  COLORS, DEFAULT_COLOR, STROKE_DEFAULT, STROKE_MAX, STROKE_MIN, STROKE_STEP, clampStroke, noteList, pushHistory, redoHistory, startHistory, undoHistory, unitOf,
+  COLORS, DEFAULT_COLOR, RULER_DEFAULT_PARTS, RULER_MAX_PARTS, RULER_MIN_PARTS, STROKE_DEFAULT, STROKE_MAX, STROKE_MIN, STROKE_STEP, clampParts, clampStroke,
+  noteList, pushHistory, redoHistory, startHistory, undoHistory, unitOf,
   type Annotation, type History,
 } from '@/lib/palm/annotations';
 import type { PalmRecord } from '@/lib/palm/storage';
@@ -25,13 +26,21 @@ const TOOLS: { id: PalmTool; glyph: string; label: string }[] = [
   { id: 'pen', glyph: '✎', label: 'Pen' },
   { id: 'line', glyph: '╱', label: 'Line' },
   { id: 'arrow', glyph: '➚', label: 'Arrow' },
-  { id: 'ellipse', glyph: '◯', label: 'Circle' },
+  { id: 'circle', glyph: '○', label: 'Circle' },
+  { id: 'ellipse', glyph: '⬭', label: 'Ellipse' },
+  { id: 'ruler', glyph: '📏', label: 'Ruler' },
   { id: 'pin', glyph: '①', label: 'Pin' },
   { id: 'text', glyph: 'T', label: 'Text' },
+  { id: 'eraser', glyph: '⌫', label: 'Eraser' },
 ];
 
+/** The eraser's radius on offer, in units. */
+const ERASER_MIN = 2;
+const ERASER_MAX = 60;
+const ERASER_DEFAULT = 14;
+
 const KIND_LABEL: Record<Annotation['kind'], string> = {
-  pen: 'Pen', line: 'Line', arrow: 'Arrow', ellipse: 'Circle', pin: 'Pin', text: 'Text',
+  pen: 'Pen', line: 'Line', arrow: 'Arrow', ellipse: 'Ellipse', circle: 'Circle', ruler: 'Ruler', pin: 'Pin', text: 'Text',
 };
 
 const button = (on: boolean) =>
@@ -50,6 +59,9 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
   const [tool, setTool] = useState<PalmTool>('pen');
   const [color, setColor] = useState<string>(DEFAULT_COLOR);
   const [strokeUnits, setStrokeUnits] = useState(STROKE_DEFAULT);
+  const [eraserUnits, setEraserUnits] = useState(ERASER_DEFAULT);
+  const [rulerParts, setRulerParts] = useState(RULER_DEFAULT_PARTS);
+  const [snap, setSnap] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focus, setFocus] = useState<{ id: string | null; nonce: number }>({ id: null, nonce: 0 });
   const [exporting, setExporting] = useState(false);
@@ -128,6 +140,15 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
     }
   };
 
+  // The number of parts sets the next rulers, and the selected ruler.
+  const ruler = selected?.kind === 'ruler' ? selected : null;
+  const shownParts = ruler ? ruler.parts : rulerParts;
+  const chooseParts = (value: number) => {
+    const parts = clampParts(value);
+    setRulerParts(parts);
+    if (ruler) step(annotations.map(annotation => (annotation.id === ruler.id ? { ...ruler, parts } : annotation)));
+  };
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -192,17 +213,54 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
             />
           ))}
         </div>
-        <RangeField
-          className="w-40"
-          label={t('Stroke')}
-          value={shownStroke}
-          min={STROKE_MIN}
-          max={STROKE_MAX}
-          step={STROKE_STEP}
-          format={value => String(value)}
-          onChange={chooseStroke}
-          onDone={() => { editing.current = false; }}
-        />
+        {tool === 'eraser' ? (
+          <RangeField
+            className="w-40"
+            label={t('Eraser')}
+            value={eraserUnits}
+            min={ERASER_MIN}
+            max={ERASER_MAX}
+            step={1}
+            format={value => String(value)}
+            onChange={setEraserUnits}
+          />
+        ) : (
+          <RangeField
+            className="w-40"
+            label={t('Stroke')}
+            value={shownStroke}
+            min={STROKE_MIN}
+            max={STROKE_MAX}
+            step={STROKE_STEP}
+            format={value => String(value)}
+            onChange={chooseStroke}
+            onDone={() => { editing.current = false; }}
+          />
+        )}
+        {(tool === 'ruler' || ruler) && (
+          <label className="flex items-center gap-1 text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
+            {t('divide into')}
+            <select
+              aria-label={t('Parts')}
+              value={shownParts}
+              onChange={event => chooseParts(Number(event.target.value))}
+              className="rounded-md border border-zinc-200 bg-white px-1.5 py-1.5 text-xs dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
+            >
+              {Array.from({ length: RULER_MAX_PARTS - RULER_MIN_PARTS + 1 }, (_, index) => RULER_MIN_PARTS + index).map(value => (
+                <option key={value} value={value}>{value}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        <button
+          type="button"
+          onClick={() => setSnap(on => !on)}
+          aria-pressed={snap}
+          title={t('New drawings catch on the marks of a ruler, the middle of a line and the centre of a circle')}
+          className={button(snap)}
+        >
+          {t('snap')}
+        </button>
         <div className="flex gap-1">
           <button type="button" aria-label={t('Undo')} title={t('Undo')} disabled={history.past.length === 0} onClick={undo} className={`${button(false)} disabled:opacity-30`}>↶</button>
           <button type="button" aria-label={t('Redo')} title={t('Redo')} disabled={history.future.length === 0} onClick={redo} className={`${button(false)} disabled:opacity-30`}>↷</button>
@@ -234,6 +292,9 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
               tool={tool}
               color={color}
               strokeUnits={strokeUnits}
+              eraserUnits={eraserUnits}
+              rulerParts={rulerParts}
+              snap={snap}
               selectedId={selectedId}
               focusId={focus.id}
               focusNonce={focus.nonce}
@@ -246,7 +307,17 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
           <aside className="min-w-0 space-y-3" data-palm="side">
             {selected ? (
               <div className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700" data-palm="properties">
-                <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t(KIND_LABEL[selected.kind])}</div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t(KIND_LABEL[selected.kind])}</div>
+                  {tool !== 'select' && (
+                    <button type="button" onClick={() => setTool('select')} className="rounded-md border border-zinc-200 px-2 py-1 text-[10px] font-mono text-zinc-600 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800">
+                      ↖ {t('Move or reshape')}
+                    </button>
+                  )}
+                </div>
+                {selected.kind === 'ruler' && (
+                  <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('Lengths are in pixels of the photograph.')}</p>
+                )}
                 <label className="block text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
                   {selected.kind === 'text' ? t('Text') : t('Label on the picture')}
                   <input
@@ -273,7 +344,7 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
               </div>
             ) : (
               <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-                {t('Draw with the tools above. Pins are numbered; give any drawing a note and it is numbered too. Use Select to move or edit a drawing.')}
+                {t('Draw with the tools above. Pins are numbered; give any drawing a note and it is numbered too. Use Select to move a drawing, and drag its dots to change it.')}
               </p>
             )}
 

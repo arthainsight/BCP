@@ -302,10 +302,18 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'How do I draw on the palm?', fi: 'Miten piirrän kämmenen päälle?' },
     a: {
       en: [
-        'The tools are Move (to pan the picture), Select, Pen, Line, Arrow, Circle, Pin and Text. Choose a colour, and set the thickness of the line with the stroke slider. Pins are numbered; give any drawing a note and it is numbered too. Select a drawing to move it, to edit it or to change its thickness. Undo and Redo step through the changes; Delete removes the selected drawing. Zoom in, Zoom out and Fit to window change the view.',
+        'The tools are Move (to pan the picture), Select, Pen, Line, Arrow, Circle, Ellipse, Ruler, Pin, Text and Eraser. Choose a colour, and set the thickness of the line with the stroke slider. Pins are numbered; give any drawing a note and it is numbered too. Undo and Redo step through the changes; Delete removes the selected drawing. Zoom in, Zoom out and Fit to window change the view.',
+        'Circle is always a true circle: drag from its centre to its edge. Ellipse is drawn in a box and can be oval.',
+        'Ruler measures between two points and divides the line into 1 to 12 equal parts with marks; with two parts it marks the middle. It writes its length and the length of one part, in pixels of the photograph, so two rulers can be compared. A new drawing that starts or ends near a mark of a ruler, the middle of a line or the centre of a circle catches on it, so a pin can be put exactly in the middle; the snap button switches this off.',
+        'Eraser wipes: a pen stroke or a line is cut where the eraser passes, and any other drawing it touches is removed whole. The eraser has its own size slider, and one wipe is one undo step.',
+        'Select moves a drawing, and its dots change it: drag an end of a line, an arrow or a ruler, the edge of a circle, a corner of an ellipse or any point of a pen stroke. The Move or reshape button beside the name of a new drawing takes you there. The colours and the stroke slider change the selected drawing.',
       ],
       fi: [
-        'Työkalut ovat Siirrä (kuvan siirtäminen), Valitse, Kynä, Viiva, Nuoli, Ympyrä, Nasta ja Teksti. Valitse väri ja säädä viivan paksuutta paksuusliukusäätimellä. Nastat numeroidaan; anna piirrokselle merkintä, niin se numeroidaan myös. Valitse piirros siirtääksesi sitä, muokataksesi sitä tai muuttaaksesi sen paksuutta. Kumoa ja Tee uudelleen kulkevat muutosten läpi; Poista poistaa valitun piirroksen. Lähennä, Loitonna ja Sovita ikkunaan muuttavat näkymää.',
+        'Työkalut ovat Siirrä (kuvan siirtäminen), Valitse, Kynä, Viiva, Nuoli, Ympyrä, Ellipsi, Mitta, Nasta, Teksti ja Pyyhekumi. Valitse väri ja säädä viivan paksuutta paksuusliukusäätimellä. Nastat numeroidaan; anna piirrokselle merkintä, niin se numeroidaan myös. Kumoa ja Tee uudelleen kulkevat muutosten läpi; Poista poistaa valitun piirroksen. Lähennä, Loitonna ja Sovita ikkunaan muuttavat näkymää.',
+        'Ympyrä on aina oikea ympyrä: vedä sen keskipisteestä reunaan. Ellipsi piirretään laatikkoon, ja se voi olla soikea.',
+        'Mitta mittaa kahden pisteen välin ja jakaa viivan 1–12 yhtä pitkään osaan merkeillä; kahdella osalla se merkitsee keskikohdan. Se kirjoittaa pituutensa ja yhden osan pituuden valokuvan pikseleinä, joten kahta mittaa voi verrata keskenään. Uusi piirros, joka alkaa tai päättyy lähelle mitan merkkiä, viivan keskikohtaa tai ympyrän keskipistettä, tarttuu siihen, joten nastan voi laittaa tarkasti keskelle; tartu-painike kytkee tämän pois.',
+        'Pyyhekumi pyyhkii: kynäviiva tai viiva katkaistaan kohdasta, jossa pyyhekumi kulkee, ja mikä tahansa muu piirros, johon se osuu, poistetaan kokonaan. Pyyhekumilla on oma kokoliukusäädin, ja yksi pyyhkäisy on yksi kumoamisaskel.',
+        'Valitse siirtää piirrosta, ja sen pisteet muuttavat sitä: vedä viivan, nuolen tai mitan päätä, ympyrän reunaa, ellipsin kulmaa tai mitä tahansa kynäviivan pistettä. Uuden piirroksen nimen vieressä oleva Siirrä tai muokkaa -painike vie siihen. Värit ja paksuusliukusäädin muuttavat valittua piirrosta.',
       ],
     },
   },

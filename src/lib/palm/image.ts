@@ -1,5 +1,5 @@
 import {
-  BADGE_UNITS, LABEL_UNITS, anchorOf, arrowHead, contrastText, numbering, pathData, unitOf, noteList,
+  BADGE_UNITS, LABEL_UNITS, anchorOf, arrowHead, contrastText, numbering, pathData, rulerGeometry, unitOf, noteList,
   type Annotation,
 } from './annotations';
 
@@ -91,14 +91,16 @@ function drawBadge(context: CanvasRenderingContext2D, annotation: Annotation, nu
   context.textBaseline = 'alphabetic';
 }
 
-function drawLabel(context: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, unit: number) {
+function drawLabel(context: CanvasRenderingContext2D, text: string, x: number, y: number, size: number, color: string, unit: number, align: CanvasTextAlign = 'left') {
   context.font = `bold ${size}px sans-serif`;
+  context.textAlign = align;
   context.lineJoin = 'round';
   context.lineWidth = Math.max(2, 4 * unit);
   context.strokeStyle = contrastText(color) === '#ffffff' ? '#111827' : '#ffffff';
   context.strokeText(text, x, y);
   context.fillStyle = color;
   context.fillText(text, x, y);
+  context.textAlign = 'left';
 }
 
 /** The picture with its drawing on it, and optionally the numbered notes under it, as a PNG. */
@@ -158,6 +160,32 @@ export async function renderAnnotated(image: Blob, width: number, height: number
           context.beginPath();
           context.ellipse((annotation.from.x + annotation.to.x) / 2, (annotation.from.y + annotation.to.y) / 2, Math.max(rx, 0.5), Math.max(ry, 0.5), 0, 0, Math.PI * 2);
           context.stroke();
+          break;
+        }
+        case 'circle':
+          context.beginPath();
+          context.arc(annotation.at.x, annotation.at.y, Math.max(annotation.radius, 0.5), 0, Math.PI * 2);
+          context.stroke();
+          break;
+        case 'ruler': {
+          context.beginPath();
+          context.moveTo(annotation.from.x, annotation.from.y);
+          context.lineTo(annotation.to.x, annotation.to.y);
+          const geometry = rulerGeometry(annotation, unit);
+          for (const [a, b] of geometry.ticks) {
+            context.moveTo(a.x, a.y);
+            context.lineTo(b.x, b.y);
+          }
+          context.stroke();
+          if (geometry.middle) {
+            context.beginPath();
+            context.arc(geometry.middle.x, geometry.middle.y, Math.max(annotation.width * 1.3, 3 * unit), 0, Math.PI * 2);
+            context.fill();
+          }
+          const { text, at, anchor, size } = geometry.label;
+          context.textBaseline = 'middle';
+          drawLabel(context, text, at.x, at.y, size, annotation.color, unit, anchor === 'middle' ? 'center' : anchor === 'start' ? 'left' : 'right');
+          context.textBaseline = 'alphabetic';
           break;
         }
         case 'text':
