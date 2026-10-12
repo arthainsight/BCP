@@ -242,6 +242,8 @@ export default function PalmWorkspace({ wide = false, onToggleWide }: { wide?: b
               record={selected}
               imageUrl={imageUrl}
               onChange={(annotations: Annotation[]) => update(selected.id, { annotations })}
+              scale={selected.scale}
+              onScaleChange={scale => update(selected.id, { scale }, true)}
               onClientView={() => setClientView(true)}
             />
           )}

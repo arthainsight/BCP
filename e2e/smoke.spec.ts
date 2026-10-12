@@ -2091,3 +2091,85 @@ test('SHARE copies a link with the birth data, and opening the link calculates t
   expect(errors).toEqual([]);
   expect(guestErrors).toEqual([]);
 });
+
+test('PALM: a ruler gives the photograph a scale in centimetres, and ages are marked along a line', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/');
+  await selectWorkspace(page, 'PALM');
+  await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'ages.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  const canvas = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(canvas).toBeVisible();
+  const shapes = (kind: string) => canvas.locator(`g[data-kind="${kind}"]`);
+  const tool = (name: string) => visible(page, page.getByRole('button', { name, exact: true })).click();
+  const drag = async (from: [number, number], to: [number, number]) => {
+    await canvas.scrollIntoViewIfNeeded();
+    const box = (await canvas.boundingBox())!;
+    await page.mouse.move(box.x + box.width * from[0], box.y + box.height * from[1]);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * ((from[0] + to[0]) / 2), box.y + box.height * ((from[1] + to[1]) / 2) + 6, { steps: 4 });
+    await page.mouse.move(box.x + box.width * to[0], box.y + box.height * to[1], { steps: 4 });
+    await page.mouse.up();
+  };
+  const labels = () => canvas.locator('[data-ruler-label]');
+
+  // Without a scale a ruler speaks in pixels; the real length of one ruler gives the scale, and then every ruler is in centimetres.
+  await tool('Ruler');
+  await drag([0.3, 0.2], [0.7, 0.2]);
+  await expect(labels()).toHaveText(/^\d+ ÷ 2 = \d+(\.\d)?$/);
+  await expect(visible(page, page.getByText('Lengths are in pixels of the photograph.'))).toBeVisible();
+  const lengthField = visible(page, page.getByRole('textbox', { name: 'real length of this ruler, in cm' }));
+  const useScale = visible(page, page.getByRole('button', { name: 'use as the scale of the photograph' }));
+  await expect(useScale).toBeDisabled();
+  await lengthField.fill('10');
+  await useScale.click();
+  await expect(labels()).toHaveText('10 cm ÷ 2 = 5 cm');
+  await expect(visible(page, page.locator('[data-palm="scale"]'))).toContainText('1 cm =');
+  await drag([0.3, 0.3], [0.5, 0.3]);
+  await expect(shapes('ruler')).toHaveCount(2);
+  await expect(labels().nth(1)).toHaveText(/^\d+(\.\d+)? cm ÷ 2 = \d+(\.\d+)? cm$/);
+  await expect(visible(page, page.getByText('Lengths are in centimetres, by the scale of the photograph.'))).toBeVisible();
+
+  // Ages along a stroke: a mark for every ten years from birth to seventy; the ages can be changed, and a nonsense value is not taken.
+  await tool('Pen');
+  await drag([0.35, 0.5], [0.65, 0.8]);
+  await expect(shapes('pen')).toHaveCount(1);
+  await visible(page, page.getByRole('checkbox', { name: 'ages along the line' })).check();
+  const ages = () => canvas.locator('[data-age]');
+  await expect(ages()).toHaveCount(8);
+  await expect(ages().first()).toHaveAttribute('data-age', '0');
+  await expect(ages().last()).toHaveAttribute('data-age', '70');
+  await expect(ages().last().locator('text')).toHaveText('70');
+  const end = visible(page, page.getByRole('spinbutton', { name: 'age at the end' }));
+  await end.fill('40');
+  await end.press('Tab');
+  await expect(ages()).toHaveCount(5);
+  await end.fill('0');
+  await end.press('Tab');
+  await expect(ages(), 'an end age equal to the start is not a scale').toHaveCount(5);
+  await expect(end).toHaveValue('40');
+  const every = visible(page, page.getByRole('spinbutton', { name: 'a mark every' }));
+  await every.fill('20');
+  await every.press('Tab');
+  await expect(ages()).toHaveCount(3);
+
+  // Both are kept, and are in the saved picture.
+  await page.waitForTimeout(600);
+  await page.reload();
+  await selectWorkspace(page, 'PALM');
+  const again = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(again).toBeVisible();
+  await expect(again.locator('[data-age]')).toHaveCount(3);
+  await expect(again.locator('[data-ruler-label]').first()).toHaveText('10 cm ÷ 2 = 5 cm');
+  await expect(visible(page, page.locator('[data-palm="scale"]'))).toBeVisible();
+  const download = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download PNG', exact: true })).click();
+  expect([...readFileSync(await (await download).path()).subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+
+  // Clearing the scale takes the rulers back to pixels.
+  await visible(page, page.locator('[data-palm="scale"]').getByRole('button', { name: 'clear' })).click();
+  await expect(again.locator('[data-ruler-label]').first()).toHaveText(/^\d+ ÷ 2 = \d+(\.\d)?$/);
+
+  expect(errors).toEqual([]);
+});

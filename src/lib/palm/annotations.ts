@@ -12,12 +12,21 @@ export interface Point {
 
 export type AnnotationKind = 'pen' | 'line' | 'arrow' | 'ellipse' | 'circle' | 'ruler' | 'pin' | 'text';
 
+/** Ages marked along a pen stroke or a line: the age at its start and at its end, and a mark every `step` years. */
+export interface AgeScale {
+  from: number;
+  to: number;
+  step: number;
+}
+
 interface Base {
   id: string;
   kind: AnnotationKind;
   color: string;
   /** Stroke width in image pixels. */
   width: number;
+  /** Ages along a pen stroke, a line or an arrow, such as the years of a life line. */
+  ages?: AgeScale;
   /** A short text drawn on the photo beside the annotation. */
   label?: string;
   /** What it means, for the client; numbered and listed beside the photo. */
@@ -66,6 +75,9 @@ export function newId(): string {
 // ── Geometry ───────────────────────────────────────────────────────────────
 
 export const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
+
+/** The point a fraction of the way from a to b. */
+const lerp = (a: Point, b: Point, t: number): Point => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
 
 /** Distance from a point to the segment between two points. */
 export function distanceToSegment(p: Point, a: Point, b: Point): number {
@@ -191,11 +203,29 @@ export function rulerPoints(from: Point, to: Point, parts: number): Point[] {
 
 const roundTo = (value: number, places: number) => Math.round(value * 10 ** places) / 10 ** places;
 
-/** What the ruler says: its length in pixels of the photograph, and the length of one part when it is divided. */
-export function rulerLabel(ruler: RulerAnnotation): string {
+/** A scale is pixels of the photograph to a centimetre: only a positive number is one. */
+export const validScale = (scale: unknown): scale is number => typeof scale === 'number' && Number.isFinite(scale) && scale > 0;
+
+/**
+ * What the ruler says: its length, and the length of one part when it is divided. In centimetres when the photograph
+ * has a scale, and otherwise in pixels of the photograph.
+ */
+export function rulerLabel(ruler: RulerAnnotation, scale?: number): string {
   const length = distance(ruler.from, ruler.to);
   const parts = clampParts(ruler.parts);
+  if (validScale(scale)) {
+    const cm = length / scale;
+    return parts > 1 ? `${roundTo(cm, 2)} cm ÷ ${parts} = ${roundTo(cm / parts, 2)} cm` : `${roundTo(cm, 2)} cm`;
+  }
   return parts > 1 ? `${Math.round(length)} ÷ ${parts} = ${roundTo(length / parts, 1)}` : String(Math.round(length));
+}
+
+/** The unit vector across a line, turned to point up the page, or to the right when the line is upright. */
+function sideNormal(ux: number, uy: number): [number, number] {
+  let nx = -uy;
+  let ny = ux;
+  if (ny > 0 || (Math.abs(ny) < 1e-9 && nx < 0)) { nx = -nx; ny = -ny; }
+  return [nx, ny];
 }
 
 export interface RulerGeometry {
@@ -207,16 +237,13 @@ export interface RulerGeometry {
 }
 
 /** Where the marks and the figures of a ruler are drawn; the screen and the saved picture both use it. */
-export function rulerGeometry(ruler: RulerAnnotation, unit: number): RulerGeometry {
+export function rulerGeometry(ruler: RulerAnnotation, unit: number, scale?: number): RulerGeometry {
   const parts = clampParts(ruler.parts);
   const points = rulerPoints(ruler.from, ruler.to, parts);
   const length = distance(ruler.from, ruler.to);
   const ux = length > 0 ? (ruler.to.x - ruler.from.x) / length : 1;
   const uy = length > 0 ? (ruler.to.y - ruler.from.y) / length : 0;
-  // The normal that points up the page, or to the right for a ruler that is vertical.
-  let nx = -uy;
-  let ny = ux;
-  if (ny > 0 || (Math.abs(ny) < 1e-9 && nx < 0)) { nx = -nx; ny = -ny; }
+  const [nx, ny] = sideNormal(ux, uy);
 
   const end = Math.max(ruler.width * 1.6, 7 * unit);
   const ticks = points.map((point, index): [Point, Point] => {
@@ -231,8 +258,89 @@ export function rulerGeometry(ruler: RulerAnnotation, unit: number): RulerGeomet
   return {
     ticks,
     middle: parts % 2 === 0 ? points[parts / 2] : null,
-    label: { text: rulerLabel(ruler), at: { x: centre.x + nx * reach, y: centre.y + ny * reach }, anchor: sideways ? (nx > 0 ? 'start' : 'end') : 'middle', size },
+    label: { text: rulerLabel(ruler, scale), at: { x: centre.x + nx * reach, y: centre.y + ny * reach }, anchor: sideways ? (nx > 0 ? 'start' : 'end') : 'middle', size },
   };
+}
+
+// ── Ages along a line ──────────────────────────────────────────────────────
+
+export const AGE_LABEL_UNITS = 22;
+export const AGE_LIMIT = 120;
+export const AGE_STEP_MIN = 0.5;
+export const AGE_STEP_MAX = 60;
+/** The usual life line: from birth to seventy, a mark every ten years. */
+export const AGE_DEFAULT: AgeScale = { from: 0, to: 70, step: 10 };
+
+/** The scale if it is a sensible one (ages within a life, a step that gives at most a hundred marks), else null. */
+export function validAgeScale(value: unknown): AgeScale | null {
+  if (!value || typeof value !== 'object') return null;
+  const { from, to, step } = value as Record<string, unknown>;
+  if (typeof from !== 'number' || typeof to !== 'number' || typeof step !== 'number') return null;
+  if (![from, to, step].every(Number.isFinite)) return null;
+  if (from < 0 || to < 0 || from > AGE_LIMIT || to > AGE_LIMIT || from === to) return null;
+  if (step < AGE_STEP_MIN || step > AGE_STEP_MAX || Math.abs(to - from) / step > 99) return null;
+  return { from, to, step };
+}
+
+/** The ages that have a mark: the multiples of the step between the two ages. */
+export function ageValues(ages: AgeScale): number[] {
+  const low = Math.min(ages.from, ages.to);
+  const high = Math.max(ages.from, ages.to);
+  const values: number[] = [];
+  for (let k = Math.ceil(low / ages.step - 1e-9); k * ages.step <= high + 1e-9; k++) values.push(roundTo(k * ages.step, 3) + 0); // + 0 turns a negative zero into zero
+  return values;
+}
+
+export interface AgeMark {
+  age: number;
+  at: Point;
+  tick: [Point, Point];
+  label: { text: string; at: Point; anchor: 'start' | 'middle' | 'end'; size: number };
+}
+
+/** The drawings along which ages can be marked, as the line of points they follow. */
+export function pathOfAnnotation(annotation: Annotation): Point[] | null {
+  switch (annotation.kind) {
+    case 'pen': return annotation.points;
+    case 'line': case 'arrow': return [annotation.from, annotation.to];
+    default: return null;
+  }
+}
+
+/**
+ * The marks of an age scale: the ages are spread evenly along the length of the line, from the first age at its
+ * start to the second at its end, and each mark is a short stroke across the line with the age beside it.
+ */
+export function ageMarks(annotation: Annotation, unit: number): AgeMark[] {
+  const ages = validAgeScale(annotation.ages);
+  const path = pathOfAnnotation(annotation);
+  if (!ages || !path || path.length < 2) return [];
+  const lengths = [0];
+  for (let index = 1; index < path.length; index++) lengths.push(lengths[index - 1] + distance(path[index - 1], path[index]));
+  const total = lengths[lengths.length - 1];
+  if (total <= 0) return [];
+
+  const half = Math.max(annotation.width * 1.2, 5 * unit);
+  const size = AGE_LABEL_UNITS * unit;
+  return ageValues(ages).map(age => {
+    const along = ((age - ages.from) / (ages.to - ages.from)) * total;
+    let index = 1;
+    while (index < lengths.length - 1 && lengths[index] < along) index++;
+    const span = lengths[index] - lengths[index - 1];
+    const at = lerp(path[index - 1], path[index], span > 0 ? Math.min(1, Math.max(0, (along - lengths[index - 1]) / span)) : 0);
+    const dx = path[index].x - path[index - 1].x;
+    const dy = path[index].y - path[index - 1].y;
+    const length = Math.hypot(dx, dy) || 1;
+    const [nx, ny] = sideNormal(dx / length, dy / length);
+    const sideways = Math.abs(nx) > 0.5;
+    const reach = half + (sideways ? 3 * unit : size * 0.6);
+    return {
+      age,
+      at,
+      tick: [{ x: at.x - nx * half, y: at.y - ny * half }, { x: at.x + nx * half, y: at.y + ny * half }],
+      label: { text: String(age), at: { x: at.x + nx * reach, y: at.y + ny * reach }, anchor: sideways ? (nx > 0 ? 'start' : 'end') : 'middle', size },
+    };
+  });
 }
 
 // ── Changing a drawing: handles ────────────────────────────────────────────
@@ -337,7 +445,6 @@ export function snapPoint(targets: Point[], p: Point, tolerance: number): Point 
 /** Pieces of a stroke shorter than this are not worth keeping, in units. */
 const MIN_PIECE_UNITS = 3;
 
-const lerp = (a: Point, b: Point, t: number): Point => ({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
 
 /** The pieces of a drawing after the first, which keeps the note and the label, as new drawings of their own. */
 function withoutWords<T extends Annotation>(annotation: T, id: string): T {
@@ -553,6 +660,8 @@ export function sanitizeAnnotations(raw: unknown): Annotation[] {
       width: a.width as number,
       ...(typeof a.label === 'string' && a.label ? { label: a.label } : {}),
       ...(typeof a.note === 'string' && a.note ? { note: a.note } : {}),
+      // Ages are marked along strokes and lines only.
+      ...((a.kind === 'pen' || a.kind === 'line' || a.kind === 'arrow') && validAgeScale(a.ages) ? { ages: validAgeScale(a.ages)! } : {}),
     };
     switch (a.kind) {
       case 'pen':

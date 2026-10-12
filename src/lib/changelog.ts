@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.80',
+    date: '2026-10-12',
+    title: 'PALM: a scale in centimetres and ages along a line',
+    changes: [
+      'A photograph can be given a scale: select a ruler, type its real length in centimetres (a finger of 7 cm, a ruler laid on the hand) and press use as the scale of the photograph. Every ruler of that photograph then writes its length and its parts in centimetres (for example 7.5 cm ÷ 4 = 1.88 cm) instead of pixels. The scale is shown in the side panel with a clear button, and it is kept with the photograph, in the backup and in the saved picture.',
+      'Ages along a line: a pen stroke, a line or an arrow can carry ages, such as the years of a life line. Select it, tick ages along the line, and give the age at its start, the age at its end and a mark every so many years (0 to 70, every 10, is the first choice). The ages are spread evenly along the length of the line, each with a small mark across it and the number beside it. They are in the saved picture and the client view, and a value that is not a sensible scale (the same age at both ends, a step that gives more than a hundred marks) is not taken.',
+      'Updated the application version to v2.80.',
+    ],
+  },
+  {
     version: 'v2.79',
     date: '2026-10-12',
     title: 'Share a chart with a link',

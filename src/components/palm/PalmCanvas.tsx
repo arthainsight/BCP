@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
-  BADGE_UNITS, LABEL_UNITS, RULER_DEFAULT_PARTS, TEXT_UNITS, anchorOf, arrowHead, boundingBox, clampParts, contrastText, distance, eraseAlong, eraseAt,
+  BADGE_UNITS, LABEL_UNITS, RULER_DEFAULT_PARTS, TEXT_UNITS, ageMarks, anchorOf, arrowHead, boundingBox, clampParts, contrastText, distance, eraseAlong, eraseAt,
   handleAt, handlesOf, hitTest, moveAnnotation, newId, numbering, pathData, reshapeAnnotation, rulerGeometry, simplifyPath, snapPoint, snapTargets,
   unitOf, type Annotation, type Point,
 } from '@/lib/palm/annotations';
@@ -26,6 +26,8 @@ type Props = {
   rulerParts?: number;
   /** New drawings catch on the marks of a ruler, the middle of a line, the centre of a circle … */
   snap?: boolean;
+  /** Pixels of the photograph to a centimetre; rulers then give their lengths in centimetres. */
+  scale?: number;
   selectedId: string | null;
   /** Zooms to this annotation whenever `focusNonce` changes. */
   focusId?: string | null;
@@ -47,7 +49,7 @@ const HIT_SCREEN_PX = 10;
 const HANDLE_HIT_SCREEN_PX = 12;
 const SNAP_SCREEN_PX = 9;
 
-function Shape({ annotation, unit, number, selected }: { annotation: Annotation; unit: number; number?: number; selected: boolean }) {
+function Shape({ annotation, unit, number, selected, scale }: { annotation: Annotation; unit: number; number?: number; selected: boolean; scale?: number }) {
   const { color, width } = annotation;
   const anchor = anchorOf(annotation);
   const stroke = { stroke: color, strokeWidth: width, fill: 'none', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
@@ -85,7 +87,7 @@ function Shape({ annotation, unit, number, selected }: { annotation: Annotation;
       body = <circle cx={annotation.at.x} cy={annotation.at.y} r={Math.max(annotation.radius, 0.5)} {...stroke} />;
       break;
     case 'ruler': {
-      const geometry = rulerGeometry(annotation, unit);
+      const geometry = rulerGeometry(annotation, unit, scale);
       const { label } = geometry;
       body = (
         <>
@@ -115,6 +117,17 @@ function Shape({ annotation, unit, number, selected }: { annotation: Annotation;
   return (
     <g data-annotation={annotation.id} data-kind={annotation.kind} opacity={selected ? 1 : 0.95}>
       {body}
+      {ageMarks(annotation, unit).map(mark => (
+        <g key={mark.age} data-age={mark.age}>
+          <line x1={mark.tick[0].x} y1={mark.tick[0].y} x2={mark.tick[1].x} y2={mark.tick[1].y} stroke={color} strokeWidth={Math.max(width * 0.6, unit)} strokeLinecap="round" />
+          <text
+            x={mark.label.at.x} y={mark.label.at.y} fontSize={mark.label.size} fontWeight="bold" textAnchor={mark.label.anchor} dominantBaseline="central" fill={color}
+            stroke={haloColor} strokeWidth={Math.max(2, 4 * unit)} paintOrder="stroke" strokeLinejoin="round" style={{ userSelect: 'none' }}
+          >
+            {mark.label.text}
+          </text>
+        </g>
+      ))}
       {number !== undefined && (
         <g style={{ userSelect: 'none' }}>
           <circle cx={anchor.x} cy={anchor.y} r={radius} fill={color} stroke={haloColor} strokeWidth={2 * unit} />
@@ -147,7 +160,7 @@ function ZoomButton({ glyph, label, onClick }: { glyph: string; label: string; o
  * with a mouse, a finger or a pen.
  */
 export default function PalmCanvas({
-  imageUrl, width, height, annotations, tool, color, strokeUnits, eraserUnits = 14, rulerParts = RULER_DEFAULT_PARTS, snap = true,
+  imageUrl, width, height, annotations, tool, color, strokeUnits, eraserUnits = 14, rulerParts = RULER_DEFAULT_PARTS, snap = true, scale,
   selectedId, focusId, focusNonce = 0, readOnly = false, onSelect, onCreate, onCommit,
 }: Props) {
   const t = useT();
@@ -443,9 +456,9 @@ export default function PalmCanvas({
           <image href={imageUrl} x={0} y={0} width={width} height={height} />
           <g clipPath={`url(#${clipId})`}>
             {shown.map(annotation => (
-              <Shape key={annotation.id} annotation={annotation} unit={unit} number={numbers.get(annotation.id)} selected={annotation.id === selectedId} />
+              <Shape key={annotation.id} annotation={annotation} unit={unit} number={numbers.get(annotation.id)} selected={annotation.id === selectedId} scale={scale} />
             ))}
-            {draftAnnotation && <Shape annotation={draftAnnotation} unit={unit} selected={false} />}
+            {draftAnnotation && <Shape annotation={draftAnnotation} unit={unit} selected={false} scale={scale} />}
           </g>
           {selection && !readOnly && (
             <rect x={selection.x} y={selection.y} width={selection.width} height={selection.height} fill="none" stroke="#22d3ee" strokeWidth={2 / view.k} pointerEvents="none" />

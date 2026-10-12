@@ -75,6 +75,7 @@ export default function PalmClientView({ record, imageUrl, annotations, onClose 
             focusId={focus.id}
             focusNonce={focus.nonce}
             readOnly
+            scale={record.scale}
             onSelect={id => { setSelectedId(id); }}
           />
         </div>

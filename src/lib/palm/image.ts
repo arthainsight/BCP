@@ -1,5 +1,5 @@
 import {
-  BADGE_UNITS, LABEL_UNITS, anchorOf, arrowHead, contrastText, numbering, pathData, rulerGeometry, unitOf, noteList,
+  BADGE_UNITS, LABEL_UNITS, ageMarks, anchorOf, arrowHead, contrastText, numbering, pathData, rulerGeometry, unitOf, noteList,
   type Annotation,
 } from './annotations';
 
@@ -104,7 +104,7 @@ function drawLabel(context: CanvasRenderingContext2D, text: string, x: number, y
 }
 
 /** The picture with its drawing on it, and optionally the numbered notes under it, as a PNG. */
-export async function renderAnnotated(image: Blob, width: number, height: number, annotations: Annotation[], withNotes: boolean): Promise<Blob> {
+export async function renderAnnotated(image: Blob, width: number, height: number, annotations: Annotation[], withNotes: boolean, scale?: number): Promise<Blob> {
   const decoded = await decode(image);
   try {
     const unit = unitOf(width, height);
@@ -171,7 +171,7 @@ export async function renderAnnotated(image: Blob, width: number, height: number
           context.beginPath();
           context.moveTo(annotation.from.x, annotation.from.y);
           context.lineTo(annotation.to.x, annotation.to.y);
-          const geometry = rulerGeometry(annotation, unit);
+          const geometry = rulerGeometry(annotation, unit, scale);
           for (const [a, b] of geometry.ticks) {
             context.moveTo(a.x, a.y);
             context.lineTo(b.x, b.y);
@@ -193,6 +193,16 @@ export async function renderAnnotated(image: Blob, width: number, height: number
           break;
         case 'pin':
           break;
+      }
+      for (const mark of ageMarks(annotation, unit)) {
+        context.beginPath();
+        context.lineWidth = Math.max(annotation.width * 0.6, unit);
+        context.moveTo(mark.tick[0].x, mark.tick[0].y);
+        context.lineTo(mark.tick[1].x, mark.tick[1].y);
+        context.stroke();
+        context.textBaseline = 'middle';
+        drawLabel(context, mark.label.text, mark.label.at.x, mark.label.at.y, mark.label.size, annotation.color, unit, mark.label.anchor === 'middle' ? 'center' : mark.label.anchor === 'start' ? 'left' : 'right');
+        context.textBaseline = 'alphabetic';
       }
       const number = numbers.get(annotation.id);
       if (number !== undefined) drawBadge(context, annotation, number, unit);
