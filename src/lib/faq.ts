@@ -451,6 +451,22 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     },
   },
 
+  {
+    id: 'share-link',
+    section: 'data',
+    q: { en: 'How do I give a chart to someone else?', fi: 'Miten annan kartan jollekulle toiselle?' },
+    a: {
+      en: [
+        'Press SHARE in the top bar (on a phone, in the ⋮ menu). It copies a link that holds the birth date and time, the place and the time zone. Whoever opens the link gets the form filled in and the chart calculated, with their own settings; nothing else of yours goes with it.',
+        'The data is in the part of the address after the #, which the browser never sends to a server, but anyone who has the link can read it, so give it only to the person it is for. The link does not stay in the address bar after it has been opened.',
+      ],
+      fi: [
+        'Paina yläpalkin JAA-painiketta (puhelimessa ⋮-valikosta). Se kopioi linkin, jossa ovat syntymäaika ja kellonaika, paikka ja aikavyöhyke. Linkin avaaja saa lomakkeen täytettynä ja kartan laskettuna omilla asetuksillaan; mitään muuta sinun tiedoistasi ei mene mukana.',
+        'Tiedot ovat osoitteen #-merkin jälkeisessä osassa, jota selain ei koskaan lähetä palvelimelle, mutta jokainen, jolla on linkki, voi lukea ne, joten anna se vain sille, jolle se on tarkoitettu. Linkki ei jää osoiteriville sen jälkeen, kun se on avattu.',
+      ],
+    },
+  },
+
   // ── Settings and calculations ──────────────────────────────────────
   {
     id: 'language',

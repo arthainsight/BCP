@@ -25,6 +25,7 @@ import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
 import { withDashaLayers } from '@/components/chartLayers';
 import { LanguageContext, type Language } from '@/lib/i18n';
+import { decodeShare } from '@/lib/shareLink';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
@@ -532,6 +533,30 @@ export default function Home() {
     },
     [performCalculation]
   );
+
+  // A link made with SHARE carries the birth data after the #: the form is filled in and the chart calculated, once the stored settings are in.
+  const sharedHandled = useRef(false);
+  useEffect(() => {
+    if (!settingsRestored || sharedHandled.current) return;
+    sharedHandled.current = true;
+    const shared = decodeShare(window.location.hash);
+    if (!shared) return;
+    // The address is cleaned, so a reload does not start over and the data is not left in the address bar.
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    // The address cannot be read during the server render, so this has to happen after mount; it runs once.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void handleLoadChartSnapshot({
+      birthDatetime: shared.birthDatetime,
+      city: shared.city,
+      manualLat: shared.lat,
+      manualLng: shared.lng,
+      ianaTimezone: shared.ianaTimezone,
+      tzOverride: shared.tzOverride,
+      targetDate: getTodayString(),
+      targetTime: '12:00',
+      showCoords: true,
+    });
+  }, [settingsRestored, handleLoadChartSnapshot]);
 
   // "Open in chart" in the Dasha event list: read every target-date layer and
   // the transits for the event's day.

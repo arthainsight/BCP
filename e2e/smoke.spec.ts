@@ -2060,3 +2060,34 @@ test('the backup keeps the palm photographs with their drawings and puts them ba
 
   expect(errors).toEqual([]);
 });
+
+test('SHARE copies a link with the birth data, and opening the link calculates the chart', async ({ page, context, browser }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+
+  await calculateChart(page);
+  if (info.project.name === 'phone') await visible(page, page.getByRole('button', { name: 'Chart actions', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'SHARE', exact: true })).click();
+  await expect(page.locator('[data-share-notice]')).toContainText('Link copied');
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  expect(link).toMatch(/\/#c=[A-Za-z0-9_-]+$/);
+
+  // Someone else, with nothing saved in their browser, opens the link: the chart is calculated and the address is cleaned.
+  const other = await browser.newContext({ viewport: page.viewportSize() ?? undefined });
+  const guest = await other.newPage();
+  const guestErrors: string[] = [];
+  guest.on('pageerror', (error) => guestErrors.push(error.message));
+  await guest.goto(link);
+  await expect(visible(guest, guest.getByText(/Asc 12°18'|ASC 12°18'/))).toBeVisible({ timeout: 30_000 });
+  await expect.poll(() => guest.url()).not.toContain('#c=');
+  expect(await guest.evaluate(() => window.location.hash)).toBe('');
+
+  // A link that is not a chart does nothing, and breaks nothing.
+  await guest.goto('/#c=garbage');
+  await expect(visible(guest, guest.getByRole('button', { name: 'CHART', exact: true }))).toBeVisible();
+  await other.close();
+
+  expect(errors).toEqual([]);
+  expect(guestErrors).toEqual([]);
+});

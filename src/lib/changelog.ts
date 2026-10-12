@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.79',
+    date: '2026-10-12',
+    title: 'Share a chart with a link',
+    changes: [
+      'A SHARE button in the top bar (in the ⋮ menu on a phone) copies a link that opens the chart: the birth date and time, the place, the coordinates and the time zone are in the part of the address after the #, which the browser does not send to any server. Opening the link fills in the form and calculates the chart, with the settings of the person who opens it; the address is cleaned afterwards, so a reload does not start over.',
+      'A link that is not a chart, or is not well formed (coordinates beyond the globe, a time zone that is not a name), is ignored. The link holds the birth data, so the notice says to give it only to the person it is for.',
+      'Updated the application version to v2.79.',
+    ],
+  },
+  {
     version: 'v2.78',
     date: '2026-10-12',
     title: 'The backup keeps the palm photographs',
