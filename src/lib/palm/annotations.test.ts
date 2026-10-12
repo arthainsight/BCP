@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import {
+  RULER_DEFAULT_PARTS, RULER_MAX_PARTS, clampParts, eraseAlong, eraseAt, handleAt, handlesOf, reshapeAnnotation, rulerGeometry, rulerLabel, rulerPoints, snapPoint, snapTargets,
   STROKE_DEFAULT, STROKE_MAX, STROKE_MIN, anchorOf, arrowHead, boundingBox, clampStroke, distanceToSegment, hitTest, isNumbered, moveAnnotation, newId, noteList, numbering,
   pathData, pushHistory, redoHistory, sanitizeAnnotations, simplifyPath, startHistory, undoHistory, unitOf,
-  type Annotation, type Point,
+  type Annotation, type LineAnnotation, type Point,
 } from './annotations';
 import { fitTransform, focusTransform, toImage, zoomAt } from './viewport';
 
@@ -156,3 +157,132 @@ assert.equal(clampStroke(0), STROKE_MIN, 'a hairline is the thinnest');
 assert.equal(clampStroke(500), STROKE_MAX, 'a marker pen is the thickest');
 assert.equal(clampStroke(Number.NaN), STROKE_DEFAULT, 'not a number is the usual width');
 assert.ok(STROKE_MIN < STROKE_DEFAULT && STROKE_DEFAULT < STROKE_MAX);
+
+// --- The circle ----------------------------------------------------------------------
+const circle = (id: string, at: Point, radius: number): Annotation => ({ ...base, id, kind: 'circle', at, radius });
+const ruler = (id: string, from: Point, to: Point, parts = 2): Annotation => ({ ...base, id, kind: 'ruler', from, to, parts });
+
+const ring = circle('ring', { x: 100, y: 100 }, 40);
+assert.deepEqual(anchorOf(ring), { x: 100, y: 100 }, 'a circle is anchored at its centre');
+const ringBox = boundingBox(ring);
+assert.deepEqual([ringBox.x, ringBox.y, ringBox.width, ringBox.height], [58, 58, 84, 84]);
+assert.deepEqual((moveAnnotation(ring, 5, -5) as Extract<Annotation, { kind: 'circle' }>).at, { x: 105, y: 95 });
+assert.equal(hitTest([ring], { x: 140, y: 100 }, 1, 6)?.id, 'ring', 'on the outline');
+assert.equal(hitTest([ring], { x: 100, y: 100 }, 1, 6), null, 'inside a circle is not on it');
+assert.equal(sanitizeAnnotations([ring, circle('flat', { x: 1, y: 1 }, 0), { ...base, id: 'bad', kind: 'circle', at: { x: 1, y: 1 } }]).map(item => item.id).join(), 'ring', 'a circle needs a radius');
+
+// --- The ruler -----------------------------------------------------------------------
+assert.equal(clampParts(2), 2);
+assert.equal(clampParts(0), 1, 'at least one part');
+assert.equal(clampParts(99), RULER_MAX_PARTS);
+assert.equal(clampParts(3.4), 3, 'whole parts');
+assert.equal(clampParts(Number.NaN), RULER_DEFAULT_PARTS);
+assert.deepEqual(rulerPoints({ x: 0, y: 0 }, { x: 100, y: 50 }, 2), [{ x: 0, y: 0 }, { x: 50, y: 25 }, { x: 100, y: 50 }], 'two parts: the middle');
+assert.equal(rulerPoints({ x: 0, y: 0 }, { x: 90, y: 0 }, 3).length, 4, 'a mark for every division and both ends');
+near(rulerPoints({ x: 0, y: 0 }, { x: 90, y: 0 }, 3)[1].x, 30, 'thirds');
+assert.equal(rulerLabel(ruler('r', { x: 0, y: 0 }, { x: 300, y: 400 }, 1) as Extract<Annotation, { kind: 'ruler' }>), '500', 'the length alone');
+assert.equal(rulerLabel(ruler('r', { x: 0, y: 0 }, { x: 300, y: 400 }, 2) as Extract<Annotation, { kind: 'ruler' }>), '500 ÷ 2 = 250', 'and a part of it');
+assert.equal(rulerLabel(ruler('r', { x: 0, y: 0 }, { x: 100, y: 0 }, 3) as Extract<Annotation, { kind: 'ruler' }>), '100 ÷ 3 = 33.3');
+
+const flat = rulerGeometry(ruler('f', { x: 0, y: 100 }, { x: 200, y: 100 }, 4) as Extract<Annotation, { kind: 'ruler' }>, 1);
+assert.equal(flat.ticks.length, 5);
+assert.deepEqual(flat.middle, { x: 100, y: 100 }, 'an even number of parts has a middle');
+assert.ok(flat.label.at.y < 100 && flat.label.anchor === 'middle', 'the figures sit above a level ruler');
+assert.equal(rulerGeometry(ruler('f', { x: 0, y: 0 }, { x: 90, y: 0 }, 3) as Extract<Annotation, { kind: 'ruler' }>, 1).middle, null, 'three parts have no middle mark');
+const upright = rulerGeometry(ruler('u', { x: 100, y: 0 }, { x: 100, y: 200 }) as Extract<Annotation, { kind: 'ruler' }>, 1);
+assert.ok(upright.label.at.x > 100 && upright.label.anchor === 'start', 'beside an upright ruler, to the right');
+assert.ok(flat.ticks[0][0].y !== flat.ticks[0][1].y, 'the marks cross the line');
+assert.ok(Number.isFinite(rulerGeometry(ruler('z', { x: 5, y: 5 }, { x: 5, y: 5 }) as Extract<Annotation, { kind: 'ruler' }>, 1).label.at.x), 'a ruler without length does not break');
+
+const loadedRuler = sanitizeAnnotations([{ id: 'r', kind: 'ruler', color: '#fff', width: 3, from: { x: 0, y: 0 }, to: { x: 10, y: 0 } }]);
+assert.equal((loadedRuler[0] as Extract<Annotation, { kind: 'ruler' }>).parts, RULER_DEFAULT_PARTS, 'a ruler without parts has two');
+assert.equal(hitTest([ruler('r', { x: 0, y: 0 }, { x: 100, y: 0 })], { x: 50, y: 2 }, 1, 6)?.id, 'r');
+
+// --- Changing a drawing: handles ---------------------------------------------------------
+assert.deepEqual(handlesOf(arrow('a', { x: 1, y: 2 }, { x: 3, y: 4 })).map(handle => handle.id), ['from', 'to']);
+assert.deepEqual(handlesOf(ring).map(handle => [handle.id, handle.at]), [['radius', { x: 140, y: 100 }]]);
+assert.deepEqual(handlesOf(ellipse('e', { x: 50, y: 10 }, { x: 10, y: 60 })).map(handle => handle.at), [{ x: 10, y: 10 }, { x: 50, y: 10 }, { x: 10, y: 60 }, { x: 50, y: 60 }], 'the corners of the box, whichever way it was drawn');
+assert.equal(handlesOf(pen('p', [{ x: 0, y: 0 }, { x: 5, y: 5 }, { x: 9, y: 2 }])).length, 3, 'a stroke has a handle for every point');
+assert.deepEqual(handlesOf(pin('q', { x: 1, y: 1 })), [], 'a pin is only moved');
+assert.deepEqual(handlesOf(text('t', { x: 1, y: 1 }, 'hi')), []);
+
+const dragged = reshapeAnnotation(arrow('a', { x: 0, y: 0 }, { x: 10, y: 0 }), 'to', { x: 30, y: 40 }) as LineAnnotation;
+assert.deepEqual([dragged.from, dragged.to], [{ x: 0, y: 0 }, { x: 30, y: 40 }], 'one end moves, the other stays');
+assert.equal(dragged.kind, 'arrow');
+near((reshapeAnnotation(ring, 'radius', { x: 100, y: 160 }) as Extract<Annotation, { kind: 'circle' }>).radius, 60, 'the radius follows the handle, in any direction');
+assert.deepEqual((reshapeAnnotation(ring, 'radius', { x: 100, y: 160 }) as Extract<Annotation, { kind: 'circle' }>).at, { x: 100, y: 100 }, 'the centre stays');
+const reshaped = reshapeAnnotation(ellipse('e', { x: 10, y: 10 }, { x: 50, y: 60 }), 'se', { x: 80, y: 90 }) as Extract<Annotation, { kind: 'ellipse' }>;
+assert.deepEqual([reshaped.from, reshaped.to], [{ x: 10, y: 10 }, { x: 80, y: 90 }], 'the opposite corner stays');
+const reshapedNw = reshapeAnnotation(ellipse('e', { x: 10, y: 10 }, { x: 50, y: 60 }), 'nw', { x: 0, y: 5 }) as Extract<Annotation, { kind: 'ellipse' }>;
+assert.deepEqual([reshapedNw.from, reshapedNw.to], [{ x: 50, y: 60 }, { x: 0, y: 5 }]);
+const bent = reshapeAnnotation(pen('p', [{ x: 0, y: 0 }, { x: 5, y: 5 }, { x: 9, y: 2 }]), 'p1', { x: 5, y: 20 }) as Extract<Annotation, { kind: 'pen' }>;
+assert.deepEqual(bent.points, [{ x: 0, y: 0 }, { x: 5, y: 20 }, { x: 9, y: 2 }], 'one point of a stroke moves');
+assert.equal(reshapeAnnotation(pin('q', { x: 1, y: 1 }), 'at', { x: 9, y: 9 }).kind, 'pin');
+assert.equal((reshapeAnnotation(ring, 'radius', { x: 100, y: 100 }) as Extract<Annotation, { kind: 'circle' }>).radius, 1, 'a circle never shrinks to nothing');
+
+const handles = handlesOf(arrow('a', { x: 0, y: 0 }, { x: 10, y: 0 }));
+assert.equal(handleAt(handles, { x: 9, y: 1 }, 3)?.id, 'to');
+assert.equal(handleAt(handles, { x: 5, y: 0 }, 3), null, 'in the middle there is no handle');
+
+// --- Snapping ---------------------------------------------------------------------------
+const targets = snapTargets([
+  ruler('r', { x: 0, y: 0 }, { x: 100, y: 0 }, 2),
+  arrow('a', { x: 0, y: 50 }, { x: 40, y: 50 }),
+  ring,
+  pen('p', [{ x: 300, y: 300 }, { x: 310, y: 305 }, { x: 330, y: 300 }]),
+  pin('pin', { x: 500, y: 500 }),
+  text('t', { x: 600, y: 600 }, 'x'),
+]);
+assert.deepEqual(snapPoint(targets, { x: 52, y: 3 }, 6), { x: 50, y: 0 }, 'the middle of the ruler');
+assert.deepEqual(snapPoint(targets, { x: 21, y: 48 }, 6), { x: 20, y: 50 }, 'the middle of an arrow');
+assert.deepEqual(snapPoint(targets, { x: 98, y: 98 }, 6), { x: 100, y: 100 }, 'the centre of a circle');
+assert.deepEqual(snapPoint(targets, { x: 329, y: 301 }, 6), { x: 330, y: 300 }, 'the end of a stroke');
+assert.equal(snapPoint(targets, { x: 310, y: 305 }, 3), null, 'a point in the middle of a stroke is not a target');
+assert.equal(snapPoint(targets, { x: 600, y: 600 }, 6), null, 'text is not a target');
+assert.equal(snapPoint(targets, { x: 70, y: 20 }, 6), null, 'too far from everything');
+assert.equal(snapTargets([ruler('r', { x: 0, y: 0 }, { x: 100, y: 0 })], 'r').length, 0, 'a drawing does not snap to itself');
+
+// --- The eraser ---------------------------------------------------------------------------
+let counter = 0;
+const ids = () => `new${++counter}`;
+const longStroke = { ...pen('stroke', [{ x: 0, y: 100 }, { x: 100, y: 100 }, { x: 200, y: 100 }]), note: 'Life line', label: '30' } as Annotation;
+const untouched = eraseAt([longStroke], { x: 100, y: 300 }, 10, 1, ids);
+assert.equal(untouched.length, 1);
+assert.equal(eraseAt([longStroke], { x: 100, y: 300 }, 10, 1, ids)[0], longStroke, 'untouched drawings are left as they were');
+const sameList = [longStroke];
+assert.equal(eraseAt(sameList, { x: 100, y: 300 }, 10, 1, ids), sameList, 'the same list when nothing was touched');
+
+const cutMiddle = eraseAt([longStroke], { x: 100, y: 100 }, 10, 1, ids);
+assert.equal(cutMiddle.length, 2, 'wiping the middle leaves two pieces');
+const [firstPiece, secondPiece] = cutMiddle as Extract<Annotation, { kind: 'pen' }>[];
+assert.equal(firstPiece.id, 'stroke', 'the first piece is the stroke itself');
+assert.equal(firstPiece.note, 'Life line', 'and keeps its note');
+assert.ok(secondPiece.id !== 'stroke' && secondPiece.note === undefined && secondPiece.label === undefined, 'the other piece is new and has no note');
+assert.ok(firstPiece.points[firstPiece.points.length - 1].x < 95 && firstPiece.points[0].x === 0, 'the first piece ends before the eraser');
+assert.ok(secondPiece.points[0].x > 105 && secondPiece.points[secondPiece.points.length - 1].x === 200, 'the second begins after it');
+assert.equal(secondPiece.color, longStroke.color);
+
+const cutEnd = eraseAt([longStroke], { x: 200, y: 100 }, 10, 1, ids);
+assert.equal(cutEnd.length, 1, 'wiping the end shortens the stroke');
+assert.ok((cutEnd[0] as Extract<Annotation, { kind: 'pen' }>).points.at(-1)!.x < 195);
+assert.deepEqual(eraseAt([pen('dot', [{ x: 5, y: 5 }])], { x: 6, y: 6 }, 10, 1, ids), [], 'a dot is wiped out');
+assert.deepEqual(eraseAt([pen('short', [{ x: 0, y: 0 }, { x: 8, y: 0 }])], { x: 4, y: 0 }, 10, 1, ids), [], 'a stroke that is wiped away entirely is gone');
+
+const sweep = eraseAlong([pen('s', [{ x: 0, y: 100 }, { x: 200, y: 100 }])], { x: 100, y: 60 }, { x: 100, y: 140 }, 10, 1, ids);
+assert.equal(sweep.length, 2, 'a quick sweep across a stroke cuts it, though no step of it lay on the stroke');
+
+const cutLine = eraseAt([{ ...base, id: 'l', kind: 'line', from: { x: 0, y: 0 }, to: { x: 200, y: 0 } } as Annotation], { x: 100, y: 0 }, 10, 1, ids) as LineAnnotation[];
+assert.equal(cutLine.length, 2, 'a line is cut in two');
+assert.ok(cutLine[0].to.x < 95 && cutLine[1].from.x > 105);
+const cutArrow = eraseAt([arrow('ar', { x: 0, y: 0 }, { x: 200, y: 0 })], { x: 100, y: 0 }, 10, 1, ids);
+assert.deepEqual(cutArrow.map(item => item.kind), ['line', 'arrow'], 'the arrow head stays on the piece at its end');
+const arrowHeadGone = eraseAt([arrow('ar', { x: 0, y: 0 }, { x: 200, y: 0 })], { x: 200, y: 0 }, 10, 1, ids);
+assert.deepEqual(arrowHeadGone.map(item => item.kind), ['line'], 'what is left of an arrow without its head is a line');
+assert.equal(arrowHeadGone[0].id, 'ar');
+assert.deepEqual(eraseAt([arrow('ar', { x: 0, y: 0 }, { x: 8, y: 0 })], { x: 4, y: 0 }, 10, 1, ids), []);
+
+assert.deepEqual(eraseAt([ring], { x: 140, y: 100 }, 10, 1, ids), [], 'a circle touched on its outline is removed');
+assert.equal(eraseAt([ring], { x: 100, y: 100 }, 10, 1, ids).length, 1, 'inside the circle is not on it');
+assert.deepEqual(eraseAt([pin('pin', { x: 50, y: 50 })], { x: 60, y: 50 }, 10, 1, ids), [], 'a pin is removed whole');
+assert.equal(eraseAt([ruler('r', { x: 0, y: 0 }, { x: 100, y: 0 })], { x: 50, y: 3 }, 10, 1, ids).length, 0);
+assert.deepEqual(eraseAt([pen('keep', [{ x: 0, y: 500 }, { x: 100, y: 500 }]), pin('gone', { x: 50, y: 50 })], { x: 50, y: 50 }, 10, 1, ids).map(item => item.id), ['keep'], 'only what is under the eraser goes');

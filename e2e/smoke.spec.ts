@@ -1495,7 +1495,7 @@ test('PALM: upload a palm photograph, draw on it, number the notes, show it to t
   await tool('Arrow');
   await drag([0.7, 0.25], [0.55, 0.45]);
   await expect(shapes('arrow')).toHaveCount(1);
-  await tool('Circle');
+  await tool('Ellipse');
   await drag([0.3, 0.75], [0.5, 0.9]);
   await expect(shapes('ellipse')).toHaveCount(1);
 
@@ -1840,6 +1840,167 @@ test('the user guide opens in the language chosen in the app', async ({ page }) 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}'));
   expect(stored.language).toBe('en');
   expect(stored.chartStyle).toBe('south');
+
+  expect(errors).toEqual([]);
+});
+
+test('PALM: a ruler that finds the middle, a circle that stays round, an eraser and dots that change a drawing', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/');
+  await selectWorkspace(page, 'PALM');
+  await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'tools.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  const canvas = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(canvas).toBeVisible();
+  const shapes = (kind: string) => canvas.locator(`g[data-kind="${kind}"]`);
+  const tool = (name: string) => visible(page, page.getByRole('button', { name, exact: true })).click();
+  const boxOf = async () => {
+    await canvas.scrollIntoViewIfNeeded();
+    return (await canvas.boundingBox())!;
+  };
+  const drag = async (from: [number, number], to: [number, number]) => {
+    const box = await boxOf();
+    await page.mouse.move(box.x + box.width * from[0], box.y + box.height * from[1]);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * ((from[0] + to[0]) / 2), box.y + box.height * ((from[1] + to[1]) / 2) + 6, { steps: 4 });
+    await page.mouse.move(box.x + box.width * to[0], box.y + box.height * to[1], { steps: 4 });
+    await page.mouse.up();
+  };
+  const centreOf = async (locator: ReturnType<typeof canvas.locator>) => {
+    await canvas.scrollIntoViewIfNeeded();
+    const box = (await locator.first().boundingBox())!;
+    return { x: box.x + box.width / 2, y: box.y + box.height / 2, box };
+  };
+  const undo = () => visible(page, page.getByRole('button', { name: 'Undo', exact: true })).click();
+  const number = async (locator: ReturnType<typeof canvas.locator>, attribute: string) => Number(await locator.first().getAttribute(attribute));
+
+  // A ruler says its length and, divided in two, the middle; the parts can be changed.
+  await tool('Ruler');
+  await drag([0.3, 0.2], [0.7, 0.2]);
+  await expect(shapes('ruler')).toHaveCount(1);
+  await expect(canvas.locator('[data-ruler-label]')).toHaveText(/^\d+ ÷ 2 = \d+(\.\d)?$/);
+  await expect(shapes('ruler').locator('circle')).toHaveCount(1);
+  await visible(page, page.getByRole('combobox', { name: 'Parts' })).selectOption('4');
+  await expect(canvas.locator('[data-ruler-label]')).toContainText('÷ 4 =');
+  const marks = async () => ((await shapes('ruler').locator('path').first().getAttribute('d')) ?? '').split('M').length - 1;
+  expect(await marks()).toBe(6);
+  await visible(page, page.getByRole('combobox', { name: 'Parts' })).selectOption('3');
+  expect(await marks()).toBe(5);
+  await expect(shapes('ruler').locator('circle'), 'three parts have no middle').toHaveCount(0);
+  await visible(page, page.getByRole('combobox', { name: 'Parts' })).selectOption('2');
+  await expect(shapes('ruler').locator('circle')).toHaveCount(1);
+
+  // A pin put near the middle of the ruler catches on it.
+  await tool('Pin');
+  const middle = await centreOf(shapes('ruler').locator('circle'));
+  await page.mouse.click(middle.x + 4, middle.y + 3);
+  await expect(shapes('pin')).toHaveCount(1);
+  const pinAt = { x: await number(shapes('pin').locator('circle'), 'cx'), y: await number(shapes('pin').locator('circle'), 'cy') };
+  expect(Math.abs(pinAt.x - (await number(shapes('ruler').locator('circle'), 'cx')))).toBeLessThan(0.01);
+  expect(Math.abs(pinAt.y - (await number(shapes('ruler').locator('circle'), 'cy')))).toBeLessThan(0.01);
+  // With snapping off the same click lands where it was made.
+  await visible(page, page.getByRole('button', { name: 'snap', exact: true })).click();
+  await tool('Pin');
+  // (The page may have scrolled to reach the buttons, so the middle is looked up again.)
+  const middleAgain = await centreOf(shapes('ruler').locator('circle'));
+  await page.mouse.click(middleAgain.x + 4, middleAgain.y + 3);
+  await expect(shapes('pin')).toHaveCount(2);
+  expect(await number(shapes('pin').nth(1).locator('circle'), 'cx')).not.toBeCloseTo(pinAt.x, 1);
+  await undo();
+  await visible(page, page.getByRole('button', { name: 'snap', exact: true })).click();
+  await expect(shapes('pin')).toHaveCount(1);
+
+  // A circle stays a circle, whichever way it is dragged.
+  await tool('Circle');
+  await drag([0.45, 0.65], [0.55, 0.7]);
+  await expect(shapes('circle')).toHaveCount(1);
+  const round = (await shapes('circle').locator('circle').first().boundingBox())!;
+  expect(Math.abs(round.width - round.height)).toBeLessThan(1.5);
+  expect(round.width).toBeGreaterThan(20);
+
+  // The eraser wipes a stroke in two; one wipe is one undo step.
+  await tool('Pen');
+  await drag([0.35, 0.4], [0.65, 0.4]);
+  await expect(shapes('pen')).toHaveCount(1);
+  await tool('Eraser');
+  await expect(visible(page, page.getByRole('slider', { name: 'Eraser' }))).toBeVisible();
+  const stroke = await centreOf(shapes('pen').locator('path'));
+  await page.mouse.move(stroke.x, stroke.y - 40);
+  await expect(canvas.locator('[data-eraser-ring]')).toHaveCount(1);
+  await page.mouse.down();
+  await page.mouse.move(stroke.x, stroke.y + 40, { steps: 8 });
+  await page.mouse.up();
+  await expect(shapes('pen')).toHaveCount(2);
+  await undo();
+  await expect(shapes('pen')).toHaveCount(1);
+
+  // Anything else it touches goes whole.
+  const ring = (await shapes('circle').locator('circle').first().boundingBox())!;
+  await page.mouse.move(ring.x - 30, ring.y + ring.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(ring.x + 30, ring.y + ring.height / 2, { steps: 8 });
+  await page.mouse.up();
+  await expect(shapes('circle')).toHaveCount(0);
+  await undo();
+  await expect(shapes('circle')).toHaveCount(1);
+
+  // A line, once drawn, can be moved and changed: the button beside it leads to its dots.
+  await tool('Line');
+  await drag([0.35, 0.85], [0.65, 0.85]);
+  await expect(shapes('line')).toHaveCount(1);
+  await visible(page, page.getByRole('button', { name: /Move or reshape/ })).click();
+  await expect(visible(page, page.getByRole('button', { name: 'Select', exact: true }))).toHaveAttribute('aria-pressed', 'true');
+  await expect(canvas.locator('[data-handle]')).toHaveCount(2);
+  const lineEnd = shapes('line').locator('line');
+  const before = { x1: await number(lineEnd, 'x1'), x2: await number(lineEnd, 'x2'), y2: await number(lineEnd, 'y2') };
+  const end = await centreOf(canvas.locator('[data-handle="to"]'));
+  await page.mouse.move(end.x, end.y);
+  await page.mouse.down();
+  await page.mouse.move(end.x + 40, end.y - 40, { steps: 6 });
+  await page.mouse.up();
+  expect(await number(lineEnd, 'x1')).toBeCloseTo(before.x1, 3);
+  expect(await number(lineEnd, 'x2')).toBeGreaterThan(before.x2 + 10);
+  expect(await number(lineEnd, 'y2')).toBeLessThan(before.y2 - 10);
+  await undo();
+  expect(await number(lineEnd, 'x2')).toBeCloseTo(before.x2, 3);
+
+  // The circle is changed by the dot on its edge, the stroke by the dots along it.
+  const edge = await centreOf(shapes('circle').locator('circle'));
+  await page.mouse.click(edge.box.x, edge.y);
+  const radius = await number(shapes('circle').locator('circle'), 'r');
+  await expect(canvas.locator('[data-handle="radius"]')).toHaveCount(1);
+  const grip = await centreOf(canvas.locator('[data-handle="radius"]'));
+  await page.mouse.move(grip.x, grip.y);
+  await page.mouse.down();
+  await page.mouse.move(grip.x + 30, grip.y, { steps: 6 });
+  await page.mouse.up();
+  expect(await number(shapes('circle').locator('circle'), 'r')).toBeGreaterThan(radius + 10);
+
+  const pathBefore = await shapes('pen').locator('path').first().getAttribute('d');
+  const along = await centreOf(shapes('pen').locator('path'));
+  await page.mouse.click(along.x, along.y + 3);
+  expect(await canvas.locator('[data-handle]').count()).toBeGreaterThanOrEqual(2);
+  const vertex = await centreOf(canvas.locator('[data-handle]').nth(1));
+  await page.mouse.move(vertex.x, vertex.y);
+  await page.mouse.down();
+  await page.mouse.move(vertex.x, vertex.y + 30, { steps: 6 });
+  await page.mouse.up();
+  expect(await shapes('pen').locator('path').first().getAttribute('d')).not.toEqual(pathBefore);
+
+  // The ruler and the circle are kept, and are in the saved picture.
+  await page.waitForTimeout(600);
+  await page.reload();
+  await selectWorkspace(page, 'PALM');
+  const again = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(again).toBeVisible();
+  await expect(again.locator('g[data-kind="ruler"]')).toHaveCount(1);
+  await expect(again.locator('g[data-kind="circle"]')).toHaveCount(1);
+  await expect(again.locator('[data-ruler-label]')).toHaveText(/÷ 2 =/);
+  const download = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download PNG', exact: true })).click();
+  const bytes = readFileSync(await (await download).path());
+  expect([...bytes.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
 
   expect(errors).toEqual([]);
 });

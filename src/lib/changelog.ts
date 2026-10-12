@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v2.77',
+    date: '2026-10-12',
+    title: 'PALM drawing: a ruler, a circle that stays round, an eraser and drawings that can be changed',
+    changes: [
+      'A Ruler tool measures between two points and divides the line into 1 to 12 equal parts with marks; with two parts (the usual) it marks the middle with a dot. It writes its length and the length of one part, in pixels of the photograph (for example 362 ÷ 4 = 90.5), so lengths can be compared. The number of parts is chosen beside the tools, and it can be changed afterwards for a ruler that is selected.',
+      'Circle is now a true circle, drawn from its centre to its edge, so it cannot be stretched into an oval. The old free shape is the Ellipse tool; the ellipses already drawn are kept as they were.',
+      'An Eraser tool wipes: a pen stroke or a line is cut where the eraser passes (in two, when it passes through the middle; an arrow keeps its head on the piece at its end), and any other drawing it touches is removed whole. A ring shows the size of the eraser, which has a slider of its own, and one wipe is one undo step.',
+      'A drawing can be changed after it is drawn. In Select, the selected drawing shows dots: drag an end of a line, an arrow or a ruler, the edge of a circle, a corner of an ellipse or any point of a pen stroke. Dragging the drawing itself still moves it, and a Move or reshape button beside the name of a new drawing leads to Select.',
+      'New drawings catch on the marks of a ruler, the middle or the ends of a line and an arrow, the ends of a stroke, the centre of a circle or an ellipse and pins (a ring shows where), so a pin or a line can be put exactly in the middle of something. The snap button switches it off.',
+      'The ruler and the circle are kept with the photograph, and are in the saved picture and the client view. The user guide describes the new tools.',
+      'Updated the application version to v2.77.',
+    ],
+  },
+  {
     version: 'v2.76',
     date: '2026-10-11',
     title: 'A user guide',

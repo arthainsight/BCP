@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
-  BADGE_UNITS, LABEL_UNITS, TEXT_UNITS, anchorOf, arrowHead, boundingBox, contrastText, hitTest, moveAnnotation, newId, numbering,
-  pathData, simplifyPath, unitOf, type Annotation, type Point,
+  BADGE_UNITS, LABEL_UNITS, RULER_DEFAULT_PARTS, TEXT_UNITS, anchorOf, arrowHead, boundingBox, clampParts, contrastText, distance, eraseAlong, eraseAt,
+  handleAt, handlesOf, hitTest, moveAnnotation, newId, numbering, pathData, reshapeAnnotation, rulerGeometry, simplifyPath, snapPoint, snapTargets,
+  unitOf, type Annotation, type Point,
 } from '@/lib/palm/annotations';
 import { MAX_ZOOM, fitTransform, focusTransform, toImage, zoomAt, type Transform } from '@/lib/palm/viewport';
 import { useT } from '@/lib/i18n';
 
-export type PalmTool = 'view' | 'select' | 'pen' | 'line' | 'arrow' | 'ellipse' | 'pin' | 'text';
+export type PalmTool = 'view' | 'select' | 'pen' | 'line' | 'arrow' | 'circle' | 'ellipse' | 'ruler' | 'pin' | 'text' | 'eraser';
 
 type Props = {
   imageUrl: string;
@@ -19,6 +20,12 @@ type Props = {
   color: string;
   /** Stroke width of new shapes, in units of a thousandth of the photo's longer side. */
   strokeUnits: number;
+  /** Radius of the eraser, in the same units. */
+  eraserUnits?: number;
+  /** Parts a new ruler is divided into. */
+  rulerParts?: number;
+  /** New drawings catch on the marks of a ruler, the middle of a line, the centre of a circle … */
+  snap?: boolean;
   selectedId: string | null;
   /** Zooms to this annotation whenever `focusNonce` changes. */
   focusId?: string | null;
@@ -34,9 +41,11 @@ type Props = {
 
 type Draft =
   | { kind: 'pen'; points: Point[] }
-  | { kind: 'line' | 'arrow' | 'ellipse'; from: Point; to: Point };
+  | { kind: 'line' | 'arrow' | 'ellipse' | 'circle' | 'ruler'; from: Point; to: Point };
 
 const HIT_SCREEN_PX = 10;
+const HANDLE_HIT_SCREEN_PX = 12;
+const SNAP_SCREEN_PX = 9;
 
 function Shape({ annotation, unit, number, selected }: { annotation: Annotation; unit: number; number?: number; selected: boolean }) {
   const { color, width } = annotation;
@@ -72,6 +81,26 @@ function Shape({ annotation, unit, number, selected }: { annotation: Annotation;
         />
       );
       break;
+    case 'circle':
+      body = <circle cx={annotation.at.x} cy={annotation.at.y} r={Math.max(annotation.radius, 0.5)} {...stroke} />;
+      break;
+    case 'ruler': {
+      const geometry = rulerGeometry(annotation, unit);
+      const { label } = geometry;
+      body = (
+        <>
+          <path d={`M${annotation.from.x} ${annotation.from.y}L${annotation.to.x} ${annotation.to.y}${geometry.ticks.map(([a, b]) => `M${a.x} ${a.y}L${b.x} ${b.y}`).join('')}`} {...stroke} />
+          {geometry.middle && <circle cx={geometry.middle.x} cy={geometry.middle.y} r={Math.max(width * 1.3, 3 * unit)} fill={color} />}
+          <text
+            x={label.at.x} y={label.at.y} fontSize={label.size} fontWeight="bold" textAnchor={label.anchor} dominantBaseline="central" fill={color}
+            stroke={haloColor} strokeWidth={Math.max(2, 4 * unit)} paintOrder="stroke" strokeLinejoin="round" style={{ userSelect: 'none' }} data-ruler-label
+          >
+            {label.text}
+          </text>
+        </>
+      );
+      break;
+    }
     case 'text':
       body = annotation.label ? (
         <text x={annotation.at.x} y={annotation.at.y} fontSize={annotation.size} fontWeight="bold" fill={color} stroke={haloColor} strokeWidth={Math.max(2, 4 * unit)} paintOrder="stroke" strokeLinejoin="round" style={{ userSelect: 'none' }}>
@@ -118,8 +147,8 @@ function ZoomButton({ glyph, label, onClick }: { glyph: string; label: string; o
  * with a mouse, a finger or a pen.
  */
 export default function PalmCanvas({
-  imageUrl, width, height, annotations, tool, color, strokeUnits, selectedId, focusId, focusNonce = 0,
-  readOnly = false, onSelect, onCreate, onCommit,
+  imageUrl, width, height, annotations, tool, color, strokeUnits, eraserUnits = 14, rulerParts = RULER_DEFAULT_PARTS, snap = true,
+  selectedId, focusId, focusNonce = 0, readOnly = false, onSelect, onCreate, onCommit,
 }: Props) {
   const t = useT();
   const unit = unitOf(width, height);
@@ -131,6 +160,11 @@ export default function PalmCanvas({
   const moved = useRef(false);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [drag, setDrag] = useState<{ id: string; dx: number; dy: number } | null>(null);
+  // A drawing whose handle is being dragged, the drawing as the eraser leaves it, the place of the eraser and the mark a point snapped to.
+  const [reshape, setReshape] = useState<Annotation | null>(null);
+  const [wipe, setWipe] = useState<Annotation[] | null>(null);
+  const [eraserAt, setEraserAt] = useState<Point | null>(null);
+  const [snapMark, setSnapMark] = useState<Point | null>(null);
 
   // Latest values for the event handlers that are added by hand.
   const live = useRef({ view, fit });
@@ -142,6 +176,8 @@ export default function PalmCanvas({
     | { mode: 'pinch'; distance: number; centre: Point; start: Transform }
     | { mode: 'draw' }
     | { mode: 'move'; id: string; origin: Point; original: Annotation }
+    | { mode: 'reshape'; id: string; handle: string; original: Annotation; targets: Point[] }
+    | { mode: 'erase'; last: Point }
     | { mode: 'tap'; origin: Point }
     | null
   >(null);
@@ -212,6 +248,14 @@ export default function PalmCanvas({
     return { x: event.clientX - rect.left, y: event.clientY - rect.top };
   };
 
+  const targets = useMemo(() => (snap ? snapTargets(annotations) : []), [annotations, snap]);
+  /** A point of the photo, caught on the nearest mark when there is one within reach. */
+  const caught = (raw: Point, list: Point[] = targets): { at: Point; snapped: boolean } => {
+    const target = snap ? snapPoint(list, raw, SNAP_SCREEN_PX / view.k) : null;
+    return target ? { at: target, snapped: true } : { at: raw, snapped: false };
+  };
+  const eraserRadius = eraserUnits * unit;
+
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (!fit) return;
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
@@ -228,7 +272,8 @@ export default function PalmCanvas({
     }
 
     const raw = toImage(view, screen.x, screen.y);
-    const at = inside(raw);
+    const start = caught(raw);
+    const at = inside(start.at);
     const hit = hitTest(annotations, raw, unit, HIT_SCREEN_PX / view.k);
     if (readOnly || tool === 'view') {
       gesture.current = { mode: 'pan', last: screen };
@@ -236,15 +281,27 @@ export default function PalmCanvas({
       return;
     }
     if (tool === 'select') {
+      // The handles of the selected drawing come first: they change it, where a drag on the drawing moves it.
+      const chosen = selectedId ? annotations.find(annotation => annotation.id === selectedId) : undefined;
+      const handle = chosen ? handleAt(handlesOf(chosen), raw, HANDLE_HIT_SCREEN_PX / view.k) : null;
+      if (chosen && handle) {
+        gesture.current = { mode: 'reshape', id: chosen.id, handle: handle.id, original: chosen, targets: snap ? snapTargets(annotations, chosen.id) : [] };
+        return;
+      }
       onSelect(hit?.id ?? null);
       gesture.current = hit ? { mode: 'move', id: hit.id, origin: raw, original: hit } : { mode: 'pan', last: screen };
       return;
     }
-    if (tool === 'pen') {
-      setDraft({ kind: 'pen', points: [at] });
+    if (tool === 'eraser') {
+      setEraserAt(raw);
+      setWipe(eraseAt(annotations, raw, eraserRadius, unit));
+      gesture.current = { mode: 'erase', last: raw };
+    } else if (tool === 'pen') {
+      setDraft({ kind: 'pen', points: [inside(raw)] });
       gesture.current = { mode: 'draw' };
-    } else if (tool === 'line' || tool === 'arrow' || tool === 'ellipse') {
+    } else if (tool === 'line' || tool === 'arrow' || tool === 'ellipse' || tool === 'circle' || tool === 'ruler') {
       setDraft({ kind: tool, from: at, to: at });
+      setSnapMark(start.snapped ? at : null);
       gesture.current = { mode: 'draw' };
     } else {
       gesture.current = { mode: 'tap', origin: screen };
@@ -252,6 +309,11 @@ export default function PalmCanvas({
   };
 
   const onPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    // The eraser shows where it is before it is pressed, with a mouse.
+    if (tool === 'eraser' && !readOnly && event.pointerType !== 'touch' && fit) {
+      const place = pointOf(event);
+      setEraserAt(toImage(view, place.x, place.y));
+    }
     if (!pointers.current.has(event.pointerId)) return;
     const screen = pointOf(event);
     pointers.current.set(event.pointerId, screen);
@@ -270,15 +332,30 @@ export default function PalmCanvas({
       setView(v => ({ ...v, tx: v.tx + screen.x - current.last.x, ty: v.ty + screen.y - current.last.y }));
       current.last = screen;
     } else if (current.mode === 'draw') {
-      const at = inside(toImage(view, screen.x, screen.y));
+      const raw = toImage(view, screen.x, screen.y);
+      const end = caught(raw);
+      const at = inside(end.at);
       setDraft(d => {
         if (!d) return d;
         if (d.kind === 'pen') {
+          const plain = inside(raw);
           const last = d.points[d.points.length - 1];
-          return Math.hypot(at.x - last.x, at.y - last.y) * view.k < 1.5 ? d : { kind: 'pen', points: [...d.points, at] };
+          return Math.hypot(plain.x - last.x, plain.y - last.y) * view.k < 1.5 ? d : { kind: 'pen', points: [...d.points, plain] };
         }
         return { ...d, to: at };
       });
+      setSnapMark(draft && draft.kind !== 'pen' && end.snapped ? at : null);
+    } else if (current.mode === 'reshape') {
+      const end = caught(toImage(view, screen.x, screen.y), current.targets);
+      const at = inside(end.at);
+      setReshape(reshapeAnnotation(current.original, current.handle, at));
+      setSnapMark(end.snapped ? at : null);
+    } else if (current.mode === 'erase') {
+      const at = toImage(view, screen.x, screen.y);
+      const from = current.last;
+      current.last = at;
+      setEraserAt(at);
+      setWipe(list => eraseAlong(list ?? annotations, from, at, eraserRadius, unit));
     } else if (current.mode === 'move') {
       const at = toImage(view, screen.x, screen.y);
       setDrag({ id: current.id, dx: at.x - current.origin.x, dy: at.y - current.origin.y });
@@ -298,17 +375,28 @@ export default function PalmCanvas({
       if (draft.kind === 'pen') {
         const points = simplifyPath(draft.points, 0.8 * unit);
         if (points.length > 1 || draft.points.length > 1) onCreate({ ...base, kind: 'pen', points: points.length > 1 ? points : draft.points });
-      } else if (Math.hypot(draft.to.x - draft.from.x, draft.to.y - draft.from.y) * view.k > 4) {
-        onCreate({ ...base, kind: draft.kind, from: draft.from, to: draft.to });
+      } else if (distance(draft.from, draft.to) * view.k > 4) {
+        if (draft.kind === 'circle') onCreate({ ...base, kind: 'circle', at: draft.from, radius: distance(draft.from, draft.to) });
+        else if (draft.kind === 'ruler') onCreate({ ...base, kind: 'ruler', from: draft.from, to: draft.to, parts: clampParts(rulerParts) });
+        else onCreate({ ...base, kind: draft.kind, from: draft.from, to: draft.to });
       }
       setDraft(null);
+      setSnapMark(null);
+    } else if (current.mode === 'reshape') {
+      if (reshape && onCommit) onCommit(annotations.map(annotation => (annotation.id === current.id ? reshape : annotation)));
+      setReshape(null);
+      setSnapMark(null);
+    } else if (current.mode === 'erase') {
+      if (wipe && wipe !== annotations && onCommit) onCommit(wipe);
+      setWipe(null);
+      if (event.pointerType === 'touch') setEraserAt(null);
     } else if (current.mode === 'move') {
       if (drag && (Math.abs(drag.dx) > 0 || Math.abs(drag.dy) > 0) && onCommit) {
         onCommit(annotations.map(annotation => (annotation.id === drag.id ? moveAnnotation(annotation, drag.dx, drag.dy) : annotation)));
       }
       setDrag(null);
     } else if (current.mode === 'tap' && onCreate && Math.hypot(screen.x - current.origin.x, screen.y - current.origin.y) < 6) {
-      const at = toImage(view, current.origin.x, current.origin.y);
+      const at = caught(toImage(view, current.origin.x, current.origin.y)).at;
       if (at.x < 0 || at.y < 0 || at.x > width || at.y > height) return;
       const base = { id: newId(), color, width: strokeUnits * unit };
       onCreate(tool === 'text' ? { ...base, kind: 'text', at, size: TEXT_UNITS * unit, label: t('Text') } : { ...base, kind: 'pin', at });
@@ -316,15 +404,23 @@ export default function PalmCanvas({
   };
 
   const numbers = useMemo(() => numbering(annotations), [annotations]);
-  const shown = annotations.map(annotation => (drag && drag.id === annotation.id ? moveAnnotation(annotation, drag.dx, drag.dy) : annotation));
+  const shown = (wipe ?? annotations).map(annotation => (
+    reshape && reshape.id === annotation.id ? reshape : drag && drag.id === annotation.id ? moveAnnotation(annotation, drag.dx, drag.dy) : annotation
+  ));
   const selected = shown.find(annotation => annotation.id === selectedId);
   const selection = selected ? boundingBox(selected, unit) : null;
   const cursor = readOnly || tool === 'view' ? 'grab' : tool === 'select' ? 'default' : 'crosshair';
+  // The points of the selected drawing that can be dragged.
+  const handles = tool === 'select' && !readOnly && selected ? handlesOf(selected) : [];
 
   const draftAnnotation: Annotation | null = draft
-    ? draft.kind === 'pen'
-      ? { id: 'draft', kind: 'pen', color, width: strokeUnits * unit, points: draft.points }
-      : { id: 'draft', kind: draft.kind, color, width: strokeUnits * unit, from: draft.from, to: draft.to }
+    ? (() => {
+      const common = { id: 'draft', color, width: strokeUnits * unit };
+      if (draft.kind === 'pen') return { ...common, kind: 'pen', points: draft.points } as Annotation;
+      if (draft.kind === 'circle') return { ...common, kind: 'circle', at: draft.from, radius: distance(draft.from, draft.to) } as Annotation;
+      if (draft.kind === 'ruler') return { ...common, kind: 'ruler', from: draft.from, to: draft.to, parts: clampParts(rulerParts) } as Annotation;
+      return { ...common, kind: draft.kind, from: draft.from, to: draft.to } as Annotation;
+    })()
     : null;
 
   return (
@@ -337,6 +433,7 @@ export default function PalmCanvas({
       onPointerMove={onPointerMove}
       onPointerUp={finish}
       onPointerCancel={finish}
+      onPointerLeave={event => { if (event.pointerType !== 'touch' && !pointers.current.size) setEraserAt(null); }}
     >
       <svg className="absolute inset-0 h-full w-full" role="img" aria-label={t('Palm photograph')} data-palm="svg">
         <g transform={`translate(${view.tx} ${view.ty}) scale(${view.k})`}>
@@ -352,6 +449,21 @@ export default function PalmCanvas({
           </g>
           {selection && !readOnly && (
             <rect x={selection.x} y={selection.y} width={selection.width} height={selection.height} fill="none" stroke="#22d3ee" strokeWidth={2 / view.k} pointerEvents="none" />
+          )}
+          {handles.map(handle => (
+            <circle
+              key={handle.id} data-handle={handle.id} cx={handle.at.x} cy={handle.at.y} r={(handles.length > 12 ? 4.5 : 6.5) / view.k}
+              fill="#ffffff" stroke="#0891b2" strokeWidth={2 / view.k} pointerEvents="none"
+            />
+          ))}
+          {snapMark && (
+            <circle data-snap-mark cx={snapMark.x} cy={snapMark.y} r={9 / view.k} fill="none" stroke="#22d3ee" strokeWidth={2.5 / view.k} pointerEvents="none" />
+          )}
+          {tool === 'eraser' && eraserAt && !readOnly && (
+            <g pointerEvents="none" data-eraser-ring>
+              <circle cx={eraserAt.x} cy={eraserAt.y} r={eraserRadius} fill="rgba(255,255,255,0.15)" stroke="#111827" strokeWidth={3 / view.k} />
+              <circle cx={eraserAt.x} cy={eraserAt.y} r={eraserRadius} fill="none" stroke="#ffffff" strokeWidth={1.5 / view.k} />
+            </g>
           )}
           {selection && readOnly && (
             <rect x={selection.x} y={selection.y} width={selection.width} height={selection.height} rx={8 / view.k} fill="none" stroke="#22d3ee" strokeWidth={3 / view.k} pointerEvents="none" />
