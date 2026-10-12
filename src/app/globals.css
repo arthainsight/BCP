@@ -8,9 +8,17 @@ body {
 
 /* Print: only the TIMING summary, so the page saves as a one-page PDF. */
 @media print {
-  body * { visibility: hidden; }
-  #timing-summary, #timing-summary * { visibility: visible; }
-  #timing-summary { position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
+  body:not([data-print-report]) * { visibility: hidden; }
+  body:not([data-print-report]) #timing-summary, body:not([data-print-report]) #timing-summary * { visibility: visible; }
+  body:not([data-print-report]) #timing-summary { position: absolute; left: 0; top: 0; width: 100%; background: #fff; }
   /* Paper is white, whatever theme is on screen. */
-  #timing-summary, #timing-summary * { color: #1f2937 !important; }
+  body:not([data-print-report]) #timing-summary, body:not([data-print-report]) #timing-summary * { color: #1f2937 !important; }
 }
+
+/* Print: the client report is the whole of what is printed, and flows over as many pages as it needs. */
+@media print {
+  body[data-print-report] { overflow: visible !important; height: auto !important; background: #fff !important; }
+  body[data-print-report] > *:not([data-report-root]) { display: none !important; }
+  body[data-print-report] [data-report-root] { position: static !important; overflow: visible !important; height: auto !important; background: #fff !important; }
+}
+@page { margin: 12mm; }

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import {
-  RULER_DEFAULT_PARTS, RULER_MAX_PARTS, clampParts, eraseAlong, eraseAt, handleAt, handlesOf, reshapeAnnotation, rulerGeometry, rulerLabel, rulerPoints, snapPoint, snapTargets,
+  AGE_DEFAULT, RULER_DEFAULT_PARTS, RULER_MAX_PARTS, ageMarks, ageValues, clampParts, validAgeScale, validScale, eraseAlong, eraseAt, handleAt, handlesOf, reshapeAnnotation, rulerGeometry, rulerLabel, rulerPoints, snapPoint, snapTargets,
   STROKE_DEFAULT, STROKE_MAX, STROKE_MIN, anchorOf, arrowHead, boundingBox, clampStroke, distanceToSegment, hitTest, isNumbered, moveAnnotation, newId, noteList, numbering,
   pathData, pushHistory, redoHistory, sanitizeAnnotations, simplifyPath, startHistory, undoHistory, unitOf,
   type Annotation, type LineAnnotation, type Point,
 } from './annotations';
-import { fitTransform, focusTransform, toImage, zoomAt } from './viewport';
+import { fitTransform, focusTransform, fromLinkedView, toImage, toLinkedView, zoomAt } from './viewport';
 
 const near = (actual: number, expected: number, message: string, epsilon = 1e-6) =>
   assert.ok(Math.abs(actual - expected) < epsilon, `${message}: ${actual} vs ${expected}`);
@@ -286,3 +286,82 @@ assert.equal(eraseAt([ring], { x: 100, y: 100 }, 10, 1, ids).length, 1, 'inside 
 assert.deepEqual(eraseAt([pin('pin', { x: 50, y: 50 })], { x: 60, y: 50 }, 10, 1, ids), [], 'a pin is removed whole');
 assert.equal(eraseAt([ruler('r', { x: 0, y: 0 }, { x: 100, y: 0 })], { x: 50, y: 3 }, 10, 1, ids).length, 0);
 assert.deepEqual(eraseAt([pen('keep', [{ x: 0, y: 500 }, { x: 100, y: 500 }]), pin('gone', { x: 50, y: 50 })], { x: 50, y: 50 }, 10, 1, ids).map(item => item.id), ['keep'], 'only what is under the eraser goes');
+
+// --- A scale in centimetres -----------------------------------------------------------------
+const rulerOf = (length: number, parts = 2) => ruler('r', { x: 0, y: 0 }, { x: length, y: 0 }, parts) as Extract<Annotation, { kind: 'ruler' }>;
+assert.equal(validScale(48.3), true);
+for (const bad of [0, -1, Number.NaN, Infinity, '12', null, undefined]) assert.equal(validScale(bad), false, `${String(bad)} is not a scale`);
+assert.equal(rulerLabel(rulerOf(480, 1), 48), '10 cm', 'a length in centimetres');
+assert.equal(rulerLabel(rulerOf(360, 4), 48), '7.5 cm ÷ 4 = 1.88 cm', 'and a part of it');
+assert.equal(rulerLabel(rulerOf(480, 2), undefined), '480 ÷ 2 = 240', 'without a scale, pixels as before');
+assert.equal(rulerLabel(rulerOf(480, 2), 0), '480 ÷ 2 = 240', 'a scale that is not one is no scale');
+assert.equal(rulerGeometry(rulerOf(480, 1), 1, 48).label.text, '10 cm');
+
+// --- Ages along a line -----------------------------------------------------------------------
+assert.deepEqual(validAgeScale({ from: 0, to: 70, step: 10 }), AGE_DEFAULT);
+for (const bad of [null, 'x', { from: 0, to: 70 }, { from: 5, to: 5, step: 1 }, { from: -1, to: 70, step: 10 }, { from: 0, to: 121, step: 10 }, { from: 0, to: 70, step: 0 }, { from: 0, to: 70, step: 0.1 }, { from: 0, to: 100, step: 0.5 }, { from: 0, to: 70, step: Number.NaN }]) {
+  assert.equal(validAgeScale(bad), null, `${JSON.stringify(bad)} is not an age scale`);
+}
+assert.deepEqual(ageValues({ from: 0, to: 70, step: 10 }), [0, 10, 20, 30, 40, 50, 60, 70]);
+assert.deepEqual(ageValues({ from: 12, to: 47, step: 10 }), [20, 30, 40], 'the multiples of the step between the ages');
+assert.deepEqual(ageValues({ from: 80, to: 0, step: 20 }), [0, 20, 40, 60, 80], 'in either direction');
+assert.deepEqual(ageValues({ from: 0, to: 2, step: 0.5 }), [0, 0.5, 1, 1.5, 2]);
+
+const lifeLine = { ...arrow('life', { x: 0, y: 0 }, { x: 700, y: 0 }), ages: { from: 0, to: 70, step: 10 } } as Annotation;
+const marks = ageMarks(lifeLine, 1);
+assert.equal(marks.length, 8);
+assert.deepEqual(marks.map(mark => mark.age), [0, 10, 20, 30, 40, 50, 60, 70]);
+near(marks[0].at.x, 0, 'the first age is at the start');
+near(marks[3].at.x, 300, 'thirty of seventy years: a third of the way');
+near(marks[7].at.x, 700, 'the last at the end');
+assert.ok(marks[3].tick[0].y !== marks[3].tick[1].y && marks[3].tick[0].x === marks[3].tick[1].x, 'a mark crosses the line');
+assert.ok(marks[3].label.at.y < 0 && marks[3].label.text === '30', 'the age is written above a level line');
+assert.equal(ageMarks(arrow('plain', { x: 0, y: 0 }, { x: 10, y: 0 }), 1).length, 0, 'no scale, no marks');
+assert.equal(ageMarks({ ...ring, ages: AGE_DEFAULT } as Annotation, 1).length, 0, 'a circle has no line to follow');
+assert.equal(ageMarks({ ...lifeLine, ages: { from: 5, to: 5, step: 1 } } as Annotation, 1).length, 0, 'a scale that is not one gives none');
+
+// Along a stroke that bends, the ages follow its length, not its straight reach.
+const corner90 = { ...pen('bend', [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 100 }]), ages: { from: 0, to: 20, step: 10 } } as Annotation;
+const bentMarks = ageMarks(corner90, 1);
+assert.deepEqual(bentMarks.map(mark => mark.age), [0, 10, 20]);
+near(bentMarks[1].at.x, 100, 'half the length is at the corner (x)');
+near(bentMarks[1].at.y, 0, 'half the length is at the corner (y)');
+near(bentMarks[2].at.y, 100, 'the end');
+// Reversed: the first age at the end of the line.
+const reversed = ageMarks({ ...lifeLine, ages: { from: 70, to: 0, step: 35 } } as Annotation, 1);
+assert.deepEqual(reversed.map(mark => [mark.age, Math.round(mark.at.x)]), [[0, 700], [35, 350], [70, 0]]);
+// Saved data keeps the ages of strokes and lines, and drops anything else.
+const kept = sanitizeAnnotations([
+  lifeLine,
+  { ...pen('p', [{ x: 0, y: 0 }, { x: 5, y: 5 }]), ages: { from: 0, to: 80, step: 10 } },
+  { ...pen('bad', [{ x: 0, y: 0 }, { x: 5, y: 5 }]), ages: { from: 0, to: 0, step: 10 } },
+  { ...pin('pin', { x: 1, y: 1 }), ages: AGE_DEFAULT },
+]);
+assert.deepEqual(kept.map(item => item.ages !== undefined), [true, true, false, false]);
+
+// --- Two photographs, one view -------------------------------------------------------------------
+{
+  // A wide window with a tall photograph, and a square window with a wide one.
+  const fitA = fitTransform(800, 600, 600, 800, 0);
+  const fitB = fitTransform(500, 500, 1000, 500, 0);
+  assert.deepEqual(toLinkedView(fitA, fitA, 800, 600, 600, 800, 'a'), { source: 'a', zoom: 1, cx: 0.5, cy: 0.5 }, 'the whole photograph: zoom 1, in the middle');
+  // Zoomed in three times on a place at 30% across and 20% down.
+  const zoomedA = { k: fitA.k * 3, tx: 400 - 0.3 * 600 * fitA.k * 3, ty: 300 - 0.2 * 800 * fitA.k * 3 };
+  const linked = toLinkedView(zoomedA, fitA, 800, 600, 600, 800, 'a');
+  near(linked.zoom, 3, 'three times');
+  near(linked.cx, 0.3, 'across');
+  near(linked.cy, 0.2, 'down');
+  // The other photograph shows the same place, three times in, in the middle of its own window.
+  const zoomedB = fromLinkedView(linked, fitB, 500, 500, 1000, 500);
+  near(zoomedB.k, fitB.k * 3, 'the same zoom beyond fitting');
+  const middleB = toImage(zoomedB, 250, 250);
+  near(middleB.x / 1000, 0.3, 'the same place across');
+  near(middleB.y / 500, 0.2, 'the same place down');
+  // And back again.
+  const back = toLinkedView(zoomedB, fitB, 500, 500, 1000, 500, 'b');
+  near(back.zoom, 3, 'round trip: zoom');
+  near(back.cx, 0.3, 'round trip: across');
+  // The zoom stays within what a window allows.
+  near(fromLinkedView({ source: 'a', zoom: 1000, cx: 0.5, cy: 0.5 }, fitB, 500, 500, 1000, 500).k, fitB.k * 12, 'no further than the most');
+  near(fromLinkedView({ source: 'a', zoom: 0.01, cx: 0.5, cy: 0.5 }, fitB, 500, 500, 1000, 500).k, fitB.k * 0.5, 'nor further out than half');
+}

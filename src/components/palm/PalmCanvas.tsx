@@ -2,11 +2,11 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
-  BADGE_UNITS, LABEL_UNITS, RULER_DEFAULT_PARTS, TEXT_UNITS, anchorOf, arrowHead, boundingBox, clampParts, contrastText, distance, eraseAlong, eraseAt,
+  BADGE_UNITS, LABEL_UNITS, RULER_DEFAULT_PARTS, TEXT_UNITS, ageMarks, anchorOf, arrowHead, boundingBox, clampParts, contrastText, distance, eraseAlong, eraseAt,
   handleAt, handlesOf, hitTest, moveAnnotation, newId, numbering, pathData, reshapeAnnotation, rulerGeometry, simplifyPath, snapPoint, snapTargets,
   unitOf, type Annotation, type Point,
 } from '@/lib/palm/annotations';
-import { MAX_ZOOM, fitTransform, focusTransform, toImage, zoomAt, type Transform } from '@/lib/palm/viewport';
+import { MAX_ZOOM, fitTransform, focusTransform, fromLinkedView, toImage, toLinkedView, zoomAt, type LinkedView, type Transform } from '@/lib/palm/viewport';
 import { useT } from '@/lib/i18n';
 
 export type PalmTool = 'view' | 'select' | 'pen' | 'line' | 'arrow' | 'circle' | 'ellipse' | 'ruler' | 'pin' | 'text' | 'eraser';
@@ -26,6 +26,14 @@ type Props = {
   rulerParts?: number;
   /** New drawings catch on the marks of a ruler, the middle of a line, the centre of a circle … */
   snap?: boolean;
+  /** Pixels of the photograph to a centimetre; rulers then give their lengths in centimetres. */
+  scale?: number;
+  /**
+   * Two photographs side by side can share one view: this is the view the other one made, which is applied here,
+   * and `onViewChange` is told of every move or zoom made here.
+   */
+  linkedView?: LinkedView | null;
+  onViewChange?: (view: LinkedView) => void;
   selectedId: string | null;
   /** Zooms to this annotation whenever `focusNonce` changes. */
   focusId?: string | null;
@@ -47,7 +55,7 @@ const HIT_SCREEN_PX = 10;
 const HANDLE_HIT_SCREEN_PX = 12;
 const SNAP_SCREEN_PX = 9;
 
-function Shape({ annotation, unit, number, selected }: { annotation: Annotation; unit: number; number?: number; selected: boolean }) {
+function Shape({ annotation, unit, number, selected, scale }: { annotation: Annotation; unit: number; number?: number; selected: boolean; scale?: number }) {
   const { color, width } = annotation;
   const anchor = anchorOf(annotation);
   const stroke = { stroke: color, strokeWidth: width, fill: 'none', strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
@@ -85,7 +93,7 @@ function Shape({ annotation, unit, number, selected }: { annotation: Annotation;
       body = <circle cx={annotation.at.x} cy={annotation.at.y} r={Math.max(annotation.radius, 0.5)} {...stroke} />;
       break;
     case 'ruler': {
-      const geometry = rulerGeometry(annotation, unit);
+      const geometry = rulerGeometry(annotation, unit, scale);
       const { label } = geometry;
       body = (
         <>
@@ -115,6 +123,17 @@ function Shape({ annotation, unit, number, selected }: { annotation: Annotation;
   return (
     <g data-annotation={annotation.id} data-kind={annotation.kind} opacity={selected ? 1 : 0.95}>
       {body}
+      {ageMarks(annotation, unit).map(mark => (
+        <g key={mark.age} data-age={mark.age}>
+          <line x1={mark.tick[0].x} y1={mark.tick[0].y} x2={mark.tick[1].x} y2={mark.tick[1].y} stroke={color} strokeWidth={Math.max(width * 0.6, unit)} strokeLinecap="round" />
+          <text
+            x={mark.label.at.x} y={mark.label.at.y} fontSize={mark.label.size} fontWeight="bold" textAnchor={mark.label.anchor} dominantBaseline="central" fill={color}
+            stroke={haloColor} strokeWidth={Math.max(2, 4 * unit)} paintOrder="stroke" strokeLinejoin="round" style={{ userSelect: 'none' }}
+          >
+            {mark.label.text}
+          </text>
+        </g>
+      ))}
       {number !== undefined && (
         <g style={{ userSelect: 'none' }}>
           <circle cx={anchor.x} cy={anchor.y} r={radius} fill={color} stroke={haloColor} strokeWidth={2 * unit} />
@@ -147,12 +166,13 @@ function ZoomButton({ glyph, label, onClick }: { glyph: string; label: string; o
  * with a mouse, a finger or a pen.
  */
 export default function PalmCanvas({
-  imageUrl, width, height, annotations, tool, color, strokeUnits, eraserUnits = 14, rulerParts = RULER_DEFAULT_PARTS, snap = true,
-  selectedId, focusId, focusNonce = 0, readOnly = false, onSelect, onCreate, onCommit,
+  imageUrl, width, height, annotations, tool, color, strokeUnits, eraserUnits = 14, rulerParts = RULER_DEFAULT_PARTS, snap = true, scale,
+  linkedView, onViewChange, selectedId, focusId, focusNonce = 0, readOnly = false, onSelect, onCreate, onCommit,
 }: Props) {
   const t = useT();
   const unit = unitOf(width, height);
-  const clipId = `palm-clip-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const id = useId();
+  const clipId = `palm-clip-${id.replace(/[^a-zA-Z0-9]/g, '')}`;
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [view, setView] = useState<Transform>({ k: 1, tx: 0, ty: 0 });
@@ -165,6 +185,9 @@ export default function PalmCanvas({
   const [wipe, setWipe] = useState<Annotation[] | null>(null);
   const [eraserAt, setEraserAt] = useState<Point | null>(null);
   const [snapMark, setSnapMark] = useState<Point | null>(null);
+  // The view that was last taken from the other photograph, and the one it made here: only a view of our own is passed on.
+  const [lastLinked, setLastLinked] = useState<LinkedView | null | undefined>(linkedView);
+  const [applied, setApplied] = useState<Transform | null>(null);
 
   // Latest values for the event handlers that are added by hand.
   const live = useRef({ view, fit });
@@ -228,6 +251,26 @@ export default function PalmCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusNonce]);
 
+  if (linkedView !== lastLinked) {
+    setLastLinked(linkedView);
+    if (linkedView && linkedView.source !== id && fit) {
+      const next = fromLinkedView(linkedView, fit, size.w, size.h, width, height);
+      setApplied(next);
+      setView(next);
+    }
+  }
+  useEffect(() => {
+    if (applied) moved.current = true;
+  }, [applied]);
+
+  // Whatever the viewer does to the view is passed on, except what was just taken from the other photograph.
+  useEffect(() => {
+    if (!onViewChange || !fit || !moved.current || view === applied) return;
+    onViewChange(toLinkedView(view, fit, size.w, size.h, width, height, id));
+    // Only a change of the view counts, not every change of the props around it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view]);
+
   const zoomBy = useCallback((factor: number) => {
     if (!fit) return;
     moved.current = true;
@@ -238,6 +281,7 @@ export default function PalmCanvas({
     if (!fit) return;
     moved.current = false;
     setView(fit);
+    onViewChange?.({ source: id, zoom: 1, cx: 0.5, cy: 0.5 });
   };
 
   /** A point of the photo, kept inside it: nothing is drawn beyond the edge. */
@@ -443,9 +487,9 @@ export default function PalmCanvas({
           <image href={imageUrl} x={0} y={0} width={width} height={height} />
           <g clipPath={`url(#${clipId})`}>
             {shown.map(annotation => (
-              <Shape key={annotation.id} annotation={annotation} unit={unit} number={numbers.get(annotation.id)} selected={annotation.id === selectedId} />
+              <Shape key={annotation.id} annotation={annotation} unit={unit} number={numbers.get(annotation.id)} selected={annotation.id === selectedId} scale={scale} />
             ))}
-            {draftAnnotation && <Shape annotation={draftAnnotation} unit={unit} selected={false} />}
+            {draftAnnotation && <Shape annotation={draftAnnotation} unit={unit} selected={false} scale={scale} />}
           </g>
           {selection && !readOnly && (
             <rect x={selection.x} y={selection.y} width={selection.width} height={selection.height} fill="none" stroke="#22d3ee" strokeWidth={2 / view.k} pointerEvents="none" />

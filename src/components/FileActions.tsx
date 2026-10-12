@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useT } from '@/lib/i18n';
+import { decodeShare, encodeShare, shareUrl } from '@/lib/shareLink';
 import {
   SavedChart,
   SavedChartData,
@@ -23,6 +24,8 @@ interface Props {
   onLoad: (snapshot: ChartSnapshot, id: string) => void;
   onExport: () => void;
   onImport: () => void;
+  /** Opens the client report. */
+  onReport?: () => void;
   onActiveNameChange?: (name: string | null) => void;
   compact?: boolean;
 }
@@ -37,7 +40,7 @@ const MENU_ITEM =
   "border-b border-zinc-100 dark:border-zinc-700/70 last:border-b-0 " +
   "hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed";
 
-export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport, onActiveNameChange, compact }: Props) {
+export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport, onReport, onActiveNameChange, compact }: Props) {
   const t = useT();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showLoad, setShowLoad] = useState(false);
@@ -46,6 +49,14 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
   const [showSaveAs, setShowSaveAs] = useState(false);
   const [saveAsName, setSaveAsName] = useState("");
   const [confirmNew, setConfirmNew] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  // The notice of a copied link goes away by itself.
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(""), 4000);
+    return () => clearTimeout(timer);
+  }, [notice]);
 
   useEffect(() => {
     const id = getActiveSavedChartId();
@@ -164,6 +175,36 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
     onImport();
   };
 
+  const handleReport = () => {
+    setShowMenu(false);
+    onReport?.();
+  };
+
+  // A link with the birth data after the #: it is not sent to any server, only to whoever is given the link.
+  const handleShare = async () => {
+    setShowMenu(false);
+    if (!hasSnapshotData) return;
+    const shared = {
+      birthDatetime: snapshot.birthDatetime,
+      city: snapshot.city,
+      lat: snapshot.manualLat,
+      lng: snapshot.manualLng,
+      ianaTimezone: snapshot.ianaTimezone,
+      tzOverride: snapshot.tzOverride,
+    };
+    if (!decodeShare(encodeShare(shared))) {
+      setNotice(t("This chart cannot be put in a link: check the birth time and the coordinates."));
+      return;
+    }
+    const link = shareUrl(window.location.href, shared);
+    try {
+      await navigator.clipboard.writeText(link);
+      setNotice(t("Link copied. It holds the birth data, so give it only to the person it is for."));
+    } catch {
+      window.prompt(t("Copy this link"), link);
+    }
+  };
+
   const sheetPosition = compact
     ? "fixed top-20 left-4 right-4 z-[130] max-h-[70dvh]"
     : "absolute top-full right-0 mt-1 z-[130] w-72 max-h-[60vh]";
@@ -191,6 +232,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
           <button onClick={openSaveAs} disabled={!hasSnapshotData} className={BTN}>{t('SAVE AS')}</button>
           <button onClick={handleExport} className={BTN}>{t('EXPORT')}</button>
           <button onClick={handleImport} className={BTN}>{t('IMPORT')}</button>
+          <button onClick={handleShare} disabled={!hasSnapshotData} title={t('Copy a link that opens this chart')} className={BTN}>{t('SHARE')}</button>
+          {onReport && <button onClick={handleReport} title={t('The chart, the timing summary and the palm photographs on pages to print or save as a PDF')} className={BTN}>{t('REPORT')}</button>}
         </>
       )}
 
@@ -207,8 +250,16 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
             <button onClick={openSaveAs} disabled={!hasSnapshotData} className={MENU_ITEM}>{t('SAVE AS')}</button>
             <button onClick={handleExport} className={MENU_ITEM}>{t('EXPORT')}</button>
             <button onClick={handleImport} className={MENU_ITEM}>{t('IMPORT')}</button>
+            <button onClick={handleShare} disabled={!hasSnapshotData} className={MENU_ITEM}>{t('SHARE')}</button>
+            {onReport && <button onClick={handleReport} className={MENU_ITEM}>{t('REPORT')}</button>}
           </div>
         </>
+      )}
+
+      {notice && (
+        <div role="status" data-share-notice className="fixed bottom-16 left-1/2 z-[200] max-w-[90vw] -translate-x-1/2 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-mono text-white shadow-lg dark:bg-zinc-100 dark:text-zinc-900">
+          {notice}
+        </div>
       )}
 
       {showLoad && (

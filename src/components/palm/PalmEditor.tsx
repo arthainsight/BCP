@@ -2,9 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  COLORS, DEFAULT_COLOR, RULER_DEFAULT_PARTS, RULER_MAX_PARTS, RULER_MIN_PARTS, STROKE_DEFAULT, STROKE_MAX, STROKE_MIN, STROKE_STEP, clampParts, clampStroke,
-  noteList, pushHistory, redoHistory, startHistory, undoHistory, unitOf,
-  type Annotation, type History,
+  AGE_DEFAULT, AGE_LIMIT, AGE_STEP_MAX, AGE_STEP_MIN, COLORS, DEFAULT_COLOR, RULER_DEFAULT_PARTS, RULER_MAX_PARTS, RULER_MIN_PARTS, STROKE_DEFAULT, STROKE_MAX, STROKE_MIN, STROKE_STEP, clampParts, clampStroke,
+  distance, noteList, pushHistory, redoHistory, startHistory, undoHistory, unitOf, validAgeScale,
+  type AgeScale, type Annotation, type History,
 } from '@/lib/palm/annotations';
 import type { PalmRecord } from '@/lib/palm/storage';
 import { renderAnnotated } from '@/lib/palm/image';
@@ -18,6 +18,9 @@ type Props = {
   /** The drawing changed; called on every step so it can be saved. */
   onChange: (annotations: Annotation[]) => void;
   onClientView: () => void;
+  /** Pixels of the photograph to a centimetre, once a ruler has been given a known length. */
+  scale?: number;
+  onScaleChange?: (scale: number | undefined) => void;
 };
 
 const TOOLS: { id: PalmTool; glyph: string; label: string }[] = [
@@ -43,6 +46,61 @@ const KIND_LABEL: Record<Annotation['kind'], string> = {
   pen: 'Pen', line: 'Line', arrow: 'Arrow', ellipse: 'Ellipse', circle: 'Circle', ruler: 'Ruler', pin: 'Pin', text: 'Text',
 };
 
+/** A number that is written in, and taken in when the field is left; a value that will not do puts the old one back. */
+function NumberField({ label, value, min, max, step, onCommit }: { label: string; value: number; min: number; max: number; step: number; onCommit: (value: number) => boolean }) {
+  return (
+    <label className="block text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+      {label}
+      <input
+        key={value}
+        type="number"
+        inputMode="decimal"
+        aria-label={label}
+        defaultValue={value}
+        min={min}
+        max={max}
+        step={step}
+        onBlur={event => {
+          const text = event.currentTarget.value.trim();
+          if (text === '' || !onCommit(Number(text))) event.currentTarget.value = String(value);
+        }}
+        onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur(); }}
+        className="mt-1 block w-full rounded border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+      />
+    </label>
+  );
+}
+
+/** The real length of a ruler, which gives the photograph its scale: rulers then speak in centimetres. */
+function ScaleField({ lengthPx, onSet }: { lengthPx: number; onSet: (scale: number) => void }) {
+  const t = useT();
+  const [text, setText] = useState('');
+  const centimetres = Number(text.replace(',', '.'));
+  const usable = lengthPx > 0 && Number.isFinite(centimetres) && centimetres > 0;
+  return (
+    <div className="space-y-1.5 border-t border-zinc-200 pt-2 dark:border-zinc-700" data-palm="scale-field">
+      <label className="block text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+        {t('real length of this ruler, in cm')}
+        <input
+          value={text}
+          onChange={event => setText(event.target.value)}
+          inputMode="decimal"
+          aria-label={t('real length of this ruler, in cm')}
+          className="mt-1 block w-full rounded border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+        />
+      </label>
+      <button
+        type="button"
+        disabled={!usable}
+        onClick={() => { onSet(lengthPx / centimetres); setText(''); }}
+        className="rounded-md border border-zinc-200 px-2 py-1 text-[10px] font-mono text-zinc-600 hover:bg-zinc-50 disabled:opacity-30 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+      >
+        {t('use as the scale of the photograph')}
+      </button>
+    </div>
+  );
+}
+
 const button = (on: boolean) =>
   `min-h-9 min-w-9 rounded-md border px-2 py-1 text-sm font-mono ${on
     ? 'border-emerald-500 bg-emerald-500 text-white dark:border-green-600 dark:bg-green-600'
@@ -53,7 +111,7 @@ const button = (on: boolean) =>
  * redo, the properties of the selected annotation and the numbered notes. The
  * drawing is reported on every step; the photograph itself is never changed.
  */
-export default function PalmEditor({ record, imageUrl, onChange, onClientView }: Props) {
+export default function PalmEditor({ record, imageUrl, onChange, onClientView, scale, onScaleChange }: Props) {
   const t = useT();
   const [history, setHistory] = useState<History<Annotation[]>>(() => startHistory(record.annotations));
   const [tool, setTool] = useState<PalmTool>('pen');
@@ -108,7 +166,7 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
   };
 
   // Typing in a field is one undo step, not one for every key.
-  const edit = (patch: Partial<Pick<Annotation, 'label' | 'note' | 'color' | 'width'>>) => {
+  const edit = (patch: Partial<Pick<Annotation, 'label' | 'note' | 'color' | 'width' | 'ages'>>) => {
     if (!selectedId) return;
     const next = annotations.map(annotation => (annotation.id === selectedId ? { ...annotation, ...patch } : annotation)) as Annotation[];
     if (editing.current) setHistory(current => ({ ...current, present: next }));
@@ -138,6 +196,14 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
       edit({ width: units * unit });
       editing.current = true;
     }
+  };
+
+  // A change of the ages along the selected line; one that is not a sensible scale is not taken.
+  const changeAges = (current: AgeScale, patch: Partial<AgeScale>) => {
+    const next = validAgeScale({ ...current, ...patch });
+    if (!next) return false;
+    edit({ ages: next });
+    return true;
   };
 
   // The number of parts sets the next rulers, and the selected ruler.
@@ -172,7 +238,7 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
   const download = async () => {
     setExporting(true);
     try {
-      const blob = await renderAnnotated(record.image, record.width, record.height, annotations, withNotes);
+      const blob = await renderAnnotated(record.image, record.width, record.height, annotations, withNotes, scale);
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = `${(record.name || 'palm').replace(/[^\p{L}\p{N}_ -]+/gu, '').trim() || 'palm'}.png`;
@@ -295,6 +361,7 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
               eraserUnits={eraserUnits}
               rulerParts={rulerParts}
               snap={snap}
+              scale={scale}
               selectedId={selectedId}
               focusId={focus.id}
               focusNonce={focus.nonce}
@@ -316,7 +383,30 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
                   )}
                 </div>
                 {selected.kind === 'ruler' && (
-                  <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('Lengths are in pixels of the photograph.')}</p>
+                  <>
+                    <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
+                      {scale ? t('Lengths are in centimetres, by the scale of the photograph.') : t('Lengths are in pixels of the photograph.')}
+                    </p>
+                    <ScaleField lengthPx={distance(selected.from, selected.to)} onSet={value => onScaleChange?.(value)} />
+                  </>
+                )}
+                {(selected.kind === 'pen' || selected.kind === 'line' || selected.kind === 'arrow') && (
+                  <div className="space-y-2 border-t border-zinc-200 pt-2 dark:border-zinc-700" data-palm="ages">
+                    <label className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
+                      <input type="checkbox" checked={Boolean(selected.ages)} onChange={event => edit({ ages: event.target.checked ? AGE_DEFAULT : undefined })} />
+                      {t('ages along the line')}
+                    </label>
+                    {selected.ages && (
+                      <>
+                        <div className="grid grid-cols-3 gap-2">
+                          <NumberField label={t('age at the start')} value={selected.ages.from} min={0} max={AGE_LIMIT} step={1} onCommit={value => changeAges(selected.ages!, { from: value })} />
+                          <NumberField label={t('age at the end')} value={selected.ages.to} min={0} max={AGE_LIMIT} step={1} onCommit={value => changeAges(selected.ages!, { to: value })} />
+                          <NumberField label={t('a mark every')} value={selected.ages.step} min={AGE_STEP_MIN} max={AGE_STEP_MAX} step={0.5} onCommit={value => changeAges(selected.ages!, { step: value })} />
+                        </div>
+                        <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('The ages are spread evenly along the length of the line, from the start of the stroke to its end.')}</p>
+                      </>
+                    )}
+                  </div>
                 )}
                 <label className="block text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
                   {selected.kind === 'text' ? t('Text') : t('Label on the picture')}
@@ -346,6 +436,13 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView }:
               <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
                 {t('Draw with the tools above. Pins are numbered; give any drawing a note and it is numbered too. Use Select to move a drawing, and drag its dots to change it.')}
               </p>
+            )}
+
+            {scale && (
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 px-2 py-1.5 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:text-zinc-300" data-palm="scale">
+                <span>{t('Scale')}: 1 cm = {Math.round(scale * 10) / 10} px</span>
+                <button type="button" onClick={() => onScaleChange?.(undefined)} className="rounded-sm border border-zinc-200 px-1.5 py-0.5 text-[9px] text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100">{t('clear')}</button>
+              </div>
             )}
 
             <div data-palm="notes">

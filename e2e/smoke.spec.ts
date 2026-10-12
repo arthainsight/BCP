@@ -2004,3 +2004,300 @@ test('PALM: a ruler that finds the middle, a circle that stays round, an eraser 
 
   expect(errors).toEqual([]);
 });
+
+test('the backup keeps the palm photographs with their drawings and puts them back', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/');
+  await selectWorkspace(page, 'PALM');
+  await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'safe.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  const canvas = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(canvas).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Pen', exact: true })).click();
+  await canvas.scrollIntoViewIfNeeded();
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.move(box.x + box.width * 0.45, box.y + box.height * 0.3);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.5, { steps: 5 });
+  await page.mouse.move(box.x + box.width * 0.45, box.y + box.height * 0.7, { steps: 5 });
+  await page.mouse.up();
+  await expect(canvas.locator('g[data-kind="pen"]')).toHaveCount(1);
+  await page.waitForTimeout(600);
+
+  // The backup file has the photograph (as a picture in the file) and the drawing on it.
+  await selectWorkspace(page, '⚙');
+  const download = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download backup', exact: true })).click();
+  const path = await (await download).path();
+  const backup = JSON.parse(readFileSync(path, 'utf8'));
+  expect(backup.palms).toHaveLength(1);
+  expect(backup.palms[0].image).toMatch(/^data:image\/jpeg;base64,/);
+  expect(backup.palms[0].annotations).toHaveLength(1);
+  expect(backup.palms[0].name).toBe('safe');
+
+  // Without the photographs the backup has none.
+  await visible(page, page.getByRole('checkbox', { name: 'include the palm photographs' })).uncheck();
+  const lighter = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download backup', exact: true })).click();
+  expect(JSON.parse(readFileSync(await (await lighter).path(), 'utf8')).palms).toBeUndefined();
+
+  // Delete the photograph, then restore the backup: it is back, drawing and all.
+  await selectWorkspace(page, 'PALM');
+  await visible(page, page.getByRole('button', { name: 'Delete photograph' })).click();
+  await visible(page, page.getByRole('button', { name: 'Delete this photograph?' })).click();
+  await expect(visible(page, page.getByText('Upload or drop a photograph of a palm to begin.'))).toBeVisible();
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.locator('label', { hasText: 'Choose backup' })).locator('input[type="file"]').setInputFiles(path);
+  await expect(visible(page, page.getByText('The palm photographs on this device are replaced too.'))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Replace and restore', exact: true })).click();
+  await page.waitForLoadState('load');
+  await selectWorkspace(page, 'PALM');
+  const again = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(again).toBeVisible({ timeout: 15_000 });
+  await expect(again.locator('g[data-kind="pen"]')).toHaveCount(1);
+  await expect(visible(page, page.getByLabel('Name of the photograph'))).toHaveValue('safe');
+
+  expect(errors).toEqual([]);
+});
+
+test('SHARE copies a link with the birth data, and opening the link calculates the chart', async ({ page, context, browser }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+
+  await calculateChart(page);
+  if (info.project.name === 'phone') await visible(page, page.getByRole('button', { name: 'Chart actions', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'SHARE', exact: true })).click();
+  await expect(page.locator('[data-share-notice]')).toContainText('Link copied');
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  expect(link).toMatch(/\/#c=[A-Za-z0-9_-]+$/);
+
+  // Someone else, with nothing saved in their browser, opens the link: the chart is calculated and the address is cleaned.
+  const other = await browser.newContext({ viewport: page.viewportSize() ?? undefined });
+  const guest = await other.newPage();
+  const guestErrors: string[] = [];
+  guest.on('pageerror', (error) => guestErrors.push(error.message));
+  await guest.goto(link);
+  await expect(visible(guest, guest.getByText(/Asc 12°18'|ASC 12°18'/))).toBeVisible({ timeout: 30_000 });
+  await expect.poll(() => guest.url()).not.toContain('#c=');
+  expect(await guest.evaluate(() => window.location.hash)).toBe('');
+
+  // A link that is not a chart does nothing, and breaks nothing.
+  await guest.goto('/#c=garbage');
+  await expect(visible(guest, guest.getByRole('button', { name: 'CHART', exact: true }))).toBeVisible();
+  await other.close();
+
+  expect(errors).toEqual([]);
+  expect(guestErrors).toEqual([]);
+});
+
+test('PALM: a ruler gives the photograph a scale in centimetres, and ages are marked along a line', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/');
+  await selectWorkspace(page, 'PALM');
+  await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'ages.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  const canvas = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(canvas).toBeVisible();
+  const shapes = (kind: string) => canvas.locator(`g[data-kind="${kind}"]`);
+  const tool = (name: string) => visible(page, page.getByRole('button', { name, exact: true })).click();
+  const drag = async (from: [number, number], to: [number, number]) => {
+    await canvas.scrollIntoViewIfNeeded();
+    const box = (await canvas.boundingBox())!;
+    await page.mouse.move(box.x + box.width * from[0], box.y + box.height * from[1]);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * ((from[0] + to[0]) / 2), box.y + box.height * ((from[1] + to[1]) / 2) + 6, { steps: 4 });
+    await page.mouse.move(box.x + box.width * to[0], box.y + box.height * to[1], { steps: 4 });
+    await page.mouse.up();
+  };
+  const labels = () => canvas.locator('[data-ruler-label]');
+
+  // Without a scale a ruler speaks in pixels; the real length of one ruler gives the scale, and then every ruler is in centimetres.
+  await tool('Ruler');
+  await drag([0.3, 0.2], [0.7, 0.2]);
+  await expect(labels()).toHaveText(/^\d+ ÷ 2 = \d+(\.\d)?$/);
+  await expect(visible(page, page.getByText('Lengths are in pixels of the photograph.'))).toBeVisible();
+  const lengthField = visible(page, page.getByRole('textbox', { name: 'real length of this ruler, in cm' }));
+  const useScale = visible(page, page.getByRole('button', { name: 'use as the scale of the photograph' }));
+  await expect(useScale).toBeDisabled();
+  await lengthField.fill('10');
+  await useScale.click();
+  await expect(labels()).toHaveText('10 cm ÷ 2 = 5 cm');
+  await expect(visible(page, page.locator('[data-palm="scale"]'))).toContainText('1 cm =');
+  await drag([0.3, 0.3], [0.5, 0.3]);
+  await expect(shapes('ruler')).toHaveCount(2);
+  await expect(labels().nth(1)).toHaveText(/^\d+(\.\d+)? cm ÷ 2 = \d+(\.\d+)? cm$/);
+  await expect(visible(page, page.getByText('Lengths are in centimetres, by the scale of the photograph.'))).toBeVisible();
+
+  // Ages along a stroke: a mark for every ten years from birth to seventy; the ages can be changed, and a nonsense value is not taken.
+  await tool('Pen');
+  await drag([0.35, 0.5], [0.65, 0.8]);
+  await expect(shapes('pen')).toHaveCount(1);
+  await visible(page, page.getByRole('checkbox', { name: 'ages along the line' })).check();
+  const ages = () => canvas.locator('[data-age]');
+  await expect(ages()).toHaveCount(8);
+  await expect(ages().first()).toHaveAttribute('data-age', '0');
+  await expect(ages().last()).toHaveAttribute('data-age', '70');
+  await expect(ages().last().locator('text')).toHaveText('70');
+  const end = visible(page, page.getByRole('spinbutton', { name: 'age at the end' }));
+  await end.fill('40');
+  await end.press('Tab');
+  await expect(ages()).toHaveCount(5);
+  await end.fill('0');
+  await end.press('Tab');
+  await expect(ages(), 'an end age equal to the start is not a scale').toHaveCount(5);
+  await expect(end).toHaveValue('40');
+  const every = visible(page, page.getByRole('spinbutton', { name: 'a mark every' }));
+  await every.fill('20');
+  await every.press('Tab');
+  await expect(ages()).toHaveCount(3);
+
+  // Both are kept, and are in the saved picture.
+  await page.waitForTimeout(600);
+  await page.reload();
+  await selectWorkspace(page, 'PALM');
+  const again = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(again).toBeVisible();
+  await expect(again.locator('[data-age]')).toHaveCount(3);
+  await expect(again.locator('[data-ruler-label]').first()).toHaveText('10 cm ÷ 2 = 5 cm');
+  await expect(visible(page, page.locator('[data-palm="scale"]'))).toBeVisible();
+  const download = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download PNG', exact: true })).click();
+  expect([...readFileSync(await (await download).path()).subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+
+  // Clearing the scale takes the rulers back to pixels.
+  await visible(page, page.locator('[data-palm="scale"]').getByRole('button', { name: 'clear' })).click();
+  await expect(again.locator('[data-ruler-label]').first()).toHaveText(/^\d+ ÷ 2 = \d+(\.\d)?$/);
+
+  expect(errors).toEqual([]);
+});
+
+test('PALM: two photographs side by side, with the zoom shared', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/');
+  await selectWorkspace(page, 'PALM');
+  const upload = visible(page, page.getByLabel('Upload palm photographs'));
+  await upload.setInputFiles({ name: 'one.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  await expect(visible(page, page.locator('[data-palm="canvas"]'))).toBeVisible();
+  // One photograph cannot be compared with anything.
+  await expect(visible(page, page.getByRole('button', { name: 'Compare', exact: true }))).toHaveCount(0);
+  await upload.setInputFiles({ name: 'two.png', mimeType: 'image/png', buffer: makePng(800, 600) });
+  await expect(visible(page, page.locator('[data-palm-record]').nth(1))).toBeVisible();
+
+  // The open photograph is a right hand, the other a left one: they are put side by side.
+  await visible(page, page.getByLabel('Hand', { exact: true })).selectOption('right');
+  await visible(page, page.locator('[data-palm-record]').nth(1)).click();
+  await visible(page, page.getByLabel('Hand', { exact: true })).selectOption('left');
+  await visible(page, page.locator('[data-palm-record]').nth(1)).click();
+  await visible(page, page.getByRole('button', { name: 'Compare', exact: true })).click();
+  const dialog = page.getByRole('dialog', { name: 'Compare palms' });
+  await expect(dialog).toBeVisible();
+  const left = dialog.getByRole('combobox', { name: 'photograph on the left' });
+  const right = dialog.getByRole('combobox', { name: 'photograph on the right' });
+  expect(await left.inputValue()).not.toEqual(await right.inputValue());
+  await expect(left.locator('option:checked')).toContainText('Right hand');
+  await expect(right.locator('option:checked')).toContainText('Left hand');
+  const zooms = dialog.locator('[data-palm="zoom"]');
+  await expect(zooms).toHaveCount(2);
+  await expect(zooms.first()).toHaveText('100%');
+  await expect(zooms.last()).toHaveText('100%');
+
+  // Zoom one and the other follows, though the photographs differ in shape.
+  await dialog.locator('[data-palm-side]').first().getByRole('button', { name: 'Zoom in' }).click();
+  await expect(zooms.first()).not.toHaveText('100%');
+  await expect.poll(async () => (await zooms.last().innerText())).toEqual(await zooms.first().innerText());
+  const together = await zooms.first().innerText();
+
+  // Unlinked, they move on their own.
+  await dialog.getByRole('checkbox', { name: 'link the zoom' }).uncheck();
+  await dialog.locator('[data-palm-side]').first().getByRole('button', { name: 'Zoom in' }).click();
+  await expect.poll(async () => (await zooms.first().innerText())).not.toEqual(together);
+  await expect(zooms.last()).toHaveText(together);
+
+  // Linked again, fitting one fits both.
+  await dialog.getByRole('checkbox', { name: 'link the zoom' }).check();
+  await dialog.locator('[data-palm-side]').last().getByRole('button', { name: 'Fit to window' }).click();
+  await expect(zooms.first()).toHaveText('100%');
+  await expect(zooms.last()).toHaveText('100%');
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  expect(errors).toEqual([]);
+});
+
+test('REPORT puts the chart, the timing summary and the palm photographs on pages that print', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+
+  // A palm photograph with one numbered note.
+  await selectWorkspace(page, 'PALM');
+  await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'maria.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  const canvas = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(canvas).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Pin', exact: true })).click();
+  await canvas.scrollIntoViewIfNeeded();
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5);
+  await expect(visible(page, page.getByLabel('Note', { exact: true }))).toBeFocused();
+  await page.keyboard.type('Career turns at 35');
+  await page.waitForTimeout(500);
+
+  // The report is a white page, though the app is dark.
+  await page.evaluate(() => document.documentElement.classList.add('dark'));
+  if (info.project.name === 'phone') await visible(page, page.getByRole('button', { name: 'Chart actions', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'REPORT', exact: true })).click();
+  const report = page.getByRole('dialog', { name: 'Client report' });
+  await expect(report).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.classList.contains('dark'))).toBe(false);
+  await expect(report.locator('[data-report-title]')).toHaveText('Chart report · 15.08.1947');
+  await expect(report.locator('[data-report-section="chart"] svg').first()).toBeVisible();
+  await expect(report.locator('[data-report-section="table"]')).toContainText('Lagna');
+  await expect(report.locator('[data-report-section="summary"]')).toContainText('running dashas');
+  const figure = report.locator('[data-report-palm]');
+  await expect(figure).toHaveCount(1);
+  await expect(figure.locator('img')).toBeVisible({ timeout: 15_000 });
+  await expect.poll(() => figure.locator('img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(100);
+  await expect(figure).toContainText('Career turns at 35');
+
+  // What is in it, and what it is called, can be changed; the title names the saved PDF.
+  await report.getByRole('textbox', { name: 'Title' }).fill('Maria, autumn 2026');
+  await expect(report.locator('[data-report-title]')).toHaveText('Maria, autumn 2026');
+  await expect(page).toHaveTitle('Maria, autumn 2026');
+  await report.getByRole('textbox', { name: 'Remarks at the end' }).fill('Come back in the spring.');
+  await expect(report.locator('[data-report-section="remarks"]')).toContainText('Come back in the spring.');
+  await report.getByRole('checkbox', { name: /graha positions/ }).uncheck();
+  await expect(report.locator('[data-report-section="table"]')).toHaveCount(0);
+  await report.locator('[data-report-pick]').uncheck();
+  await expect(figure).toHaveCount(0);
+  await report.locator('[data-report-pick]').check();
+  await expect(report.locator('[data-report-palm]')).toHaveCount(1);
+
+  // On paper only the report is left, and it saves as a PDF.
+  await page.emulateMedia({ media: 'print' });
+  expect(await page.evaluate(() => {
+    const others = [...document.body.children].filter(element => !element.hasAttribute('data-report-root') && element.tagName !== 'SCRIPT');
+    const root = document.querySelector('[data-report-root]') as HTMLElement;
+    return {
+      hidden: others.every(element => getComputedStyle(element).display === 'none'),
+      position: getComputedStyle(root).position,
+    };
+  })).toEqual({ hidden: true, position: 'static' });
+  const pdf = await page.pdf({ format: 'A4' });
+  expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+  expect(pdf.length).toBeGreaterThan(20_000);
+  await page.emulateMedia({ media: 'screen' });
+
+  // Closing it gives the page back, dark again.
+  await page.keyboard.press('Escape');
+  await expect(report).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.classList.contains('dark'))).toBe(true);
+  expect(await page.evaluate(() => 'printReport' in document.body.dataset)).toBe(false);
+
+  expect(errors).toEqual([]);
+});

@@ -19,12 +19,14 @@ import PalmWorkspace from '@/components/palm/PalmWorkspace';
 import { DataLine, DataSummary, EmptyState, Panel, SplitPane } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
 import { RecordingPanel } from '@/components/ScreenRecorder';
+import ClientReport from '@/components/ClientReport';
 import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
 import { withDashaLayers } from '@/components/chartLayers';
 import { LanguageContext, type Language } from '@/lib/i18n';
+import { decodeShare } from '@/lib/shareLink';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
@@ -85,6 +87,7 @@ export default function Home() {
   const [desktopTab, setDesktopTab] = useState<DesktopTab>('data');
   // On a phone the birth data folds into one line once the chart is calculated, to leave the room to the chart.
   const [dataOpen, setDataOpen] = useState(true);
+  const [reporting, setReporting] = useState(false);
   // In the split view the birth data is a thin line over the chart, and the form opens from it.
   const [splitDataOpen, setSplitDataOpen] = useState(false);
 
@@ -533,6 +536,30 @@ export default function Home() {
     [performCalculation]
   );
 
+  // A link made with SHARE carries the birth data after the #: the form is filled in and the chart calculated, once the stored settings are in.
+  const sharedHandled = useRef(false);
+  useEffect(() => {
+    if (!settingsRestored || sharedHandled.current) return;
+    sharedHandled.current = true;
+    const shared = decodeShare(window.location.hash);
+    if (!shared) return;
+    // The address is cleaned, so a reload does not start over and the data is not left in the address bar.
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    // The address cannot be read during the server render, so this has to happen after mount; it runs once.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void handleLoadChartSnapshot({
+      birthDatetime: shared.birthDatetime,
+      city: shared.city,
+      manualLat: shared.lat,
+      manualLng: shared.lng,
+      ianaTimezone: shared.ianaTimezone,
+      tzOverride: shared.tzOverride,
+      targetDate: getTodayString(),
+      targetTime: '12:00',
+      showCoords: true,
+    });
+  }, [settingsRestored, handleLoadChartSnapshot]);
+
   // "Open in chart" in the Dasha event list: read every target-date layer and
   // the transits for the event's day.
   const openDateInChart = useCallback((date: string) => {
@@ -700,6 +727,7 @@ export default function Home() {
           onLoad: handleLoadChartSnapshot,
           onExport: handleExportCharts,
           onImport: handleImportCharts,
+          onReport: () => setReporting(true),
           onActiveNameChange: setActiveChartName,
         }}
       />
@@ -864,6 +892,24 @@ export default function Home() {
 
       {/* What a screen recording leaves behind: the video, to download or to throw away */}
       <RecordingPanel />
+      {reporting && (
+        <ClientReport
+          chart={chartData}
+          chartName={activeChartName}
+          birthDatetime={birthDatetime}
+          place={chartSnapshot.city}
+          utcOffset={effectiveTzOffset}
+          targetDate={targetDate}
+          chartDisplaySettings={chartDisplaySettings}
+          calculationSettings={calculationSettings}
+          dashaSettings={dashaSettings}
+          karakaByPlanet={karakaByPlanet}
+          nakshatraAdjust={nakshatraAdjust}
+          dashaLords={chartDashaLords}
+          transitPlanets={transitPlanets}
+          onClose={() => setReporting(false)}
+        />
+      )}
 
       {/* Footer: the name of the app and who made it */}
       <footer className="pb-8 pt-4 text-center text-xs font-mono text-zinc-400 dark:text-zinc-600 lg:py-6">

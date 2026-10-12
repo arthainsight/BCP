@@ -288,11 +288,11 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     a: {
       en: [
         'Open PALM and press Upload photos, or drop a picture on the page. On a phone, Take a photo opens the camera. Give the photograph a name and say whether it is the right or the left hand. A photograph is deleted with the 🗑 button, after a confirmation.',
-        'The photographs stay on your device, in the browser; nothing is sent anywhere. Clearing the browser data deletes them, so keep a copy as a picture (see below).',
+        'The photographs stay on your device, in the browser; nothing is sent anywhere. Clearing the browser data deletes them, so keep a backup (see below) or a copy as a picture.',
       ],
       fi: [
         'Avaa KÄMMEN ja paina Lataa kuvia tai pudota kuva sivulle. Puhelimessa Ota kuva avaa kameran. Anna kuvalle nimi ja kerro, onko se oikea vai vasen käsi. Kuva poistetaan 🗑-painikkeella vahvistuksen jälkeen.',
-        'Kuvat pysyvät laitteellasi, selaimessa; mitään ei lähetetä minnekään. Selaimen tietojen tyhjennys poistaa ne, joten säilytä kopio kuvana (katso alla).',
+        'Kuvat pysyvät laitteellasi, selaimessa; mitään ei lähetetä minnekään. Selaimen tietojen tyhjennys poistaa ne, joten säilytä varmuuskopio (katso alla) tai kopio kuvana.',
       ],
     },
   },
@@ -304,14 +304,16 @@ export const FAQ_ENTRIES: FaqEntry[] = [
       en: [
         'The tools are Move (to pan the picture), Select, Pen, Line, Arrow, Circle, Ellipse, Ruler, Pin, Text and Eraser. Choose a colour, and set the thickness of the line with the stroke slider. Pins are numbered; give any drawing a note and it is numbered too. Undo and Redo step through the changes; Delete removes the selected drawing. Zoom in, Zoom out and Fit to window change the view.',
         'Circle is always a true circle: drag from its centre to its edge. Ellipse is drawn in a box and can be oval.',
-        'Ruler measures between two points and divides the line into 1 to 12 equal parts with marks; with two parts it marks the middle. It writes its length and the length of one part, in pixels of the photograph, so two rulers can be compared. A new drawing that starts or ends near a mark of a ruler, the middle of a line or the centre of a circle catches on it, so a pin can be put exactly in the middle; the snap button switches this off.',
+        'Ruler measures between two points and divides the line into 1 to 12 equal parts with marks; with two parts it marks the middle. It writes its length and the length of one part, in pixels of the photograph, so two rulers can be compared. If you know the real length of one ruler (a finger of 7 cm, say), select it, type the length in centimetres and press Use as the scale of the photograph: every ruler of that photograph then speaks in centimetres, and the scale is shown in the side panel until you clear it. A new drawing that starts or ends near a mark of a ruler, the middle of a line or the centre of a circle catches on it, so a pin can be put exactly in the middle; the snap button switches this off.',
+        'A pen stroke, a line or an arrow can carry ages, such as the years of a life line: select it, tick Ages along the line, and give the age at its start, the age at its end and a mark every so many years (0 to 70, every 10 is the usual). The ages are spread evenly along the length of the line, each with a small mark across it and the number beside it.',
         'Eraser wipes: a pen stroke or a line is cut where the eraser passes, and any other drawing it touches is removed whole. The eraser has its own size slider, and one wipe is one undo step.',
         'Select moves a drawing, and its dots change it: drag an end of a line, an arrow or a ruler, the edge of a circle, a corner of an ellipse or any point of a pen stroke. The Move or reshape button beside the name of a new drawing takes you there. The colours and the stroke slider change the selected drawing.',
       ],
       fi: [
         'Työkalut ovat Siirrä (kuvan siirtäminen), Valitse, Kynä, Viiva, Nuoli, Ympyrä, Ellipsi, Mitta, Nasta, Teksti ja Pyyhekumi. Valitse väri ja säädä viivan paksuutta paksuusliukusäätimellä. Nastat numeroidaan; anna piirrokselle merkintä, niin se numeroidaan myös. Kumoa ja Tee uudelleen kulkevat muutosten läpi; Poista poistaa valitun piirroksen. Lähennä, Loitonna ja Sovita ikkunaan muuttavat näkymää.',
         'Ympyrä on aina oikea ympyrä: vedä sen keskipisteestä reunaan. Ellipsi piirretään laatikkoon, ja se voi olla soikea.',
-        'Mitta mittaa kahden pisteen välin ja jakaa viivan 1–12 yhtä pitkään osaan merkeillä; kahdella osalla se merkitsee keskikohdan. Se kirjoittaa pituutensa ja yhden osan pituuden valokuvan pikseleinä, joten kahta mittaa voi verrata keskenään. Uusi piirros, joka alkaa tai päättyy lähelle mitan merkkiä, viivan keskikohtaa tai ympyrän keskipistettä, tarttuu siihen, joten nastan voi laittaa tarkasti keskelle; tartu-painike kytkee tämän pois.',
+        'Mitta mittaa kahden pisteen välin ja jakaa viivan 1–12 yhtä pitkään osaan merkeillä; kahdella osalla se merkitsee keskikohdan. Se kirjoittaa pituutensa ja yhden osan pituuden valokuvan pikseleinä, joten kahta mittaa voi verrata keskenään. Jos tiedät yhden mitan todellisen pituuden (esimerkiksi 7 cm:n sormi), valitse se, kirjoita pituus senteissä ja paina Käytä kuvan mittakaavana: kaikki kyseisen kuvan mitat kertovat silloin pituutensa senttimetreinä, ja mittakaava näkyy sivupaneelissa, kunnes tyhjennät sen. Uusi piirros, joka alkaa tai päättyy lähelle mitan merkkiä, viivan keskikohtaa tai ympyrän keskipistettä, tarttuu siihen, joten nastan voi laittaa tarkasti keskelle; tartu-painike kytkee tämän pois.',
+        'Kynäviivalle, viivalle tai nuolelle voi merkitä ikiä, esimerkiksi elämänviivan vuosia: valitse se, rastita Iät viivan varrella ja anna ikä sen alussa, ikä sen lopussa ja merkki joka montako vuotta (0–70, joka 10. on tavallinen). Iät jaetaan tasaisesti viivan pituudelle, ja kullakin on pieni poikkiviiva ja numero vieressä.',
         'Pyyhekumi pyyhkii: kynäviiva tai viiva katkaistaan kohdasta, jossa pyyhekumi kulkee, ja mikä tahansa muu piirros, johon se osuu, poistetaan kokonaan. Pyyhekumilla on oma kokoliukusäädin, ja yksi pyyhkäisy on yksi kumoamisaskel.',
         'Valitse siirtää piirrosta, ja sen pisteet muuttavat sitä: vedä viivan, nuolen tai mitan päätä, ympyrän reunaa, ellipsin kulmaa tai mitä tahansa kynäviivan pistettä. Uuden piirroksen nimen vieressä oleva Siirrä tai muokkaa -painike vie siihen. Värit ja paksuusliukusäädin muuttavat valittua piirrosta.',
       ],
@@ -327,6 +329,22 @@ export const FAQ_ENTRIES: FaqEntry[] = [
       ],
       fi: [
         'Lataa PNG tallentaa kuvan piirroksineen; kun merkinnät kuvan alle on päällä, merkinnät kirjoitetaan kuvan alle. Asiakasnäkymä näyttää kämmenen asiakkaalle: merkinnät yksi kerrallaan Edellinen merkintä- ja Seuraava merkintä -painikkeilla sekä Koko kämmen koko kuvalle. Sulje asiakasnäkymä palaa muokkaukseen.',
+      ],
+    },
+  },
+
+  {
+    id: 'palm-compare',
+    section: 'palm',
+    q: { en: 'How do I compare two hands?', fi: 'Miten vertaan kahta kättä?' },
+    a: {
+      en: [
+        'With two or more photographs in PALM, the Compare button shows two of them side by side, with their drawings. The open photograph is on the left and, if you have said which hand each one is, the other hand on the right; either side can be changed from its list.',
+        'The zoom and the place are shared: zoom or move one photograph and the other goes to the same place at the same zoom, even when the two photographs are different shapes. Fit to window on either one fits both. Untick link the zoom to move them separately.',
+      ],
+      fi: [
+        'Kun KÄMMEN-näkymässä on kaksi tai useampi kuva, Vertaile-painike näyttää kaksi niistä vierekkäin piirroksineen. Avoin kuva on vasemmalla ja, jos olet kertonut, mikä käsi kukin on, toinen käsi oikealla; kumpaakin puolta voi vaihtaa sen omasta listasta.',
+        'Zoomaus ja paikka ovat yhteiset: lähennä tai siirrä toista kuvaa, ja toinen siirtyy samaan paikkaan samalle zoomille, vaikka kuvat olisivat eri muotoisia. Sovita ikkunaan kummalla tahansa sovittaa molemmat. Poista rasti kohdasta linkitä zoomaus, niin niitä voi liikuttaa erikseen.',
       ],
     },
   },
@@ -413,12 +431,12 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'How do I back up everything?', fi: 'Miten varmuuskopioin kaiken?' },
     a: {
       en: [
-        'Settings → Full local backup. Download backup saves one file with the saved charts, all the event lists, the calculation and display settings and the dasha methods. To restore, press Choose backup and pick the file, then Replace and restore; this replaces what is in the browser now.',
-        'The palm photographs are not in the backup. Keep their copies with Download PNG.',
+        'Settings → Full local backup. Download backup saves one file with the saved charts, all the event lists, the calculation and display settings, the dasha methods and, unless you switch it off, the palm photographs with their drawings. To restore, press Choose backup and pick the file, then Replace and restore; this replaces what is in the browser now, the palm photographs too when the file has them.',
+        'A backup with photographs can be large (a photograph is about a megabyte). If you only want a copy of a marked-up palm to show or send, Download PNG saves the picture on its own.',
       ],
       fi: [
-        'Asetukset → Täysi paikallinen varmuuskopio. Lataa varmuuskopio tallentaa yhden tiedoston, jossa ovat tallennetut kartat, kaikki tapahtumalistat, laskenta- ja näyttöasetukset sekä daśā-menetelmät. Palauta painamalla Valitse varmuuskopio ja valitsemalla tiedosto, sitten Korvaa ja palauta; tämä korvaa sen, mitä selaimessa nyt on.',
-        'Kämmenkuvat eivät ole varmuuskopiossa. Säilytä niistä kopiot Lataa PNG -painikkeella.',
+        'Asetukset → Täysi paikallinen varmuuskopio. Lataa varmuuskopio tallentaa yhden tiedoston, jossa ovat tallennetut kartat, kaikki tapahtumalistat, laskenta- ja näyttöasetukset, daśā-menetelmät ja, ellet kytke sitä pois, kämmenkuvat piirroksineen. Palauta painamalla Valitse varmuuskopio ja valitsemalla tiedosto, sitten Korvaa ja palauta; tämä korvaa sen, mitä selaimessa nyt on, ja kämmenkuvat myös, kun tiedostossa on niitä.',
+        'Kuvia sisältävä varmuuskopio voi olla iso (yksi valokuva on noin megatavun verran). Jos haluat vain kopion merkitystä kämmenestä näytettäväksi tai lähetettäväksi, Lataa PNG tallentaa kuvan sellaisenaan.',
       ],
     },
   },
@@ -451,6 +469,37 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     },
   },
 
+  {
+    id: 'client-report',
+    section: 'data',
+    q: { en: 'How do I make a report for a client?', fi: 'Miten teen raportin asiakkaalle?' },
+    a: {
+      en: [
+        'Press REPORT in the top bar (on a phone, in the ⋮ menu). The report is a white page with the chart, the graha positions, the timing summary for the target date and every palm photograph with its drawing and its numbered notes. Tick what goes in it, give it a title, say who it is prepared for and add remarks at the end.',
+        'Press Print / PDF: the browser\'s print window opens, and choosing Save as PDF as the printer makes a file named after the title. Only the report is printed, on as many pages as it needs, whatever theme the app is in. The timing summary is calculated when the report opens, so give it a moment before you print.',
+      ],
+      fi: [
+        'Paina yläpalkin RAPORTTI-painiketta (puhelimessa ⋮-valikosta). Raportti on valkoinen sivu, jolla ovat kartta, grahojen sijainnit, ajankohtayhteenveto tavoitepäivälle sekä jokainen kämmenkuva piirroksineen ja numeroituine merkintöineen. Rastita, mitä siihen otetaan, anna sille otsikko, kerro, kenelle se on laadittu, ja lisää huomautukset loppuun.',
+        'Paina Tulosta / PDF: selaimen tulostusikkuna aukeaa, ja kun valitset tulostimeksi Tallenna PDF:nä, syntyy otsikon mukaan nimetty tiedosto. Vain raportti tulostuu, niin monelle sivulle kuin se tarvitsee, riippumatta siitä, mikä teema sovelluksessa on. Ajankohtayhteenveto lasketaan raportin avautuessa, joten anna sille hetki ennen tulostusta.',
+      ],
+    },
+  },
+  {
+    id: 'share-link',
+    section: 'data',
+    q: { en: 'How do I give a chart to someone else?', fi: 'Miten annan kartan jollekulle toiselle?' },
+    a: {
+      en: [
+        'Press SHARE in the top bar (on a phone, in the ⋮ menu). It copies a link that holds the birth date and time, the place and the time zone. Whoever opens the link gets the form filled in and the chart calculated, with their own settings; nothing else of yours goes with it.',
+        'The data is in the part of the address after the #, which the browser never sends to a server, but anyone who has the link can read it, so give it only to the person it is for. The link does not stay in the address bar after it has been opened.',
+      ],
+      fi: [
+        'Paina yläpalkin JAA-painiketta (puhelimessa ⋮-valikosta). Se kopioi linkin, jossa ovat syntymäaika ja kellonaika, paikka ja aikavyöhyke. Linkin avaaja saa lomakkeen täytettynä ja kartan laskettuna omilla asetuksillaan; mitään muuta sinun tiedoistasi ei mene mukana.',
+        'Tiedot ovat osoitteen #-merkin jälkeisessä osassa, jota selain ei koskaan lähetä palvelimelle, mutta jokainen, jolla on linkki, voi lukea ne, joten anna se vain sille, jolle se on tarkoitettu. Linkki ei jää osoiteriville sen jälkeen, kun se on avattu.',
+      ],
+    },
+  },
+
   // ── Settings and calculations ──────────────────────────────────────
   {
     id: 'language',
@@ -477,6 +526,24 @@ export const FAQ_ENTRIES: FaqEntry[] = [
       ],
       fi: [
         'Oletuksena on Lahiri-ayanamsa, kokonaiset merkkitalot ja keskisolmu. Asetukset → laskenta tarjoaa monta ayanamsaa, ja Rahu ja Ketu voivat olla keski- tai todellinen solmu.',
+      ],
+    },
+  },
+
+  {
+    id: 'accuracy',
+    section: 'settings',
+    q: { en: 'How accurate are the calculations, and how are they checked?', fi: 'Kuinka tarkkoja laskelmat ovat ja miten ne tarkistetaan?' },
+    a: {
+      en: [
+        'The positions come from the Swiss Ephemeris. Every change of the app is tested against thirteen charts cast by another Jyotish program, PyJHora (both hemispheres, latitudes from Sydney to Oulu, birth years 1899 to 2035), and against the moments of the equinoxes, solstices and new and full Moons that the astronomical almanacs give. The Sun is within 1 arcsecond of the almanacs, and the grahas and the ascendant of a chart agree with the other program to about 2 arcseconds.',
+        'One difference of convention is known. The app takes the apparent tropical longitude, which includes the nutation, and subtracts the mean ayanamsa, as the other program that the Special Sphutas were checked against does too. Every longitude of a chart is therefore moved by the same small amount, at most 17 arcseconds (0.005°), from the Swiss Ephemeris\'s own sidereal positions, which PyJHora gives. It matters only when a point is within a few arcseconds of a sign or a degree boundary.',
+        'The Vimsottari dates count a year as 365.25 days; given the same Moon, they are within about a day of PyJHora\'s dates a hundred years on.',
+      ],
+      fi: [
+        'Sijainnit tulevat Swiss Ephemeriksestä. Jokainen sovelluksen muutos testataan kolmeätoista kartta vastaan, jotka toinen Jyotish-ohjelma, PyJHora, on laskenut (molemmat pallonpuoliskot, leveysasteet Sydneystä Ouluun, syntymävuodet 1899–2035), sekä tasausten, päivänseisausten sekä uuden- ja täydenkuun hetkiä vastaan, jotka tähtitieteelliset almanakat antavat. Aurinko on 1 kaarisekunnin sisällä almanakoista, ja kartan grahat ja lagna ovat noin 2 kaarisekunnin sisällä toisesta ohjelmasta.',
+        'Yksi käytäntöero tunnetaan. Sovellus ottaa näennäisen tropiikkisen pituuden, jossa nutaatio on mukana, ja vähentää siitä keskimääräisen ayanamsan, kuten tekee myös toinen ohjelma, jota vasten erikoissphuṭat tarkistettiin. Kartan jokainen pituus on siksi siirtynyt saman pienen määrän, enintään 17 kaarisekuntia (0,005°), Swiss Ephemeriksen omista sideerisistä sijainneista, joita PyJHora antaa. Sillä on merkitystä vain, kun piste on muutaman kaarisekunnin päässä merkin tai asteen rajasta.',
+        'Vimsottari-päivät laskevat vuoden 365,25 päiväksi; samalla Kuulla ne ovat sadan vuoden päässä noin vuorokauden sisällä PyJHoran päivistä.',
       ],
     },
   },

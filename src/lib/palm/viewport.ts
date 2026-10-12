@@ -34,3 +34,28 @@ export function focusTransform(box: Box, viewWidth: number, viewHeight: number, 
   const k = Math.min(maxK, Math.max(0.01, Math.min((viewWidth - 2 * margin) / box.width, (viewHeight - 2 * margin) / box.height)));
   return { k, tx: viewWidth / 2 - (box.x + box.width / 2) * k, ty: viewHeight / 2 - (box.y + box.height / 2) * k };
 }
+
+// ── Two photographs, one view ──────────────────────────────────────────────
+
+/**
+ * The view of a photograph in a form that fits any other photograph: how far it is zoomed in beyond fitting its window
+ * (1 = the whole photograph) and which point of it is at the middle of the window, as fractions of its width and height.
+ */
+export interface LinkedView {
+  /** Who made the change, so it is not applied to the photograph it came from. */
+  source: string;
+  zoom: number;
+  cx: number;
+  cy: number;
+}
+
+export function toLinkedView(transform: Transform, fit: Transform, windowWidth: number, windowHeight: number, imageWidth: number, imageHeight: number, source: string): LinkedView {
+  const centre = toImage(transform, windowWidth / 2, windowHeight / 2);
+  return { source, zoom: transform.k / fit.k, cx: centre.x / imageWidth, cy: centre.y / imageHeight };
+}
+
+/** The view of another photograph (with its own window and fit) that shows the same place at the same zoom. */
+export function fromLinkedView(linked: LinkedView, fit: Transform, windowWidth: number, windowHeight: number, imageWidth: number, imageHeight: number): Transform {
+  const k = Math.min(fit.k * MAX_ZOOM, Math.max(fit.k * 0.5, fit.k * linked.zoom));
+  return { k, tx: windowWidth / 2 - linked.cx * imageWidth * k, ty: windowHeight / 2 - linked.cy * imageHeight * k };
+}

@@ -1,5 +1,70 @@
 export const CHANGELOG = [
   {
+    version: 'v2.83',
+    date: '2026-10-12',
+    title: 'The calculations checked against another program and the almanacs',
+    changes: [
+      'The positions are now tested against another Jyotish program: thirteen charts (both hemispheres, latitudes from Sydney to Oulu, birth years 1899 to 2035) cast by PyJHora with the same Swiss Ephemeris, with the Lahiri ayanamsa and the mean node (and the true node for Rahu). The reference values are in a file, made by a script that is kept with the app (scripts/pyjhora_reference.py), so the check can be repeated and extended. Every change of the app runs it.',
+      'The Sun is also tested against the moments of the equinoxes and solstices, and the Moon against new and full Moons, from the astronomical almanacs: the Sun is within 1 arcsecond, the Moon within 9.',
+      'What the check found: against PyJHora the grahas, the ascendant and Rahu of a chart agree to 2 arcseconds once a common offset is taken out. The offset is the nutation, at most 17 arcseconds (0.005°): the app subtracts the mean ayanamsa from the apparent tropical longitude, which includes the nutation, as the program the special sphutas were checked against does, while PyJHora gives the Swiss Ephemeris\'s own sidereal positions, which do not. Nothing about the calculations was changed. The Vimsottari mahadasha dates agree with PyJHora to within 1.3 days over a hundred years when given the same Moon (a year is 365.25 days here).',
+      'The user guide has a question on how accurate the calculations are and how they are checked.',
+      'Updated the application version to v2.83.',
+    ],
+  },
+  {
+    version: 'v2.82',
+    date: '2026-10-12',
+    title: 'A client report to print or save as a PDF',
+    changes: [
+      'A REPORT button in the top bar (in the ⋮ menu on a phone) opens a client report: a white page with a title, the date, the birth data, the chart (in the style chosen), the graha positions, the timing summary for the target date and every palm photograph with its drawing, its ages and its numbered notes written under it. What goes in is ticked (the chart, the table, the summary and each photograph), and the report has a title, a name it is prepared for and remarks at the end.',
+      'Print / PDF opens the browser\'s print window; choosing Save as PDF makes a file named after the title. Only the report is printed, on as many A4 pages as it needs, and it is white paper whatever theme the app is in (the dark theme is put aside while the report is open). Pictures and sections are kept whole across page breaks where they fit.',
+      'The one-page print of the TIMING summary works as before.',
+      'Updated the application version to v2.82.',
+    ],
+  },
+  {
+    version: 'v2.81',
+    date: '2026-10-12',
+    title: 'PALM: compare two hands',
+    changes: [
+      'With two or more photographs in PALM, a Compare button opens two of them side by side with their drawings: the open photograph on the left and, when the hands have been named, the other hand on the right (otherwise the next photograph). Either side can be changed from its list, and Escape closes the view.',
+      'The zoom and the place are shared by default: zoom or move one photograph and the other goes to the same place at the same zoom, even when the photographs are of different shapes, and Fit to window on either fits both. Untick link the zoom to move them separately.',
+      'The note under the PALM heading now says that the photographs can also be saved with a backup in Settings.',
+      'Updated the application version to v2.81.',
+    ],
+  },
+  {
+    version: 'v2.80',
+    date: '2026-10-12',
+    title: 'PALM: a scale in centimetres and ages along a line',
+    changes: [
+      'A photograph can be given a scale: select a ruler, type its real length in centimetres (a finger of 7 cm, a ruler laid on the hand) and press use as the scale of the photograph. Every ruler of that photograph then writes its length and its parts in centimetres (for example 7.5 cm ÷ 4 = 1.88 cm) instead of pixels. The scale is shown in the side panel with a clear button, and it is kept with the photograph, in the backup and in the saved picture.',
+      'Ages along a line: a pen stroke, a line or an arrow can carry ages, such as the years of a life line. Select it, tick ages along the line, and give the age at its start, the age at its end and a mark every so many years (0 to 70, every 10, is the first choice). The ages are spread evenly along the length of the line, each with a small mark across it and the number beside it. They are in the saved picture and the client view, and a value that is not a sensible scale (the same age at both ends, a step that gives more than a hundred marks) is not taken.',
+      'Updated the application version to v2.80.',
+    ],
+  },
+  {
+    version: 'v2.79',
+    date: '2026-10-12',
+    title: 'Share a chart with a link',
+    changes: [
+      'A SHARE button in the top bar (in the ⋮ menu on a phone) copies a link that opens the chart: the birth date and time, the place, the coordinates and the time zone are in the part of the address after the #, which the browser does not send to any server. Opening the link fills in the form and calculates the chart, with the settings of the person who opens it; the address is cleaned afterwards, so a reload does not start over.',
+      'A link that is not a chart, or is not well formed (coordinates beyond the globe, a time zone that is not a name), is ignored. The link holds the birth data, so the notice says to give it only to the person it is for.',
+      'Updated the application version to v2.79.',
+    ],
+  },
+  {
+    version: 'v2.78',
+    date: '2026-10-12',
+    title: 'The backup keeps the palm photographs',
+    changes: [
+      'Settings → Full local backup now saves the palm photographs with their drawings, notes and names, in the same file as everything else (the pictures are inside the file). A switch, include the palm photographs, leaves them out for a small backup. A backup made without them leaves the photographs of this device alone when it is restored.',
+      'Restoring a backup that has photographs replaces the photographs of this device in one step: if they cannot be kept (the browser has no room), nothing is changed. The photographs of a backup that cannot be read are left out, and the list of what is in the file says how many photographs there are.',
+      'The size limit of a backup file to restore is 150 MB (it was 5 MB), because of the photographs.',
+      'Updated the application version to v2.78.',
+    ],
+  },
+  {
     version: 'v2.77',
     date: '2026-10-12',
     title: 'PALM drawing: a ruler, a circle that stays round, an eraser and drawings that can be changed',
