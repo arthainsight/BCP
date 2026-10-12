@@ -17,6 +17,8 @@ export interface PalmRecord {
   width: number;
   height: number;
   annotations: Annotation[];
+  /** Pixels of the photograph to a centimetre, once a ruler has been given a known length. */
+  scale?: number;
 }
 
 const DB_NAME = 'bcp-palm';
@@ -62,4 +64,18 @@ export async function putPalm(record: PalmRecord): Promise<void> {
 
 export async function deletePalm(id: string): Promise<void> {
   await run('readwrite', store => store.delete(id));
+}
+
+/** Replaces every saved palm with these, in one step: if it fails, the palms there were stay as they were. */
+export async function replacePalms(records: PalmRecord[]): Promise<void> {
+  const db = await open();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction(STORE, 'readwrite');
+    const store = transaction.objectStore(STORE);
+    store.clear();
+    records.forEach(record => store.put(record));
+    transaction.oncomplete = () => { db.close(); resolve(); };
+    transaction.onerror = () => { db.close(); reject(transaction.error); };
+    transaction.onabort = () => { db.close(); reject(transaction.error); };
+  });
 }

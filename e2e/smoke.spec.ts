@@ -2004,3 +2004,59 @@ test('PALM: a ruler that finds the middle, a circle that stays round, an eraser 
 
   expect(errors).toEqual([]);
 });
+
+test('the backup keeps the palm photographs with their drawings and puts them back', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.goto('/');
+  await selectWorkspace(page, 'PALM');
+  await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'safe.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  const canvas = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(canvas).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Pen', exact: true })).click();
+  await canvas.scrollIntoViewIfNeeded();
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.move(box.x + box.width * 0.45, box.y + box.height * 0.3);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.5, { steps: 5 });
+  await page.mouse.move(box.x + box.width * 0.45, box.y + box.height * 0.7, { steps: 5 });
+  await page.mouse.up();
+  await expect(canvas.locator('g[data-kind="pen"]')).toHaveCount(1);
+  await page.waitForTimeout(600);
+
+  // The backup file has the photograph (as a picture in the file) and the drawing on it.
+  await selectWorkspace(page, '⚙');
+  const download = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download backup', exact: true })).click();
+  const path = await (await download).path();
+  const backup = JSON.parse(readFileSync(path, 'utf8'));
+  expect(backup.palms).toHaveLength(1);
+  expect(backup.palms[0].image).toMatch(/^data:image\/jpeg;base64,/);
+  expect(backup.palms[0].annotations).toHaveLength(1);
+  expect(backup.palms[0].name).toBe('safe');
+
+  // Without the photographs the backup has none.
+  await visible(page, page.getByRole('checkbox', { name: 'include the palm photographs' })).uncheck();
+  const lighter = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download backup', exact: true })).click();
+  expect(JSON.parse(readFileSync(await (await lighter).path(), 'utf8')).palms).toBeUndefined();
+
+  // Delete the photograph, then restore the backup: it is back, drawing and all.
+  await selectWorkspace(page, 'PALM');
+  await visible(page, page.getByRole('button', { name: 'Delete photograph' })).click();
+  await visible(page, page.getByRole('button', { name: 'Delete this photograph?' })).click();
+  await expect(visible(page, page.getByText('Upload or drop a photograph of a palm to begin.'))).toBeVisible();
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.locator('label', { hasText: 'Choose backup' })).locator('input[type="file"]').setInputFiles(path);
+  await expect(visible(page, page.getByText('The palm photographs on this device are replaced too.'))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Replace and restore', exact: true })).click();
+  await page.waitForLoadState('load');
+  await selectWorkspace(page, 'PALM');
+  const again = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(again).toBeVisible({ timeout: 15_000 });
+  await expect(again.locator('g[data-kind="pen"]')).toHaveCount(1);
+  await expect(visible(page, page.getByLabel('Name of the photograph'))).toHaveValue('safe');
+
+  expect(errors).toEqual([]);
+});

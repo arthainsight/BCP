@@ -288,11 +288,11 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     a: {
       en: [
         'Open PALM and press Upload photos, or drop a picture on the page. On a phone, Take a photo opens the camera. Give the photograph a name and say whether it is the right or the left hand. A photograph is deleted with the 🗑 button, after a confirmation.',
-        'The photographs stay on your device, in the browser; nothing is sent anywhere. Clearing the browser data deletes them, so keep a copy as a picture (see below).',
+        'The photographs stay on your device, in the browser; nothing is sent anywhere. Clearing the browser data deletes them, so keep a backup (see below) or a copy as a picture.',
       ],
       fi: [
         'Avaa KÄMMEN ja paina Lataa kuvia tai pudota kuva sivulle. Puhelimessa Ota kuva avaa kameran. Anna kuvalle nimi ja kerro, onko se oikea vai vasen käsi. Kuva poistetaan 🗑-painikkeella vahvistuksen jälkeen.',
-        'Kuvat pysyvät laitteellasi, selaimessa; mitään ei lähetetä minnekään. Selaimen tietojen tyhjennys poistaa ne, joten säilytä kopio kuvana (katso alla).',
+        'Kuvat pysyvät laitteellasi, selaimessa; mitään ei lähetetä minnekään. Selaimen tietojen tyhjennys poistaa ne, joten säilytä varmuuskopio (katso alla) tai kopio kuvana.',
       ],
     },
   },
@@ -413,12 +413,12 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'How do I back up everything?', fi: 'Miten varmuuskopioin kaiken?' },
     a: {
       en: [
-        'Settings → Full local backup. Download backup saves one file with the saved charts, all the event lists, the calculation and display settings and the dasha methods. To restore, press Choose backup and pick the file, then Replace and restore; this replaces what is in the browser now.',
-        'The palm photographs are not in the backup. Keep their copies with Download PNG.',
+        'Settings → Full local backup. Download backup saves one file with the saved charts, all the event lists, the calculation and display settings, the dasha methods and, unless you switch it off, the palm photographs with their drawings. To restore, press Choose backup and pick the file, then Replace and restore; this replaces what is in the browser now, the palm photographs too when the file has them.',
+        'A backup with photographs can be large (a photograph is about a megabyte). If you only want a copy of a marked-up palm to show or send, Download PNG saves the picture on its own.',
       ],
       fi: [
-        'Asetukset → Täysi paikallinen varmuuskopio. Lataa varmuuskopio tallentaa yhden tiedoston, jossa ovat tallennetut kartat, kaikki tapahtumalistat, laskenta- ja näyttöasetukset sekä daśā-menetelmät. Palauta painamalla Valitse varmuuskopio ja valitsemalla tiedosto, sitten Korvaa ja palauta; tämä korvaa sen, mitä selaimessa nyt on.',
-        'Kämmenkuvat eivät ole varmuuskopiossa. Säilytä niistä kopiot Lataa PNG -painikkeella.',
+        'Asetukset → Täysi paikallinen varmuuskopio. Lataa varmuuskopio tallentaa yhden tiedoston, jossa ovat tallennetut kartat, kaikki tapahtumalistat, laskenta- ja näyttöasetukset, daśā-menetelmät ja, ellet kytke sitä pois, kämmenkuvat piirroksineen. Palauta painamalla Valitse varmuuskopio ja valitsemalla tiedosto, sitten Korvaa ja palauta; tämä korvaa sen, mitä selaimessa nyt on, ja kämmenkuvat myös, kun tiedostossa on niitä.',
+        'Kuvia sisältävä varmuuskopio voi olla iso (yksi valokuva on noin megatavun verran). Jos haluat vain kopion merkitystä kämmenestä näytettäväksi tai lähetettäväksi, Lataa PNG tallentaa kuvan sellaisenaan.',
       ],
     },
   },

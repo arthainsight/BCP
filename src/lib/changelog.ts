@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.78',
+    date: '2026-10-12',
+    title: 'The backup keeps the palm photographs',
+    changes: [
+      'Settings → Full local backup now saves the palm photographs with their drawings, notes and names, in the same file as everything else (the pictures are inside the file). A switch, include the palm photographs, leaves them out for a small backup. A backup made without them leaves the photographs of this device alone when it is restored.',
+      'Restoring a backup that has photographs replaces the photographs of this device in one step: if they cannot be kept (the browser has no room), nothing is changed. The photographs of a backup that cannot be read are left out, and the list of what is in the file says how many photographs there are.',
+      'The size limit of a backup file to restore is 150 MB (it was 5 MB), because of the photographs.',
+      'Updated the application version to v2.78.',
+    ],
+  },
+  {
     version: 'v2.77',
     date: '2026-10-12',
     title: 'PALM drawing: a ruler, a circle that stays round, an eraser and drawings that can be changed',
