@@ -530,6 +530,24 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     },
   },
 
+  {
+    id: 'accuracy',
+    section: 'settings',
+    q: { en: 'How accurate are the calculations, and how are they checked?', fi: 'Kuinka tarkkoja laskelmat ovat ja miten ne tarkistetaan?' },
+    a: {
+      en: [
+        'The positions come from the Swiss Ephemeris. Every change of the app is tested against thirteen charts cast by another Jyotish program, PyJHora (both hemispheres, latitudes from Sydney to Oulu, birth years 1899 to 2035), and against the moments of the equinoxes, solstices and new and full Moons that the astronomical almanacs give. The Sun is within 1 arcsecond of the almanacs, and the grahas and the ascendant of a chart agree with the other program to about 2 arcseconds.',
+        'One difference of convention is known. The app takes the apparent tropical longitude, which includes the nutation, and subtracts the mean ayanamsa, as the other program that the Special Sphutas were checked against does too. Every longitude of a chart is therefore moved by the same small amount, at most 17 arcseconds (0.005°), from the Swiss Ephemeris\'s own sidereal positions, which PyJHora gives. It matters only when a point is within a few arcseconds of a sign or a degree boundary.',
+        'The Vimsottari dates count a year as 365.25 days; given the same Moon, they are within about a day of PyJHora\'s dates a hundred years on.',
+      ],
+      fi: [
+        'Sijainnit tulevat Swiss Ephemeriksestä. Jokainen sovelluksen muutos testataan kolmeätoista kartta vastaan, jotka toinen Jyotish-ohjelma, PyJHora, on laskenut (molemmat pallonpuoliskot, leveysasteet Sydneystä Ouluun, syntymävuodet 1899–2035), sekä tasausten, päivänseisausten sekä uuden- ja täydenkuun hetkiä vastaan, jotka tähtitieteelliset almanakat antavat. Aurinko on 1 kaarisekunnin sisällä almanakoista, ja kartan grahat ja lagna ovat noin 2 kaarisekunnin sisällä toisesta ohjelmasta.',
+        'Yksi käytäntöero tunnetaan. Sovellus ottaa näennäisen tropiikkisen pituuden, jossa nutaatio on mukana, ja vähentää siitä keskimääräisen ayanamsan, kuten tekee myös toinen ohjelma, jota vasten erikoissphuṭat tarkistettiin. Kartan jokainen pituus on siksi siirtynyt saman pienen määrän, enintään 17 kaarisekuntia (0,005°), Swiss Ephemeriksen omista sideerisistä sijainneista, joita PyJHora antaa. Sillä on merkitystä vain, kun piste on muutaman kaarisekunnin päässä merkin tai asteen rajasta.',
+        'Vimsottari-päivät laskevat vuoden 365,25 päiväksi; samalla Kuulla ne ovat sadan vuoden päässä noin vuorokauden sisällä PyJHoran päivistä.',
+      ],
+    },
+  },
+
   // ── When something does not work ───────────────────────────────────
   {
     id: 'city-not-found',

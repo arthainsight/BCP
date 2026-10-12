@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.83',
+    date: '2026-10-12',
+    title: 'The calculations checked against another program and the almanacs',
+    changes: [
+      'The positions are now tested against another Jyotish program: thirteen charts (both hemispheres, latitudes from Sydney to Oulu, birth years 1899 to 2035) cast by PyJHora with the same Swiss Ephemeris, with the Lahiri ayanamsa and the mean node (and the true node for Rahu). The reference values are in a file, made by a script that is kept with the app (scripts/pyjhora_reference.py), so the check can be repeated and extended. Every change of the app runs it.',
+      'The Sun is also tested against the moments of the equinoxes and solstices, and the Moon against new and full Moons, from the astronomical almanacs: the Sun is within 1 arcsecond, the Moon within 9.',
+      'What the check found: against PyJHora the grahas, the ascendant and Rahu of a chart agree to 2 arcseconds once a common offset is taken out. The offset is the nutation, at most 17 arcseconds (0.005°): the app subtracts the mean ayanamsa from the apparent tropical longitude, which includes the nutation, as the program the special sphutas were checked against does, while PyJHora gives the Swiss Ephemeris\'s own sidereal positions, which do not. Nothing about the calculations was changed. The Vimsottari mahadasha dates agree with PyJHora to within 1.3 days over a hundred years when given the same Moon (a year is 365.25 days here).',
+      'The user guide has a question on how accurate the calculations are and how they are checked.',
+      'Updated the application version to v2.83.',
+    ],
+  },
+  {
     version: 'v2.82',
     date: '2026-10-12',
     title: 'A client report to print or save as a PDF',
