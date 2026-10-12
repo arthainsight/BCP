@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.82',
+    date: '2026-10-12',
+    title: 'A client report to print or save as a PDF',
+    changes: [
+      'A REPORT button in the top bar (in the ⋮ menu on a phone) opens a client report: a white page with a title, the date, the birth data, the chart (in the style chosen), the graha positions, the timing summary for the target date and every palm photograph with its drawing, its ages and its numbered notes written under it. What goes in is ticked (the chart, the table, the summary and each photograph), and the report has a title, a name it is prepared for and remarks at the end.',
+      'Print / PDF opens the browser\'s print window; choosing Save as PDF makes a file named after the title. Only the report is printed, on as many A4 pages as it needs, and it is white paper whatever theme the app is in (the dark theme is put aside while the report is open). Pictures and sections are kept whole across page breaks where they fit.',
+      'The one-page print of the TIMING summary works as before.',
+      'Updated the application version to v2.82.',
+    ],
+  },
+  {
     version: 'v2.81',
     date: '2026-10-12',
     title: 'PALM: compare two hands',

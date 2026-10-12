@@ -470,6 +470,21 @@ export const FAQ_ENTRIES: FaqEntry[] = [
   },
 
   {
+    id: 'client-report',
+    section: 'data',
+    q: { en: 'How do I make a report for a client?', fi: 'Miten teen raportin asiakkaalle?' },
+    a: {
+      en: [
+        'Press REPORT in the top bar (on a phone, in the ⋮ menu). The report is a white page with the chart, the graha positions, the timing summary for the target date and every palm photograph with its drawing and its numbered notes. Tick what goes in it, give it a title, say who it is prepared for and add remarks at the end.',
+        'Press Print / PDF: the browser\'s print window opens, and choosing Save as PDF as the printer makes a file named after the title. Only the report is printed, on as many pages as it needs, whatever theme the app is in. The timing summary is calculated when the report opens, so give it a moment before you print.',
+      ],
+      fi: [
+        'Paina yläpalkin RAPORTTI-painiketta (puhelimessa ⋮-valikosta). Raportti on valkoinen sivu, jolla ovat kartta, grahojen sijainnit, ajankohtayhteenveto tavoitepäivälle sekä jokainen kämmenkuva piirroksineen ja numeroituine merkintöineen. Rastita, mitä siihen otetaan, anna sille otsikko, kerro, kenelle se on laadittu, ja lisää huomautukset loppuun.',
+        'Paina Tulosta / PDF: selaimen tulostusikkuna aukeaa, ja kun valitset tulostimeksi Tallenna PDF:nä, syntyy otsikon mukaan nimetty tiedosto. Vain raportti tulostuu, niin monelle sivulle kuin se tarvitsee, riippumatta siitä, mikä teema sovelluksessa on. Ajankohtayhteenveto lasketaan raportin avautuessa, joten anna sille hetki ennen tulostusta.',
+      ],
+    },
+  },
+  {
     id: 'share-link',
     section: 'data',
     q: { en: 'How do I give a chart to someone else?', fi: 'Miten annan kartan jollekulle toiselle?' },

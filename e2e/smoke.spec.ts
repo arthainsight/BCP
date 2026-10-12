@@ -2228,3 +2228,76 @@ test('PALM: two photographs side by side, with the zoom shared', async ({ page }
   await expect(dialog).toBeHidden();
   expect(errors).toEqual([]);
 });
+
+test('REPORT puts the chart, the timing summary and the palm photographs on pages that print', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+
+  // A palm photograph with one numbered note.
+  await selectWorkspace(page, 'PALM');
+  await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'maria.png', mimeType: 'image/png', buffer: makePng(600, 800) });
+  const canvas = visible(page, page.locator('[data-palm="canvas"]'));
+  await expect(canvas).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Pin', exact: true })).click();
+  await canvas.scrollIntoViewIfNeeded();
+  const box = (await canvas.boundingBox())!;
+  await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.5);
+  await expect(visible(page, page.getByLabel('Note', { exact: true }))).toBeFocused();
+  await page.keyboard.type('Career turns at 35');
+  await page.waitForTimeout(500);
+
+  // The report is a white page, though the app is dark.
+  await page.evaluate(() => document.documentElement.classList.add('dark'));
+  if (info.project.name === 'phone') await visible(page, page.getByRole('button', { name: 'Chart actions', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'REPORT', exact: true })).click();
+  const report = page.getByRole('dialog', { name: 'Client report' });
+  await expect(report).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.classList.contains('dark'))).toBe(false);
+  await expect(report.locator('[data-report-title]')).toHaveText('Chart report · 15.08.1947');
+  await expect(report.locator('[data-report-section="chart"] svg').first()).toBeVisible();
+  await expect(report.locator('[data-report-section="table"]')).toContainText('Lagna');
+  await expect(report.locator('[data-report-section="summary"]')).toContainText('running dashas');
+  const figure = report.locator('[data-report-palm]');
+  await expect(figure).toHaveCount(1);
+  await expect(figure.locator('img')).toBeVisible({ timeout: 15_000 });
+  await expect.poll(() => figure.locator('img').evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(100);
+  await expect(figure).toContainText('Career turns at 35');
+
+  // What is in it, and what it is called, can be changed; the title names the saved PDF.
+  await report.getByRole('textbox', { name: 'Title' }).fill('Maria, autumn 2026');
+  await expect(report.locator('[data-report-title]')).toHaveText('Maria, autumn 2026');
+  await expect(page).toHaveTitle('Maria, autumn 2026');
+  await report.getByRole('textbox', { name: 'Remarks at the end' }).fill('Come back in the spring.');
+  await expect(report.locator('[data-report-section="remarks"]')).toContainText('Come back in the spring.');
+  await report.getByRole('checkbox', { name: /graha positions/ }).uncheck();
+  await expect(report.locator('[data-report-section="table"]')).toHaveCount(0);
+  await report.locator('[data-report-pick]').uncheck();
+  await expect(figure).toHaveCount(0);
+  await report.locator('[data-report-pick]').check();
+  await expect(report.locator('[data-report-palm]')).toHaveCount(1);
+
+  // On paper only the report is left, and it saves as a PDF.
+  await page.emulateMedia({ media: 'print' });
+  expect(await page.evaluate(() => {
+    const others = [...document.body.children].filter(element => !element.hasAttribute('data-report-root') && element.tagName !== 'SCRIPT');
+    const root = document.querySelector('[data-report-root]') as HTMLElement;
+    return {
+      hidden: others.every(element => getComputedStyle(element).display === 'none'),
+      position: getComputedStyle(root).position,
+    };
+  })).toEqual({ hidden: true, position: 'static' });
+  const pdf = await page.pdf({ format: 'A4' });
+  expect(pdf.subarray(0, 5).toString()).toBe('%PDF-');
+  expect(pdf.length).toBeGreaterThan(20_000);
+  await page.emulateMedia({ media: 'screen' });
+
+  // Closing it gives the page back, dark again.
+  await page.keyboard.press('Escape');
+  await expect(report).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.classList.contains('dark'))).toBe(true);
+  expect(await page.evaluate(() => 'printReport' in document.body.dataset)).toBe(false);
+
+  expect(errors).toEqual([]);
+});

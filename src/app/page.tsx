@@ -19,6 +19,7 @@ import PalmWorkspace from '@/components/palm/PalmWorkspace';
 import { DataLine, DataSummary, EmptyState, Panel, SplitPane } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
 import { RecordingPanel } from '@/components/ScreenRecorder';
+import ClientReport from '@/components/ClientReport';
 import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
@@ -86,6 +87,7 @@ export default function Home() {
   const [desktopTab, setDesktopTab] = useState<DesktopTab>('data');
   // On a phone the birth data folds into one line once the chart is calculated, to leave the room to the chart.
   const [dataOpen, setDataOpen] = useState(true);
+  const [reporting, setReporting] = useState(false);
   // In the split view the birth data is a thin line over the chart, and the form opens from it.
   const [splitDataOpen, setSplitDataOpen] = useState(false);
 
@@ -725,6 +727,7 @@ export default function Home() {
           onLoad: handleLoadChartSnapshot,
           onExport: handleExportCharts,
           onImport: handleImportCharts,
+          onReport: () => setReporting(true),
           onActiveNameChange: setActiveChartName,
         }}
       />
@@ -889,6 +892,24 @@ export default function Home() {
 
       {/* What a screen recording leaves behind: the video, to download or to throw away */}
       <RecordingPanel />
+      {reporting && (
+        <ClientReport
+          chart={chartData}
+          chartName={activeChartName}
+          birthDatetime={birthDatetime}
+          place={chartSnapshot.city}
+          utcOffset={effectiveTzOffset}
+          targetDate={targetDate}
+          chartDisplaySettings={chartDisplaySettings}
+          calculationSettings={calculationSettings}
+          dashaSettings={dashaSettings}
+          karakaByPlanet={karakaByPlanet}
+          nakshatraAdjust={nakshatraAdjust}
+          dashaLords={chartDashaLords}
+          transitPlanets={transitPlanets}
+          onClose={() => setReporting(false)}
+        />
+      )}
 
       {/* Footer: the name of the app and who made it */}
       <footer className="pb-8 pt-4 text-center text-xs font-mono text-zinc-400 dark:text-zinc-600 lg:py-6">

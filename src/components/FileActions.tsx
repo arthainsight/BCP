@@ -24,6 +24,8 @@ interface Props {
   onLoad: (snapshot: ChartSnapshot, id: string) => void;
   onExport: () => void;
   onImport: () => void;
+  /** Opens the client report. */
+  onReport?: () => void;
   onActiveNameChange?: (name: string | null) => void;
   compact?: boolean;
 }
@@ -38,7 +40,7 @@ const MENU_ITEM =
   "border-b border-zinc-100 dark:border-zinc-700/70 last:border-b-0 " +
   "hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed";
 
-export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport, onActiveNameChange, compact }: Props) {
+export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport, onReport, onActiveNameChange, compact }: Props) {
   const t = useT();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showLoad, setShowLoad] = useState(false);
@@ -173,6 +175,11 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
     onImport();
   };
 
+  const handleReport = () => {
+    setShowMenu(false);
+    onReport?.();
+  };
+
   // A link with the birth data after the #: it is not sent to any server, only to whoever is given the link.
   const handleShare = async () => {
     setShowMenu(false);
@@ -226,6 +233,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
           <button onClick={handleExport} className={BTN}>{t('EXPORT')}</button>
           <button onClick={handleImport} className={BTN}>{t('IMPORT')}</button>
           <button onClick={handleShare} disabled={!hasSnapshotData} title={t('Copy a link that opens this chart')} className={BTN}>{t('SHARE')}</button>
+          {onReport && <button onClick={handleReport} title={t('The chart, the timing summary and the palm photographs on pages to print or save as a PDF')} className={BTN}>{t('REPORT')}</button>}
         </>
       )}
 
@@ -243,6 +251,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
             <button onClick={handleExport} className={MENU_ITEM}>{t('EXPORT')}</button>
             <button onClick={handleImport} className={MENU_ITEM}>{t('IMPORT')}</button>
             <button onClick={handleShare} disabled={!hasSnapshotData} className={MENU_ITEM}>{t('SHARE')}</button>
+            {onReport && <button onClick={handleReport} className={MENU_ITEM}>{t('REPORT')}</button>}
           </div>
         </>
       )}
