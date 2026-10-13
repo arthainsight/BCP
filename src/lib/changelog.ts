@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.88',
+    date: '2026-10-13',
+    title: 'Events: periods, looser pasting and changing many at once',
+    changes: [
+      'An event can now last for a while: it has an optional end date (when it is added, or in its card, where the date can be changed too). The list and the Event Timeline show both days, the card shows the dashas for the first and for the last day, and the CSV and JSON exports and imports carry the end date (the column end_date).',
+      'Paste reads more: a month (3/2015, 2015-03) or a year (2015) as the date, which is taken to be the middle of it and tagged approx. date; two dates (15.6.2015 - 20.8.2017 Studied abroad, 2015 - 2017 Studied abroad) as a period; a first line that only names the columns is skipped; and a CSV file with a header row or a JSON list pasted into the box is read as such. The lines that are not understood are listed.',
+      'A bulk editing bar under the search row of the list: tick events or Select all shown, then set their category, varga or significance, add or remove tags, clear the end date or delete them. Only the events that the filters show are changed. Every paste, import, bulk change and deletion (also of a single event) can be taken back with Undo in the message above the list, and Group by year adds a heading for each year.',
+      'The paste box and the bulk bar are components of their own, the categories and vargas of the import are the ones of the event list instead of a copy, and the Event Timeline and the Event List share the place the events are kept in.',
+      'Updated the application version to v2.88.',
+    ],
+  },
+  {
     version: 'v2.87',
     date: '2026-10-13',
     title: 'The true sunrise is the default',
