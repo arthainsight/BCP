@@ -10,6 +10,7 @@ import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
 import { PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
 import ParayaChips from './ParayaChips';
 import RangeField from './RangeField';
+import { VARGA_DIVISIONS, VARGA_NAMES } from '@/lib/vargaChart';
 import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP, clampFontScale, fontScaleLabel } from '@/lib/chartFont';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
@@ -317,7 +318,7 @@ export default function SettingsPanel(props: Props) {
           </div>
 
           <SubSection label="chart style">
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <button type="button" onClick={() => updateChartStyle('north')}
                 className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'north' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
                 {t('North Indian')}
@@ -330,7 +331,24 @@ export default function SettingsPanel(props: Props) {
                 className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'both' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
                 {t('North + South')}
               </button>
+              <button type="button" onClick={() => updateChartStyle('mixed')}
+                className={`px-3 py-2 rounded-md border text-xs font-mono ${selectedChartStyle === 'mixed' ? 'border-emerald-500 text-emerald-700 dark:text-green-400 bg-emerald-50 dark:bg-green-950/20' : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'}`}>
+                {t('Mixed')}
+              </button>
             </div>
+            {selectedChartStyle === 'mixed' && (
+              <label className="mt-2 block text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                {t('outer chart')}
+                <select
+                  className={`${SELECT} mt-1`}
+                  value={chartDisplaySettings.mixedOuterDivision}
+                  onChange={(e) => onUpdateChartDisplay?.({ mixedOuterDivision: Number(e.target.value) })}
+                >
+                  {VARGA_DIVISIONS.map(division => <option key={division} value={division}>D{division} {VARGA_NAMES[division]}</option>)}
+                </select>
+                <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">{t('The D1 chart is drawn inside, in the North style, and this varga chart outside, in the South style.')}</span>
+              </label>
+            )}
             <RangeField
               className="mt-3"
               label={t('text size of the charts')}

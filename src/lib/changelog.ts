@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.84',
+    date: '2026-10-13',
+    title: 'A mixed chart: D1 inside, any varga outside',
+    changes: [
+      'A new chart style, MIX, beside N, S and N+S: the D1 chart, with all its layers (the BCP, the dasha marks, the transits, the Paraya grahas, the special lagnas), is drawn in the middle in the North style, and a varga chart of your choice around it in the South style. The list beside the buttons, outer chart, has every varga from D2 to D60; the navamsa (D9) is the first choice. A caption above the chart says which two are shown.',
+      'A graha tapped on either chart is marked on both, so it can be followed from the rāśi chart into the varga. The marks of the Āruḍha padas and of the upagrahas and Karakāṁśa, and the transits, are on the outer varga as they are on the other vargas. The divisional buttons are not shown in this style, since the middle is always D1.',
+      'The style and the varga are kept with the display settings; Settings → display → chart style has Mixed too, with the same choice of the outer chart. The client report draws the mixed chart as it is chosen, and the picture saved from the chart is named after both charts (chart-d1-d9).',
+      'Updated the application version to v2.84.',
+    ],
+  },
+  {
     version: 'v2.83',
     date: '2026-10-12',
     title: 'The calculations checked against another program and the almanacs',

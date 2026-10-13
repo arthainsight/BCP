@@ -112,6 +112,21 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     },
   },
   {
+    id: 'mixed-chart',
+    section: 'charts',
+    q: { en: 'What is the mixed chart, and how do I choose the varga outside?', fi: 'Mikä on sekoitettu kartta ja miten valitsen ulkopuolisen vargan?' },
+    a: {
+      en: [
+        'The MIX button beside N, S and N+S draws two different charts at once: the D1 chart, with its layers, in the middle in the North style, and a varga chart around it in the South style. The navamsa (D9) is outside to begin with; the list beside the buttons, outer chart, has every varga, from the hora (D2) to the shashtiamsa (D60). A caption above the chart says which two are shown.',
+        'A graha tapped on either chart is marked on both, so you can follow it from the rāśi chart into the varga. The divisional buttons are not used in this style, because the middle is always D1. The style and the varga are kept, and they can also be chosen in Settings → display → chart style. The client report draws the mixed chart as well.',
+      ],
+      fi: [
+        'N-, S- ja N+S-painikkeiden vieressä oleva MIX-painike piirtää kaksi eri karttaa yhtä aikaa: D1-kartan kerroksineen keskelle North-tyylillä ja sen ympärille varga-kartan South-tyylillä. Navamsa (D9) on aluksi ulkona; painikkeiden vieressä oleva lista, ulompi kartta, sisältää jokaisen vargan horasta (D2) śaṣṭiaṁśaan (D60). Kartan yläpuolella oleva teksti kertoo, mitkä kaksi näytetään.',
+        'Kummalta tahansa kartalta napautettu graha merkitään molemmille, joten sitä voi seurata rāśi-kartasta vargaan. Jakokarttapainikkeita ei käytetä tässä tyylissä, koska keskellä on aina D1. Tyyli ja varga muistetaan, ja ne voi valita myös kohdasta Asetukset → näyttö → chart style. Asiakasraportti piirtää myös sekoitetun kartan.',
+      ],
+    },
+  },
+  {
     id: 'divisional',
     section: 'charts',
     q: { en: 'How do I see the divisional charts (vargas)?', fi: 'Miten näen jakokartat (vargat)?' },

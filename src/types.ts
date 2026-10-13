@@ -123,7 +123,8 @@ export interface CharaKaraka {
   degree: number;
 }
 
-export type ChartStyle = 'north' | 'south' | 'both';
+/** `both`: the same chart in the North and the South style, one inside the other; `mixed`: the D1 chart inside and any varga outside. */
+export type ChartStyle = 'north' | 'south' | 'both' | 'mixed';
 
 export interface ChartDisplaySettings {
   chartStyle: ChartStyle;
@@ -159,6 +160,8 @@ export interface ChartDisplaySettings {
   grahaNames: GrahaNameStyle;
   /** Text size of the full-size charts, as a multiple of the usual size (1 = usual). */
   chartFontScale: number;
+  /** The varga chart drawn outside the D1 chart in the mixed style (the divisor: 9 is the navamsa). */
+  mixedOuterDivision: number;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -187,6 +190,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   language: 'en',
   grahaNames: 'english',
   chartFontScale: 1,
+  mixedOuterDivision: 9,
 };
 
 /** How the grahas are named on screen: English (Sun, Moon …) or Sanskrit (Sūrya, Candra …). */

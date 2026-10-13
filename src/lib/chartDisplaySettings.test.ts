@@ -36,6 +36,15 @@ assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: 'Jupiter' }).paraya
 
 assert.equal(migrateChartDisplaySettings({ chartStyle: 'both' }).chartStyle, 'both', 'North + South is a style');
 assert.equal(migrateChartDisplaySettings({ chartStyle: 'south' }).chartStyle, 'south');
+assert.equal(migrateChartDisplaySettings({ chartStyle: 'mixed' }).chartStyle, 'mixed', 'D1 inside and a varga outside is a style');
+
+// The varga outside in the mixed style: the navamsa to begin with, and only a varga there is.
+assert.equal(DEFAULT_CHART_DISPLAY.mixedOuterDivision, 9);
+assert.equal(migrateChartDisplaySettings({}).mixedOuterDivision, 9, 'settings from before the mixed style use the navamsa');
+assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: 10 }).mixedOuterDivision, 10);
+assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: 60 }).mixedOuterDivision, 60);
+assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: 8 }).mixedOuterDivision, 9, 'a divisor that is not a varga falls back to the navamsa');
+assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: '9' }).mixedOuterDivision, 9, 'a value of the wrong type is ignored');
 assert.equal(migrateChartDisplaySettings({ chartStyle: 'round' }).chartStyle, 'north', 'an unknown style falls back to North');
 
 assert.equal(DEFAULT_CHART_DISPLAY.chartFontScale, 1, 'the usual text size by default');
