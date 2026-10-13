@@ -113,7 +113,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
   const openLoad = () => {
     const list = loadSavedCharts();
     if (list.length === 0) {
-      alert("No saved charts yet. Use SAVE AS to save the current chart.");
+      alert(t('No saved charts yet. Use SAVE AS to save the current chart.'));
       return;
     }
     setSavedList(list);

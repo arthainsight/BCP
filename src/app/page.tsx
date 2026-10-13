@@ -23,7 +23,7 @@ import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentTo
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
 import { withDashaLayers } from '@/components/chartLayers';
-import { LanguageContext, type Language } from '@/lib/i18n';
+import { LanguageContext, fill, translate, type Language } from '@/lib/i18n';
 import { decodeShare } from '@/lib/shareLink';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
@@ -422,11 +422,12 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [chartData, transitDatetime, handleCalculateTransit]);
 
+  const uiLanguage: Language = chartDisplaySettings.language === 'fi' ? 'fi' : 'en';
   const handleExportCharts = useCallback(() => {
     const exported = exportSavedCharts();
-    if (exported === null) alert('No saved charts to export.');
+    if (exported === null) alert(translate(uiLanguage, 'No saved charts to export.'));
     else saveFile('bcp-charts-export.json', exported, 'application/json');
-  }, []);
+  }, [uiLanguage]);
 
   const handleImportCharts = useCallback(() => {
     const input = document.createElement('input');
@@ -439,15 +440,15 @@ export default function Home() {
       reader.onload = () => {
         try {
           const imported = importSavedCharts(reader.result as string);
-          alert(`Imported ${imported} chart${imported !== 1 ? 's' : ''}.`);
+          alert(fill(translate(uiLanguage, imported === 1 ? 'Imported {count} chart.' : 'Imported {count} charts.'), { count: imported }));
         } catch {
-          alert('Failed to read file. Make sure it is a valid export file.');
+          alert(translate(uiLanguage, 'Failed to read file. Make sure it is a valid export file.'));
         }
       };
       reader.readAsText(file);
     };
     input.click();
-  }, []);
+  }, [uiLanguage]);
 
   const handleLoadChartSnapshot = useCallback(
     async (snap: ChartSnapshot) => {

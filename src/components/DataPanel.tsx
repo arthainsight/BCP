@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { GeoResult } from '@/types';
-import { useT } from '@/lib/i18n';
+import { translateMessage, useLanguage, useT } from '@/lib/i18n';
 
 interface Props {
   birthDatetime: string;
@@ -52,6 +52,7 @@ export default function DataPanel({
   onCollapse,
 }: Props) {
   const t = useT();
+  const language = useLanguage();
   const [editLocation, setEditLocation] = useState(false);
   const lat = Number(manualLat);
   const lng = Number(manualLng);
@@ -191,7 +192,7 @@ export default function DataPanel({
       {/* Error */}
       {error && (
         <div className="text-red-600 dark:text-red-400 text-xs font-mono bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 p-2 rounded">
-          {error}
+          {translateMessage(language, error)}
         </div>
       )}
 
