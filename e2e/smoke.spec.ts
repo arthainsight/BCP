@@ -968,14 +968,15 @@ test('the Vimsottari daśās drill down level by level, and NOW opens the runnin
   await selectWorkspace(page, 'TIMING');
   await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
 
-  for (const system of [/^Vimsottari (?!Utpanna|Kshema|Adhana|Original)/, /^Vimsottari Original/]) {
-    const card = visible(page, page.getByRole('button', { name: system }));
+  for (const system of [{ name: /^Vimsottari (?!Utpanna|Kshema|Adhana|Original)/, original: false }, { name: /^Vimsottari Original/, original: true }]) {
+    const card = visible(page, page.getByRole('button', { name: system.name }));
     await card.click();
-    const panel = visible(page, page.locator('div.space-y-3').filter({ has: page.getByRole('button', { name: 'NOW', exact: true }) }));
+    // The card (its header and what opens under it) is the header's parent.
+    const panel = card.locator('xpath=..');
     await expect(panel).toContainText('active now');
     await expect(panel).toContainText(/MD · \d+ periods/);
     // The method of U K Jha shows its own parameters above the periods.
-    if (system.source.includes('Original')) await expect(panel).toContainText('original method parameters');
+    if (system.original) await expect(panel).toContainText('original method parameters');
 
     // A period opens the periods inside it; back goes up again.
     await panel.getByRole('button', { name: /^(Ke|Ve|Su|Mo|Ma|Ra|Ju|Sa|Me)\b/ }).first().click();
