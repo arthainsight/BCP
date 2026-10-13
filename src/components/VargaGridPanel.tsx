@@ -21,7 +21,7 @@ import { followPlanet } from '@/lib/vargaFollow';
 import type { DashaLordMarks } from './chartLayers';
 import ChartExportButtons from './ChartExportButtons';
 import StyledChart from './StyledChart';
-import { useT } from '@/lib/i18n';
+import { fill, useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_ABBR } from '@/lib/signs';
 
@@ -110,7 +110,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
                   aria-pressed={on}
                   disabled={locked}
                   onClick={() => save({ ...selection, custom: toggleCustomDivision(selection.custom, division) })}
-                  title={`${VARGA_NAMES[division]} — ${VARGA_SIGNIFICATIONS[division]}`}
+                  title={`${VARGA_NAMES[division]} — ${t(VARGA_SIGNIFICATIONS[division])}`}
                   className={`rounded border px-1.5 py-1 text-[10px] font-mono disabled:opacity-40 ${on
                     ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-green-600 dark:bg-green-950/30 dark:text-green-400'
                     : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400'}`}
@@ -150,9 +150,9 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
               <span
                 key={place.division}
                 title={[
-                  `${highlight} in ${SIGN_ABBR[place.sign - 1]} in D${place.division}`,
+                  fill(t('{planet} in {sign} in D{division}'), { planet: highlight, sign: SIGN_ABBR[place.sign - 1], division: place.division }),
                   place.dignity && t(place.dignity === 'own' ? 'own sign' : place.dignity),
-                  place.sameAsRasi && 'same sign as in D1',
+                  place.sameAsRasi && t('same sign as in D1'),
                 ].filter(Boolean).join(' · ')}
                 className={`rounded border px-1.5 py-0.5 text-[10px] font-mono ${place.sameAsRasi ? 'font-bold underline' : ''} ${
                   place.dignity === 'exalted' ? 'border-emerald-400 text-emerald-700 dark:border-green-700 dark:text-green-400'
@@ -176,9 +176,12 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
             <div className="min-w-0">
               <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">D{expanded} {VARGA_NAMES[expanded]}</div>
               <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-                {VARGA_SIGNIFICATIONS[expanded]}. Houses are counted from the D{expanded} ascendant
-                ({SIGN_ABBR[buildVargaChart(chart, expanded).ascendantSign - 1]}).
-                {expanded !== 1 && ' Degrees show the position within the divisional sign.'}
+                {fill(t('{significance}. Houses are counted from the D{division} ascendant ({sign}).'), {
+                  significance: t(VARGA_SIGNIFICATIONS[expanded]),
+                  division: expanded,
+                  sign: SIGN_ABBR[buildVargaChart(chart, expanded).ascendantSign - 1],
+                })}
+                {expanded !== 1 && t(' Degrees show the position within the divisional sign.')}
               </div>
             </div>
             <button type="button" onClick={() => setExpanded(null)} className="shrink-0 rounded border border-zinc-200 px-2 py-1 text-[10px] font-mono text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
@@ -212,7 +215,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
               <button
                 type="button"
                 onClick={() => setExpanded(current => (current === division ? null : division))}
-                title={VARGA_SIGNIFICATIONS[division]}
+                title={t(VARGA_SIGNIFICATIONS[division])}
                 className="mb-1 flex w-full min-w-0 items-baseline gap-1 text-left font-mono"
               >
                 <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-200">D{division}</span>

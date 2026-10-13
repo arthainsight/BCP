@@ -6,6 +6,7 @@ import { calculateCleanCharaMD, calculateCleanCharaSubDashas, type CleanCharaEnt
 import { parseDateTime } from '@/lib/bcp';
 import { formatDate } from '@/lib/dateFormat';
 
+import { fill, useT } from '@/lib/i18n';
 interface Props {
   planets: PlanetData[];
   ascendant: { longitude: number; sign: number; degree: number };
@@ -22,6 +23,7 @@ function entryKey(entry: CleanCharaEntry) {
 }
 
 export default function CharaCleanPanel({ planets, ascendant, birthDatetime, settings }: Props) {
+  const t = useT();
   const [levelIndex, setLevelIndex] = useState(0);
   const [path, setPath] = useState<CleanCharaEntry[]>([]);
   const now = useMemo(() => new Date(), []);
@@ -29,7 +31,7 @@ export default function CharaCleanPanel({ planets, ascendant, birthDatetime, set
   const result = bd ? calculateCleanCharaMD(planets, ascendant.sign, bd, settings) : null;
 
   if (!result) {
-    return <div className="text-xs font-mono text-zinc-400">No data</div>;
+    return <div className="text-xs font-mono text-zinc-400">{t('No data')}</div>;
   }
 
   const parent = levelIndex > 0 ? path[levelIndex - 1] : null;
@@ -69,15 +71,15 @@ export default function CharaCleanPanel({ planets, ascendant, birthDatetime, set
     <div className="space-y-3 min-w-0">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-xs text-zinc-500 uppercase tracking-widest">&gt; chara daśā</div>
-        <button type="button" onClick={openNow} className="rounded border border-cyan-300 px-2 py-1 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">NOW</button>
+        <button type="button" onClick={openNow} className="rounded border border-cyan-300 px-2 py-1 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">{t('NOW')}</button>
       </div>
       <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-        <div>Start: {result.startBasis}</div>
-        {activePath.length > 0 && <div className="mt-1 text-cyan-700 dark:text-cyan-300">Now: {activePath.map((entry, index) => `${entry.abbr} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')}</div>}
+        <div>{t('Start:')} {result.startBasis}</div>
+        {activePath.length > 0 && <div className="mt-1 text-cyan-700 dark:text-cyan-300">{t('Now:')} {activePath.map((entry, index) => `${entry.abbr} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')}</div>}
       </div>
       <div className="flex items-center justify-between gap-2">
-        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">← back</button>
-        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LEVEL_LABEL[currentLevel]} · {rows.length} periods</div>
+        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="rounded border border-zinc-300 px-2 py-1 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">{t('← back')}</button>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LEVEL_LABEL[currentLevel]} · {rows.length} {t('periods')}</div>
       </div>
       {path.length > 0 && <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-300">{path.map((entry, index) => `${entry.abbr} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')} › {LEVEL_LABEL[currentLevel]}</div>}
       <div className="space-y-1">
@@ -92,7 +94,7 @@ export default function CharaCleanPanel({ planets, ascendant, birthDatetime, set
           );
         })}
       </div>
-      <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">Rāśi periods from {result.startBasis}; durations counted to each sign lord with the selected Chara settings.</p>
+      <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{fill(t('Rāśi periods from {basis}; durations counted to each sign lord with the selected Chara settings.'), { basis: result.startBasis })}</p>
     </div>
   );
 }

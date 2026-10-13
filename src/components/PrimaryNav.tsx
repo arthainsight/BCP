@@ -46,7 +46,7 @@ export default function PrimaryNav({ active, onChange, show, split }: Props) {
 
   return (
     <nav
-      aria-label="Primary"
+      aria-label={t('Primary')}
       className={`sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800${show === 'mobile' ? ' lg:hidden' : show === 'desktop' ? ' hidden lg:block' : ''}`}
     >
       <div className="flex items-center gap-1 px-4 py-2">

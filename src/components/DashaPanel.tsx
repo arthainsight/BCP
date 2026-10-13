@@ -12,6 +12,7 @@ import DashaDateFinder from './DashaDateFinder';
 import DashaSystemCard from './DashaSystemCard';
 import { useDashaNotes } from '@/hooks/useDashaNotes';
 import { useT } from '@/lib/i18n';
+import { translateDashaText } from '@/lib/dashaText';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { pad2 } from '@/lib/dateFormat';
 
@@ -60,7 +61,7 @@ export default function DashaPanel({ planets, ascendant, birthDatetime, dashaSet
   if (activeDashas.length === 0) {
     return (
       <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 italic py-4">
-        All Dasha panels are disabled. Enable them in Settings → Dasha.
+        {t('All Dasha panels are disabled. Enable them in Settings → Dasha.')}
       </div>
     );
   }
@@ -103,7 +104,7 @@ export default function DashaPanel({ planets, ascendant, birthDatetime, dashaSet
             key={d.key}
             id={`dasha-${d.key}`}
             title={d.key === 'vimshottariVariant' ? summaries[d.key]?.label ?? d.label : d.label}
-            summary={translate(runningPeriod(summaries[d.key]) ?? '') || undefined}
+            summary={translate(runningPeriod(summaries[d.key], t) ?? '') || undefined}
             flag={mdChangeFlag(summaries[d.key], today, t('MD changes'))}
             note={notes[d.key] ?? ''}
             onNoteChange={note => setNote(d.key, note)}
@@ -118,8 +119,8 @@ export default function DashaPanel({ planets, ascendant, birthDatetime, dashaSet
 
 
 /** "Ve – Sa – Me · MD until 03.2027": the running periods of one system, for its header. */
-function runningPeriod(snapshot?: DashaEventSnapshot): string | undefined {
-  if (!snapshot || snapshot.levels.length === 0) return snapshot?.note;
+function runningPeriod(snapshot: DashaEventSnapshot | undefined, t: (text: string) => string): string | undefined {
+  if (!snapshot || snapshot.levels.length === 0) return snapshot?.note ? translateDashaText(snapshot.note, t) : undefined;
   const periods = snapshot.levels.map(level => level.value).join(' – ');
   const end = snapshot.mdRange?.endDate;
   return end ? `${periods} · MD → ${pad2(end.getMonth() + 1)}.${end.getFullYear()}` : periods;

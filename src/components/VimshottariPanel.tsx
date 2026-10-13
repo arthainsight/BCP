@@ -6,6 +6,7 @@ import { parseDateTime } from '@/lib/bcp';
 import { PlanetData } from '@/types';
 import DashaDrilldown from './DashaDrilldown';
 
+import { useT } from '@/lib/i18n';
 interface Props {
   planets: PlanetData[];
   birthDatetime: string;
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function VimshottariPanel({ planets, birthDatetime, title = 'vimshottari' }: Props) {
+  const t = useT();
   const moon = planets.find(p => p.name === 'Moon');
   const result = useMemo(() => {
     if (!moon || moon.longitude == null) return null;
@@ -25,7 +27,7 @@ export default function VimshottariPanel({ planets, birthDatetime, title = 'vims
     return (
       <div className="space-y-2">
         <div className="font-mono text-xs text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">&gt; {title}</div>
-        <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 italic">{!moon ? 'Moon data required.' : 'Invalid birth datetime.'}</div>
+        <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600 italic">{!moon ? t('Moon data required.') : t('Invalid birth datetime.')}</div>
       </div>
     );
   }

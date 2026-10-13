@@ -956,6 +956,41 @@ test('the Event List is in Finnish, with its messages and Undo', async ({ page }
   expect(errors).toEqual([]);
 });
 
+test('the panels and the sentences the calculations write are in Finnish', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.locator('select').filter({ hasText: 'Suomi' })).selectOption('fi');
+
+  // ANALYSIS: the yoga table's reasons are written by the engine in English and shown in Finnish.
+  await selectWorkspace(page, 'ANALYYSI');
+  await visible(page, page.getByRole('button', { name: 'Grahat', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: /yoga\.detection/ })).click();
+  await expect(visible(page, page.getByText('Mars 12. merkissä Auringosta'))).toBeVisible();
+  await expect(visible(page, page.getByText('Kendra-/Trikona-herrat').first())).toBeVisible();
+
+  // The Varga matrix and the argala headers.
+  await visible(page, page.getByRole('button', { name: 'Varga', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Matriisi ja bala', exact: true })).click();
+  await expect(visible(page, page.getByText('Neljä painotettua laskentaa asteikolla 20.'))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Argala', exact: true })).click();
+  await expect(visible(page, page.getByText('4. ⊣ 10.'))).toBeVisible();
+
+  // TIMING: the annual charts, with their ordinals, and the dasha note about the Aṣṭottarī condition.
+  await selectWorkspace(page, 'AJANKOHTA');
+  await visible(page, page.getByRole('button', { name: 'Tithi Praveśa', exact: true })).click();
+  await expect(visible(page, page.getByText('Tithi Praveśa — vuosikartta'))).toBeVisible();
+  await expect(visible(page, page.getByText(/täyttä vuotta · \d+\. vuosi käynnissä/))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Varṣaphala', exact: true })).click();
+  await expect(visible(page, page.getByText('Pañcādhikārī — viisi virkamiestä'))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Daśā', exact: true })).click();
+  await expect(visible(page, page.getByText(/Ehdollinen: ei sovellettavissa \(Rahu \d+\. talossa Lagnan herrasta\)/))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
 test('the Vimsottari daśās drill down level by level, and NOW opens the running periods', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

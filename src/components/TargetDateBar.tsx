@@ -44,7 +44,7 @@ export default function TargetDateBar({ targetDate, onTargetDateChange, targetTi
       {DATE_STEPS.map(([step, label]) => (
         <button key={`back-${step}`} type="button" className={BUTTON} aria-label={`Back one ${step}`} onClick={() => stepDate(step, -1)}>‹{label}</button>
       ))}
-      {withTime && <button type="button" className={BUTTON} aria-label="Back one hour" onClick={() => stepHours(-1)}>‹h</button>}
+      {withTime && <button type="button" className={BUTTON} aria-label={t('Back one hour')} onClick={() => stepHours(-1)}>‹h</button>}
       <input
         type="date"
         value={targetDate}
@@ -61,7 +61,7 @@ export default function TargetDateBar({ targetDate, onTargetDateChange, targetTi
           className={FIELD}
         />
       )}
-      {withTime && <button type="button" className={BUTTON} aria-label="Forward one hour" onClick={() => stepHours(1)}>h›</button>}
+      {withTime && <button type="button" className={BUTTON} aria-label={t('Forward one hour')} onClick={() => stepHours(1)}>h›</button>}
       {[...DATE_STEPS].reverse().map(([step, label]) => (
         <button key={`forward-${step}`} type="button" className={BUTTON} aria-label={`Forward one ${step}`} onClick={() => stepDate(step, 1)}>{label}›</button>
       ))}

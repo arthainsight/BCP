@@ -51,6 +51,7 @@ export interface ChartSectionProps {
 }
 
 function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: boolean; onToggle: () => void }) {
+  const t = useT();
   return (
     <div className="flex items-center justify-between gap-2">
       <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-300">{label}</span>
@@ -65,7 +66,7 @@ function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: 
             : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'
         }`}
       >
-        {value ? 'on' : 'off'}
+        {value ? t('on') : t('off')}
       </button>
     </div>
   );
@@ -255,7 +256,7 @@ export default function ChartSection({
         : 'space-y-3 min-w-0 overflow-x-hidden'}
       role={fullscreen ? 'dialog' : undefined}
       aria-modal={fullscreen || undefined}
-      aria-label={fullscreen ? 'Charts in full screen' : undefined}
+      aria-label={fullscreen ? t('Charts in full screen') : undefined}
     >
       <div className="flex flex-wrap items-center gap-2 min-w-0">
         {targetDate && onTargetDateChange && (

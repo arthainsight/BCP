@@ -38,7 +38,7 @@ export default function UpdatesPanel() {
         </span>
         {hasNew && (
           <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-green-900/60 text-emerald-700 dark:text-green-400 border border-emerald-400 dark:border-green-700">
-            NEW
+            {t('NEW')}
           </span>
         )}
         <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{open ? '▼' : '▶'}</span>

@@ -5,6 +5,7 @@ import { calculateSubDashas, type MahadashaEntry } from '@/lib/vimshottari';
 import { formatDate, formatDateTime } from '@/lib/dateFormat';
 import { useGrahaNames } from '@/lib/grahaNames';
 
+import { useT } from '@/lib/i18n';
 const LEVELS = ['md', 'ad', 'pd', 'sd', 'prana', 'deha'] as const;
 type Level = (typeof LEVELS)[number];
 
@@ -34,6 +35,7 @@ interface Props {
  * running periods are marked, and NOW opens the deepest of them.
  */
 export default function DashaDrilldown({ entries: topEntries, title, details }: Props) {
+  const t = useT();
   const { code } = useGrahaNames();
   const [level, setLevel] = useState<Level>('md');
   const [selected, setSelected] = useState<MahadashaEntry[]>([]);
@@ -88,21 +90,21 @@ export default function DashaDrilldown({ entries: topEntries, title, details }: 
           onClick={openNow}
           className="px-2 py-1 rounded-md border border-cyan-300/70 dark:border-cyan-600/60 bg-cyan-50 dark:bg-cyan-900/20 text-[10px] font-mono text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 transition-colors"
         >
-          NOW
+          {t('NOW')}
         </button>
       </div>
 
       {details}
 
       <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-3 py-2 min-w-0">
-        <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-500 mb-1">active now</div>
+        <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-500 dark:text-zinc-500 mb-1">{t('active now')}</div>
         <div className="flex flex-wrap items-center gap-1 text-[10px] font-mono text-cyan-700 dark:text-cyan-300 leading-5">
           {activePath.length > 0 ? activePath.map((entry, index) => (
             <span key={`${entryKey(entry)}-${index}`} className="inline-flex items-center gap-1">
               <span>{code(entry.lord)} {LEVEL_LABEL[LEVELS[index]]}</span>
               {index < activePath.length - 1 && <span className="text-zinc-400 dark:text-zinc-600">›</span>}
             </span>
-          )) : <span className="text-zinc-400 dark:text-zinc-600 italic">No current period in generated timeline.</span>}
+          )) : <span className="text-zinc-400 dark:text-zinc-600 italic">{t('No current period in generated timeline.')}</span>}
         </div>
       </div>
 
@@ -144,9 +146,9 @@ export default function DashaDrilldown({ entries: topEntries, title, details }: 
           disabled={level === 'md'}
           className="min-h-11 px-3 py-2 rounded-md text-[10px] font-mono border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 disabled:opacity-30 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
         >
-          ← back
+          {t('← back')}
         </button>
-        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{LEVEL_LABEL[level]} · {entries.length} periods</div>
+        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{LEVEL_LABEL[level]} · {entries.length} {t('periods')}</div>
       </div>
 
       <div className="space-y-1 min-w-0">

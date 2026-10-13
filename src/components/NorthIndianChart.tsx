@@ -15,6 +15,7 @@ import { layoutHouseLabels, polygonSpanAt, type ExclusionBox, type LabelToken, t
 import { SIGN_ABBR } from '@/lib/signs';
 import { nakshatraAbbr } from '@/lib/nakshatras';
 
+import { useT } from '@/lib/i18n';
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
 const TRANSIT_COLOR = '#f43f5e';
@@ -272,6 +273,7 @@ export default function NorthIndianChart({
   selectedPlanet = null,
   onPlanetSelect,
 }: Props) {
+  const t = useT();
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
   const fill = useChartFill();
@@ -319,7 +321,7 @@ export default function NorthIndianChart({
 
   return (
     <div ref={rootRef} className={fill ? 'w-full mx-auto' : 'w-full max-w-[620px] mx-auto'} style={fill ? { maxWidth: FILL_MAX_WIDTH } : undefined}>
-      <svg viewBox="-25 -25 550 550" className="w-full h-auto overflow-visible" role="img" aria-label="North Indian Jyotish chart">
+      <svg viewBox="-25 -25 550 550" className="w-full h-auto overflow-visible" role="img" aria-label={t('North Indian Jyotish chart')}>
         {HOUSES.map((item) => {
           const sign = getSignForHouse(ascendantSign, item.house);
           type MergedPlanet = PlanetData & { isTransit: boolean };

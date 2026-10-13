@@ -99,7 +99,7 @@ export default function NavataraPanel({ chart, transitPlanets = [], nakshatraAdj
       </div>
 
       <div className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-        {TARAS.length} Taras · <span className="font-bold text-zinc-600 dark:text-zinc-300">Su</span> {t('natal')} · <span className="font-bold text-rose-500">Su↗</span> {t('transit')}
+        {TARAS.length} {t('Taras ·')} <span className="font-bold text-zinc-600 dark:text-zinc-300">Su</span> {t('natal')} · <span className="font-bold text-rose-500">Su↗</span> {t('transit')}
       </div>
     </div>
   );

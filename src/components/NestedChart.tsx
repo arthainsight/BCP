@@ -16,6 +16,7 @@ import NorthIndianChart from './NorthIndianChart';
 import { SIGN_ABBR } from '@/lib/signs';
 import { nakshatraAbbr } from '@/lib/nakshatras';
 
+import { useT } from '@/lib/i18n';
 type ChartProps = ComponentProps<typeof NorthIndianChart>;
 
 type Props = {
@@ -46,6 +47,7 @@ const signForHouse = (lagnaSign: number, house: number) => ((lagnaSign + house -
  * signs in the South Indian one, so a planet is always in the house or the sign it is in, in whichever chart.
  */
 export default function NestedChart({ shape, outer, inner, outerTitle, innerTitle, outerWord, innerWord }: Props) {
+  const t = useT();
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
   const isDark = !hydrated || resolvedTheme === 'dark';
@@ -143,7 +145,7 @@ export default function NestedChart({ shape, outer, inner, outerTitle, innerTitl
 
   return (
     <div className={fill ? 'w-full mx-auto' : 'w-full max-w-[680px] mx-auto'} style={fill ? { maxWidth: FILL_MAX_WIDTH } : undefined} data-chart="nested" data-nested-shape={shape}>
-      <svg viewBox="-25 -25 550 550" className="h-auto w-full overflow-visible" role="img" aria-label={shape === 'north' ? 'North Indian chart within a chart' : 'South Indian chart within a chart'}>
+      <svg viewBox="-25 -25 550 550" className="h-auto w-full overflow-visible" role="img" aria-label={shape === 'north' ? t('North Indian chart within a chart') : t('South Indian chart within a chart')}>
         {regions.map((region: NestedRegion) => {
           const sign = shape === 'north' ? signForHouse(inner.ascendantSign, region.house!) : region.sign!;
           const [signX, signY] = region.signAt;

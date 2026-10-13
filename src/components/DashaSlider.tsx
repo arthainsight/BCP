@@ -8,6 +8,7 @@ import { calculateDashaEventSnapshots } from '@/lib/dashaEvents';
 import { dashaSnapshotOptions, enabledSnapshots } from '@/lib/dashaView';
 import { DAY_MS, JULIAN_YEAR_MS } from '@/lib/time';
 import { useT } from '@/lib/i18n';
+import { translateDashaText } from '@/lib/dashaText';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { formatDate } from '@/lib/dateFormat';
 
@@ -89,7 +90,7 @@ export default function DashaSlider({ planets, ascendant, birthDatetime, dashaSe
             <span className="min-w-0 break-words text-zinc-600 dark:text-zinc-300">
               {snapshot.levels.length > 0
                 ? snapshot.levels.map(level => <span key={level.level} className="mr-2"><span className="text-zinc-400">{level.level}</span> <span className="font-semibold">{translate(level.value)}</span></span>)
-                : <span className="italic text-zinc-400">{snapshot.note ?? t('Outside calculated cycle')}</span>}
+                : <span className="italic text-zinc-400">{snapshot.note ? translateDashaText(snapshot.note, t) : t('Outside calculated cycle')}</span>}
             </span>
           </li>
         ))}

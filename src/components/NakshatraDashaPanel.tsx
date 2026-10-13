@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import type { NakshatraDashaEntry } from '@/lib/nakshatraDasha';
 import { formatDate } from '@/lib/dateFormat';
 
+import { useT } from '@/lib/i18n';
 const LEVELS = ['md', 'ad', 'pd', 'sd', 'prana', 'deha'] as const;
 const LABELS = ['MD', 'AD', 'PD', 'SD', 'PR', 'DE'] as const;
 const PLANET_ABBR: Record<string, string> = { Sun:'Su', Moon:'Mo', Mars:'Ma', Mercury:'Me', Jupiter:'Ju', Venus:'Ve', Saturn:'Sa', Rahu:'Ra' };
@@ -21,6 +22,7 @@ export default function NakshatraDashaPanel({
   calculateChildren: (parent: NakshatraDashaEntry) => NakshatraDashaEntry[];
   showYoginiName?: boolean;
 }) {
+  const t = useT();
   const [levelIndex, setLevelIndex] = useState(0);
   const [path, setPath] = useState<NakshatraDashaEntry[]>([]);
   const now = useMemo(() => new Date(), []);
@@ -57,15 +59,15 @@ export default function NakshatraDashaPanel({
     <div className="space-y-3 min-w-0">
       <div className="flex items-center justify-between gap-2">
         <div className="font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">&gt; {title}</div>
-        <button type="button" onClick={openNow} className="min-h-11 rounded border border-cyan-300 px-3 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">NOW</button>
+        <button type="button" onClick={openNow} className="min-h-11 rounded border border-cyan-300 px-3 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">{t('NOW')}</button>
       </div>
       <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
         <div>{subtitle}</div>
-        {activePath.length > 0 && <div className="mt-1 break-words leading-relaxed text-cyan-700 dark:text-cyan-300">Now: {activePath.map((entry, index) => `${displayName(entry)} ${LABELS[index]}`).join(' › ')}</div>}
+        {activePath.length > 0 && <div className="mt-1 break-words leading-relaxed text-cyan-700 dark:text-cyan-300">{t('Now:')} {activePath.map((entry, index) => `${displayName(entry)} ${LABELS[index]}`).join(' › ')}</div>}
       </div>
       <div className="flex items-center justify-between gap-2">
-        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="min-h-11 rounded border border-zinc-300 px-3 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">← back</button>
-        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LABELS[levelIndex]} · {rows.length} periods</div>
+        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="min-h-11 rounded border border-zinc-300 px-3 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">{t('← back')}</button>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LABELS[levelIndex]} · {rows.length} {t('periods')}</div>
       </div>
       {path.length > 0 && <div className="break-words text-[10px] font-mono leading-relaxed text-emerald-700 dark:text-emerald-300">{path.map((entry, index) => `${displayName(entry)} ${LABELS[index]}`).join(' › ')} › {LABELS[levelIndex]}</div>}
       <div className="space-y-1">
