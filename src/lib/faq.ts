@@ -464,10 +464,12 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     a: {
       en: [
         'Settings → Full local backup. Download backup saves one file with the saved charts, all the event lists, the calculation and display settings, the dasha methods and, unless you switch it off, the palm photographs with their drawings. To restore, press Choose backup and pick the file, then Replace and restore; this replaces what is in the browser now, the palm photographs too when the file has them.',
+        'You can protect a backup with a password: type one before pressing Download backup. The file is encrypted in your browser (AES-GCM) and the password is sent nowhere. A lost password cannot be recovered. To open an encrypted file, press Choose backup and enter the password.',
         'A backup with photographs can be large (a photograph is about a megabyte). If you only want a copy of a marked-up palm to show or send, Download PNG saves the picture on its own.',
       ],
       fi: [
         'Asetukset → Täysi paikallinen varmuuskopio. Lataa varmuuskopio tallentaa yhden tiedoston, jossa ovat tallennetut kartat, kaikki tapahtumalistat, laskenta- ja näyttöasetukset, daśā-menetelmät ja, ellet kytke sitä pois, kämmenkuvat piirroksineen. Palauta painamalla Valitse varmuuskopio ja valitsemalla tiedosto, sitten Korvaa ja palauta; tämä korvaa sen, mitä selaimessa nyt on, ja kämmenkuvat myös, kun tiedostossa on niitä.',
+        'Voit suojata varmuuskopion salasanalla: kirjoita salasana ennen Lataa varmuuskopio -painikkeen painamista. Tiedosto salataan selaimessasi (AES-GCM), eikä salasana lähde minnekään. Kadonnutta salasanaa ei voi palauttaa. Salattu tiedosto avataan Valitse varmuuskopio -painikkeella ja antamalla salasana.',
         'Kuvia sisältävä varmuuskopio voi olla iso (yksi valokuva on noin megatavun verran). Jos haluat vain kopion merkitystä kämmenestä näytettäväksi tai lähetettäväksi, Lataa PNG tallentaa kuvan sellaisenaan.',
       ],
     },

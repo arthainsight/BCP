@@ -998,6 +998,12 @@ export const FI: Record<string, string> = {
   '2nd and 11th lords': '2. ja 11. herra',
 
   // Toggle
+  // Encrypted backup
+  'Open': 'Avaa',
+  'password (optional)': 'salasana (valinnainen)',
+  'The backup is encrypted with this password in your browser. A lost password cannot be recovered.': 'Varmuuskopio salataan tällä salasanalla selaimessasi. Kadonnutta salasanaa ei voi palauttaa.',
+  'This backup is encrypted. Enter its password.': 'Tämä varmuuskopio on salattu. Anna sen salasana.',
+  'Wrong password, or the file has been changed.': 'Väärä salasana tai tiedostoa on muutettu.',
   // Messages of the page and file actions
   'Chart calculation error:': 'Kartan laskennan virhe:',
   'Transit calculation error:': 'Transiittilaskennan virhe:',
