@@ -793,6 +793,45 @@ test('an event shows the transits of its day on the charts', async ({ page }, in
   expect(errors).toEqual([]);
 });
 
+test('many events can be pasted into the Event List at once', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Paste', exact: true })).click();
+
+  const box = visible(page, page.getByRole('group', { name: 'Paste many events' }));
+  await box.getByRole('textbox', { name: 'Events to add' }).fill([
+    '15.6.2015 Moved abroad',
+    '2.1.2018; New job; työ; D10; 5; started at the bank',
+    '2019-03-04 Daughter born',
+    'Surgery 7/11/2020',
+    '31.2.2016 Not a day',
+  ].join('\n'));
+
+  // It tells what it understood before anything is added.
+  await expect(box).toContainText('4 new');
+  await expect(box).toContainText('1 lines not understood');
+  await expect(box.getByRole('list', { name: 'Lines not understood' })).toContainText('31.2.2016 Not a day');
+  await box.getByRole('button', { name: 'Add 4 events' }).click();
+
+  // The box closes and the four events are in the list, in date order.
+  await expect(page.getByRole('group', { name: 'Paste many events' })).toHaveCount(0);
+  await expect(visible(page, page.getByText('Added 4 events.'))).toBeVisible();
+  const names = ['Moved abroad', 'New job', 'Daughter born', 'Surgery'];
+  for (const name of names) await expect(visible(page, page.locator('details').filter({ hasText: name }))).toBeVisible();
+
+  // The same lines again add nothing: they are in the list already.
+  await visible(page, page.getByRole('button', { name: 'Paste', exact: true })).click();
+  await visible(page, page.getByRole('textbox', { name: 'Events to add' })).fill('15.6.2015 Moved abroad');
+  await expect(visible(page, page.getByRole('group', { name: 'Paste many events' }))).toContainText('0 new · 1 already in the list');
+  await expect(visible(page, page.getByRole('button', { name: /^Add\s*events$/ }))).toBeDisabled();
+
+  expect(errors).toEqual([]);
+});
+
 test('the timing panel can take the whole width on a wide screen', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'the wide mode is for a wide screen');
   const errors: string[] = [];

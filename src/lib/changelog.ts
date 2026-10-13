@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.86',
+    date: '2026-10-13',
+    title: 'Many events into the Event List at once',
+    changes: [
+      'TIMING → Events has a new Paste button: a box where you write or paste one event on each line, the date and the name (15.6.2015 Moved abroad). The date can be 15.6.2015, 15/6/2015 or 2015-06-15 and can also be at the end of the line; impossible days such as 31.2. are not accepted.',
+      'A line from a spreadsheet (tab-separated) or written with semicolons can go on with the category, the varga, the significance 1-5 and the notes: 2.1.2018; New job; work; D10; 5; started at the bank. What is missing takes the category and varga chosen under the box; the Finnish category names (työ, raha, parisuhde, terveys, koti, perhe, henkinen, muu) are understood too, in the CSV import as well.',
+      'Under the box you see how many new events were understood, how many are in the list already (they are not added twice) and the lines that were not understood, before anything is added. Add puts them in the list in date order. The user guide has the question How do I add many events to the Event List at once?',
+      'Updated the application version to v2.86.',
+    ],
+  },
+  {
     version: 'v2.85',
     date: '2026-10-13',
     title: 'The mixed chart as two charts in the same houses',

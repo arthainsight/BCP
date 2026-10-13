@@ -200,6 +200,21 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     },
   },
   {
+    id: 'event-list',
+    section: 'timing',
+    q: { en: 'How do I add many events to the Event List at once?', fi: 'Miten lisään monta tapahtumaa kerralla tapahtumalistaan?' },
+    a: {
+      en: [
+        'TIMING → Events → Paste opens a box for many events. Write or paste one event on each line, the date and the name: 15.6.2015 Moved abroad. The date can be 15.6.2015, 15/6/2015 or 2015-06-15 (the day first), and it can also be at the end of the line. Under the box you see how many events were understood, how many are already in the list and the lines that were not understood; Add puts the new ones in the list, in date order.',
+        'A line copied from a spreadsheet (the cells are separated by tabs) or written with semicolons can go on with more: the category, the varga, the significance from 1 to 5 and the notes, for example 2.1.2018; New job; work; D10; 5; started at the bank. What a line does not say takes the category and varga chosen under the box. The Finnish names of the categories (työ, raha, parisuhde, terveys, koti, perhe, henkinen, muu) are understood too. Import reads a whole CSV or JSON file instead, for example one made with the CSV and JSON buttons.',
+      ],
+      fi: [
+        'AJANKOHTA → Events → Paste avaa kentän monelle tapahtumalle. Kirjoita tai liitä yksi tapahtuma riville, päivä ja nimi: 15.6.2015 Muutto ulkomaille. Päivä voi olla 15.6.2015, 15/6/2015 tai 2015-06-15 (päivä ensin), ja se voi olla myös rivin lopussa. Kentän alla näkyy, kuinka monta tapahtumaa ymmärrettiin, kuinka monta on jo listassa ja rivit, joita ei ymmärretty; Add lisää uudet listaan päivämäärän mukaiseen järjestykseen.',
+        'Taulukosta kopioitu rivi (solut erotettu sarkaimilla) tai puolipisteillä kirjoitettu rivi voi jatkua: luokka, varga, merkitys 1–5 ja muistiinpanot, esimerkiksi 2.1.2018; Uusi työ; work; D10; 5; aloitin pankissa. Mitä rivi ei kerro, saa kentän alta valitun luokan ja vargan. Luokkien suomenkieliset nimet (työ, raha, parisuhde, terveys, koti, perhe, henkinen, muu) ymmärretään myös. Import lukee kokonaisen CSV- tai JSON-tiedoston, esimerkiksi CSV- ja JSON-painikkeilla tehdyn.',
+      ],
+    },
+  },
+  {
     id: 'target-date',
     section: 'timing',
     q: { en: 'What is the target date?', fi: 'Mikä on tavoitepäivä?' },

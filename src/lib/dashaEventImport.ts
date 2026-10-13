@@ -5,7 +5,11 @@ export type ImportedVarga = typeof EVENT_VARGAS[number];
 export interface ImportedEvent { name: string; date: string; category: ImportedCategory; varga: ImportedVarga; notes: string; tags: string[]; significance: number; }
 export interface ImportResult { events: ImportedEvent[]; rejected: number; format: 'CSV' | 'JSON'; }
 
-const CATEGORY_ALIASES: Record<string, ImportedCategory> = { work: 'work', money: 'money', relationship: 'relationship', health: 'health', home: 'home', 'home / move': 'home', family: 'family', spiritual: 'spiritual', other: 'other' };
+const CATEGORY_ALIASES: Record<string, ImportedCategory> = {
+  work: 'work', money: 'money', relationship: 'relationship', health: 'health', home: 'home', 'home / move': 'home', family: 'family', spiritual: 'spiritual', other: 'other',
+  // The same in Finnish, for lists written by hand.
+  'työ': 'work', 'ura': 'work', raha: 'money', parisuhde: 'relationship', terveys: 'health', koti: 'home', muutto: 'home', perhe: 'family', henkinen: 'spiritual', muu: 'other',
+};
 const validDate = (value: unknown) => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(new Date(`${value}T12:00:00`).getTime());
 const normalize = (item: Record<string, unknown>): ImportedEvent | null => {
   const name = String(item.name ?? item.event ?? '').trim();
@@ -46,3 +50,47 @@ export function parseDashaEventImport(text: string, filename: string): ImportRes
 }
 
 export function eventIdentity(item: ImportedEvent): string { return `${item.name.trim().toLocaleLowerCase()}|${item.date}|${item.category}|${item.varga}`; }
+
+export interface TextImportResult { events: ImportedEvent[]; /** The lines that could not be read. */ invalid: string[]; }
+export interface TextImportDefaults { category: ImportedCategory; varga: ImportedVarga }
+
+/** A day written as 15.6.2015, 15/6/2015 (day first) or 2015-06-15, as an ISO date; null when it is not a real day. */
+function isoFromParts(year: number, month: number, day: number): string | null {
+  const date = new Date(year, month - 1, day, 12);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+  return `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+const DATE_SOURCE = String.raw`(\d{4})-(\d{1,2})-(\d{1,2})|(\d{1,2})[./](\d{1,2})[./](\d{4})`;
+const DATE_AT_START = new RegExp(`^(?:${DATE_SOURCE})(?![\\d])`);
+const DATE_AT_END = new RegExp(`(?<![\\d])(?:${DATE_SOURCE})$`);
+function dateFromMatch(match: RegExpExecArray): string | null {
+  return match[1] ? isoFromParts(Number(match[1]), Number(match[2]), Number(match[3])) : isoFromParts(Number(match[6]), Number(match[5]), Number(match[4]));
+}
+const SEPARATORS = /^[\s;,:|\-–—]+|[\s;,:|\-–—]+$/g;
+
+/**
+ * Many events from pasted text, one on each line: a date and the name of the event, "15.6.2015 Moved abroad". The date
+ * can be first or last (15.6.2015, 15/6/2015 or 2015-06-15) and is told from the name by a space, a tab, ; , : or a dash.
+ * A line copied from a spreadsheet or written with semicolons can go on with the category, the varga, the significance
+ * (1-5) and the notes: "15.6.2015; Moved abroad; home; D1; 4; the second move". What is missing takes the defaults.
+ */
+export function parseDashaEventText(text: string, defaults: TextImportDefaults): TextImportResult {
+  const events: ImportedEvent[] = []; const invalid: string[] = [];
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const start = DATE_AT_START.exec(trimmed); const end = start ? null : DATE_AT_END.exec(trimmed);
+    const match = start ?? end;
+    const date = match ? dateFromMatch(match) : null;
+    if (!match || !date) { invalid.push(trimmed); continue; }
+    const rest = start ? trimmed.slice(match[0].length) : trimmed.slice(0, match.index);
+    const body = rest.replace(SEPARATORS, '');
+    const columns = (body.includes('\t') ? body.split('\t') : body.includes(';') ? body.split(';') : [body]).map(value => value.trim());
+    const [name = '', categoryText = '', vargaText = '', significanceText = '', ...noteParts] = columns;
+    const category = CATEGORY_ALIASES[categoryText.toLocaleLowerCase()] ?? defaults.category;
+    const varga = EVENT_VARGAS.includes(vargaText.toUpperCase() as ImportedVarga) ? vargaText.toUpperCase() : defaults.varga;
+    const event = normalize({ name, date, category, varga, significance: significanceText === '' ? 3 : significanceText, notes: noteParts.join('; ') });
+    if (event) events.push(event); else invalid.push(trimmed);
+  }
+  return { events: unique(events), invalid };
+}
