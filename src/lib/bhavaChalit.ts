@@ -1,4 +1,5 @@
 import type { ChartData } from '@/types';
+import { normalizeDegrees as normalize } from './angles';
 
 // Bhāva Chalit: the chart cast by bhāvas instead of by whole signs.
 //
@@ -15,7 +16,6 @@ import type { ChartData } from '@/types';
 
 export type ChalitSystem = 'sripati' | 'equal';
 
-const normalize = (value: number) => ((value % 360) + 360) % 360;
 /** The distance from a forward to b, 0 to 360. */
 const forward = (from: number, to: number) => normalize(to - from);
 

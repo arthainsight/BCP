@@ -22,11 +22,6 @@ export interface BcpResult {
   activeMonthHouse: number;
 }
 
-export interface Planet {
-  name: string;
-  house: number;
-}
-
 export interface PlanetData {
   name: string;
   longitude: number;
@@ -96,31 +91,6 @@ export interface ChartData {
     adhika: boolean;
   };
   debug?: DebugInfo;
-}
-
-export interface HouseAnalysis {
-  planets: string[];
-  ruler: string;
-  rulerHouse: number;
-}
-
-export interface BcpHouseInfo {
-  yearHouse: HouseAnalysis;
-  monthHouse: HouseAnalysis;
-}
-
-export interface FormData {
-  birthDatetime: string;
-  city: string;
-  targetDate: string;
-}
-
-export interface CharaKaraka {
-  karaka: string;
-  karakaFull: string;
-  karakaDesc: string;
-  planet: string;
-  degree: number;
 }
 
 /**

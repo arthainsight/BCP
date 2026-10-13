@@ -1,4 +1,5 @@
 import { getVargaSignIndex } from '@/lib/varga';
+import { normalizeDegrees as normalize } from './angles';
 
 // The special sphuṭas: the lagnas that run on the clock after sunrise, the
 // Moon-based Śrī Lagna and Bhṛgu Bindu, the Jaimini points (Āruḍha, Varṇada)
@@ -26,7 +27,6 @@ export const NAKSHATRA_NAMES = [
   'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishtha', 'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati',
 ] as const;
 
-const normalize = (value: number) => ((value % 360) + 360) % 360;
 const signIndexOf = (longitude: number) => Math.floor(normalize(longitude) / 30);
 
 /**

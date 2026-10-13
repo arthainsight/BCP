@@ -17,10 +17,11 @@
 // of a Sunday night, and so on. Traditions differ on the moment of that part
 // that gives the Lagna, so the beginning, the middle and the end are all kept.
 
+import { normalizeDegrees as normalize } from './angles';
+
 export const SATURN_PORTION_MOMENTS = ['begin', 'middle', 'end'] as const;
 export type SaturnPortionMoment = (typeof SATURN_PORTION_MOMENTS)[number];
 
-const normalize = (value: number) => ((value % 360) + 360) % 360;
 
 export interface AprakashaUpagraha {
   key: string;

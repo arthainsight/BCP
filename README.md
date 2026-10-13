@@ -10,8 +10,10 @@ Live: [bcp-five.vercel.app](https://bcp-five.vercel.app)
 
 ## What this is
 
-**bhrigu.code** is a browser-based astrology tool. Everything runs client-side;
-charts and event lists live in local storage, and nothing is uploaded anywhere.
+**bhrigu.code** is a browser-based astrology tool. The calculations (Swiss
+Ephemeris) run in the app's own API routes, which store nothing; saved charts,
+event lists, palm photographs and settings live only in the browser. Looking up
+a city sends its name to a geocoding service.
 
 The goal is simple:
 
@@ -37,7 +39,8 @@ This is not meant to replace traditional study — it's meant to **accelerate it
 * North and South Indian styles
 * BCP (Bhṛgu Chakra Paddhati) year/month highlighting
 * Special lagnas and chara karakas
-* Ashtakavarga overlay (SAV and per-planet BAV)
+* Ashtakavarga tables (SAV and per-planet BAV)
+* Mixed charts (the D1 chart inside, any varga outside, in the same houses)
 * Selectable ayanamsa, including a signed custom offset from Lahiri
 * Transits with automatic recalculation
 * Tithi Praveśa annual chart with Tithi Aṣṭottarī daśā
@@ -57,12 +60,14 @@ The largest part of the app. Nine calculated systems:
 | Nārāyaṇa, Mūla, Sthira | Rāśi | Beta — see *Validation* below |
 
 All of them support six-level sub-daśā navigation. The **Daśā workspace** wraps
-them in five tabs:
+them in nine tabs (Timeline, Slider, Yearly, Finder, Events, History, Patterns,
+Overlap and Systems), among them:
 
 * **Timeline** — one date-driven cross-system view with the active MD–AD–PD path
 * **Finder** — search a date range for MD/AD/PD combinations, across systems
-* **Events** — saved life events with categories, tags, notes and significance,
-  plus CSV/JSON import and export
+* **Events** — saved life events (single days or periods) with categories, tags,
+  notes and significance; many can be pasted, imported, changed or deleted at
+  once, with Undo; CSV/JSON import and export
 * **Patterns** — recurring rulers across saved events, with category filters
 * **Systems** — per-system method settings and calculation provenance
 
@@ -78,7 +83,18 @@ them in five tabs:
 
 * Nāḍī paraya progressions for Jupiter, Saturn, Rahu and Ketu
 * Nāḍī aṁśa (Deva Keralam and Siddhar)
-* Local backup and restore of every saved chart, event list and setting
+* Local backup and restore of every saved chart, event list, setting and,
+  optionally, palm photograph
+
+### Palmistry, sharing and reports
+
+* **PALM** workspace: photographs of palms with a pen, lines, arrows, circles,
+  a ruler (in pixels or centimetres), age scales, text and pins, an eraser,
+  reshaping, and two photographs side by side with a shared zoom
+* **REPORT**: a printable client report (chart, timing summary, palm photographs)
+* **SHARE**: a link that carries the birth data and opens the chart
+* A split view that shows CHART, TIMING, ANALYSIS and PALM together, a screen
+  recorder, an English and Finnish interface, and a user guide at `/help`
 
 ---
 
@@ -115,12 +131,16 @@ npm run dev
 | --- | --- |
 | `npm run dev` | Development server |
 | `npm run build` | Production build |
-| `npm test` | Calculation fixtures (needs Node 22.6+) |
+| `npm test` | Unit tests and calculation fixtures (Node 24, see `engines`) |
+| `npx playwright test` | End-to-end tests (needs `npm run build` first) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
 
-CI runs typecheck, tests and a production build on every push and pull request.
-Lint currently reports pre-existing errors and is non-blocking.
+CI runs lint (`--max-warnings=0`), typecheck, tests and a production build on
+every push and pull request.
+
+A release bumps `APP_VERSION` in `src/lib/config.ts` and adds an entry at the top
+of `CHANGELOG` in `src/lib/changelog.ts`.
 
 ---
 
@@ -129,7 +149,7 @@ Lint currently reports pre-existing errors and is non-blocking.
 * Next.js 16 + React 19 + TypeScript
 * Swiss Ephemeris via `swisseph-wasm`
 * Tailwind CSS 4
-* Runs fully in the browser; local storage for saved charts
+* API routes under `src/app/api` for the calculations; local storage for saved charts
 
 ---
 

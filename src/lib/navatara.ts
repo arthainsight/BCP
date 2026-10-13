@@ -3,6 +3,8 @@
 // with its own nature: the nakṣatras 1, 10 and 19 from Janma are Janma tara,
 // 2, 11 and 20 are Sampat, and so on round to Ati-Mitra.
 
+import { normalizeDegrees } from './angles';
+
 export const NAKSHATRAS = [
   'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
   'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
@@ -36,7 +38,7 @@ const NAKSHATRA_SIZE = 360 / 27;
 
 /** Index 0–26 of the nakṣatra a longitude falls in; the adjustment is the chart's nakṣatra offset. */
 export function nakshatraIndex(longitude: number, adjust = 0): number {
-  const normalized = (((longitude + adjust) % 360) + 360) % 360;
+  const normalized = normalizeDegrees(longitude + adjust);
   return Math.min(26, Math.floor(normalized / NAKSHATRA_SIZE));
 }
 

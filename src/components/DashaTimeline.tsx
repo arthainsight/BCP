@@ -17,10 +17,6 @@ interface Props {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const KEY_TO_SETTING: Record<string, keyof DashaSettings['dashas']> = {
-  vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari',
-  kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira',
-};
 const COLORS = ['bg-emerald-500', 'bg-cyan-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500', 'bg-lime-600', 'bg-fuchsia-500', 'bg-orange-500'];
 
 function dateValue(date: Date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
@@ -33,7 +29,7 @@ export default function DashaTimeline({ planets, ascendant, birthDatetime, norma
   const birthDate = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const selectedDate = useMemo(() => parseDate(selectedValue), [selectedValue]);
   const snapshots = useMemo(() => birthDate ? calculateDashaEventSnapshots({ eventDate: selectedDate, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice }) : [], [birthDate, selectedDate, planets, ascendant, charaOptions, rasiOptions, variantChoice]);
-  const visible = snapshots.filter(snapshot => normalizedDashas[KEY_TO_SETTING[snapshot.key]]);
+  const visible = snapshots.filter(snapshot => normalizedDashas[snapshot.key]);
   const windowStart = new Date(selectedDate.getTime() - 10 * 365.25 * DAY_MS);
   const windowEnd = new Date(selectedDate.getTime() + 10 * 365.25 * DAY_MS);
   const span = windowEnd.getTime() - windowStart.getTime();

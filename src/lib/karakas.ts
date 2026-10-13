@@ -45,8 +45,6 @@ export interface CharaKarakaScheme {
   count: CharaKarakaCount;
 }
 
-export const DEFAULT_KARAKA_SCHEME: CharaKarakaScheme = { rankMode: 'degree', count: 8 };
-
 const RELEVANT_PLANETS = new Set([
   'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu',
 ]);

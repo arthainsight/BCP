@@ -1,5 +1,6 @@
 import { NAKSHATRA_NAMES } from './specialSphutas';
 import { calculateVimshottari, type VimshottariResult } from './vimshottari';
+import { normalizeDegrees as normalize } from './angles';
 
 // Vimśottarī from the Utpanna, Kṣema or Ādhāna nakṣatra.
 //
@@ -46,7 +47,6 @@ export const VARIANT_HOUSES = Object.keys(HOUSE_VARIANT).map(Number).sort((a, b)
 const NAKSHATRA_SIZE = 360 / 27;
 const LORDS = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'] as const;
 
-const normalize = (value: number) => ((value % 360) + 360) % 360;
 
 /** The Moon turned forward to the variant's nakṣatra, the same fraction into it as the Moon is into its own. */
 export function variantLongitude(moonLongitude: number, variant: VimshottariVariant): number {

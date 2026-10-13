@@ -92,19 +92,6 @@ export function calculatePratyantardashas(ad: MahadashaEntry): MahadashaEntry[] 
   return calculateSubDashas(ad);
 }
 
-// Three deeper sub-levels after PD.
-export function calculateSookshmaDashas(pd: MahadashaEntry): MahadashaEntry[] {
-  return calculateSubDashas(pd);
-}
-
-export function calculatePranaDashas(sd: MahadashaEntry): MahadashaEntry[] {
-  return calculateSubDashas(sd);
-}
-
-export function calculateDehaDashas(prana: MahadashaEntry): MahadashaEntry[] {
-  return calculateSubDashas(prana);
-}
-
 /** Lords of the Vimshottari mahadasha and antardasha running at a moment. */
 export interface RunningDashaLords {
   md: string;

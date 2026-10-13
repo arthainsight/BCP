@@ -1,5 +1,4 @@
 export type AshtakavargaPlanet = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
-export type AvMode = 'off' | 'sav' | AshtakavargaPlanet;
 
 export type AshtakavargaChartPlanet = {
   name: string;
@@ -22,15 +21,6 @@ export type BhinnaAshtakavargaRow = {
 export type SarvaAshtakavarga = {
   houses: number[];
   total: number;
-  overlay: AshtakavargaOverlayCell[];
-};
-
-export type AshtakavargaOverlayCell = {
-  house: number;
-  sign: string;
-  bindu: number;
-  strength: 'low' | 'medium' | 'high' | 'very-high';
-  label: string;
 };
 
 export type AshtakavargaResult = {
@@ -38,7 +28,6 @@ export type AshtakavargaResult = {
   sav: SarvaAshtakavarga;
 };
 
-const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const PLANETS: AshtakavargaPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 
 type Contributor = AshtakavargaPlanet | 'Ascendant';
@@ -140,27 +129,8 @@ function getPlanetHouse(chart: AshtakavargaChartLike, planet: AshtakavargaChartP
   return null;
 }
 
-function getHouseSignIndex(chart: AshtakavargaChartLike, house: number): number | null {
-  if (typeof chart.ascendant?.sign !== 'number') return null;
-  return (chart.ascendant.sign + house - 2 + 12) % 12;
-}
-
 function getRelativeHouse(fromHouse: number, toHouse: number): number {
   return ((toHouse - fromHouse + 12) % 12) + 1;
-}
-
-function getBavStrength(bindu: number): AshtakavargaOverlayCell['strength'] {
-  if (bindu >= 6) return 'very-high';
-  if (bindu >= 5) return 'high';
-  if (bindu >= 4) return 'medium';
-  return 'low';
-}
-
-function getSavStrength(bindu: number): AshtakavargaOverlayCell['strength'] {
-  if (bindu >= 30) return 'very-high';
-  if (bindu >= 25) return 'high';
-  if (bindu >= 20) return 'medium';
-  return 'low';
 }
 
 export function buildBhinnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAshtakavargaRow[] {
@@ -198,34 +168,20 @@ export function buildBhinnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAsh
   });
 }
 
-export function buildSarvaAshtakavarga(chart: AshtakavargaChartLike, bav: BhinnaAshtakavargaRow[]): SarvaAshtakavarga {
+export function buildSarvaAshtakavarga(bav: BhinnaAshtakavargaRow[]): SarvaAshtakavarga {
   const houses = Array.from({ length: 12 }, (_, houseIndex) =>
     bav.reduce((sum, row) => sum + (row.houses[houseIndex] ?? 0), 0),
   );
 
-  const overlay = houses.map((bindu, index) => {
-    const house = index + 1;
-    const signIndex = getHouseSignIndex(chart, house);
-    const strength = getSavStrength(bindu);
-    return {
-      house,
-      sign: typeof signIndex === 'number' ? SIGN_ABBR[signIndex] : '—',
-      bindu,
-      strength,
-      label: `AV ${bindu}`,
-    };
-  });
-
   return {
     houses,
     total: houses.reduce((sum, value) => sum + value, 0),
-    overlay,
   };
 }
 
 export function buildAshtakavarga(chart: AshtakavargaChartLike): AshtakavargaResult {
   const bav = buildBhinnaAshtakavarga(chart);
-  const sav = buildSarvaAshtakavarga(chart, bav);
+  const sav = buildSarvaAshtakavarga(bav);
   return { bav, sav };
 }
 
@@ -236,28 +192,4 @@ export function mapAshtakavargaHousesToSigns(houses: number[], ascendantSign: nu
     const house = ((sign - ascendantSign + 12) % 12) + 1;
     return houses[house - 1] ?? 0;
   });
-}
-
-function bavRowToOverlayCells(chart: AshtakavargaChartLike, row: BhinnaAshtakavargaRow): AshtakavargaOverlayCell[] {
-  return row.houses.map((bindu, index) => {
-    const house = index + 1;
-    const signIndex = getHouseSignIndex(chart, house);
-    const strength = getBavStrength(bindu);
-    return {
-      house,
-      sign: typeof signIndex === 'number' ? SIGN_ABBR[signIndex] : '—',
-      bindu,
-      strength,
-      label: `${bindu}`,
-    };
-  });
-}
-
-export function getAshtakavargaOverlay(chart: AshtakavargaChartLike, mode: AvMode): AshtakavargaOverlayCell[] {
-  if (mode === 'off') return [];
-  const { bav, sav } = buildAshtakavarga(chart);
-  if (mode === 'sav') return sav.overlay;
-  const row = bav.find(r => r.planet === mode);
-  if (!row) return [];
-  return bavRowToOverlayCells(chart, row);
 }
