@@ -302,10 +302,10 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'Which sunrise do the special lagnas use?', fi: 'Mitä auringonnousua erikoislagnat käyttävät?' },
     a: {
       en: [
-        'The Bhava, Hora, Ghati, Vighati and Prana lagnas and the other sphutas run on the time since sunrise. Settings → calculations → sunrise for the special lagnas chooses between the mean-time sunrise (the true sunrise plus the equation of time, which is about 12 minutes in October) and the true sunrise. If another program or a book uses a sunrise of its own, type it in the manual sunrise field of Special Sphutas (HH:MM:SS).',
+        'The Bhava, Hora, Ghati, Vighati and Prana lagnas and the other sphutas run on the time since sunrise. Settings → calculations → sunrise for the special lagnas chooses between the true sunrise (the default, the one an almanac gives) and the mean-time sunrise (the true sunrise plus the equation of time, which is about 12 minutes in October). If another program or a book uses a sunrise of its own, type it in the manual sunrise field of Special Sphutas (HH:MM:SS).',
       ],
       fi: [
-        'Bhava-, Hora-, Ghati-, Vighati- ja Prana-lagnat sekä muut sphuṭat kulkevat auringonnoususta kuluvan ajan mukaan. Asetukset → laskenta → auringonnousu erikoislagnoille valitsee keskiaikaisen auringonnousun (todellinen auringonnousu plus aikayhtälö, noin 12 minuuttia lokakuussa) ja todellisen auringonnousun välillä. Jos toinen ohjelma tai kirja käyttää omaa auringonnousuaan, kirjoita se Special Sphutasin oma auringonnousu -kenttään (HH:MM:SS).',
+        'Bhava-, Hora-, Ghati-, Vighati- ja Prana-lagnat sekä muut sphuṭat kulkevat auringonnoususta kuluvan ajan mukaan. Asetukset → laskenta → auringonnousu erikoislagnoille valitsee todellisen auringonnousun (oletus, almanakan antama) ja keskiaikaisen auringonnousun (todellinen auringonnousu plus aikayhtälö, noin 12 minuuttia lokakuussa) välillä. Jos toinen ohjelma tai kirja käyttää omaa auringonnousuaan, kirjoita se Special Sphutasin oma auringonnousu -kenttään (HH:MM:SS).',
       ],
     },
   },

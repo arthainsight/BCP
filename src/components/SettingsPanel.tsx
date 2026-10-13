@@ -305,11 +305,11 @@ export default function SettingsPanel(props: Props) {
               <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('sunrise for the special lagnas')}</label>
               <select
                 className={SELECT}
-                value={calculationSettings.sunriseMode ?? 'mean'}
+                value={calculationSettings.sunriseMode ?? 'true'}
                 onChange={(e) => onUpdateCalculationSettings({ sunriseMode: e.target.value as 'true' | 'mean' })}
               >
-                <option value="mean">{t('Mean-time sunrise (true sunrise + equation of time)')}</option>
                 <option value="true">{t('True sunrise')}</option>
+                <option value="mean">{t('Mean-time sunrise (true sunrise + equation of time)')}</option>
               </select>
               <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
                 {t('The Bhava, Hora, Ghati, Vighati and Prana lagnas run on the time since sunrise. Mean-time reckoning adds the equation of time to the true sunrise, about 12 minutes in October.')}

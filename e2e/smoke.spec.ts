@@ -932,23 +932,24 @@ test('ANALYSIS Special Sphutas lists the special lagnas and follows the sunrise 
   // Degrees, minutes and seconds to hundredths, then the nakshatra and pada.
   await expect(table.locator('tbody tr').first()).toContainText(/\d+° \d+' \d+\.\d{2}"/);
   const hora = async () => (await table.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ');
-  const mean = await hora();
-  await expect(visible(page, page.getByText(/mean-time sunrise \d{2}:\d{2}:\d{2}/))).toBeVisible();
+  // The true sunrise is the default (v2.87).
+  const trueHoraFirst = await hora();
+  await expect(visible(page, page.getByText(/true sunrise \d{2}:\d{2}:\d{2}/))).toBeVisible();
 
-  // The true sunrise moves the lagnas that run on the time since sunrise.
+  // The mean-time sunrise moves the lagnas that run on the time since sunrise.
   await selectWorkspace(page, '⚙');
-  await visible(page, page.locator('select').filter({ has: page.locator('option', { hasText: /^True sunrise$/ }) })).selectOption('true');
+  await visible(page, page.locator('select').filter({ has: page.locator('option', { hasText: /^True sunrise$/ }) })).selectOption('mean');
   await selectWorkspace(page, 'ANALYSIS');
   await visible(page, page.getByRole('button', { name: 'Special Sphutas', exact: true })).click();
   const trueTable = visible(page, page.locator('table').filter({ hasText: 'Sphuta' }));
-  await expect(visible(page, page.getByText(/true sunrise \d{2}:\d{2}:\d{2}/))).toBeVisible();
-  expect((await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ')).not.toEqual(mean);
+  await expect(visible(page, page.getByText(/mean-time sunrise \d{2}:\d{2}:\d{2}/))).toBeVisible();
+  expect((await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ')).not.toEqual(trueHoraFirst);
 
   // A sunrise typed in replaces the calculated one in the table.
-  const trueHora = (await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ');
+  const meanHora = (await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ');
   await visible(page, page.getByRole('textbox', { name: 'manual sunrise' })).fill('06:28:31');
   await expect(visible(page, page.getByText(/manual sunrise 06:28:31/))).toBeVisible();
-  expect((await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ')).not.toEqual(trueHora);
+  expect((await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ')).not.toEqual(meanHora);
   await visible(page, page.getByRole('textbox', { name: 'manual sunrise' })).fill('26:99');
   await expect(visible(page, page.getByText('Not a time of day'))).toBeVisible();
 

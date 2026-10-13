@@ -315,7 +315,7 @@ export default function Home() {
           ayanamsa: calculationSettings.ayanamsa,
           ayanamsaOffset: String(calculationSettings.ayanamsaOffsetDegrees ?? 0),
           nodeMode: calculationSettings.nodeMode,
-          sunrise: calculationSettings.sunriseMode ?? 'mean',
+          sunrise: calculationSettings.sunriseMode ?? 'true',
         });
 
         const res = await fetch('/api/chart?' + params.toString());
