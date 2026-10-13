@@ -5,6 +5,7 @@ import type { TransitLocation } from '@/hooks/useEventTransits';
 import type { DashaEventSnapshot } from '@/lib/dashaEvents';
 import { DASHA_EVENT_CATEGORY_LABELS, DASHA_EVENT_VARGAS, formatEventDate, type DashaEventCategory, type DashaEventVarga, type StoredDashaEvent } from '@/lib/dashaEventStore';
 import { fill, useT } from '@/lib/i18n';
+import { translateDashaText } from '@/lib/dashaText';
 import { SIGN_ABBR } from '@/lib/signs';
 import { getVargaSignIndex } from '@/lib/varga';
 import EventTransits from './EventTransits';
@@ -28,7 +29,7 @@ function Snapshots({ snapshots }: { snapshots: DashaEventSnapshot[] }) {
                 <span key={level.level} className="break-words"><span className="text-zinc-400">{level.level}</span> <span className="font-semibold text-emerald-700 dark:text-green-400">{level.value}</span></span>
               ))}
             </span>
-          ) : <span className="break-words italic text-zinc-400">{snapshot.note ?? t('Unavailable')}</span>}
+          ) : <span className="break-words italic text-zinc-400">{snapshot.note ? translateDashaText(snapshot.note, t) : t('Unavailable')}</span>}
         </div>
       ))}
     </div>

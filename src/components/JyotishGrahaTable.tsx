@@ -7,6 +7,7 @@ import { grahaCode, grahaCodeFromEnglishCode, grahaName, useGrahaNames } from '@
 import { SIGN_ABBR } from '@/lib/signs';
 import { NAKSHATRA_SIZE } from '@/lib/nakshatras';
 
+import { useT } from '@/lib/i18n';
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 
 // The Chara karakas, by their short names.
@@ -76,6 +77,7 @@ export default function JyotishGrahaTable({
   showSpecialLagnas = true,
   nakshatraAdjust = 0,
 }: Props) {
+  const t = useT();
   const { style } = useGrahaNames();
   const adjLon = (lon: number) => normalizeDegrees(lon + nakshatraAdjust);
 
@@ -104,9 +106,9 @@ export default function JyotishGrahaTable({
       <table className="w-full text-xs border-collapse font-mono">
         <thead>
           <tr className="bg-zinc-100 dark:bg-zinc-800">
-            <th className="p-2 text-left">Code</th>
+            <th className="p-2 text-left">{t('Code')}</th>
             <th className="p-2 text-left">Graha</th>
-            <th className="p-2 text-left">Pos</th>
+            <th className="p-2 text-left">{t('Pos')}</th>
             <th className="p-2 text-left">Kāraka</th>
             <th className="p-2 text-left">Nakṣatra</th>
           </tr>

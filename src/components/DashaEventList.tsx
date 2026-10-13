@@ -7,7 +7,7 @@ import type { TransitLocation } from '@/hooks/useEventTransits';
 import { useDashaEvents } from '@/hooks/useDashaEvents';
 import { parseDateTime } from '@/lib/bcp';
 import { applyBulkChange, countByYear, removeEvents, sortEvents, type BulkChange } from '@/lib/dashaEventBulk';
-import { calculateDashaEventSnapshots, DASHA_SNAPSHOT_KEYS, type DashaEventSnapshot } from '@/lib/dashaEvents';
+import { calculateDashaEventSnapshots, DASHA_SNAPSHOT_KEYS, DASHA_SYSTEM_LABELS, type DashaEventSnapshot } from '@/lib/dashaEvents';
 import { eventIdentity, parseDashaEventImport, type ImportedEvent } from '@/lib/dashaEventImport';
 import { DASHA_EVENT_CATEGORY_LABELS, parseEventDate, type StoredDashaEvent } from '@/lib/dashaEventStore';
 import { fill, useT } from '@/lib/i18n';
@@ -180,7 +180,7 @@ export default function DashaEventList({
             <div className="mb-1 text-[9px] font-mono uppercase tracking-widest text-zinc-400">{t('Visible enabled Dashas')}</div>
             <div className="flex flex-wrap gap-1.5">
               {enabledKeys.map(key => (
-                <button type="button" key={key} onClick={() => toggleKey(key)} className={`min-h-10 rounded border px-2 py-1 text-[9px] font-mono ${visibleKeys.includes(key) ? 'border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' : 'border-zinc-300 text-zinc-400 dark:border-zinc-700'}`}>{key}</button>
+                <button type="button" key={key} onClick={() => toggleKey(key)} className={`min-h-10 rounded border px-2 py-1 text-[9px] font-mono ${visibleKeys.includes(key) ? 'border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' : 'border-zinc-300 text-zinc-400 dark:border-zinc-700'}`}>{key in DASHA_SYSTEM_LABELS ? DASHA_SYSTEM_LABELS[key as keyof typeof DASHA_SYSTEM_LABELS] : key}</button>
               ))}
             </div>
           </div>

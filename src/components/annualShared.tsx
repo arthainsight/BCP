@@ -11,6 +11,7 @@ import { SIGN_ABBR } from '@/lib/signs';
 import { pad2 } from '@/lib/dateFormat';
 import { calculationParams } from '@/lib/apiParams';
 
+import { useT } from '@/lib/i18n';
 export type LocalParts = { year: number; month: number; day: number; hour: number; minute: number; second: number };
 
 /** Where the annual chart is cast. null means the birthplace. */
@@ -27,11 +28,6 @@ export const fmtOffset = (h: number) => {
   const abs = Math.abs(h);
   return `UTC${sign}${Math.floor(abs)}${abs % 1 ? `:${pad2(Math.round((abs % 1) * 60))}` : ''}`;
 };
-
-export function ordinal(n: number): string {
-  const teen = n % 100 >= 11 && n % 100 <= 13;
-  return `${n}${teen ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
-}
 
 export function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -117,12 +113,13 @@ export function useAnnualFetch<T>(endpoint: string, query: string) {
 }
 
 export function YearStepper({ shownYear, year, onChange }: { shownYear?: number; year: number | null; onChange: (y: number | null) => void }) {
+  const t = useT();
   return (
     <div className="inline-flex items-center gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50">
-      <button type="button" className={toggleClass(false)} disabled={!shownYear} onClick={() => shownYear && onChange(shownYear - 1)} aria-label="Previous year">‹</button>
+      <button type="button" className={toggleClass(false)} disabled={!shownYear} onClick={() => shownYear && onChange(shownYear - 1)} aria-label={t('Previous year')}>‹</button>
       <span className="px-1 text-[11px] font-mono tabular-nums text-zinc-700 dark:text-zinc-300">{shownYear ?? '····'}</span>
-      <button type="button" className={toggleClass(false)} disabled={!shownYear} onClick={() => shownYear && onChange(shownYear + 1)} aria-label="Next year">›</button>
-      <button type="button" className={toggleClass(year === null)} onClick={() => onChange(null)} title="The year in force at the target date">current</button>
+      <button type="button" className={toggleClass(false)} disabled={!shownYear} onClick={() => shownYear && onChange(shownYear + 1)} aria-label={t('Next year')}>›</button>
+      <button type="button" className={toggleClass(year === null)} onClick={() => onChange(null)} title={t('The year in force at the target date')}>{t('current')}</button>
     </div>
   );
 }
@@ -132,6 +129,7 @@ export function YearStepper({ shownYear, year, onChange }: { shownYear?: number;
  * chart where the native lives during that year.
  */
 export function AnnualPlaceControl({ place, onChange }: { place: AnnualPlace; onChange: (p: AnnualPlace) => void }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GeoResult[]>([]);
@@ -139,30 +137,30 @@ export function AnnualPlaceControl({ place, onChange }: { place: AnnualPlace; on
 
   const search = async () => {
     if (!query.trim()) return;
-    setStatus('searching…');
+    setStatus(t('searching…'));
     setResults([]);
     try {
       const res = await fetch('/api/geocode?city=' + encodeURIComponent(query));
       const data = await res.json();
       if (data.error) { setStatus(data.error); return; }
       setResults(data.results ?? []);
-      setStatus(data.results?.length ? '' : 'No place found.');
+      setStatus(data.results?.length ? '' : t('No place found.'));
     } catch {
-      setStatus('Lookup failed.');
+      setStatus(t('Lookup failed.'));
     }
   };
 
   return (
     <div className="space-y-1.5">
       <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
-        <span className="uppercase tracking-widest text-zinc-400 dark:text-zinc-600">place</span>
+        <span className="uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('place')}</span>
         <span className="text-zinc-700 dark:text-zinc-300">
-          {place ? `${place.name} (${place.latitude.toFixed(2)}, ${place.longitude.toFixed(2)})` : 'birthplace'}
+          {place ? `${place.name} (${place.latitude.toFixed(2)}, ${place.longitude.toFixed(2)})` : t('birthplace')}
         </span>
         <button type="button" className="underline decoration-dotted" onClick={() => setOpen((v) => !v)}>
-          {open ? 'close' : 'residence…'}
+          {open ? t('close') : t('residence…')}
         </button>
-        {place && <button type="button" className="underline decoration-dotted" onClick={() => onChange(null)}>use birthplace</button>}
+        {place && <button type="button" className="underline decoration-dotted" onClick={() => onChange(null)}>{t('use birthplace')}</button>}
       </div>
       {open && (
         <div className="space-y-1.5">
@@ -172,11 +170,11 @@ export function AnnualPlaceControl({ place, onChange }: { place: AnnualPlace; on
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && search()}
-              placeholder="City of residence that year"
+              placeholder={t('City of residence that year')}
               className="min-w-0 flex-1 rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-mono text-zinc-800 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
             />
             <button type="button" onClick={search} className="rounded border border-emerald-600 px-3 py-1 text-[10px] font-mono text-emerald-700 dark:border-cyan-700 dark:text-cyan-400">
-              lookup
+              {t('lookup')}
             </button>
           </div>
           {status && <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{status}</div>}
@@ -245,16 +243,17 @@ export function AnnualDashaList({ title, note, dasha, referenceJd: refJd }: {
 
 /** Planets of an annual chart with their house there and in the natal chart. */
 export function AnnualPlanetTable({ annual, natal, showOuterPlanets }: { annual: ChartData; natal: ChartData; showOuterPlanets: boolean }) {
+  const t = useT();
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-[11px] font-mono">
         <thead>
           <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
-            <th className="py-1 pr-3 font-normal">graha</th>
-            <th className="py-1 pr-3 font-normal">sign</th>
-            <th className="py-1 pr-3 font-normal">degree</th>
-            <th className="py-1 pr-3 font-normal">house</th>
-            <th className="py-1 font-normal">natal house</th>
+            <th className="py-1 pr-3 font-normal">{t('graha')}</th>
+            <th className="py-1 pr-3 font-normal">{t('sign')}</th>
+            <th className="py-1 pr-3 font-normal">{t('degree')}</th>
+            <th className="py-1 pr-3 font-normal">{t('house')}</th>
+            <th className="py-1 font-normal">{t('natal house')}</th>
           </tr>
         </thead>
         <tbody className="text-zinc-700 dark:text-zinc-300">

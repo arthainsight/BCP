@@ -6,6 +6,7 @@ import { buildAshtakavarga, mapAshtakavargaHousesToSigns } from '@/lib/ashtakava
 import type { AshtakavargaPlanet } from '@/lib/ashtakavarga';
 import { SIGN_ABBR } from '@/lib/signs';
 
+import { useT } from '@/lib/i18n';
 const PLANET_ABBR: Record<string, string> = {
   Sun: 'Su',
   Moon: 'Mo',
@@ -70,6 +71,7 @@ function NorthIndianAvChart({ houses, ascendantSign, label, isSav }: { houses: n
 }
 
 export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
+  const t = useT();
   const ascendantSign = chart.ascendant.sign;
   const [view, setView] = useState<'table' | 'north'>('table');
   const [selection, setSelection] = useState<AvSelection>('SAV');
@@ -82,18 +84,18 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
       <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Aṣṭakavarga</h3>
-          <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">Bhinna &amp; Sarva · signs Ar–Pi</p>
+          <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">{t('Bhinna & Sarva · signs Ar–Pi')}</p>
         </div>
         <div className="flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
-          <button type="button" onClick={() => setView('table')} className={`rounded px-2.5 py-1 text-[10px] font-mono ${view === 'table' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>Table</button>
-          <button type="button" onClick={() => setView('north')} className={`rounded px-2.5 py-1 text-[10px] font-mono ${view === 'north' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>North Indian</button>
+          <button type="button" onClick={() => setView('table')} className={`rounded px-2.5 py-1 text-[10px] font-mono ${view === 'table' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>{t('Table')}</button>
+          <button type="button" onClick={() => setView('north')} className={`rounded px-2.5 py-1 text-[10px] font-mono ${view === 'north' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>{t('North Indian')}</button>
         </div>
       </div>
 
       {view === 'north' ? (
         <div>
           <label className="mb-3 block text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-            Points
+            {t('Points')}
             <select value={selection} onChange={(event) => setSelection(event.target.value as AvSelection)} className="mt-1 block w-full rounded border border-zinc-300 bg-white px-2 py-1.5 text-xs normal-case tracking-normal text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200">
               <option value="SAV">SAV — Sarva</option>
               {bav.map((row) => <option key={row.planet} value={row.planet}>{row.planet} BAV</option>)}

@@ -292,7 +292,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
                     onClick={(e) => handleDelete(e, chart.id)}
                     className="shrink-0 px-2 py-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
                   >
-                    del
+                    {t('del')}
                   </button>
                 </div>
               </div>
@@ -311,7 +311,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
               value={saveAsName}
               onChange={(e) => setSaveAsName(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleSaveAs(); }}
-              placeholder="Chart name"
+              placeholder={t('Chart name')}
               className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm font-mono text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500 mb-2"
               autoFocus
             />

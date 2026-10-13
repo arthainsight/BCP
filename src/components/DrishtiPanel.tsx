@@ -7,6 +7,7 @@ import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_ABBR } from '@/lib/signs';
 
 
+import { useT } from '@/lib/i18n';
 interface Props {
   chart?: ChartData;
   planets?: PlanetData[];
@@ -22,6 +23,7 @@ export default function DrishtiPanel({
   showGrahaDrishti = true,
   showRashiDrishti = true,
 }: Props) {
+  const t = useT();
   const { code } = useGrahaNames();
   const sourcePlanets = planets ?? chart?.planets ?? [];
   const sourceAscendantSign = ascendantSign ?? chart?.ascendant?.sign ?? 1;
@@ -44,9 +46,9 @@ export default function DrishtiPanel({
               <thead>
                 <tr className="bg-zinc-100 dark:bg-zinc-800">
                   <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">Graha</th>
-                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">From</th>
-                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">Aspects</th>
-                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">Planets there</th>
+                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">{t('From')}</th>
+                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">{t('Aspects')}</th>
+                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">{t('Planets there')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -64,7 +66,7 @@ export default function DrishtiPanel({
             </table>
           </div>
           <div className="mt-2 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-            All planets: 7th · Mars: +4th +8th · Jupiter: +5th +9th · Saturn: +3rd +10th
+            {t('All planets: 7th · Mars: +4th +8th · Jupiter: +5th +9th · Saturn: +3rd +10th')}
           </div>
         </CollapsibleCard>
       )}
@@ -75,10 +77,10 @@ export default function DrishtiPanel({
             <table className="w-full text-xs font-mono border-collapse min-w-[560px]">
               <thead>
                 <tr className="bg-zinc-100 dark:bg-zinc-800">
-                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">From sign</th>
-                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">Occupants</th>
-                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">Aspects</th>
-                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">Planets there</th>
+                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">{t('From sign')}</th>
+                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">{t('Occupants')}</th>
+                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">{t('Aspects')}</th>
+                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">{t('Planets there')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -98,21 +100,21 @@ export default function DrishtiPanel({
             </table>
           </div>
           <div className="mt-2 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-            Movable→Fixed · Fixed→Movable (non-adjacent) · Dual→all Dual
+            {t('Movable→Fixed · Fixed→Movable (non-adjacent) · Dual→all Dual')}
           </div>
         </CollapsibleCard>
       )}
 
       {summary && (
-        <CollapsibleCard title="Dṛṣṭi house summary">
+        <CollapsibleCard title={t('Dṛṣṭi house summary')}>
           <div className="overflow-x-auto">
             <table className="w-full text-xs font-mono border-collapse min-w-[520px]">
               <thead>
                 <tr className="bg-zinc-100 dark:bg-zinc-800">
-                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">House</th>
+                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">{t('House')}</th>
                   <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">Graha</th>
                   <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">Rāśi</th>
-                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">Total</th>
+                  <th className="p-1.5 text-left text-zinc-500 dark:text-zinc-400">{t('Total')}</th>
                 </tr>
               </thead>
               <tbody>

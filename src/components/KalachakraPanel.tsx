@@ -6,6 +6,7 @@ import { parseDateTime } from '@/lib/bcp';
 import { calculateKalachakra, calculateKalachakraSubDashas, type KalachakraEntry } from '@/lib/kalachakra';
 import { formatDate } from '@/lib/dateFormat';
 
+import { useT } from '@/lib/i18n';
 const ABBR: Record<string, string> = { Aries:'Ar', Taurus:'Ta', Gemini:'Ge', Cancer:'Cn', Leo:'Le', Virgo:'Vi', Libra:'Li', Scorpio:'Sc', Sagittarius:'Sg', Capricorn:'Cp', Aquarius:'Aq', Pisces:'Pi' };
 
 const LEVELS = ['md', 'ad', 'pd', 'sd', 'prana', 'deha'] as const;
@@ -17,6 +18,7 @@ function active(entry: KalachakraEntry, now: Date) {
 }
 
 export default function KalachakraPanel({ planets, birthDatetime }: { planets: PlanetData[]; birthDatetime: string }) {
+  const t = useT();
   const [levelIndex, setLevelIndex] = useState(0);
   const [path, setPath] = useState<KalachakraEntry[]>([]);
   const now = useMemo(() => new Date(), []);
@@ -27,7 +29,7 @@ export default function KalachakraPanel({ planets, birthDatetime }: { planets: P
     return calculateKalachakra(moon.longitude, birth);
   }, [planets, birthDatetime]);
 
-  if (!result) return <div className="text-xs font-mono text-zinc-400 italic">Moon longitude and valid birth datetime required.</div>;
+  if (!result) return <div className="text-xs font-mono text-zinc-400 italic">{t('Moon longitude and valid birth datetime required.')}</div>;
 
   const parent = levelIndex > 0 ? path[levelIndex - 1] : null;
   const rows = parent ? calculateKalachakraSubDashas(parent, result.cycle) : result.entries;
@@ -65,16 +67,16 @@ export default function KalachakraPanel({ planets, birthDatetime }: { planets: P
     <div className="space-y-3 min-w-0">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 break-words font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">&gt; kālachakra daśā</div>
-        <button type="button" onClick={openNow} className="min-h-11 rounded border border-cyan-300 px-3 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">NOW</button>
+        <button type="button" onClick={openNow} className="min-h-11 rounded border border-cyan-300 px-3 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">{t('NOW')}</button>
       </div>
       <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-        <div>{result.nakshatra} · pada {result.pada} · {result.motion}</div>
+        <div>{result.nakshatra} {t('· pada')} {result.pada} · {result.motion}</div>
         <div>Deha: {ABBR[result.dehaSign]} · Jīva: {ABBR[result.jeevaSign]}</div>
-        {activePath.length > 0 && <div className="mt-1 break-words leading-relaxed text-cyan-700 dark:text-cyan-300">Now: {activePath.map((entry, index) => `${ABBR[entry.signName]} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')}</div>}
+        {activePath.length > 0 && <div className="mt-1 break-words leading-relaxed text-cyan-700 dark:text-cyan-300">{t('Now:')} {activePath.map((entry, index) => `${ABBR[entry.signName]} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')}</div>}
       </div>
       <div className="flex items-center justify-between gap-2">
-        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="min-h-11 rounded border border-zinc-300 px-3 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">← back</button>
-        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LEVEL_LABEL[currentLevel]} · {rows.length} periods</div>
+        <button type="button" onClick={goBack} disabled={levelIndex === 0} className="min-h-11 rounded border border-zinc-300 px-3 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">{t('← back')}</button>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LEVEL_LABEL[currentLevel]} · {rows.length} {t('periods')}</div>
       </div>
       {path.length > 0 && <div className="break-words text-[10px] font-mono leading-relaxed text-emerald-700 dark:text-emerald-300">{path.map((entry, index) => `${ABBR[entry.signName]} ${LEVEL_LABEL[LEVELS[index]]}`).join(' › ')} › {LEVEL_LABEL[currentLevel]}</div>}
       <div className="space-y-1">
@@ -89,7 +91,7 @@ export default function KalachakraPanel({ planets, birthDatetime }: { planets: P
           );
         })}
       </div>
-      <p className="text-[9px] font-mono leading-relaxed text-zinc-400 dark:text-zinc-600">Moon-pāda PVR/BPHS table method. Birth balance is the unelapsed portion of the first rāśi period.</p>
+      <p className="text-[9px] font-mono leading-relaxed text-zinc-400 dark:text-zinc-600">{t('Moon-pāda PVR/BPHS table method. Birth balance is the unelapsed portion of the first rāśi period.')}</p>
     </div>
   );
 }

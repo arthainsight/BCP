@@ -3,7 +3,9 @@
 import { useTheme } from 'next-themes';
 import { useHydrated } from '@/lib/useHydrated';
 
+import { useT } from '@/lib/i18n';
 export default function ThemeToggle({ className, icon }: { className?: string; icon?: boolean }) {
+  const t = useT();
   const { resolvedTheme, setTheme } = useTheme();
   const hydrated = useHydrated();
 
@@ -15,7 +17,7 @@ export default function ThemeToggle({ className, icon }: { className?: string; i
     <button
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       className={`px-2 py-1 rounded text-xs font-mono border border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:border-zinc-500 dark:hover:border-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors ${className ?? ''}`}
-      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={isDark ? t('Switch to light mode') : t('Switch to dark mode')}
     >
       {icon ? '◐' : (isDark ? 'light' : 'dark')}
     </button>

@@ -16,7 +16,6 @@ import {
   buildAnnualParams,
   fmtLocal,
   fmtOffset,
-  ordinal,
   referenceJd,
   useAnnualFetch,
   type AnnualPlace,
@@ -25,6 +24,8 @@ import {
 } from './annualShared';
 import { SIGN_ABBR } from '@/lib/signs';
 
+import { fill, useLanguage, useT } from '@/lib/i18n';
+import { ordinal } from '@/lib/ordinal';
 type VpResponse = {
   year: number;
   local: LocalParts;
@@ -73,6 +74,15 @@ export default function VarshaphalaPanel({
   place,
   onPlaceChange,
 }: Props) {
+  const t = useT();
+  const language = useLanguage();
+  // The server sends the reason in English; the count is the only variable part.
+  const reasonText = (reason: string) => {
+    const count = /of the (\d+) office bearers/.exec(reason)?.[1];
+    return count
+      ? fill(t('Strongest by Pañcavargīya Bala of the {count} office bearers aspecting the annual lagna.'), { count })
+      : t(reason);
+  };
   const [year, setYear] = useState<number | null>(null);
   const [showNatal, setShowNatal] = useState(false);
 
@@ -80,16 +90,15 @@ export default function VarshaphalaPanel({
   const { data: shown, error, loading } = useAnnualFetch<VpResponse>('/api/varshaphala', query);
 
   if (!query) {
-    return <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600">Birth date and place are needed for Varṣaphala.</div>;
+    return <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{t('Birth date and place are needed for Varṣaphala.')}</div>;
   }
 
   return (
     <div className="space-y-3 min-w-0">
       <div>
-        <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">Varṣaphala — Tājika annual chart</div>
+        <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">{t('Varṣaphala — Tājika annual chart')}</div>
         <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
-          Cast for the moment the Sun returns to its natal sidereal longitude. Muntha moves one sign a year from the natal lagna;
-          the lord of the year is chosen from the five office bearers. Rules after P.V.R. Narasimha Rao, chapters 28–30.
+          {t('Cast for the moment the Sun returns to its natal sidereal longitude. Muntha moves one sign a year from the natal lagna; the lord of the year is chosen from the five office bearers. Rules after P.V.R. Narasimha Rao, chapters 28–30.')}
         </div>
       </div>
 
@@ -97,9 +106,9 @@ export default function VarshaphalaPanel({
         <YearStepper shownYear={shown?.year} year={year} onChange={setYear} />
         <label className="inline-flex items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
           <input type="checkbox" checked={showNatal} onChange={(e) => setShowNatal(e.target.checked)} />
-          natal overlay
+          {t('natal overlay')}
         </label>
-        {loading && <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">calculating…</span>}
+        {loading && <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('calculating…')}</span>}
       </div>
 
       <AnnualPlaceControl place={place} onChange={onPlaceChange} />
@@ -111,22 +120,22 @@ export default function VarshaphalaPanel({
           <StyledChart style={chartStyle} {...annualChartProps(shown.chart, chart, showNatal, chartDisplaySettings, nakshatraAdjust)} />
 
           <div className="space-y-2">
-            <Row label="begins" value={`${fmtLocal(shown.local)} (${fmtOffset(shown.tzOffset)}) · ${shown.dayYear ? 'day' : 'night'}`} />
-            <Row label="ends" value={`${fmtLocal(shown.next.local)} (${fmtOffset(shown.next.tzOffset)})`} />
-            <Row label="year" value={`${shown.completedAge} completed · ${ordinal(shown.completedAge + 1)} year running`} />
+            <Row label={t('begins')} value={`${fmtLocal(shown.local)} (${fmtOffset(shown.tzOffset)}) · ${shown.dayYear ? t('day') : t('night')}`} />
+            <Row label={t('ends')} value={`${fmtLocal(shown.next.local)} (${fmtOffset(shown.next.tzOffset)})`} />
+            <Row label={t('year')} value={fill(t('{age} completed · {ordinal} year running'), { age: shown.completedAge, ordinal: ordinal(shown.completedAge + 1, language) })} />
             <Row label="lagna" value={`${SIGN_ABBR[shown.chart.ascendant.sign - 1]} ${formatDegree(shown.chart.ascendant.degree, 'minute')}`} />
-            <Row label="muntha" value={`${SIGN_ABBR[shown.muntha.sign - 1]} · house ${shown.muntha.house} of the annual chart`} />
-            <Row label="year lord" value={`${shown.yearLord} — ${shown.reason}`} />
+            <Row label="muntha" value={`${SIGN_ABBR[shown.muntha.sign - 1]} · ${fill(t('house {house} of the annual chart'), { house: shown.muntha.house })}`} />
+            <Row label={t('year lord')} value={`${shown.yearLord} — ${reasonText(shown.reason)}`} />
           </div>
 
           <div className="overflow-x-auto">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-1">Pañcādhikārī — office bearers</div>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-1">{t('Pañcādhikārī — office bearers')}</div>
             <table className="w-full text-[11px] font-mono">
               <thead>
                 <tr className="text-left text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
                   <th className="py-1 pr-3 font-normal">graha</th>
-                  <th className="py-1 pr-3 font-normal">office</th>
-                  <th className="py-1 pr-3 font-normal">on lagna</th>
+                  <th className="py-1 pr-3 font-normal">{t('office')}</th>
+                  <th className="py-1 pr-3 font-normal">{t('on lagna')}</th>
                   <th className="py-1 font-normal">bala</th>
                 </tr>
               </thead>
@@ -135,7 +144,7 @@ export default function VarshaphalaPanel({
                   <tr key={o.planet} className={`border-t border-zinc-100 dark:border-zinc-800 ${o.planet === shown.yearLord ? 'text-emerald-700 dark:text-green-400 font-semibold' : ''}`}>
                     <td className="py-1 pr-3">{o.planet}</td>
                     <td className="py-1 pr-3">{o.roles.join(', ')}</td>
-                    <td className="py-1 pr-3">{o.aspectOnLagna ? ASPECT_LABEL[o.aspectOnLagna] : '—'}</td>
+                    <td className="py-1 pr-3">{o.aspectOnLagna ? t(ASPECT_LABEL[o.aspectOnLagna]) : '—'}</td>
                     <td className="py-1 tabular-nums">{fixed(o.bala)}</td>
                   </tr>
                 ))}
@@ -154,7 +163,7 @@ export default function VarshaphalaPanel({
                   <th className="py-1 pr-2 font-normal">hadda</th>
                   <th className="py-1 pr-2 font-normal">D3</th>
                   <th className="py-1 pr-2 font-normal">D9</th>
-                  <th className="py-1 font-normal">total</th>
+                  <th className="py-1 font-normal">{t('total')}</th>
                 </tr>
               </thead>
               <tbody className="tabular-nums text-zinc-700 dark:text-zinc-300">
@@ -175,7 +184,7 @@ export default function VarshaphalaPanel({
 
           <AnnualDashaList
             title="Mudda daśā (Varṣa Vimśottarī)"
-            note="Vimśottarī compressed into this year, entered from the natal nakṣatra advanced one lord per completed year. The running period at the target date is highlighted."
+            note={t('Vimśottarī compressed into this year, entered from the natal nakṣatra advanced one lord per completed year. The running period at the target date is highlighted.')}
             dasha={shown.dasha}
             referenceJd={referenceJd(targetDate, shown.tzOffset)}
           />

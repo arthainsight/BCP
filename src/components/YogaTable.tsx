@@ -5,6 +5,8 @@ import { ChartData } from '@/types';
 import { calculateYogas, YogaCategory } from '@/lib/yogas';
 import { qualifyYogas, type StrengthClassification } from '@/lib/yogaStrength';
 
+import { useLanguage, useT } from '@/lib/i18n';
+import { translateYogaText } from '@/lib/yogaText';
 const CATEGORY_LABELS: Record<YogaCategory, string> = {
   solar:                'Solar',
   moon:                 'Lunar',
@@ -32,14 +34,14 @@ function strengthBg(c: StrengthClassification): string {
   }
 }
 
-function breakdownTitle(breakdown: NonNullable<ReturnType<typeof qualifyYogas>[number]['breakdown']>): string {
+function breakdownTitle(breakdown: NonNullable<ReturnType<typeof qualifyYogas>[number]['breakdown']>, t: (text: string) => string): string {
   const lines: string[] = [];
   if (breakdown.rasi)         lines.push(`Rāśi: ${breakdown.rasi > 0 ? '+' : ''}${breakdown.rasi}`);
-  if (breakdown.dignity)      lines.push(`Dignity: ${breakdown.dignity > 0 ? '+' : ''}${breakdown.dignity}`);
+  if (breakdown.dignity)      lines.push(`${t('Dignity')}: ${breakdown.dignity > 0 ? '+' : ''}${breakdown.dignity}`);
   if (breakdown.navamsa)      lines.push(`Navamsa: ${breakdown.navamsa > 0 ? '+' : ''}${breakdown.navamsa}`);
   if (breakdown.vargottama)   lines.push(`Vargottama: +${breakdown.vargottama}`);
-  if (breakdown.conjunctions) lines.push(`Conjunctions: ${breakdown.conjunctions > 0 ? '+' : ''}${breakdown.conjunctions}`);
-  if (breakdown.aspects)      lines.push(`Aspects: ${breakdown.aspects > 0 ? '+' : ''}${breakdown.aspects}`);
+  if (breakdown.conjunctions) lines.push(`${t('Conjunctions')}: ${breakdown.conjunctions > 0 ? '+' : ''}${breakdown.conjunctions}`);
+  if (breakdown.aspects)      lines.push(`${t('Aspects')}: ${breakdown.aspects > 0 ? '+' : ''}${breakdown.aspects}`);
   if (breakdown.kartari)      lines.push(`Kartari: ${breakdown.kartari > 0 ? '+' : ''}${breakdown.kartari}`);
   return lines.join(' | ');
 }
@@ -50,6 +52,8 @@ interface Props {
 }
 
 function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props & { showInactive: boolean; sortByStrength: boolean; onSortChange: (value: boolean) => void }) {
+  const t = useT();
+  const language = useLanguage();
 
   const raw     = calculateYogas(chart.planets, chart.ascendant.sign);
   const all     = qualifyYogas(raw, chart.planets);
@@ -67,7 +71,7 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
     <div className="space-y-2">
       {sorted.length === 0 ? (
         <p className="text-xs font-mono text-zinc-400 dark:text-zinc-600 py-4 text-center">
-          No active yogas found.
+          {t('No active yogas found.')}
         </p>
       ) : (
         <div className="overflow-x-auto">
@@ -78,15 +82,15 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
                 <th
                   className="p-2 text-left whitespace-nowrap cursor-pointer select-none hover:text-zinc-700 dark:hover:text-zinc-300"
                   onClick={() => onSortChange(!sortByStrength)}
-                  title="Click to sort by strength"
+                  title={t('Click to sort by strength')}
                 >
-                  Strength {sortByStrength ? '↓' : ''}
+                  {t('Strength')} {sortByStrength ? '↓' : ''}
                 </th>
-                <th className="p-2 text-left whitespace-nowrap">Category</th>
-                {showInactive && <th className="p-2 text-left whitespace-nowrap">Status</th>}
-                <th className="p-2 text-left whitespace-nowrap">Reference</th>
-                <th className="p-2 text-left whitespace-nowrap">Planets</th>
-                <th className="p-2 text-left min-w-[160px]">Reason</th>
+                <th className="p-2 text-left whitespace-nowrap">{t('Category')}</th>
+                {showInactive && <th className="p-2 text-left whitespace-nowrap">{t('Status')}</th>}
+                <th className="p-2 text-left whitespace-nowrap">{t('Reference')}</th>
+                <th className="p-2 text-left whitespace-nowrap">{t('Planets')}</th>
+                <th className="p-2 text-left min-w-[160px]">{t('Reason')}</th>
               </tr>
             </thead>
             <tbody>
@@ -110,11 +114,11 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
                     {yoga.strength !== null && yoga.classification !== null ? (
                       <span
                         className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${strengthBg(yoga.classification)}`}
-                        title={yoga.breakdown ? breakdownTitle(yoga.breakdown) : undefined}
+                        title={yoga.breakdown ? breakdownTitle(yoga.breakdown, t) : undefined}
                       >
                         <span className="tabular-nums">{yoga.strength > 0 ? '+' : ''}{yoga.strength}</span>
                         <span className={`hidden sm:inline font-normal ${strengthColor(yoga.classification)}`}>
-                          {yoga.classification}
+                          {t(yoga.classification)}
                         </span>
                       </span>
                     ) : (
@@ -123,7 +127,7 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
                   </td>
 
                   <td className="p-2 text-zinc-500 dark:text-zinc-500 whitespace-nowrap">
-                    {CATEGORY_LABELS[yoga.category] ?? yoga.category}
+                    {t(CATEGORY_LABELS[yoga.category] ?? yoga.category)}
                   </td>
                   {showInactive && (
                     <td className="p-2 whitespace-nowrap">
@@ -132,18 +136,18 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
                           ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-green-400'
                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600'
                       }`}>
-                        {yoga.status}
+                        {t(yoga.status)}
                       </span>
                     </td>
                   )}
                   <td className="p-2 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                    {yoga.referencePlanet}
+                    {yoga.referencePlanet.split(', ').map(part => t(part)).join(', ')}
                   </td>
                   <td className="p-2 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                     {yoga.planetsInvolved.length > 0 ? yoga.planetsInvolved.join(', ') : '—'}
                   </td>
                   <td className="p-2 text-zinc-500 dark:text-zinc-500 break-words max-w-[240px]">
-                    {yoga.resultText}
+                    {translateYogaText(yoga.resultText, language)}
                   </td>
                 </tr>
               ))}
@@ -157,6 +161,7 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
 
 /** The yoga table, shut until it is opened: the table is long, and the other analysis comes first. */
 export default function YogaTable({ chart, showInactive = false }: Props) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
   const [sortByStrength, setSortByStrength] = useState(false);
 
@@ -170,7 +175,7 @@ export default function YogaTable({ chart, showInactive = false }: Props) {
           className="flex min-w-0 flex-1 items-center justify-between text-left"
         >
           <span className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; yoga.detection</span>
-          <span className="text-[10px] font-mono text-zinc-400">{expanded ? 'collapse' : 'expand'}</span>
+          <span className="text-[10px] font-mono text-zinc-400">{expanded ? t('collapse') : t('expand')}</span>
         </button>
         {expanded && (
           <button
@@ -182,7 +187,7 @@ export default function YogaTable({ chart, showInactive = false }: Props) {
                 : 'border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-500 hover:border-zinc-400'
             }`}
           >
-            {sortByStrength ? '↓ strength' : 'sort by strength'}
+            {sortByStrength ? t('↓ strength') : t('sort by strength')}
           </button>
         )}
       </div>

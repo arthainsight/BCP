@@ -3,12 +3,12 @@
 import { useMemo, useState } from 'react';
 import type { ChartData } from '@/types';
 import { argalaOnGrahas, argalaOnHouses, ARGALA_HOUSES, type ArgalaCell } from '@/lib/argala';
-import { useT } from '@/lib/i18n';
+import { useLanguage, useT } from '@/lib/i18n';
+import { ordinal } from '@/lib/ordinal';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_NAMES } from '@/lib/signs';
 
 const GRAHAS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
-const ordinal = (n: number) => `${n}${n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 
 const STATUS_CLASS = {
   effective: 'font-bold text-emerald-700 dark:text-green-400',
@@ -24,6 +24,7 @@ const STATUS_CLASS = {
  */
 export default function ArgalaPanel({ chart }: { chart: ChartData }) {
   const t = useT();
+  const language = useLanguage();
   const { code, name: grahaName } = useGrahaNames();
   const [view, setView] = useState<'houses' | 'grahas'>('houses');
 
@@ -62,7 +63,7 @@ export default function ArgalaPanel({ chart }: { chart: ChartData }) {
         </p>
       </div>
 
-      <div className="inline-flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50" role="group" aria-label="argala view">
+      <div className="inline-flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50" role="group" aria-label={t('argala view')}>
         <button type="button" onClick={() => setView('houses')} className={pill(view === 'houses')}>{t('Houses')}</button>
         <button type="button" onClick={() => setView('grahas')} className={pill(view === 'grahas')}>{t('Grahas')}</button>
       </div>
@@ -74,7 +75,7 @@ export default function ArgalaPanel({ chart }: { chart: ChartData }) {
               <th className={`${cellBorder} text-left`}>{view === 'houses' ? t('House') : t('Graha')}</th>
               {ARGALA_HOUSES.map(item => (
                 <th key={item.house} className={cellBorder}>
-                  {ordinal(item.house)} <span className="text-rose-400">⊣ {ordinal(item.virodha)}</span>
+                  {ordinal(item.house, language)} <span className="text-rose-400">⊣ {ordinal(item.virodha, language)}</span>
                   {item.kind === 'secondary' && <div className="text-[9px] font-normal">{t('secondary')}</div>}
                 </th>
               ))}

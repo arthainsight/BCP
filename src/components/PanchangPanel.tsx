@@ -3,6 +3,8 @@
 import { ChartData } from '@/types';
 import { calculatePanchang, PanchangResult } from '@/lib/panchang';
 
+import { useT } from '@/lib/i18n';
+
 interface Props {
   chart: ChartData;
   birthDatetime: string;
@@ -24,11 +26,12 @@ function Row({ label, value }: { label: string; value: string | null }) {
   );
 }
 
-function renderRows(p: PanchangResult) {
+function PanchangRows({ p }: { p: PanchangResult }) {
+  const t = useT();
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Row label="vara"      value={`${p.vara} · ${p.varaLord}${p.beforeSunrise ? ' (before sunrise)' : ''}`} />
+        <Row label="vara"      value={`${p.vara} · ${p.varaLord}${p.beforeSunrise ? ` (${t('before sunrise')})` : ''}`} />
         <Row label="tithi"     value={`${p.tithi} (${p.tithiNumber}) · ${p.paksha}`} />
         <Row label="nakshatra" value={`${p.nakshatra} · Pada ${p.nakshatraPada}`} />
         <Row label="karana"    value={p.karana} />
@@ -37,9 +40,9 @@ function renderRows(p: PanchangResult) {
       </div>
 
       <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 space-y-2">
-        <Row label="sunrise"    value={p.sunrise} />
-        <Row label="sunset"     value={p.sunset} />
-        <Row label="solar noon" value={p.solarNoon} />
+        <Row label={t('sunrise')}    value={p.sunrise} />
+        <Row label={t('sunset')}     value={p.sunset} />
+        <Row label={t('solar noon')} value={p.solarNoon} />
       </div>
 
       <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3 space-y-2">
@@ -51,10 +54,11 @@ function renderRows(p: PanchangResult) {
 }
 
 export default function PanchangPanel({ chart, birthDatetime, utcOffsetHours, ayanamsaName, nakshatraAdjust = 0 }: Props) {
+  const t = useT();
   if (!chart) {
     return (
       <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">
-        Calculate a chart to see Panchang
+        {t('Calculate a chart to see Panchang')}
       </div>
     );
   }
@@ -66,10 +70,10 @@ export default function PanchangPanel({ chart, birthDatetime, utcOffsetHours, ay
       <div>
         <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; panchang</div>
         <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
-          times shown in local birth timezone · vāra and horā counted from sunrise
+          {t('times shown in local birth timezone · vāra and horā counted from sunrise')}
         </div>
       </div>
-      {renderRows(p)}
+      <PanchangRows p={p} />
     </div>
   );
 }

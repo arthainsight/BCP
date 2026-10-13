@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.90',
+    date: '2026-10-13',
+    title: 'The whole interface in Finnish',
+    changes: [
+      'With the language set to Suomi, everything in the panels is now Finnish: the Settings, Panchang, all the daśā systems, Aṣṭakavarga, Gochara, Dṛṣṭi, Argala, Nava-Tara, Directions, the Varga grid and its matrix, Tithi Praveśa and Varṣaphala, the Saham and Avastha tables and the Yoga table, with their headings, descriptions, table headers, buttons, tooltips and messages. About 300 texts were added to the Finnish dictionary.',
+      'The sentences that the calculations write are translated as well: the reasons of the yogas (Moon in house 4 (Kendra) …), the notes of the daśā systems and the Aṣṭottarī condition, the reason for the lord of the year, the meanings of the sahams and of the vargas, the categories and strengths of the yogas. Sentences with numbers use a template and the ordinals follow the language (5th / 5.).',
+      'The chips under the Event List form name the daśā systems instead of showing their internal keys (vimshottariVariant …).',
+      'Tests: every Finnish sentence shape of the yoga engine is checked against the sentences it really writes, so a new wording in the yogas cannot be left in English unnoticed; the daśā notes, the ordinals and the dictionary have tests of their own; a browser test walks the Finnish panels.',
+      'Updated the application version to v2.90.',
+    ],
+  },
+  {
     version: 'v2.89',
     date: '2026-10-13',
     title: 'The Matrix button works, the Event List in Finnish, and a simpler program',

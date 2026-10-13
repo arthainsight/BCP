@@ -17,7 +17,6 @@ import {
   buildAnnualParams,
   fmtLocal,
   fmtOffset,
-  ordinal,
   referenceJd,
   toggleClass,
   useAnnualFetch,
@@ -27,6 +26,8 @@ import {
 } from './annualShared';
 import { SIGN_ABBR } from '@/lib/signs';
 
+import { fill, useLanguage, useT } from '@/lib/i18n';
+import { ordinal } from '@/lib/ordinal';
 type TpResponse = {
   tithiPravesa: TithiPravesaResult;
   local: LocalParts;
@@ -79,6 +80,8 @@ export default function TithiPravesaPanel({
   place,
   onPlaceChange,
 }: Props) {
+  const t = useT();
+  const language = useLanguage();
   // null year means "the year in force at the target date".
   const [year, setYear] = useState<number | null>(null);
   const [method, setMethod] = useState<TithiPravesaMethod>('lunar-month');
@@ -88,7 +91,7 @@ export default function TithiPravesaPanel({
   const { data: shown, error, loading } = useAnnualFetch<TpResponse>('/api/tithi-pravesha', query);
 
   if (!query) {
-    return <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600">Birth date and place are needed for Tithi Praveśa.</div>;
+    return <div className="text-xs font-mono text-zinc-400 dark:text-zinc-600">{t('Birth date and place are needed for Tithi Praveśa.')}</div>;
   }
 
   const shownYear = shown?.tithiPravesa.year;
@@ -96,27 +99,27 @@ export default function TithiPravesaPanel({
   return (
     <div className="space-y-3 min-w-0">
       <div>
-        <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">Tithi Praveśa — annual chart</div>
+        <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">{t('Tithi Praveśa — annual chart')}</div>
         <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
-          Cast for the moment the Moon returns to its natal distance from the Sun — the birth tithi to the arc-second —
+          {t('Cast for the moment the Moon returns to its natal distance from the Sun — the birth tithi to the arc-second —')}
           {method === 'lunar-month'
-            ? ' in the lunar month of birth (amānta, nija month in adhika years).'
-            : ' nearest the Sun’s return to its natal sidereal longitude.'}
-          {' '}The vāra lord at that moment is the lord of the year.
+            ? t(' in the lunar month of birth (amānta, nija month in adhika years).')
+            : t(' nearest the Sun’s return to its natal sidereal longitude.')}
+          {' '}{t('The vāra lord at that moment is the lord of the year.')}
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
         <YearStepper shownYear={shownYear} year={year} onChange={setYear} />
         <div className="inline-flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50">
-          <button type="button" className={toggleClass(method === 'lunar-month')} onClick={() => setMethod('lunar-month')}>Lunar month</button>
-          <button type="button" className={toggleClass(method === 'solar-return')} onClick={() => setMethod('solar-return')}>Near solar return</button>
+          <button type="button" className={toggleClass(method === 'lunar-month')} onClick={() => setMethod('lunar-month')}>{t('Lunar month')}</button>
+          <button type="button" className={toggleClass(method === 'solar-return')} onClick={() => setMethod('solar-return')}>{t('Near solar return')}</button>
         </div>
         <label className="inline-flex items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
           <input type="checkbox" checked={showNatal} onChange={(e) => setShowNatal(e.target.checked)} />
-          natal overlay
+          {t('natal overlay')}
         </label>
-        {loading && <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">calculating…</span>}
+        {loading && <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('calculating…')}</span>}
       </div>
 
       <AnnualPlaceControl place={place} onChange={onPlaceChange} />
@@ -128,20 +131,20 @@ export default function TithiPravesaPanel({
           <StyledChart style={chartStyle} {...annualChartProps(shown.chart, chart, showNatal, chartDisplaySettings, nakshatraAdjust)} />
 
           <div className="space-y-2">
-            <Row label="begins" value={`${fmtLocal(shown.local)} (${fmtOffset(shown.tzOffset)})`} />
-            <Row label="ends" value={`${fmtLocal(shown.next.local)} (${fmtOffset(shown.next.tzOffset)})`} />
-            <Row label="year" value={`${shown.completedAge} completed · ${ordinal(shown.completedAge + 1)} year running`} />
+            <Row label={t('begins')} value={`${fmtLocal(shown.local)} (${fmtOffset(shown.tzOffset)})`} />
+            <Row label={t('ends')} value={`${fmtLocal(shown.next.local)} (${fmtOffset(shown.next.tzOffset)})`} />
+            <Row label={t('year')} value={fill(t('{age} completed · {ordinal} year running'), { age: shown.completedAge, ordinal: ordinal(shown.completedAge + 1, language) })} />
             <Row label="tithi" value={tithiLabel(shown.tithiPravesa.tithiIndex)} />
-            <Row label="elongation" value={`${formatDegree(shown.tithiPravesa.natalElongation, 'second')} Moon − Sun`} />
-            <Row label="masa" value={`${MASA_NAMES[shown.tithiPravesa.masaIndex]}${shown.tithiPravesa.birthInAdhikaMasa ? ' (born in adhika māsa)' : ''}`} />
-            <Row label="vara" value={`${shown.vedicDay.vara} · year lord ${shown.vedicDay.varaLord}`} />
-            <Row label="hora" value={`${shown.vedicDay.horaLord}${shown.vedicDay.sunTimesFound ? '' : ' (no sunrise — 6/18 h assumed)'}`} />
+            <Row label={t('elongation')} value={`${formatDegree(shown.tithiPravesa.natalElongation, 'second')} ${t('Moon − Sun')}`} />
+            <Row label="masa" value={`${MASA_NAMES[shown.tithiPravesa.masaIndex]}${shown.tithiPravesa.birthInAdhikaMasa ? t(' (born in adhika māsa)') : ''}`} />
+            <Row label="vara" value={fill(t('{vara} · year lord {lord}'), { vara: t(shown.vedicDay.vara), lord: shown.vedicDay.varaLord })} />
+            <Row label="hora" value={`${shown.vedicDay.horaLord}${shown.vedicDay.sunTimesFound ? '' : t(' (no sunrise — 6/18 h assumed)')}`} />
             <Row label="lagna" value={`${SIGN_ABBR[shown.chart.ascendant.sign - 1]} ${formatDegree(shown.chart.ascendant.degree, 'minute')}`} />
           </div>
 
           <AnnualDashaList
             title="Tithi Aṣṭottarī daśā (beta)"
-            note="Aṣṭottarī’s 108 years compressed into this year, entered from the lord of the birth tithi. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted."
+            note={t('Aṣṭottarī’s 108 years compressed into this year, entered from the lord of the birth tithi. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted.')}
             dasha={shown.dasha}
             referenceJd={referenceJd(targetDate, shown.tzOffset)}
           />

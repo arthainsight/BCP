@@ -4,9 +4,11 @@ import { useMemo, useState } from 'react';
 import type { ChartData } from '@/types';
 import { calculateAvasthas } from '@/lib/avasthas';
 
+import { useT } from '@/lib/i18n';
 const ABBR: Record<string, string> = { Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke' };
 
 export default function AvasthaPanel({ chart, birthDatetime }: { chart: ChartData; birthDatetime: string }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
   const rows = useMemo(() => calculateAvasthas(chart, birthDatetime), [chart, birthDatetime]);
 
@@ -14,7 +16,7 @@ export default function AvasthaPanel({ chart, birthDatetime }: { chart: ChartDat
     <div className="border-t border-zinc-100 pt-3 dark:border-zinc-800">
       <button type="button" onClick={() => setExpanded((value) => !value)} className="flex w-full items-center justify-between text-left">
         <span className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; planetary.avasthas</span>
-        <span className="text-[10px] font-mono text-zinc-400">{expanded ? 'collapse' : 'expand'}</span>
+        <span className="text-[10px] font-mono text-zinc-400">{expanded ? t('collapse') : t('expand')}</span>
       </button>
       {expanded && (
         <div className="mt-3 overflow-x-auto">
@@ -33,7 +35,7 @@ export default function AvasthaPanel({ chart, birthDatetime }: { chart: ChartDat
               </tr>
             ))}</tbody>
           </table>
-          <p className="mt-2 text-[9px] leading-relaxed text-zinc-400">Hover a value to see its calculation basis. Śayanādi shows the primary 12-fold state; sub-states are not included.</p>
+          <p className="mt-2 text-[9px] leading-relaxed text-zinc-400">{t('Hover a value to see its calculation basis. Śayanādi shows the primary 12-fold state; sub-states are not included.')}</p>
         </div>
       )}
     </div>

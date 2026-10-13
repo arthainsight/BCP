@@ -539,11 +539,11 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'How do I change the language or the names of the grahas?', fi: 'Miten vaihdan kielen tai grahojen nimet?' },
     a: {
       en: [
-        'Settings → display → language: English or Suomi. This guide follows the same choice and has its own language switch at the top. Settings → display → graha names chooses English names (Sun, Moon, Mars …) or Sanskrit ones (Sūrya, Candra, Maṅgala …). Sanskrit terms such as daśā, varga and the nakshatras are the same in both languages.',
+        'Settings → display → language: English or Suomi. This guide follows the same choice and has its own language switch at the top. Settings → display → graha names chooses English names (Sun, Moon, Mars …) or Sanskrit ones (Sūrya, Candra, Maṅgala …). Sanskrit terms such as daśā, varga and the nakshatras are the same in both languages, and so are the names of the grahas and signs in the tables unless the graha names are changed. Everything else in the panels — their headings, descriptions, table headers, buttons and the sentences the calculations write, such as the reasons of the yogas and the notes of the daśā systems — is in Finnish when Suomi is chosen.',
         'The dark and light mode is switched with the button at the top right.',
       ],
       fi: [
-        'Asetukset → näyttö → kieli: English tai Suomi. Tämä opas seuraa samaa valintaa, ja sillä on oma kielenvaihto ylhäällä. Asetukset → näyttö → grahojen nimet valitsee englanninkieliset nimet (Sun, Moon, Mars …) tai sanskritinkieliset (Sūrya, Candra, Maṅgala …). Sanskritin termit, kuten daśā, varga ja nakshatrat, ovat samat molemmilla kielillä.',
+        'Asetukset → näyttö → kieli: English tai Suomi. Tämä opas seuraa samaa valintaa, ja sillä on oma kielenvaihto ylhäällä. Asetukset → näyttö → grahojen nimet valitsee englanninkieliset nimet (Sun, Moon, Mars …) tai sanskritinkieliset (Sūrya, Candra, Maṅgala …). Sanskritin termit, kuten daśā, varga ja nakshatrat, ovat samat molemmilla kielillä, samoin grahojen ja merkkien nimet taulukoissa, ellei grahojen nimiä vaihdeta. Kaikki muu paneeleissa — otsikot, selitykset, taulukoiden otsikot, painikkeet ja laskennan kirjoittamat lauseet, kuten joogien perustelut ja daśā-järjestelmien huomautukset — on suomeksi, kun Suomi on valittu.',
         'Tumma ja vaalea tila vaihdetaan oikeasta yläkulmasta löytyvällä painikkeella.',
       ],
     },

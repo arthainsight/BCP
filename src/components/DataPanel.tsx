@@ -94,7 +94,7 @@ export default function DataPanel({
             value={city}
             onChange={(e) => onCityChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onGeocode()}
-            placeholder="e.g. New Delhi"
+            placeholder={t('e.g. New Delhi')}
             className={INPUT}
           />
           <button

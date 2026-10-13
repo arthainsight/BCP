@@ -10,6 +10,7 @@ import { collectTimingEvents, type TimingEvent } from '@/lib/signChanges';
 import { findTransitHits, type LongitudeSeries } from '@/lib/transitHits';
 import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 import { useT } from '@/lib/i18n';
+import { translateDashaText } from '@/lib/dashaText';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_NAMES } from '@/lib/signs';
 import { pad2 } from '@/lib/dateFormat';
@@ -105,7 +106,7 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
             <li key={snapshot.key} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 py-1 text-[11px] font-mono">
               <span className="w-36 shrink-0 font-semibold text-zinc-700 dark:text-zinc-200">{snapshot.label}</span>
               <span className="min-w-0 break-words text-zinc-600 dark:text-zinc-300">
-                {snapshot.levels.length > 0 ? translate(snapshot.levels.map(level => level.value).join(' – ')) : snapshot.note}
+                {snapshot.levels.length > 0 ? translate(snapshot.levels.map(level => level.value).join(' – ')) : snapshot.note && translateDashaText(snapshot.note, t)}
               </span>
               {snapshot.mdRange && (
                 <span className="text-zinc-400 dark:text-zinc-500">MD {day(snapshot.mdRange.startDate.getTime())} – {day(snapshot.mdRange.endDate.getTime())}</span>
