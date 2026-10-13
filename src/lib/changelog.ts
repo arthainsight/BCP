@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v2.91',
+    date: '2026-10-13',
+    title: 'Encrypted backups, DST-safe birth times, a lighter first load and a search for saved charts',
+    changes: [
+      'Backup: a password (optional) encrypts the backup file in the browser with AES-GCM; the key comes from the password with PBKDF2-SHA256 (600 000 rounds) and a random salt. An encrypted file asks for its password when it is chosen, and a wrong password or a changed file is refused. The password is sent nowhere and a lost one cannot be recovered. The server also sends headers that stop MIME sniffing and framing, send no referrer and withhold the camera and the location.',
+      'The UTC offset of a birth time is now found from the local clock time instead of reading the clock as if it were UTC, which gave the wrong offset for births within a few hours of a change to or from summer time (Helsinki 25 March 2018 at 02.30, for example). A time that never happened gets the offset before the change and a repeated one the first offset. Tests cover ordinary, half-hour and 45-minute zones, Lord Howe, India\'s wartime time and both changes of Helsinki in 2018.',
+      'The first load is about 40 % smaller (1.26 MB to 0.76 MB of JavaScript): Settings, Analysis, Timing, Panchang, the palm workspace and the client report load when they are opened.',
+      'Saved charts: with more than four charts the list has a search (name, place or birth year, every word has to match) and an order (latest first or by name).',
+      'Finnish: the error messages of the page (city not found, invalid dates, the calculation errors) and the messages of the chart file actions are translated, and a test finds any such message without a Finnish text.',
+      'Updated the application version to v2.91.',
+    ],
+  },
+  {
     version: 'v2.90',
     date: '2026-10-13',
     title: 'The whole interface in Finnish',

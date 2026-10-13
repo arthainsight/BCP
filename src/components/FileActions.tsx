@@ -6,6 +6,8 @@ import { decodeShare, encodeShare, shareUrl } from '@/lib/shareLink';
 import {
   SavedChart,
   SavedChartData,
+  SavedChartSort,
+  filterSavedCharts,
   loadSavedCharts,
   deleteSavedChart,
   saveChartAsNew,
@@ -45,6 +47,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showLoad, setShowLoad] = useState(false);
   const [savedList, setSavedList] = useState<SavedChart[]>([]);
+  const [chartQuery, setChartQuery] = useState('');
+  const [chartSort, setChartSort] = useState<SavedChartSort>('updated');
   const [showMenu, setShowMenu] = useState(false);
   const [showSaveAs, setShowSaveAs] = useState(false);
   const [saveAsName, setSaveAsName] = useState("");
@@ -270,7 +274,23 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
               <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">{t('saved charts')}</span>
               <span className="text-xs font-mono text-zinc-400 dark:text-zinc-500">{savedList.length}</span>
             </div>
-            {savedList.map((chart) => (
+            {savedList.length > 4 && (
+              <div className="flex gap-2 border-b border-zinc-200 px-4 py-2 dark:border-zinc-700">
+                <input
+                  type="search"
+                  value={chartQuery}
+                  onChange={(e) => setChartQuery(e.target.value)}
+                  placeholder={t('Search name, place or birth year')}
+                  aria-label={t('Search saved charts')}
+                  className="min-w-0 flex-1 rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-mono dark:border-zinc-600 dark:bg-zinc-800"
+                />
+                <select value={chartSort} onChange={(e) => setChartSort(e.target.value as SavedChartSort)} aria-label={t('Order')} className="rounded border border-zinc-300 bg-white px-1 py-1 text-xs font-mono dark:border-zinc-600 dark:bg-zinc-800">
+                  <option value="updated">{t('latest first')}</option>
+                  <option value="name">{t('by name')}</option>
+                </select>
+              </div>
+            )}
+            {filterSavedCharts(savedList, chartQuery, chartSort).map((chart) => (
               <div
                 key={chart.id}
                 onClick={() => handlePickChart(chart)}
