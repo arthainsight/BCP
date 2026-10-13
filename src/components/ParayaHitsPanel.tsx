@@ -8,6 +8,8 @@ import { findParayaHits } from '@/lib/bnn/parayaHits';
 import { HIT_RELATIONS } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { pad2 } from '@/lib/dateFormat';
+import { JULIAN_YEAR_MS } from '@/lib/time';
 
 type Props = {
   chart: ChartData;
@@ -24,12 +26,10 @@ const RANGES = [
   { label: '10 yr', years: 10 },
 ];
 const FIRST_ROWS = 12;
-const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
 
-const pad = (value: number) => String(value).padStart(2, '0');
 const formatMoment = (time: number) => {
   const d = new Date(time);
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 };
 
 /**
@@ -54,7 +54,7 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, calc
       chart,
       birthTime: birth.getTime(),
       fromTime: from.getTime(),
-      toTime: from.getTime() + years * YEAR_MS,
+      toTime: from.getTime() + years * JULIAN_YEAR_MS,
       relations: HIT_RELATIONS,
       options: { saturn, rahu },
     });
@@ -99,7 +99,7 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, calc
                   type="button"
                   onClick={() => {
                     const d = new Date(hit.time);
-                    onSetTarget(`${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}.${pad(d.getMinutes())}.00`);
+                    onSetTarget(`${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()} ${pad2(d.getHours())}.${pad2(d.getMinutes())}.00`);
                   }}
                   className="shrink-0 rounded border border-violet-300 px-2 py-1.5 text-[10px] text-violet-700 sm:px-1.5 sm:py-0.5 dark:border-violet-700 dark:text-violet-300"
                 >

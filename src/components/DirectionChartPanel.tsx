@@ -6,13 +6,13 @@ import { DIRECTIONS, buildCompass, signDirection, type CompassItem, type Directi
 import { formatDegree } from '@/lib/formatDegree';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { SIGN_ABBR } from '@/lib/signs';
 
 type Props = {
   chart: ChartData;
 };
 
 const GRAHAS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
-const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const SYMBOL: Record<Direction, string> = { North: 'N', East: 'E', South: 'S', West: 'W' };
 
 // The names the Nadi books write the grahas with.

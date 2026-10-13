@@ -3,15 +3,15 @@
 import { useMemo, useState } from 'react';
 import type { ChartData } from '@/types';
 import { calculateSahams } from '@/lib/sahams';
+import { SIGN_ABBR } from '@/lib/signs';
 
-const SIGN_ABBR = ['', 'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 
 function position(degree: number, sign: number) {
   const d = Math.floor(degree);
   const minutesFloat = (degree - d) * 60;
   const m = Math.floor(minutesFloat);
   const s = Math.round((minutesFloat - m) * 60);
-  return `${SIGN_ABBR[sign]} ${d}°${String(m).padStart(2, '0')}′${String(s).padStart(2, '0')}″`;
+  return `${SIGN_ABBR[sign - 1]} ${d}°${String(m).padStart(2, '0')}′${String(s).padStart(2, '0')}″`;
 }
 
 export default function SahamPanel({ chart, birthDatetime }: { chart: ChartData; birthDatetime: string }) {

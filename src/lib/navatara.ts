@@ -4,14 +4,7 @@
 // 2, 11 and 20 are Sampat, and so on round to Ati-Mitra.
 
 import { normalizeDegrees } from './angles';
-
-export const NAKSHATRAS = [
-  'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
-  'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
-  'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
-  'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanistha',
-  'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati',
-] as const;
+import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
 
 export type TaraQuality = 'good' | 'mixed' | 'bad';
 
@@ -34,7 +27,6 @@ export const TARAS: Tara[] = [
   { number: 9, name: 'Ati-Mitra', meaning: 'close friendship', quality: 'good' },
 ];
 
-const NAKSHATRA_SIZE = 360 / 27;
 
 /** Index 0–26 of the nakṣatra a longitude falls in; the adjustment is the chart's nakṣatra offset. */
 export function nakshatraIndex(longitude: number, adjust = 0): number {
@@ -82,7 +74,7 @@ export function buildNavatara(
       const index = (reference + tara.number - 1 + step) % 27;
       return {
         index,
-        name: NAKSHATRAS[index],
+        name: NAKSHATRA_NAMES[index],
         count: tara.number + step,
         natal: inNakshatra(natal, index),
         transit: inNakshatra(transit, index),

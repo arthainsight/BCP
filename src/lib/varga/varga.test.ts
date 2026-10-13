@@ -4,7 +4,8 @@
 // Expected output verified against classical Parashara rules.
 // Cross-check D5 against JHora before trusting in production.
 
-import { calculateVargaMatrix, calcD9, calcD40, calcD45, calcD60, SIGN_ABBR } from './index';
+import { calculateVargaMatrix, calcD9, calcD40, calcD45, calcD60 } from './index';
+import { SIGN_ABBR } from '../signs';
 
 // ---------------------------------------------------------------------------
 // D9 sanity checks (movable / fixed / dual sign coverage)

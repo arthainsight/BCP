@@ -12,6 +12,8 @@ import { setGulikaMoment, setMaandiMoment, useChartPoints } from '@/hooks/useCha
 import { SATURN_PORTION_MOMENTS, type SaturnPortionMoment } from '@/lib/upagrahas';
 import { getVargaSignIndex } from '@/lib/varga';
 import { useT } from '@/lib/i18n';
+import { SIGN_NAMES } from '@/lib/signs';
+import { pad2 } from '@/lib/dateFormat';
 
 type Props = {
   chart: ChartData;
@@ -19,7 +21,6 @@ type Props = {
   nakshatraAdjust?: number;
 };
 
-const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 /** The two points shown in the divisional sign they fall in; their nakshatra is that of the point in the zodiac. */
 const KHARA_KEYS = ['D22', 'N64'];
 
@@ -31,7 +32,6 @@ const MOMENT_LABELS: Record<SaturnPortionMoment, string> = {
 
 const houseFrom = (lagnaSign: number, sign: number) => ((sign - lagnaSign + 12) % 12) + 1;
 
-const pad = (value: number) => String(value).padStart(2, '0');
 
 /** "06:28:31" or "6:28" as decimal hours, or null when it is not a time of day. */
 function parseClock(text: string): number | null {
@@ -42,7 +42,7 @@ function parseClock(text: string): number | null {
 }
 const clock = (hours: number) => {
   const total = Math.round((((hours % 24) + 24) % 24) * 3600);
-  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`;
+  return `${pad2(Math.floor(total / 3600))}:${pad2(Math.floor((total % 3600) / 60))}:${pad2(total % 60)}`;
 };
 
 /**
@@ -139,7 +139,7 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
               return (
                 <tr key={sphuta.key} className="border-b border-zinc-100 dark:border-zinc-800">
                   <td className="whitespace-nowrap p-2 font-bold text-emerald-700 dark:text-green-400">{sphuta.name}</td>
-                  <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGNS[sphuta.sign - 1]}</td>
+                  <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGN_NAMES[sphuta.sign - 1]}</td>
                   <td className="whitespace-nowrap p-2 text-zinc-700 dark:text-zinc-300">{formatDms(sphuta.degree)}</td>
                   <td className="whitespace-nowrap p-2 text-cyan-700 dark:text-cyan-300">{nakshatra}</td>
                   <td className="p-2 text-zinc-600 dark:text-zinc-300">{pada}</td>
@@ -192,7 +192,7 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
                   return (
                     <tr key={point.key} data-upagraha={point.key} className="border-b border-zinc-100 dark:border-zinc-800">
                       <td className="whitespace-nowrap p-2 font-bold text-emerald-700 dark:text-green-400">{point.name}</td>
-                      <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGNS[point.sign - 1]}</td>
+                      <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGN_NAMES[point.sign - 1]}</td>
                       <td className="whitespace-nowrap p-2 text-zinc-700 dark:text-zinc-300">{formatDms(point.degree)}</td>
                       <td className="p-2 text-zinc-600 dark:text-zinc-300">{point.house}</td>
                       <td className="whitespace-nowrap p-2 text-cyan-700 dark:text-cyan-300">{nakshatra}</td>
@@ -250,13 +250,13 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
               <tbody>
                 <tr data-jaimini="karakamsa" className="border-b border-zinc-100 dark:border-zinc-800">
                   <td className="whitespace-nowrap p-2 font-bold text-emerald-700 dark:text-green-400">Karakamsa</td>
-                  <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGNS[karakamsa.sign - 1]}</td>
+                  <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGN_NAMES[karakamsa.sign - 1]}</td>
                   <td className="whitespace-nowrap p-2 text-zinc-700 dark:text-zinc-300">{formatDms(karakamsa.degree)}</td>
                   <td className="p-2 text-zinc-600 dark:text-zinc-300">{karakamsa.houseFromLagna}</td>
                 </tr>
                 <tr data-jaimini="svamsa" className="border-b border-zinc-100 dark:border-zinc-800">
                   <td className="whitespace-nowrap p-2 font-bold text-emerald-700 dark:text-green-400">Svamsa</td>
-                  <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGNS[karakamsa.sign - 1]}</td>
+                  <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGN_NAMES[karakamsa.sign - 1]}</td>
                   <td className="whitespace-nowrap p-2 text-zinc-700 dark:text-zinc-300">{formatDms(karakamsa.degree)}</td>
                   <td className="p-2 text-zinc-600 dark:text-zinc-300">{karakamsa.houseFromNavamsaLagna}</td>
                 </tr>
@@ -285,7 +285,7 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
                 <tr key={pada.name} data-pada={pada.name} className="border-b border-zinc-100 dark:border-zinc-800">
                   <td className="whitespace-nowrap p-2 font-bold text-emerald-700 dark:text-green-400">{pada.name}{pada.house === 12 ? ' (UL)' : ''}</td>
                   <td className="p-2 text-zinc-600 dark:text-zinc-300">{pada.house}</td>
-                  <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGNS[pada.sign - 1]}</td>
+                  <td className="whitespace-nowrap p-2 text-zinc-800 dark:text-zinc-100">{SIGN_NAMES[pada.sign - 1]}</td>
                   <td className="whitespace-nowrap p-2 text-zinc-700 dark:text-zinc-300">{formatDms(pada.degree)}</td>
                   <td className="p-2 text-zinc-600 dark:text-zinc-300">{houseFrom(chart.ascendant.sign, pada.sign)}</td>
                 </tr>

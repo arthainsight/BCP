@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { BcpResult, CalculationSettings, ChartData, ChartDisplaySettings, DashaSettings, PlanetData } from '@/types';
+import type { CalculationSettings, ChartData, ChartDisplaySettings, DashaSettings, PlanetData } from '@/types';
 import DashaWorkspace from './DashaWorkspace';
 import TransitHitsPanel from './TransitHitsPanel';
 import SignChangesPanel from './SignChangesPanel';
@@ -28,7 +28,6 @@ const VIEWS: { key: View; label: string }[] = [
 ];
 
 interface Props {
-  bcp: BcpResult;
   chart: ChartData;
   birthDatetime: string;
   targetDate?: string;
@@ -37,6 +36,8 @@ interface Props {
   transitDatetime: string;
   onSetTransitDatetime: (value: string) => void;
   onOpenDateInChart: (date: string) => void;
+  /** Shows the Matrix & Bala of the Varga view in ANALYSIS. */
+  onOpenVargaMatrix?: () => void;
   calculationSettings?: CalculationSettings;
   chartDisplaySettings: ChartDisplaySettings;
   nakshatraAdjust?: number;
@@ -54,7 +55,6 @@ interface Props {
  * Varṣaphala).
  */
 export default function TimingPanel({
-  bcp,
   chart,
   birthDatetime,
   targetDate,
@@ -63,6 +63,7 @@ export default function TimingPanel({
   transitDatetime,
   onSetTransitDatetime,
   onOpenDateInChart,
+  onOpenVargaMatrix,
   calculationSettings,
   chartDisplaySettings,
   nakshatraAdjust = 0,
@@ -101,7 +102,6 @@ export default function TimingPanel({
           transitLocation={transitLocation}
           calculationSettings={calculationSettings}
           targetDate={targetDate}
-          bcp={bcp}
           planets={chart.planets}
           ascendant={chart.ascendant}
           birthDatetime={birthDatetime}
@@ -110,6 +110,7 @@ export default function TimingPanel({
           transitDatetime={transitDatetime}
           onSetTransitDatetime={onSetTransitDatetime}
           onOpenDateInChart={onOpenDateInChart}
+          onOpenVargaMatrix={onOpenVargaMatrix}
         />
       )}
 

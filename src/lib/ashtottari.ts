@@ -1,8 +1,9 @@
 import { buildDashaSubPeriods, buildDashaTimeline, type NakshatraDashaEntry } from './nakshatraDasha';
 import { normalizeDegrees } from './angles';
+import { SIGN_LORDS } from './signs';
+import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
 
 type EligibilityPlanet = { name: string; sign: number };
-const SIGN_LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'] as const;
 
 export interface AshtottariEligibility {
   eligible: boolean;
@@ -43,14 +44,6 @@ export const ASHTOTTARI_DEFINITIONS = [
 ] as const;
 
 type Segment = { name: string; start: number; end: number; lordIndex: number };
-const NAKSHATRA_SPAN = 360 / 27;
-const regularNames = [
-  'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha',
-  'Magha', 'Purva Phalguni', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha',
-  'Jyeshtha', 'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishta', 'Shatabhisha',
-  'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati',
-];
-
 // BPHS uses 28 divisions here. Uttara Ashadha contributes its first three padas,
 // Abhijit spans its fourth pada plus the first 1/15 of Shravana, and the remaining
 // Shravana arc forms the following segment.
@@ -69,14 +62,14 @@ function lordIndexForSequencePosition(position: number) {
 
 function buildSegments(): Segment[] {
   const chronological: Omit<Segment, 'lordIndex'>[] = [];
-  for (let index = 0; index < regularNames.length; index++) {
-    const start = index * NAKSHATRA_SPAN;
-    const end = (index + 1) * NAKSHATRA_SPAN;
-    if (index === 20) chronological.push({ name: regularNames[index], start, end: ABHIJIT_START });
+  for (let index = 0; index < NAKSHATRA_NAMES.length; index++) {
+    const start = index * NAKSHATRA_SIZE;
+    const end = (index + 1) * NAKSHATRA_SIZE;
+    if (index === 20) chronological.push({ name: NAKSHATRA_NAMES[index], start, end: ABHIJIT_START });
     else if (index === 21) {
       chronological.push({ name: 'Abhijit', start: ABHIJIT_START, end: ABHIJIT_END });
-      chronological.push({ name: regularNames[index], start: ABHIJIT_END, end });
-    } else chronological.push({ name: regularNames[index], start, end });
+      chronological.push({ name: NAKSHATRA_NAMES[index], start: ABHIJIT_END, end });
+    } else chronological.push({ name: NAKSHATRA_NAMES[index], start, end });
   }
 
   // The classical allocation begins at Ardra; rotate the 28 segments before

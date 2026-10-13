@@ -2,6 +2,8 @@ import type { CharaOptions, DashaSettings, RasiDashaOptions } from '@/types';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { DEFAULT_DASHA_SETTINGS } from '@/types';
 import type { DashaEventSnapshot } from '@/lib/dashaEvents';
+import { pad2 } from './dateFormat';
+import { DAY_MS } from './time';
 
 /** The options the dasha snapshot calculation needs, with the defaults filled in. */
 export function dashaSnapshotOptions(dashaSettings: DashaSettings): {
@@ -28,8 +30,6 @@ export function levelValue(snapshot: DashaEventSnapshot | undefined, level: stri
   return snapshot?.levels.find(item => item.level === level)?.value ?? '';
 }
 
-export const DAY_MS = 24 * 60 * 60 * 1000;
-export const YEAR_MS = 365.25 * DAY_MS;
 
 /** The change flags of a column of snapshots: whether the MD and AD differ from the row before. */
 export function periodChanges(snapshots: (DashaEventSnapshot | undefined)[]): { md: boolean; ad: boolean }[] {
@@ -43,12 +43,11 @@ export function periodChanges(snapshots: (DashaEventSnapshot | undefined)[]): { 
   });
 }
 
-const pad = (value: number) => String(value).padStart(2, '0');
 
 /** A flag when the running mahādaśā ends within a year of the date: "MD changes 03.2027". */
 export function mdChangeFlag(snapshot: DashaEventSnapshot | undefined, from: Date, label: string): string | undefined {
   const end = snapshot?.mdRange?.endDate;
   if (!end) return undefined;
   const days = (end.getTime() - from.getTime()) / DAY_MS;
-  return days >= 0 && days <= 365 ? `${label} ${pad(end.getMonth() + 1)}.${end.getFullYear()}` : undefined;
+  return days >= 0 && days <= 365 ? `${label} ${pad2(end.getMonth() + 1)}.${end.getFullYear()}` : undefined;
 }

@@ -1,4 +1,5 @@
 import type { PlanetData } from '@/types';
+import { SIGN_ABBR } from './signs';
 
 export type DrishtiChartPlanet = {
   name: string;
@@ -56,7 +57,6 @@ export interface RashiDrishtiAspect {
   toPlanets: string[];
 }
 
-const SIGN_ABBR = ['', 'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const GRAHA_PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 
@@ -160,11 +160,11 @@ export function buildRashiDrishti(chart: DrishtiChartLike): RashiDrishtiRow[] {
 
     return {
       sign,
-      signLabel: SIGN_ABBR[sign],
+      signLabel: SIGN_ABBR[sign - 1],
       house,
       aspectsSigns,
       aspectsHouses,
-      labels: aspectsSigns.map((targetSign) => `${SIGN_ABBR[sign]}→${SIGN_ABBR[targetSign]}`),
+      labels: aspectsSigns.map((targetSign) => `${SIGN_ABBR[sign - 1]}→${SIGN_ABBR[targetSign - 1]}`),
     };
   });
 }

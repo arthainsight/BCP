@@ -1,5 +1,4 @@
 import { ChartData, ChartDisplaySettings, DEFAULT_CHART_DISPLAY } from '@/types';
-import { migrateChartDisplaySettings } from '@/lib/chartDisplaySettings';
 import JyotishGrahaTable from './JyotishGrahaTable';
 import DrishtiPanel from './DrishtiPanel';
 import YogaTable from './YogaTable';
@@ -9,24 +8,13 @@ import SahamPanel from './SahamPanel';
 interface Props {
   chart: ChartData;
   karakaByPlanet: Record<string, string>;
-  chartDisplaySettings?: ChartDisplaySettings;
+  chartDisplaySettings: ChartDisplaySettings;
   nakshatraAdjust?: number;
   birthDatetime?: string;
 }
 
-function readChartDisplaySettings(fallback?: ChartDisplaySettings): ChartDisplaySettings {
-  if (fallback) return { ...DEFAULT_CHART_DISPLAY, ...fallback };
-  if (typeof window === 'undefined') return DEFAULT_CHART_DISPLAY;
-  try {
-    const raw = localStorage.getItem('chartDisplaySettings');
-    return raw ? migrateChartDisplaySettings(JSON.parse(raw)) : DEFAULT_CHART_DISPLAY;
-  } catch {
-    return DEFAULT_CHART_DISPLAY;
-  }
-}
-
 export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySettings, nakshatraAdjust = 0, birthDatetime = '' }: Props) {
-  const settings = readChartDisplaySettings(chartDisplaySettings);
+  const settings = { ...DEFAULT_CHART_DISPLAY, ...chartDisplaySettings };
 
   return (
     <div className="space-y-2">
@@ -37,8 +25,6 @@ export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySetting
         degreePrecision={settings.degreePrecision ?? 'off'}
         showOuterPlanets={settings.showOuterPlanets}
         showSpecialLagnas={settings.showSpecialLagnas}
-        showNakshatraPada={settings.showNakshatraPada}
-        showD108={settings.showD108}
         nakshatraAdjust={nakshatraAdjust}
       />
       {(settings.showGrahaDrishti || settings.showRashiDrishti) && (

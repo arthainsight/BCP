@@ -1,4 +1,5 @@
-export const DASHA_YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
+
+import { addDashaYears } from './time';
 
 export type NakshatraDashaEntry = {
   key: string;
@@ -15,10 +16,6 @@ export type NakshatraDashaDefinition = {
   lord: string;
   years: number;
 };
-
-export function addDashaYears(date: Date, years: number) {
-  return new Date(date.getTime() + years * DASHA_YEAR_MS);
-}
 
 export function buildDashaTimeline(
   definitions: readonly NakshatraDashaDefinition[],

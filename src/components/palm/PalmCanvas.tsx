@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   BADGE_UNITS, LABEL_UNITS, RULER_DEFAULT_PARTS, TEXT_UNITS, ageMarks, anchorOf, arrowHead, boundingBox, clampParts, contrastText, distance, eraseAlong, eraseAt,
-  handleAt, handlesOf, hitTest, moveAnnotation, newId, numbering, pathData, reshapeAnnotation, rulerGeometry, simplifyPath, snapPoint, snapTargets,
+  handleAt, handlesOf, hitTest, moveAnnotation, numbering, pathData, reshapeAnnotation, rulerGeometry, simplifyPath, snapPoint, snapTargets,
   unitOf, type Annotation, type Point,
 } from '@/lib/palm/annotations';
 import { MAX_ZOOM, fitTransform, focusTransform, fromLinkedView, toImage, toLinkedView, zoomAt, type LinkedView, type Transform } from '@/lib/palm/viewport';
 import { useT } from '@/lib/i18n';
+import { newId } from '@/lib/ids';
 
 export type PalmTool = 'view' | 'select' | 'pen' | 'line' | 'arrow' | 'circle' | 'ellipse' | 'ruler' | 'pin' | 'text' | 'eraser';
 

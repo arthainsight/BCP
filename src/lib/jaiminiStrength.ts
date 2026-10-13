@@ -11,6 +11,8 @@
 // Only the nine grahas take part. Uranus, Neptune and Pluto are ignored.
 // Signs are 0-based here (0 = Aries).
 
+import { SIGN_LORDS } from './signs';
+
 export const NINE = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'] as const;
 export type Graha = typeof NINE[number];
 
@@ -39,7 +41,6 @@ const modalityRank = (sign: number) => (MOVABLE.includes(sign) ? 1 : FIXED.inclu
 export const EVEN_FOOTED = [3, 4, 5, 9, 10, 11];
 
 /** Simple sign lords; Scorpio and Aquarius give Mars and Saturn here. */
-export const SIGN_LORD: Graha[] = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'];
 
 // Dignity of each graha in each sign: 5 own, 4 exalted, 3 friend, 2 neutral,
 // 1 enemy, 0 debilitated. PyJHora's const.house_strengths_of_planets.
@@ -108,8 +109,8 @@ function strongerGrahaByRules(chart: JaiminiChart, a: Graha, b: Graha): Graha | 
   const company = (h: number) => NINE.filter((g) => signOf(chart, g) === h).length + (chart.asc === h ? 1 : 0) - 1;
   if (company(ha) !== company(hb)) return company(ha) > company(hb) ? a : b;
   // Rule 2: Jupiter, Mercury and the dispositor joining or aspecting it.
-  const sa = jupiterMercuryLordScore(chart, ha, SIGN_LORD[ha]);
-  const sb = jupiterMercuryLordScore(chart, hb, SIGN_LORD[hb]);
+  const sa = jupiterMercuryLordScore(chart, ha, SIGN_LORDS[ha]);
+  const sb = jupiterMercuryLordScore(chart, hb, SIGN_LORDS[hb]);
   if (sa !== sb) return sa > sb ? a : b;
   // Rule 3: exaltation. PyJHora: only the first graha can win this rule.
   if (dignity(a, ha) === EXALTED && dignity(a, ha) > dignity(b, hb)) return a;
@@ -139,7 +140,7 @@ export function signLord(chart: JaiminiChart, sign: number, duringDasha = false)
   const s = norm(sign);
   if (s === 7) return strongerGraha(chart, 'Mars', 'Ketu', duringDasha);
   if (s === 10) return strongerGraha(chart, 'Saturn', 'Rahu', duringDasha);
-  return SIGN_LORD[s];
+  return SIGN_LORDS[s];
 }
 
 /**
@@ -152,15 +153,15 @@ export function strongerSign(chart: JaiminiChart, r1: number, r2: number): numbe
   const count = (r: number) => NINE.filter((g) => signOf(chart, g) === r).length;
   if (count(r1) !== count(r2)) return count(r1) > count(r2) ? r1 : r2;
 
-  const s1 = jupiterMercuryLordScore(chart, r1, SIGN_LORD[r1]);
-  const s2 = jupiterMercuryLordScore(chart, r2, SIGN_LORD[r2]);
+  const s1 = jupiterMercuryLordScore(chart, r1, SIGN_LORDS[r1]);
+  const s2 = jupiterMercuryLordScore(chart, r2, SIGN_LORDS[r2]);
   if (s1 !== s2) return s1 > s2 ? r1 : r2;
 
   const exalted = (r: number) => NINE.some((g) => signOf(chart, g) === r && dignity(g, r) === EXALTED);
   if (exalted(r1) && !exalted(r2)) return r1;
   if (exalted(r2) && !exalted(r1)) return r2;
 
-  const otherParity = (r: number) => isOdd(r) !== isOdd(signOf(chart, SIGN_LORD[r]));
+  const otherParity = (r: number) => isOdd(r) !== isOdd(signOf(chart, SIGN_LORDS[r]));
   if (otherParity(r1) && !otherParity(r2)) return r1;
   if (otherParity(r2) && !otherParity(r1)) return r2;
 

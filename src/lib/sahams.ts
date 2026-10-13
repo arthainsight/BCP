@@ -1,9 +1,8 @@
 import type { ChartData } from '@/types';
 import { calcSolarTimes } from './panchang/solar';
 import { normalizeDegrees } from './angles';
+import { SIGN_LORDS, SIGN_NAMES } from './signs';
 
-const SIGN_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-const SIGN_LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'];
 const NAKSHATRAS = ['Aśvinī', 'Bharaṇī', 'Kṛttikā', 'Rohiṇī', 'Mṛgaśīrṣa', 'Ārdrā', 'Punarvasu', 'Puṣya', 'Āśleṣā', 'Maghā', 'Pūrvaphālgunī', 'Uttaraphālgunī', 'Hasta', 'Citrā', 'Svātī', 'Viśākhā', 'Anurādhā', 'Jyeṣṭhā', 'Mūla', 'Pūrvāṣāḍhā', 'Uttarāṣāḍhā', 'Śravaṇa', 'Dhaniṣṭhā', 'Śatabhiṣaj', 'Pūrvabhādrapadā', 'Uttarabhādrapadā', 'Revatī'];
 
 export type SahamResult = {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { CalculationSettings, PlanetData } from '@/types';
+import { calculationParams } from '@/lib/apiParams';
 
 export interface TransitLocation {
   lat: number;
@@ -41,9 +42,7 @@ export function useEventTransits(
     const params = new URLSearchParams({
       year: match[1], month: match[2], day: match[3], hour: '12', minute: '00', second: '00',
       lat: String(location.lat), lng: String(location.lng), tz: String(location.tzOffset),
-      ayanamsa: settings?.ayanamsa ?? 'lahiri',
-      ayanamsaOffset: String(settings?.ayanamsaOffsetDegrees ?? 0),
-      nodeMode: settings?.nodeMode ?? 'mean',
+      ...calculationParams(settings),
     });
     (async () => {
       try {

@@ -39,7 +39,6 @@ export function migrateDashaSettings(raw: unknown): DashaSettings {
     ...DEFAULT_DASHA_SETTINGS,
     dashas: {
       ...DEFAULT_DASHA_SETTINGS.dashas,
-      bcp:         obj.showBcp !== false,
       vimshottari: obj.showVimshottari !== false,
       vds:         obj.dashaSystem === 'vds',
     },

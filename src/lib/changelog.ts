@@ -1,5 +1,22 @@
 export const CHANGELOG = [
   {
+    version: 'v2.89',
+    date: '2026-10-13',
+    title: 'The Matrix button works, the Event List in Finnish, and a simpler program',
+    changes: [
+      'Open Varga Matrix in an event of the Event List now shows ANALYSIS → Varga → Matrix & Bala (it did nothing since the navigation was rebuilt). It works from the one-screen layouts and the split view alike.',
+      'The Public tab, which no button reached any more, is removed with its bottom navigation and its page of links.',
+      'The Event List, its paste box, the bulk bar, the patterns and the Event Timeline, and the tabs of the daśā workspace are in Finnish when the language is Finnish; the user guide names the Finnish buttons.',
+      'The code of the Event List is split into a form, a card, the patterns, the paste box and the bulk bar of their own, and the Vimsottari and Vimsottari Original daśās share one drill-down (they were two copies of 280 lines each; the grahas in it follow the graha-names setting now).',
+      'One place for what was written many times over: the signs, their abbreviations and lords (33 copies), the nakṣatras (Dhanishtha is spelled the same everywhere; the Vimsottari, Kalachakra, Navatara and Aṣṭottarī tables had two other spellings), the natural friends and enemies and the dignities of the grahas, the dates and times (about 25 copies), saving a file and writing CSV (7 copies), identifiers, the length of a daśā year, the calculation parameters of the chart requests, and the three stores that are shared and remembered in the browser (Āruḍha padas, the upagrahas and Karakāṁśa, the split view).',
+      'The sign changes and the transit hits are fetched once for a chart and remembered, instead of up to three times; a panel opened again does not ask again.',
+      'The chart style buttons and the rows of Āruḍha padas and upagrahas in the chart menu are made from a list instead of copies; the page is one mapping from a screen to its workspace and uses its panel component throughout; the graha table builds its rows in one place.',
+      'The import of saved charts checks what it reads (a file with something other than charts, or charts missing their fields, no longer ends up in the saved charts as they are), and /api/chart answers with an error for a value that is not a number and no longer reads cookies that nothing set.',
+      'Removed what nothing used: the BCP value passed through four components, the BCP daśā setting, the nakṣatra pada and D108 settings that changed nothing, a number of unused functions, files, messages and a stale backup key. The README tells what the app is and does today, and a test now checks that the version in the footer is that of the newest entry here.',
+      'Updated the application version to v2.89.',
+    ],
+  },
+  {
     version: 'v2.88',
     date: '2026-10-13',
     title: 'Events: periods, looser pasting and changing many at once',

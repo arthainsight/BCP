@@ -2,6 +2,7 @@ import type { PlanetData } from '@/types';
 import type { YogaResult } from '@/lib/yogas';
 import { getRashiAspectSigns } from '@/lib/drishti';
 import { normalizeDegrees } from '@/lib/angles';
+import { DEBILITATION, EXALTATION, OWN_SIGNS } from '@/lib/dignity';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -32,19 +33,6 @@ export interface YogaStrengthResult extends YogaResult {
 const BENEFIC_RASI = new Set([2, 3, 4, 6, 7, 9, 12]);
 // Signs ruled by malefic planets (Mars, Sun, Saturn)
 const MALEFIC_RASI = new Set([1, 5, 8, 10, 11]);
-
-const EXALTATION: Record<string, number> = {
-  Sun: 1, Moon: 2, Mars: 10, Mercury: 6, Jupiter: 4, Venus: 12, Saturn: 7,
-};
-
-const DEBILITATION: Record<string, number> = {
-  Sun: 7, Moon: 8, Mars: 4, Mercury: 12, Jupiter: 10, Venus: 6, Saturn: 1,
-};
-
-const OWN_SIGNS: Record<string, number[]> = {
-  Sun: [5], Moon: [4], Mars: [1, 8], Mercury: [3, 6],
-  Jupiter: [9, 12], Venus: [2, 7], Saturn: [10, 11],
-};
 
 const MOOLATRIKONA: Record<string, { sign: number; minDeg: number; maxDeg: number }> = {
   Sun:     { sign: 5,  minDeg: 0,  maxDeg: 20 },

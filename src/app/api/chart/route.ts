@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateChart } from "@/lib/ephemeris";
 
-function getCookie(request: NextRequest, name: string): string | null {
-  return request.cookies.get(name)?.value ?? null;
-}
-
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
@@ -19,19 +15,15 @@ export async function GET(request: NextRequest) {
   const tz = parseFloat(searchParams.get("tz") || "0");
   const ayanamsaOffset = parseFloat(searchParams.get("ayanamsaOffset") || "0");
 
-  // NEW: fallback to cookies if query params missing
-  const ayanamsa =
-    searchParams.get("ayanamsa") ||
-    getCookie(request, "bcp_ayanamsa") ||
-    "lahiri";
-
-  const nodeMode =
-    searchParams.get("nodeMode") ||
-    getCookie(request, "bcp_nodeMode") ||
-    "mean";
+  const ayanamsa = searchParams.get("ayanamsa") || "lahiri";
+  const nodeMode = searchParams.get("nodeMode") || "mean";
 
   // The sunrise the special lagnas are counted from: the true sunrise (the default) or the mean-time one.
   const sunriseMode = searchParams.get("sunrise") === "mean" ? "mean" : "true";
+
+  if ([year, month, day, hour, minute, second, lat, lng, tz, ayanamsaOffset].some(Number.isNaN)) {
+    return NextResponse.json({ error: "A date, time, place or offset parameter is not a number" }, { status: 400 });
+  }
 
   if (!year || !month || !day) {
     return NextResponse.json({ error: "Missing required parameters: year, month, day" }, { status: 400 });

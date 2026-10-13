@@ -897,6 +897,104 @@ test('events can be pasted with periods and loose dates, and changed or deleted 
   expect(errors).toEqual([]);
 });
 
+test('an event opens the Matrix & Bala of the Varga view in ANALYSIS', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('textbox', { name: 'Event name' })).fill('Moved abroad');
+  await visible(page, page.getByRole('button', { name: 'Add', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Open Varga Matrix' })).click();
+
+  // ANALYSIS is on screen, on the Varga view, showing the matrix and not the charts.
+  await expect(visible(page, page.getByText('varga.matrix'))).toBeVisible();
+  await expect(visible(page, page.getByRole('button', { name: 'Matrix & Bala' }))).toBeVisible();
+
+  // And it works again after going elsewhere and back to the events.
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Open Varga Matrix' })).click();
+  await expect(visible(page, page.getByText('varga.matrix'))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
+test('the Event List is in Finnish, with its messages and Undo', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.locator('select').filter({ hasText: 'Suomi' })).selectOption('fi');
+  await selectWorkspace(page, 'AJANKOHTA');
+  await visible(page, page.getByRole('button', { name: 'Tapahtumat', exact: true })).click();
+
+  // The form, the paste box and the messages are Finnish.
+  await expect(visible(page, page.getByText('Tapahtumalista 2.0'))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Liitä', exact: true })).click();
+  const box = visible(page, page.getByRole('group', { name: 'Liitä monta tapahtumaa' }));
+  await box.getByRole('textbox', { name: 'Lisättävät tapahtumat' }).fill('15.6.2015 Muutto ulkomaille\n2015 - 2017 Opiskelu\nei päivää');
+  await expect(box).toContainText('2 uutta');
+  await expect(box).toContainText('1 riviä ei ymmärretty');
+  await box.getByRole('button', { name: 'Lisää 2 tapahtumaa' }).click();
+  await expect(visible(page, page.getByText('Lisätty tapahtumia: 2.'))).toBeVisible();
+  await expect(visible(page, page.locator('details').filter({ hasText: 'Opiskelu' }))).toContainText('Muu');
+
+  // Bulk editing and its Undo.
+  const bar = visible(page, page.getByRole('group', { name: 'Massamuokkaus' }));
+  await bar.getByRole('checkbox', { name: /Valitse kaikki näkyvät/ }).check();
+  await expect(bar).toContainText('2 valittu');
+  await bar.getByLabel('Aseta valittujen tapahtumien luokka').selectOption('health');
+  await expect(visible(page, page.getByText('Muutettu tapahtumia: 2.'))).toBeVisible();
+  await expect(visible(page, page.locator('details').filter({ hasText: 'Opiskelu' }))).toContainText('Terveys');
+  await visible(page, page.getByRole('button', { name: 'Kumoa', exact: true })).click();
+  await expect(visible(page, page.getByText('Peruttu.'))).toBeVisible();
+  await expect(visible(page, page.locator('details').filter({ hasText: 'Opiskelu' }))).toContainText('Muu');
+
+  expect(errors).toEqual([]);
+});
+
+test('the Vimsottari daśās drill down level by level, and NOW opens the running periods', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  // The original method of U K Jha is switched on in Settings; it shares the drill-down with the plain Vimsottari.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /dasha systems/ })).click();
+  await visible(page, page.getByText('Vimsottari Original (U K Jha)')).locator('..').getByRole('switch').click();
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+
+  for (const system of [{ name: /^Vimsottari (?!Utpanna|Kshema|Adhana|Original)/, original: false }, { name: /^Vimsottari Original/, original: true }]) {
+    const card = visible(page, page.getByRole('button', { name: system.name }));
+    await card.click();
+    // The card (its header and what opens under it) is the header's parent.
+    const panel = card.locator('xpath=..');
+    await expect(panel).toContainText('active now');
+    await expect(panel).toContainText(/MD · \d+ periods/);
+    // The method of U K Jha shows its own parameters above the periods.
+    if (system.original) await expect(panel).toContainText('original method parameters');
+
+    // A period opens the periods inside it; back goes up again.
+    await panel.getByRole('button', { name: /^(Ke|Ve|Su|Mo|Ma|Ra|Ju|Sa|Me)\b/ }).first().click();
+    await expect(panel).toContainText(/AD · \d+ periods/);
+    await panel.getByRole('button', { name: '← back' }).click();
+    await expect(panel).toContainText(/MD · \d+ periods/);
+
+    // NOW goes to the deepest of the periods running now, with the ones above it as the way back.
+    await panel.getByRole('button', { name: 'NOW', exact: true }).click();
+    await expect(panel).not.toContainText(/MD · \d+ periods/);
+    await expect(panel.getByRole('button', { name: '← back' })).toBeEnabled();
+    await card.click();
+  }
+  await expect(visible(page, page.getByText('original method parameters'))).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('the timing panel can take the whole width on a wide screen', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'the wide mode is for a wide screen');
   const errors: string[] = [];

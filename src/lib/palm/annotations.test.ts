@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import {
   AGE_DEFAULT, RULER_DEFAULT_PARTS, RULER_MAX_PARTS, ageMarks, ageValues, clampParts, validAgeScale, validScale, eraseAlong, eraseAt, handleAt, handlesOf, reshapeAnnotation, rulerGeometry, rulerLabel, rulerPoints, snapPoint, snapTargets,
-  STROKE_DEFAULT, STROKE_MAX, STROKE_MIN, anchorOf, arrowHead, boundingBox, clampStroke, distanceToSegment, hitTest, isNumbered, moveAnnotation, newId, noteList, numbering,
+  STROKE_DEFAULT, STROKE_MAX, STROKE_MIN, anchorOf, arrowHead, boundingBox, clampStroke, distanceToSegment, hitTest, isNumbered, moveAnnotation, noteList, numbering,
   pathData, pushHistory, redoHistory, sanitizeAnnotations, simplifyPath, startHistory, undoHistory, unitOf,
   type Annotation, type LineAnnotation, type Point,
 } from './annotations';
 import { fitTransform, focusTransform, fromLinkedView, toImage, toLinkedView, zoomAt } from './viewport';
+import { newId } from '../ids';
 
 const near = (actual: number, expected: number, message: string, epsilon = 1e-6) =>
   assert.ok(Math.abs(actual - expected) < epsilon, `${message}: ${actual} vs ${expected}`);

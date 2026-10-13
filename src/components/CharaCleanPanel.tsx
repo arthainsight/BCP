@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { PlanetData, CharaOptions } from '@/types';
 import { calculateCleanCharaMD, calculateCleanCharaSubDashas, type CleanCharaEntry } from '@/lib/charaClean';
 import { parseDateTime } from '@/lib/bcp';
+import { formatDate } from '@/lib/dateFormat';
 
 interface Props {
   planets: PlanetData[];
@@ -15,11 +16,6 @@ interface Props {
 const LEVELS = ['md', 'ad', 'pd', 'sd', 'prana', 'deha'] as const;
 type Level = (typeof LEVELS)[number];
 const LEVEL_LABEL: Record<Level, string> = { md: 'MD', ad: 'AD', pd: 'PD', sd: 'SD', prana: 'PR', deha: 'DE' };
-
-function fmt(date: Date, withTime = false) {
-  const day = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
-  return withTime ? `${day} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}` : day;
-}
 
 function entryKey(entry: CleanCharaEntry) {
   return `${entry.sign}-${entry.startDate.getTime()}`;
@@ -90,7 +86,7 @@ export default function CharaCleanPanel({ planets, ascendant, birthDatetime, set
           return (
             <button key={entryKey(entry)} type="button" onClick={() => openEntry(entry)} className={`w-full rounded-md border px-3 py-2 text-left font-mono text-xs ${active ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-600 dark:bg-cyan-950/30 dark:text-cyan-300' : 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200'}`}>
               <span className="inline-block w-8 font-bold">{entry.abbr}</span>
-              <span>{fmt(entry.startDate, deep)}–{fmt(entry.endDate, deep)}</span>
+              <span>{formatDate(entry.startDate, deep)}–{formatDate(entry.endDate, deep)}</span>
               <span className="float-right text-zinc-400">{entry.durationYears.toFixed(2)} y</span>
             </button>
           );

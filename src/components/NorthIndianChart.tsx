@@ -12,6 +12,8 @@ import { useGrahaNames } from '@/lib/grahaNames';
 import { useChartFontScale } from '@/lib/chartFont';
 import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, polygonSpanAt, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
+import { SIGN_ABBR } from '@/lib/signs';
+import { nakshatraAbbr } from '@/lib/nakshatras';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -76,24 +78,6 @@ interface Props {
   onPlanetSelect?: (selection: { kind: 'natal' | 'transit'; name: string }) => void;
 }
 
-const NAK_ABBR = [
-  'Asw', 'Bha', 'Krt', 'Roh', 'Mrg', 'Ard',
-  'Pun', 'Pus', 'Asl', 'Mag', 'PFa', 'UFa',
-  'Has', 'Cit', 'Swa', 'Vis', 'Anu', 'Jye',
-  'Mul', 'PAs', 'UAs', 'Sra', 'Dha', 'Sat',
-  'PBh', 'UBh', 'Rev',
-];
-
-export function getNakAbbr(longitude: number): string {
-  const idx = Math.floor(longitude / (40 / 3));
-  return NAK_ABBR[Math.min(idx, 26)] ?? '';
-}
-
-const SIGN_ABBR: Record<number, string> = {
-  1: 'Ar',  2: 'Ta',  3: 'Ge',  4: 'Cn',
-  5: 'Le',  6: 'Vi',  7: 'Li',  8: 'Sc',
-  9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
-};
 
 type HouseShape = {
   house: number;
@@ -325,7 +309,7 @@ export default function NorthIndianChart({
     const parts = [grahaCode(planet.name) + (planet.isRetrograde ? '℞' : '') + dashaMark(planet.name, dashaLords)];
     if (degreePrecision !== 'off') parts.push(formatDegree(planet.degree, degreePrecision));
     if (showCharaKaraka && karakaByPlanet[planet.name]) parts.push(karakaByPlanet[planet.name]);
-    if (showNakshatra) parts.push(getNakAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
+    if (showNakshatra) parts.push(nakshatraAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
     return parts.join(' ');
   };
   const transitLabel = (planet: PlanetData) => {
@@ -441,7 +425,7 @@ export default function NorthIndianChart({
               )}
               {showSigns && (
                 <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize={(compact ? 24 : 13) * k} fontWeight="600" fill={signFill}>
-                  {SIGN_ABBR[sign]}
+                  {SIGN_ABBR[sign - 1]}
                 </text>
               )}
               {showHouseNumbers && (

@@ -4,16 +4,9 @@
 
 import { MahadashaEntry } from './vimshottari';
 import { normalizeDegrees } from './angles';
+import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
+import { addDashaYears } from './time';
 
-const NAKSHATRA_SIZE = 360 / 27;
-
-const NAKSHATRA_NAMES = [
-  'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
-  'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
-  'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
-  'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishtha',
-  'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati',
-];
 
 // Standard Vimshottari sequence and durations — same for VDS
 const LORDS = [
@@ -56,10 +49,6 @@ const ARDRADI_ANC: Record<number, Lord> = {
   12: 'Ketu',    21: 'Ketu',     3: 'Ketu',
   13: 'Venus',   22: 'Venus',    4: 'Venus',
 };
-
-function addYears(date: Date, years: number): Date {
-  return new Date(date.getTime() + years * 365.25 * 24 * 60 * 60 * 1000);
-}
 
 function nakIndex(longitude: number): number {
   return Math.floor(longitude / NAKSHATRA_SIZE) % 27;
@@ -174,7 +163,7 @@ export function calculateVds(input: VdsInput): VdsResult | null {
   for (let i = 0; i < 9; i++) {
     const lord     = LORDS[(startIdx + i) % 9];
     const duration = i === 0 ? balance : YEARS[lord];
-    const endDate  = addYears(cursor, duration);
+    const endDate  = addDashaYears(cursor, duration);
     entries.push({ lord, startDate: cursor, endDate, durationYears: duration });
     cursor = endDate;
   }

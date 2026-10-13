@@ -2,6 +2,7 @@
 
 import { useState, type RefObject } from 'react';
 import { useT } from '@/lib/i18n';
+import { saveUrl } from '@/lib/download';
 
 type Props = {
   /** The element to capture: the chart with its legend. */
@@ -36,10 +37,7 @@ export default function ChartExportButtons({ targetRef, fileName }: Props) {
         filter: (element: HTMLElement) => !element.dataset?.exportIgnore,
       };
       const url = format === 'png' ? await toPng(node, options) : await toSvg(node, options);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${fileName}.${format}`;
-      link.click();
+      saveUrl(url, `${fileName}.${format}`);
     } catch {
       setError(t('Export failed. Try again, or use a screenshot.'));
     } finally {

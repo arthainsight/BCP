@@ -12,7 +12,6 @@ import {
   AnnualPlaceControl,
   AnnualPlanetTable,
   Row,
-  SIGN_ABBR,
   YearStepper,
   annualChartProps,
   buildAnnualParams,
@@ -26,6 +25,7 @@ import {
   type LocalMahadasha,
   type LocalParts,
 } from './annualShared';
+import { SIGN_ABBR } from '@/lib/signs';
 
 type TpResponse = {
   tithiPravesa: TithiPravesaResult;

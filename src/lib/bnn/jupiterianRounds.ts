@@ -1,4 +1,4 @@
-import { SIGN_NAMES } from '@/lib/varga/index';
+import { SIGN_NAMES } from '@/lib/signs';
 
 // ── Round types ─────────────────────────────────────────────────────────────
 

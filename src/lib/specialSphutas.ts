@@ -1,5 +1,7 @@
 import { getVargaSignIndex } from '@/lib/varga';
 import { normalizeDegrees as normalize } from './angles';
+import { SIGN_LORDS } from './signs';
+import { NAKSHATRA_NAMES } from './nakshatras';
 
 // The special sphuṭas: the lagnas that run on the clock after sunrise, the
 // Moon-based Śrī Lagna and Bhṛgu Bindu, the Jaimini points (Āruḍha, Varṇada)
@@ -17,15 +19,8 @@ import { normalizeDegrees as normalize } from './angles';
 
 export type SunriseMode = 'true' | 'mean';
 
-export const SIGN_LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'] as const;
 /** Kalās of the grahas for the Indu Lagna. */
 const INDU_KALAS: Record<string, number> = { Sun: 30, Moon: 16, Mars: 6, Mercury: 8, Jupiter: 10, Venus: 12, Saturn: 1 };
-
-export const NAKSHATRA_NAMES = [
-  'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha',
-  'Magha', 'Purva Phalguni', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
-  'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishtha', 'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati',
-] as const;
 
 const signIndexOf = (longitude: number) => Math.floor(normalize(longitude) / 30);
 

@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { newId, type Annotation } from '@/lib/palm/annotations';
+import { type Annotation } from '@/lib/palm/annotations';
+import { newId } from '@/lib/ids';
 import { prepareImage } from '@/lib/palm/image';
 import { deletePalm, listPalms, putPalm, storageAvailable, type PalmRecord, type PalmSide } from '@/lib/palm/storage';
 import { useT } from '@/lib/i18n';

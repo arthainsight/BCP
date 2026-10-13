@@ -5,8 +5,8 @@ import { buildClassicalBhavaBala } from '@/lib/bhavaBala';
 // The Shadbala engine lives in src/lib/shadbala.ts. This file keeps the
 // varga-matrix and Vimsopaka display calculations and the one view that shows them.
 import { buildShadbalaRows, getDignity, SCORE_PLANETS } from '@/lib/shadbala';
+import { SIGN_ABBR } from '@/lib/signs';
 
-const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const DEFAULT_DIVISIONS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 const ROW_ORDER = ['Lagna', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 // Mūlatrikoṇa only appears when getDignity is given a degree, which the varga

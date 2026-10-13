@@ -1,4 +1,4 @@
-import { BcpResult, PlanetData, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
+import { PlanetData, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { useMemo } from 'react';
 import { RENDERABLE_DASHAS } from '@/lib/dashaRegistry';
 import { calculateDashaEventSnapshots, type DashaEventSnapshot } from '@/lib/dashaEvents';
@@ -13,9 +13,9 @@ import DashaSystemCard from './DashaSystemCard';
 import { useDashaNotes } from '@/hooks/useDashaNotes';
 import { useT } from '@/lib/i18n';
 import { useEffect, useState, type CSSProperties } from 'react';
+import { pad2 } from '@/lib/dateFormat';
 
 interface Props {
-  bcp: BcpResult;
   planets: PlanetData[];
   ascendant: { longitude: number; sign: number; degree: number };
   birthDatetime: string;
@@ -25,7 +25,7 @@ interface Props {
   targetDate?: string;
 }
 
-export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, dashaSettings, view = 'all', targetDate }: Props) {
+export default function DashaPanel({ planets, ascendant, birthDatetime, dashaSettings, view = 'all', targetDate }: Props) {
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
   const { translate } = useGrahaNames();
   const t = useT();
@@ -65,7 +65,7 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
     );
   }
 
-  const ctx: DashaRendererContext = { bcp, planets, ascendant, birthDatetime, charaOptions, rasiOptions, variantChoice };
+  const ctx: DashaRendererContext = { planets, ascendant, birthDatetime, charaOptions, rasiOptions, variantChoice };
   if (view === 'finder') return <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} variantChoice={variantChoice} />;
   if (view === 'timeline') return <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} variantChoice={variantChoice} />;
 
@@ -116,12 +116,11 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
   );
 }
 
-const pad = (value: number) => String(value).padStart(2, '0');
 
 /** "Ve – Sa – Me · MD until 03.2027": the running periods of one system, for its header. */
 function runningPeriod(snapshot?: DashaEventSnapshot): string | undefined {
   if (!snapshot || snapshot.levels.length === 0) return snapshot?.note;
   const periods = snapshot.levels.map(level => level.value).join(' – ');
   const end = snapshot.mdRange?.endDate;
-  return end ? `${periods} · MD → ${pad(end.getMonth() + 1)}.${end.getFullYear()}` : periods;
+  return end ? `${periods} · MD → ${pad2(end.getMonth() + 1)}.${end.getFullYear()}` : periods;
 }

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { calculateChart } from './ephemeris';
-import { calculateRasiDasha, RASI_ABBR, type RasiDashaSystem } from './rasiDashas';
+import { calculateRasiDasha, type RasiDashaSystem } from './rasiDashas';
+import { SIGN_ABBR } from './signs';
 import { brahma, strongerSign, toJaiminiChart } from './jaiminiStrength';
 
 // ---------------------------------------------------------------------------
@@ -25,7 +26,7 @@ const BOOK = [
 
 const sequence = (system: RasiDashaSystem, planets: Parameters<typeof calculateRasiDasha>[1], asc: number, count = 12) =>
   calculateRasiDasha(system, planets, asc, new Date(0)).entries.slice(0, count)
-    .map((e) => `${RASI_ABBR[e.sign]}${e.durationYears}`).join(' ');
+    .map((e) => `${SIGN_ABBR[e.sign]}${e.durationYears}`).join(' ');
 
 // ---------------------------------------------------------------------------
 // PyJHora 4.8.7 run on randomly generated charts. Each fixture carries the
@@ -48,7 +49,7 @@ type Fixture = {
 const NAMES = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 const fixtures: Fixture[] = JSON.parse(readFileSync(new URL('./fixtures/rasiDashaPyjhora.json', import.meta.url), 'utf8'));
 const expected = (rows: [number, number][], count = 24) =>
-  rows.filter(([, years]) => years > 0).slice(0, count).map(([s, y]) => `${RASI_ABBR[s]}${y}`).join(' ');
+  rows.filter(([, years]) => years > 0).slice(0, count).map(([s, y]) => `${SIGN_ABBR[s]}${y}`).join(' ');
 
 async function main() {
   for (const example of BOOK) {
@@ -70,7 +71,7 @@ async function main() {
     assert.equal(sequence('sthira', planets, asc), expected(f.sthira, 12), `${label}: Sthira`);
     const result = calculateRasiDasha('narayana', planets, asc, new Date(0));
     for (const entry of result.entries.filter((e) => e.cycle === 1)) {
-      assert.deepEqual(entry.childOrder, f.narayanaAd[String(entry.sign)], `${label}: antardaśās of ${RASI_ABBR[entry.sign]}`);
+      assert.deepEqual(entry.childOrder, f.narayanaAd[String(entry.sign)], `${label}: antardaśās of ${SIGN_ABBR[entry.sign]}`);
     }
   });
   console.log(`Rāśi daśās agree with the book examples and ${fixtures.length} PyJHora charts`);

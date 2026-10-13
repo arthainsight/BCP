@@ -18,8 +18,9 @@ export interface BackupPalm {
 /** `palms` is left out of a backup made without the photographs; restoring such a backup leaves the photographs alone. */
 export interface BcpBackup { format: 'bhrigu-code-backup'; version: 1; createdAt: string; entries: Record<string, string>; palms?: BackupPalm[]; }
 
-const KNOWN_KEYS = new Set(['chartDisplaySettings', 'calculationSettings', 'dashaSettings', 'bcp_saved_charts', 'bcp_active_chart']);
-export function isBcpStorageKey(key: string): boolean { return KNOWN_KEYS.has(key) || key.startsWith('bhrigu:') || key.startsWith('bcp_'); }
+// The settings are kept under plain names; everything else of the app is under bhrigu: or bcp_ (the saved charts, the event lists, the notes).
+const SETTINGS_KEYS = new Set(['chartDisplaySettings', 'calculationSettings', 'dashaSettings']);
+export function isBcpStorageKey(key: string): boolean { return SETTINGS_KEYS.has(key) || key.startsWith('bhrigu:') || key.startsWith('bcp_'); }
 export function createBcpBackup(storage: Pick<Storage, 'length' | 'key' | 'getItem'>, palms?: BackupPalm[]): BcpBackup {
   const entries: Record<string, string> = {};
   for (let index = 0; index < storage.length; index++) { const key = storage.key(index); if (key && isBcpStorageKey(key)) { const value = storage.getItem(key); if (value != null) entries[key] = value; } }

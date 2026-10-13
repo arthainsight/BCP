@@ -1,4 +1,5 @@
 import { ChartDisplaySettings, CalculationSettings, DashaSettings } from '@/types';
+import { newId } from './ids';
 
 export interface SavedChartData {
   birthDatetime: string;
@@ -56,10 +57,7 @@ export function saveChartAsNew(name: string, chartData: SavedChartData): SavedCh
   const charts = loadSavedCharts();
   const now = new Date().toISOString();
   const newChart: SavedChart = {
-    id:
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    id: newId(),
     name,
     createdAt: now,
     updatedAt: now,
@@ -103,4 +101,52 @@ export function setActiveSavedChartId(id: string | null): void {
 
 export function clearActiveSavedChartId(): void {
   setActiveSavedChartId(null);
+}
+
+// ── Exporting and importing the saved charts ───────────────────────────────────────────────────────────────────────────
+
+const text = (value: unknown) => (typeof value === 'string' ? value : '');
+const isObject = (value: unknown): value is Record<string, unknown> => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+/** A saved chart read from a file, made whole: anything that is not a chart is null, a missing field is empty. */
+function readSavedChart(value: unknown, takenIds: Set<string>): SavedChart | null {
+  if (!isObject(value) || !isObject(value.chartData) || typeof value.chartData.birthDatetime !== 'string') return null;
+  const data = value.chartData;
+  const now = new Date().toISOString();
+  const id = typeof value.id === 'string' && value.id && !takenIds.has(value.id) ? value.id : newId();
+  takenIds.add(id);
+  return {
+    id,
+    name: text(value.name),
+    createdAt: text(value.createdAt) || now,
+    updatedAt: text(value.updatedAt) || now,
+    chartData: {
+      ...(data as unknown as SavedChartData),
+      birthDatetime: data.birthDatetime as string,
+      city: text(data.city), manualLat: text(data.manualLat), manualLng: text(data.manualLng), ianaTimezone: text(data.ianaTimezone),
+      tzOverride: text(data.tzOverride), targetDate: text(data.targetDate), showCoords: data.showCoords === true,
+    },
+  };
+}
+
+/** The charts of an export file (the text of it), ready to be added to the saved ones; throws when it is not an export. */
+export function readSavedChartsExport(fileText: string, takenIds: ReadonlySet<string> = new Set()): SavedChart[] {
+  const parsed: unknown = JSON.parse(fileText);
+  if (!isObject(parsed) || !Array.isArray(parsed.charts)) throw new Error('Not an export of saved charts');
+  const taken = new Set(takenIds);
+  return parsed.charts.map(chart => readSavedChart(chart, taken)).filter((chart): chart is SavedChart => chart !== null);
+}
+
+/** The saved charts as the text of an export file, or null when there are none. */
+export function exportSavedCharts(): string | null {
+  const charts = loadSavedCharts();
+  return charts.length ? JSON.stringify({ exportedAt: new Date().toISOString(), charts }, null, 2) : null;
+}
+
+/** Adds the charts of an export file to the saved ones (one whose id is in use gets a new id) and tells how many were added. */
+export function importSavedCharts(fileText: string): number {
+  const existing = loadSavedCharts();
+  const added = readSavedChartsExport(fileText, new Set(existing.map(chart => chart.id)));
+  persist([...existing, ...added]);
+  return added.length;
 }

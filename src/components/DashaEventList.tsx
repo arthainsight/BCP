@@ -1,23 +1,26 @@
 'use client';
 
-import { Fragment, type FormEvent, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { CalculationSettings, ChartData, ChartDisplaySettings, DashaSettings, PlanetData } from '@/types';
-import EventTransits from './EventTransits';
-import type { TransitLocation } from '@/hooks/useEventTransits';
 import { DEFAULT_DASHA_SETTINGS } from '@/types';
+import type { TransitLocation } from '@/hooks/useEventTransits';
+import { useDashaEvents } from '@/hooks/useDashaEvents';
 import { parseDateTime } from '@/lib/bcp';
-import { calculateDashaEventSnapshots, DASHA_SNAPSHOT_KEYS, type DashaEventSnapshot } from '@/lib/dashaEvents';
-import { getVargaSignIndex, SIGN_ABBR } from '@/lib/varga';
-import { analyzeDashaEventPatterns } from '@/lib/dashaEventPatterns';
-import { eventIdentity, parseDashaEventImport, type ImportedEvent } from '@/lib/dashaEventImport';
 import { applyBulkChange, countByYear, removeEvents, sortEvents, type BulkChange } from '@/lib/dashaEventBulk';
-import DashaEventPaste from './DashaEventPaste';
+import { calculateDashaEventSnapshots, DASHA_SNAPSHOT_KEYS, type DashaEventSnapshot } from '@/lib/dashaEvents';
+import { eventIdentity, parseDashaEventImport, type ImportedEvent } from '@/lib/dashaEventImport';
+import { DASHA_EVENT_CATEGORY_LABELS, parseEventDate, type StoredDashaEvent } from '@/lib/dashaEventStore';
+import { fill, useT } from '@/lib/i18n';
 import DashaEventBulkBar from './DashaEventBulkBar';
-import { DASHA_EVENT_CATEGORY_LABELS, DASHA_EVENT_VARGAS, dashaEventsStorageKey, parseStoredDashaEvents, type DashaEventCategory, type DashaEventVarga, type StoredDashaEvent } from '@/lib/dashaEventStore';
+import DashaEventCard from './DashaEventCard';
+import DashaEventForm, { type NewEvent } from './DashaEventForm';
+import DashaEventPaste from './DashaEventPaste';
+import DashaEventPatterns from './DashaEventPatterns';
+import { csvText, saveFile } from '@/lib/download';
+import { newId } from '@/lib/ids';
 
-type Category = DashaEventCategory;
-type Varga = DashaEventVarga;
 type SnapshotKey = DashaEventSnapshot['key'];
+
 interface Props {
   planets: PlanetData[];
   ascendant: { longitude: number; sign: number; degree: number };
@@ -26,6 +29,7 @@ interface Props {
   transitPlanets?: PlanetData[];
   transitDatetime?: string;
   onSetTransitDatetime?: (value: string) => void;
+  /** Shows the Matrix & Bala of the Varga view in ANALYSIS. */
   onOpenVargaMatrix?: () => void;
   /** Sets the target date and transit moment to a YYYY-MM-DD date and shows the chart. */
   onOpenDateInChart?: (date: string) => void;
@@ -36,52 +40,50 @@ interface Props {
   transitLocation?: TransitLocation;
   calculationSettings?: CalculationSettings;
 }
-type StoredEvent = StoredDashaEvent;
 
-const CATEGORY_LABELS = DASHA_EVENT_CATEGORY_LABELS;
-const VARGAS = DASHA_EVENT_VARGAS;
+const MAX_IMPORT_BYTES = 2_000_000;
+const TOOL = 'min-h-11 rounded border px-2 py-2 text-[10px] font-mono';
 
-function today(): string { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
-function parseEventDate(value: string): Date | null { const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value); if (!match) return null; const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12); return Number.isNaN(date.getTime()) ? null : date; }
-function formatDate(value: string): string { const [year, month, day] = value.split('-'); return `${day}.${month}.${year}`; }
-function transitValue(value: string): string { return `${formatDate(value)} 12.00.00`; }
-function transitMatches(value: string, transitDatetime: string) { return transitDatetime.startsWith(formatDate(value)); }
-function download(filename: string, content: string, type: string) { const url = URL.createObjectURL(new Blob([content], { type })); const anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; anchor.click(); URL.revokeObjectURL(url); }
-function csvCell(value: unknown) { return `"${String(value ?? '').replaceAll('"', '""')}"`; }
 
-export default function DashaEventList({ planets, ascendant, birthDatetime, dashaSettings, transitPlanets = [], transitDatetime = '', onSetTransitDatetime, onOpenVargaMatrix, onOpenDateInChart, mode = 'events', chart, chartDisplaySettings, transitLocation, calculationSettings }: Props) {
-  const storageKey = useMemo(() => dashaEventsStorageKey(birthDatetime), [birthDatetime]);
+/** The saved events of a chart (mode "events"), or the patterns that repeat across them (mode "patterns"). */
+export default function DashaEventList({
+  planets, ascendant, birthDatetime, dashaSettings, transitPlanets = [], transitDatetime = '', onSetTransitDatetime, onOpenVargaMatrix,
+  onOpenDateInChart, mode = 'events', chart, chartDisplaySettings, transitLocation, calculationSettings,
+}: Props) {
+  const t = useT();
+  const [events, setEvents] = useDashaEvents(birthDatetime);
   const normalizedDashas = useMemo(() => ({ ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas }), [dashaSettings.dashas]);
   const enabledKeys = useMemo(() => DASHA_SNAPSHOT_KEYS.filter(key => normalizedDashas[key]), [normalizedDashas]);
-  const [events, setEvents] = useState<StoredEvent[]>([]);
   const [hiddenKeys, setHiddenKeys] = useState<SnapshotKey[]>([]);
-  const [patternCategory, setPatternCategory] = useState<Category | 'all'>('all');
-  const [storageLoaded, setStorageLoaded] = useState(false);
   const [importPreview, setImportPreview] = useState<{ events: ImportedEvent[]; rejected: number; duplicates: number; format: string } | null>(null);
-  const [importMessage, setImportMessage] = useState('');
+  const [message, setMessage] = useState('');
   const [pasteOpen, setPasteOpen] = useState(false);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [groupByYear, setGroupByYear] = useState(false);
-  /** The list as it was before the last bulk change, for Undo. */
-  const [undoEvents, setUndoEvents] = useState<StoredEvent[] | null>(null);
+  /** The list as it was before the last paste, import or bulk change, for Undo. */
+  const [undoEvents, setUndoEvents] = useState<StoredDashaEvent[] | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [search, setSearch] = useState(''); const [minimumSignificance, setMinimumSignificance] = useState(1);
-  const [name, setName] = useState(''); const [date, setDate] = useState(today); const [endDate, setEndDate] = useState(''); const [category, setCategory] = useState<Category>('work'); const [varga, setVarga] = useState<Varga>('D1');
-  const birthDate = parseDateTime(birthDatetime);
-  const charaOptions = dashaSettings.charaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
-  const rasiOptions = { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaSettings.rasiOptions };
+  const [search, setSearch] = useState('');
+  const [minimumSignificance, setMinimumSignificance] = useState(1);
 
-  useEffect(() => { queueMicrotask(() => { try { setEvents(parseStoredDashaEvents(localStorage.getItem(storageKey))); } catch { setEvents([]); } setStorageLoaded(true); }); }, [storageKey]);
-  useEffect(() => { if (storageLoaded) localStorage.setItem(storageKey, JSON.stringify(events)); }, [events, storageKey, storageLoaded]);
-  useEffect(() => { const select = (event: Event) => setDate((event as CustomEvent<string>).detail); window.addEventListener('bcp:dasha-date-selected', select); return () => window.removeEventListener('bcp:dasha-date-selected', select); }, []);
+  const birthDate = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
+  const { charaOptions: dashaCharaOptions, rasiOptions: dashaRasiOptions, variantChoice } = dashaSettings;
+  const charaOptions = dashaCharaOptions ?? DEFAULT_DASHA_SETTINGS.charaOptions;
+  const rasiOptions = useMemo(() => ({ ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...dashaRasiOptions }), [dashaRasiOptions]);
+  const visibleKeys = useMemo(() => enabledKeys.filter(key => !hiddenKeys.includes(key)), [enabledKeys, hiddenKeys]);
 
-  const visibleKeys = enabledKeys.filter(key => !hiddenKeys.includes(key));
-  function snapshotsFor(item: StoredEvent, day: string = item.date) { const eventDate = parseEventDate(day); return birthDate && eventDate ? calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice: dashaSettings.variantChoice }).filter(snapshot => visibleKeys.includes(snapshot.key)) : []; }
-  function newId() { return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`; }
+  /** The daśā systems shown, on a day of the event (its first one unless another is given). */
+  const snapshotsFor = useCallback((item: StoredDashaEvent, day: string = item.date): DashaEventSnapshot[] => {
+    const eventDate = parseEventDate(day);
+    if (!birthDate || !eventDate) return [];
+    return calculateDashaEventSnapshots({ eventDate, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice }).filter(snapshot => visibleKeys.includes(snapshot.key));
+  }, [birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice, visibleKeys]);
+
   /** Puts a new list in place of the old one, keeping the old one for Undo. */
-  function commit(message: string, next: StoredEvent[]) { setUndoEvents(events); setEvents(next); setImportMessage(message); }
-  function addEvent(event: FormEvent) { event.preventDefault(); if (!name.trim() || !parseEventDate(date)) return; setEvents(current => sortEvents([...current, { id: newId(), name: name.trim(), date, ...(endDate && endDate >= date ? { endDate } : {}), category, varga, notes: '', tags: [], significance: 3 }])); setName(''); setEndDate(''); }
-  function updateEvent(id: string, update: Partial<StoredEvent>) {
+  function commit(text: string, next: StoredDashaEvent[]) { setUndoEvents(events); setEvents(next); setMessage(text); }
+  function addEvents(added: ImportedEvent[], text: string) { commit(text, sortEvents([...events, ...added.map(item => ({ ...item, id: newId() }))])); }
+  function addOne(event: NewEvent) { setEvents(current => sortEvents([...current, { ...event, id: newId(), notes: '', tags: [], significance: 3 }])); }
+  function updateEvent(id: string, update: Partial<StoredDashaEvent>) {
     setEvents(current => {
       const next = current.map(item => {
         if (item.id !== id) return item;
@@ -92,80 +94,144 @@ export default function DashaEventList({ planets, ascendant, birthDatetime, dash
       return 'date' in update ? sortEvents(next) : next;
     });
   }
-  function addEvents(added: ImportedEvent[], message: string) { commit(message, sortEvents([...events, ...added.map(item => ({ ...item, id: newId() }))])); }
-  function undo() { if (!undoEvents) return; setEvents(undoEvents); setUndoEvents(null); setImportMessage('Undone.'); }
+  function undo() { if (!undoEvents) return; setEvents(undoEvents); setUndoEvents(null); setMessage(t('Undone.')); }
   function toggleKey(key: SnapshotKey) { setHiddenKeys(current => current.includes(key) ? current.filter(item => item !== key) : [...current, key]); }
-  function openVarga() { if (onOpenVargaMatrix) onOpenVargaMatrix(); else window.dispatchEvent(new CustomEvent('bcp:show-varga-matrix')); }
+
   async function previewImport(file: File | undefined) {
     if (!file) return;
-    if (file.size > 2_000_000) { setImportMessage('File is larger than the 2 MB limit.'); return; }
+    if (file.size > MAX_IMPORT_BYTES) { setMessage(t('File is larger than the 2 MB limit.')); return; }
     try {
       const result = parseDashaEventImport(await file.text(), file.name);
-      const existing = new Set(events.map(eventIdentity));
-      const fresh = result.events.filter(item => !existing.has(eventIdentity(item)));
+      const known = new Set(events.map(eventIdentity));
+      const fresh = result.events.filter(item => !known.has(eventIdentity(item)));
       setImportPreview({ events: fresh, rejected: result.rejected, duplicates: result.events.length - fresh.length, format: result.format });
-      setImportMessage(result.events.length ? '' : 'No valid events found.');
-    } catch { setImportPreview(null); setImportMessage('Could not read this file. Use a BCP CSV or JSON export.'); }
+      setMessage(result.events.length ? '' : t('No valid events found.'));
+    } catch { setImportPreview(null); setMessage(t('Could not read this file. Use a BCP CSV or JSON export.')); }
   }
   function confirmImport() {
     if (!importPreview?.events.length) return;
-    addEvents(importPreview.events, `Imported ${importPreview.events.length} events.`); setImportPreview(null);
-  }
-  function toggleSelected(id: string) { setSelected(current => { const next = new Set(current); if (!next.delete(id)) next.add(id); return next; }); }
-  function toggleAllShown() { setSelected(current => allShownSelected ? new Set([...current].filter(id => !shownIds.has(id))) : new Set([...current, ...shownIds])); }
-  function bulkChange(change: BulkChange) { commit(`Changed ${chosen.size} events.`, applyBulkChange(events, chosen, change)); }
-  function bulkDelete() { commit(`Deleted ${chosen.size} events.`, removeEvents(events, chosen)); setSelected(new Set()); }
-
-  function renderSnapshots(snapshots: DashaEventSnapshot[]) {
-    return snapshots.length ? <div className="divide-y divide-zinc-100 dark:divide-zinc-800">{snapshots.map(snapshot => <div key={snapshot.key} className="grid min-w-0 grid-cols-1 gap-1 py-2 text-[11px] sm:grid-cols-[minmax(105px,0.8fr)_minmax(0,1.4fr)] sm:gap-2"><span className="break-words font-medium text-zinc-600 dark:text-zinc-300">{snapshot.label}</span>{snapshot.levels.length ? <span className="flex min-w-0 flex-wrap gap-x-2 gap-y-1 font-mono">{snapshot.levels.map(level => <span key={level.level} className="break-words"><span className="text-zinc-400">{level.level}</span> <span className="font-semibold text-emerald-700 dark:text-green-400">{level.value}</span></span>)}</span> : <span className="break-words italic text-zinc-400">{snapshot.note ?? 'Unavailable'}</span>}</div>)}</div> : <p className="text-xs italic text-zinc-400">No visible Dasha systems or invalid date.</p>;
+    addEvents(importPreview.events, fill(t('Imported {count} events.'), { count: importPreview.events.length }));
+    setImportPreview(null);
   }
 
-  const patternRecords = events.flatMap(item => snapshotsFor(item).map(snapshot => ({ eventId: item.id, category: item.category, snapshot })));
-  const patterns = analyzeDashaEventPatterns(patternRecords, patternCategory).slice(0, 12);
-  const usedCategories = (Object.keys(CATEGORY_LABELS) as Category[]).filter(item => events.some(event => event.category === item));
-  const filteredEvents = events.filter(item => item.significance >= minimumSignificance && `${item.name} ${item.notes} ${item.tags.join(' ')} ${CATEGORY_LABELS[item.category]}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
-
+  const filteredEvents = events.filter(item => item.significance >= minimumSignificance
+    && `${item.name} ${item.notes} ${item.tags.join(' ')} ${t(DASHA_EVENT_CATEGORY_LABELS[item.category])}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
   // What a bulk change reaches: the events that are selected and still shown by the filters.
   const shownIds: ReadonlySet<string> = new Set(filteredEvents.map(item => item.id));
   const chosen: ReadonlySet<string> = new Set(filteredEvents.filter(item => selected.has(item.id)).map(item => item.id));
   const allShownSelected = filteredEvents.length > 0 && chosen.size === filteredEvents.length;
   const yearCounts = countByYear(filteredEvents);
+  function toggleSelected(id: string) { setSelected(current => { const next = new Set(current); if (!next.delete(id)) next.add(id); return next; }); }
+  function toggleAllShown() { setSelected(current => allShownSelected ? new Set([...current].filter(id => !shownIds.has(id))) : new Set([...current, ...shownIds])); }
+  function bulkChange(change: BulkChange) { commit(fill(t('Changed {count} events.'), { count: chosen.size }), applyBulkChange(events, chosen, change)); }
+  function bulkDelete() { commit(fill(t('Deleted {count} events.'), { count: chosen.size }), removeEvents(events, chosen)); setSelected(new Set()); }
 
-  const exportRows = () => events.flatMap(item => snapshotsFor(item).map(snapshot => ({ event: item.name, category: CATEGORY_LABELS[item.category], date: item.date, end_date: item.endDate ?? '', varga: item.varga, notes: item.notes, tags: item.tags.join('; '), significance: item.significance, dasha: snapshot.label, MD: snapshot.levels.find(level => level.level === 'MD')?.value ?? '', AD: snapshot.levels.find(level => level.level === 'AD')?.value ?? '', PD: snapshot.levels.find(level => level.level === 'PD')?.value ?? '', note: snapshot.note ?? '' })));
-  function exportCsv() { const rows = exportRows(); const headers = ['event', 'category', 'date', 'end_date', 'varga', 'notes', 'tags', 'significance', 'dasha', 'MD', 'AD', 'PD', 'note']; download('bhrigu-dasha-events.csv', [headers.map(csvCell).join(','), ...rows.map(row => headers.map(header => csvCell(row[header as keyof typeof row])).join(','))].join('\n'), 'text/csv;charset=utf-8'); }
-  function exportJson() { download('bhrigu-dasha-events.json', JSON.stringify({ version: 1, birthDatetime, visibleDashas: visibleKeys, events: events.map(item => ({ ...item, dashas: snapshotsFor(item) })) }, null, 2), 'application/json'); }
+  const exportRows = () => events.flatMap(item => snapshotsFor(item).map(snapshot => ({
+    event: item.name, category: DASHA_EVENT_CATEGORY_LABELS[item.category], date: item.date, end_date: item.endDate ?? '', varga: item.varga, notes: item.notes,
+    tags: item.tags.join('; '), significance: item.significance, dasha: snapshot.label,
+    MD: snapshot.levels.find(level => level.level === 'MD')?.value ?? '', AD: snapshot.levels.find(level => level.level === 'AD')?.value ?? '', PD: snapshot.levels.find(level => level.level === 'PD')?.value ?? '',
+    note: snapshot.note ?? '',
+  })));
+  function exportCsv() {
+    const headers = ['event', 'category', 'date', 'end_date', 'varga', 'notes', 'tags', 'significance', 'dasha', 'MD', 'AD', 'PD', 'note'] as const;
+    saveFile('bhrigu-dasha-events.csv', csvText([[...headers], ...exportRows().map(row => headers.map(header => row[header]))]), 'text/csv;charset=utf-8');
+  }
+  function exportJson() {
+    saveFile('bhrigu-dasha-events.json', JSON.stringify({ version: 1, birthDatetime, visibleDashas: visibleKeys, events: events.map(item => ({ ...item, dashas: snapshotsFor(item) })) }, null, 2), 'application/json');
+  }
 
-  return <section className="min-w-0 space-y-3 rounded-lg border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-950/40">
-    {mode === 'events' && <>
-    <div className="grid grid-cols-4 gap-2"><div className="col-span-4 min-w-0"><h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Event List 2.0</h3><p className="text-[11px] text-zinc-500 dark:text-zinc-400">Classify events, compare enabled Dashas, connect transits and import or export the data.</p></div><button type="button" onClick={() => setPasteOpen(open => !open)} aria-expanded={pasteOpen} className="min-h-11 rounded border border-cyan-300 px-2 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">Paste</button><label className="flex min-h-11 cursor-pointer items-center justify-center rounded border border-cyan-300 px-2 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">Import<input type="file" accept=".csv,.json,text/csv,application/json" onChange={event => { void previewImport(event.target.files?.[0]); event.target.value = ''; }} className="hidden"/></label><button type="button" onClick={exportCsv} disabled={!events.length} className="min-h-11 rounded border border-zinc-300 px-2 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">CSV</button><button type="button" onClick={exportJson} disabled={!events.length} className="min-h-11 rounded border border-zinc-300 px-2 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">JSON</button></div>
-    {pasteOpen && <DashaEventPaste existing={events} onAdd={added => { addEvents(added, `Added ${added.length} events.`); setPasteOpen(false); }} onClose={() => setPasteOpen(false)} />}
-    {(importPreview || importMessage) && <div className="rounded-md border border-cyan-200 bg-cyan-50/50 p-2 text-[10px] dark:border-cyan-900 dark:bg-cyan-950/10">{importPreview ? <div className="flex flex-wrap items-center gap-2"><span className="min-w-0 flex-1">{importPreview.format}: <strong>{importPreview.events.length}</strong> new · {importPreview.duplicates} duplicates skipped · {importPreview.rejected} invalid rejected</span><button type="button" onClick={() => setImportPreview(null)} className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700">Cancel</button><button type="button" disabled={!importPreview.events.length} onClick={confirmImport} className="rounded bg-cyan-700 px-2 py-1 font-semibold text-white disabled:opacity-40">Import events</button></div> : <div className="flex items-center gap-2"><span className="flex-1">{importMessage}</span>{undoEvents && <button type="button" onClick={undo} className="rounded border border-cyan-400 px-2 py-1 font-semibold text-cyan-700 dark:text-cyan-300">Undo</button>}<button type="button" onClick={() => { setImportMessage(''); setUndoEvents(null); }} aria-label="Dismiss" className="px-1 text-zinc-400">×</button></div>}</div>}
-    <form onSubmit={addEvent} className="flex min-w-0 flex-wrap gap-2">
-      <input value={name} onChange={event => setName(event.target.value)} placeholder="Event name" aria-label="Event name" className="min-h-11 min-w-0 rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900 flex-[2_1_180px]"/>
-      <input type="date" value={date} onChange={event => setDate(event.target.value)} aria-label="Event date" className="min-h-11 min-w-0 rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900 flex-[1_1_130px]"/>
-      <input type="date" value={endDate} min={date} onChange={event => setEndDate(event.target.value)} aria-label="Event end date (optional)" title="The last day, for an event that lasted for a while" className="min-h-11 min-w-0 rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900 flex-[1_1_130px]"/>
-      <select value={category} onChange={event => setCategory(event.target.value as Category)} aria-label="Event category" className="min-h-11 min-w-0 rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900 flex-[1_1_120px]">{Object.entries(CATEGORY_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
-      <select value={varga} onChange={event => setVarga(event.target.value as Varga)} aria-label="Event varga" className="min-h-11 min-w-0 rounded-md border border-zinc-300 bg-white px-2.5 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900 flex-[0_1_80px]">{VARGAS.map(item => <option key={item}>{item}</option>)}</select>
-      <button type="submit" disabled={!name.trim() || !date} className="min-h-11 rounded-md bg-emerald-700 px-4 py-2 text-xs font-semibold text-white disabled:opacity-40">Add</button>
-    </form>
-    <div><div className="mb-1 text-[9px] font-mono uppercase tracking-widest text-zinc-400">Visible enabled Dashas</div><div className="flex flex-wrap gap-1.5">{enabledKeys.map(key => <button type="button" key={key} onClick={() => toggleKey(key)} className={`min-h-10 rounded border px-2 py-1 text-[9px] font-mono ${visibleKeys.includes(key) ? 'border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' : 'border-zinc-300 text-zinc-400 dark:border-zinc-700'}`}>{key}</button>)}</div></div>
-    <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(220px,1fr)_auto] sm:items-end"><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Search names, notes or tags" className="min-h-11 w-full min-w-0 rounded border border-zinc-300 bg-white px-2 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900"/><label className="min-w-0 text-[10px] text-zinc-500">Min. significance<select value={minimumSignificance} onChange={event => setMinimumSignificance(Number(event.target.value))} className="mt-1 min-h-11 w-full rounded border border-zinc-300 bg-white px-2 py-2 sm:mt-0 sm:ml-1 sm:w-auto dark:border-zinc-700 dark:bg-zinc-900">{[1,2,3,4,5].map(value => <option key={value}>{value}</option>)}</select></label></div>
-    {events.length > 0 && <DashaEventBulkBar shown={filteredEvents.length} selected={chosen.size} groupByYear={groupByYear} onGroupByYear={setGroupByYear} onToggleAll={toggleAllShown} onChange={bulkChange} onDelete={bulkDelete} />}
-    </>}
-    {mode === 'patterns' && <div><h3 className="text-sm font-semibold">Pattern Analysis 2.0</h3><p className="text-[10px] text-zinc-500">Repeated levels, level combinations and derived sign rulers across saved events.</p></div>}
-    {mode === 'patterns' && events.length >= 2 && <details open className="rounded-md border border-cyan-200 bg-cyan-50/40 dark:border-cyan-900 dark:bg-cyan-950/10">
-      <summary className="cursor-pointer px-3 py-2 text-xs font-semibold text-cyan-800 dark:text-cyan-300">Recurring Dasha patterns · {patterns.length}</summary>
-      <div className="space-y-2 border-t border-cyan-100 px-3 py-2 dark:border-cyan-900"><div className="flex flex-wrap gap-1.5"><button type="button" onClick={() => setPatternCategory('all')} className={`min-h-10 rounded border px-2 py-1 text-[9px] font-mono ${patternCategory === 'all' ? 'border-cyan-500 text-cyan-700 dark:text-cyan-300' : 'border-zinc-300 text-zinc-400 dark:border-zinc-700'}`}>All</button>{usedCategories.map(item => <button type="button" key={item} onClick={() => setPatternCategory(item)} className={`min-h-10 rounded border px-2 py-1 text-[9px] font-mono ${patternCategory === item ? 'border-cyan-500 text-cyan-700 dark:text-cyan-300' : 'border-zinc-300 text-zinc-400 dark:border-zinc-700'}`}>{CATEGORY_LABELS[item]}</button>)}</div>
-      {patterns[0]?.sampleSize < 5 && <p className="rounded border border-amber-200 bg-amber-50 p-2 text-[10px] text-amber-800 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-300">Small sample ({patterns[0]?.sampleSize ?? 0} events): patterns are exploratory.</p>}{patterns.length ? <div className="grid gap-2 sm:grid-cols-2">{patterns.map(pattern => <div key={pattern.key} className="flex min-w-0 flex-col items-start gap-2 rounded border border-cyan-100 bg-white p-2.5 text-[10px] dark:border-cyan-900 dark:bg-zinc-900"><div className="w-full min-w-0 leading-relaxed"><div className="break-words text-zinc-500">{pattern.dasha} · {pattern.level}</div><div className="mt-0.5 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5"><span className="break-words font-semibold text-zinc-800 dark:text-zinc-100">{pattern.value}</span><span className="text-[8px] uppercase text-zinc-400">{pattern.kind}</span></div></div><span className="max-w-full whitespace-normal rounded bg-cyan-100 px-1.5 py-0.5 font-mono leading-relaxed text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300">{pattern.count}/{pattern.sampleSize} · {Math.round(pattern.support * 100)}% · {pattern.confidence}</span></div>)}</div> : <p className="text-[10px] italic text-zinc-400">No period repeats in this category yet. At least two matching events are required.</p>}
-      <p className="text-[9px] text-zinc-400">Counts repeated MD, AD and PD rulers within each enabled Dasha system. Repetition is descriptive, not proof of causation.</p></div>
-    </details>}
-    {mode === 'patterns' && events.length < 2 && <p className="py-4 text-center text-xs italic text-zinc-400">Add at least two events before comparing recurring patterns.</p>}
-    {mode === 'events' && (!events.length ? <p className="py-3 text-center text-xs italic text-zinc-400">No saved events yet.</p> : !filteredEvents.length ? <p className="py-3 text-center text-xs italic text-zinc-400">No events match the filters.</p> : <div className="space-y-2">{filteredEvents.map((item, index) => { const snapshots = snapshotsFor(item); const matchingTransit = transitMatches(item.date, transitDatetime); const division = Number(item.varga.slice(1)); const year = item.date.slice(0, 4); const heading = groupByYear && (index === 0 || filteredEvents[index - 1].date.slice(0, 4) !== year) ? <div role="heading" aria-level={4} className="px-1 pt-2 font-mono text-[10px] uppercase tracking-widest text-zinc-400">{year} · {yearCounts.get(year)}</div> : null; return <Fragment key={item.id}>{heading}<details open={index === 0} onMouseEnter={() => setHoveredId(item.id)} onMouseLeave={() => setHoveredId(current => current === item.id ? null : current)} className="group min-w-0 rounded-md border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"><summary className="grid min-h-11 cursor-pointer list-none grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 px-3 py-2"><span className="row-span-2 text-zinc-400 transition-transform group-open:rotate-90">›</span><span className="flex min-w-0 items-center gap-1.5"><label className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center"><input type="checkbox" checked={selected.has(item.id)} onChange={() => toggleSelected(item.id)} aria-label={`Select ${item.name}`} className="h-4 w-4 accent-emerald-600"/></label><span className="min-w-0 break-words text-xs font-semibold">{item.name}</span></span><button type="button" onClick={event => { event.preventDefault(); commit(`Deleted ${item.name}.`, removeEvents(events, new Set([item.id]))); }} className="row-span-2 min-h-10 rounded px-2 py-1 text-[11px] text-red-600" aria-label={`Delete ${item.name}`}>Delete</button><span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1"><span className="text-[10px] text-amber-500">{'★'.repeat(item.significance)}</span><span className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] text-zinc-500 dark:bg-zinc-800">{CATEGORY_LABELS[item.category]}</span><span className="font-mono text-[10px] text-zinc-500">{formatDate(item.date)}{item.endDate ? ` – ${formatDate(item.endDate)}` : ''}</span></span></summary>
-      <div className="min-w-0 space-y-3 border-t border-zinc-100 px-3 py-2 dark:border-zinc-800"><div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-end"><label className="min-w-0 text-[10px] text-zinc-500">Date<input type="date" value={item.date} onChange={event => event.target.value && updateEvent(item.id, { date: event.target.value })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-zinc-300 bg-white px-1.5 py-2 dark:border-zinc-700 dark:bg-zinc-900"/></label><label className="min-w-0 text-[10px] text-zinc-500">End date<input type="date" value={item.endDate ?? ''} min={item.date} onChange={event => updateEvent(item.id, { endDate: event.target.value || undefined })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-zinc-300 bg-white px-1.5 py-2 dark:border-zinc-700 dark:bg-zinc-900"/></label><label className="min-w-0 text-[10px] text-zinc-500">Category<select value={item.category} onChange={event => updateEvent(item.id, { category: event.target.value as Category })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-zinc-300 bg-white px-1.5 py-2 dark:border-zinc-700 dark:bg-zinc-900">{Object.entries(CATEGORY_LABELS).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><label className="min-w-0 text-[10px] text-zinc-500">Varga<select value={item.varga} onChange={event => updateEvent(item.id, { varga: event.target.value as Varga })} className="mt-1 min-h-11 w-full min-w-0 rounded border border-zinc-300 bg-white px-1.5 py-2 dark:border-zinc-700 dark:bg-zinc-900">{VARGAS.map(value => <option key={value}>{value}</option>)}</select></label><button type="button" onClick={openVarga} className="min-h-11 rounded border border-zinc-300 px-2 py-2 text-[10px] dark:border-zinc-700">Open Varga Matrix</button>{onSetTransitDatetime && <button type="button" onClick={() => onSetTransitDatetime(transitValue(item.date))} title="Move the target moment, and the transits with it, to this date" className="min-h-11 rounded border border-violet-300 px-2 py-2 text-[10px] text-violet-700 dark:border-violet-700 dark:text-violet-300">Set as target</button>}{onOpenDateInChart && <button type="button" onClick={() => onOpenDateInChart(item.date)} title="Read BCP, RSN, dasha lords and transits for this date" className="min-h-11 rounded border border-emerald-400 px-2 py-2 text-[10px] text-emerald-700 dark:border-emerald-700 dark:text-emerald-300">Open in chart</button>}</div>
-      <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]"><textarea value={item.notes} onChange={event => updateEvent(item.id, { notes: event.target.value })} placeholder="Notes" rows={2} className="rounded border border-zinc-300 bg-white px-2 py-1.5 text-xs dark:border-zinc-700 dark:bg-zinc-900"/><input value={item.tags.join(', ')} onChange={event => updateEvent(item.id, { tags: event.target.value.split(',').map(tag => tag.trim()).filter(Boolean) })} placeholder="Tags, comma separated" className="rounded border border-zinc-300 bg-white px-2 py-1.5 text-xs dark:border-zinc-700 dark:bg-zinc-900"/><label className="text-[10px] text-zinc-500">Significance<select value={item.significance} onChange={event => updateEvent(item.id, { significance: Number(event.target.value) })} className="mt-1 block rounded border border-zinc-300 bg-white px-2 py-1.5 dark:border-zinc-700 dark:bg-zinc-900">{[1,2,3,4,5].map(value => <option key={value} value={value}>{value} / 5</option>)}</select></label></div>
-      <div className="text-[9px] font-mono text-zinc-400">{item.varga}: {planets.map(planet => `${planet.name.slice(0, 2)} ${SIGN_ABBR[getVargaSignIndex(planet.longitude, division)]}`).join(' · ')}</div>
-      <EventTransits date={item.date} chart={chart} chartDisplaySettings={chartDisplaySettings} location={transitLocation} calculationSettings={calculationSettings} hovered={hoveredId === item.id} />
-      {matchingTransit && <div className="rounded border border-violet-200 bg-violet-50/50 p-2 text-[9px] font-mono text-violet-700 dark:border-violet-900 dark:bg-violet-950/20 dark:text-violet-300">Transit {transitDatetime}: {transitPlanets.length ? transitPlanets.map(planet => `${planet.name.slice(0, 2)} ${SIGN_ABBR[planet.sign - 1]}`).join(' · ') : 'calculating or unavailable'}</div>}
-      {item.endDate && <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">At the start · {formatDate(item.date)}</div>}{renderSnapshots(snapshots)}{item.endDate && <><div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">At the end · {formatDate(item.endDate)}</div>{renderSnapshots(snapshotsFor(item, item.endDate))}</>}</div></details></Fragment>; })}</div>)}
-  </section>;
+  return (
+    <section className="min-w-0 space-y-3 rounded-lg border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-700 dark:bg-zinc-950/40">
+      {mode === 'patterns' ? <DashaEventPatterns events={events} snapshotsFor={snapshotsFor} /> : (
+        <>
+          <div className="grid grid-cols-4 gap-2">
+            <div className="col-span-4 min-w-0">
+              <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{t('Event List 2.0')}</h3>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{t('Classify events, compare enabled Dashas, connect transits and import or export the data.')}</p>
+            </div>
+            <button type="button" onClick={() => setPasteOpen(open => !open)} aria-expanded={pasteOpen} className={`${TOOL} border-cyan-300 text-cyan-700 dark:border-cyan-700 dark:text-cyan-300`}>{t('Paste')}</button>
+            <label className={`${TOOL} flex cursor-pointer items-center justify-center border-cyan-300 text-cyan-700 dark:border-cyan-700 dark:text-cyan-300`}>
+              {t('Import')}
+              <input type="file" accept=".csv,.json,text/csv,application/json" onChange={event => { void previewImport(event.target.files?.[0]); event.target.value = ''; }} className="hidden" />
+            </label>
+            <button type="button" onClick={exportCsv} disabled={!events.length} className={`${TOOL} border-zinc-300 disabled:opacity-30 dark:border-zinc-700`}>CSV</button>
+            <button type="button" onClick={exportJson} disabled={!events.length} className={`${TOOL} border-zinc-300 disabled:opacity-30 dark:border-zinc-700`}>JSON</button>
+          </div>
+          {pasteOpen && <DashaEventPaste existing={events} onAdd={added => { addEvents(added, fill(t('Added {count} events.'), { count: added.length })); setPasteOpen(false); }} onClose={() => setPasteOpen(false)} />}
+          {(importPreview || message) && (
+            <div className="rounded-md border border-cyan-200 bg-cyan-50/50 p-2 text-[10px] dark:border-cyan-900 dark:bg-cyan-950/10">
+              {importPreview ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="min-w-0 flex-1">{fill(t('{format}: {fresh} new · {duplicates} duplicates skipped · {rejected} invalid rejected'), { format: importPreview.format, fresh: importPreview.events.length, duplicates: importPreview.duplicates, rejected: importPreview.rejected })}</span>
+                  <button type="button" onClick={() => setImportPreview(null)} className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700">{t('Cancel')}</button>
+                  <button type="button" disabled={!importPreview.events.length} onClick={confirmImport} className="rounded bg-cyan-700 px-2 py-1 font-semibold text-white disabled:opacity-40">{t('Import events')}</button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="flex-1">{message}</span>
+                  {undoEvents && <button type="button" onClick={undo} className="rounded border border-cyan-400 px-2 py-1 font-semibold text-cyan-700 dark:text-cyan-300">{t('Undo')}</button>}
+                  <button type="button" onClick={() => { setMessage(''); setUndoEvents(null); }} aria-label={t('Dismiss')} className="px-1 text-zinc-400">×</button>
+                </div>
+              )}
+            </div>
+          )}
+          <DashaEventForm onAdd={addOne} />
+          <div>
+            <div className="mb-1 text-[9px] font-mono uppercase tracking-widest text-zinc-400">{t('Visible enabled Dashas')}</div>
+            <div className="flex flex-wrap gap-1.5">
+              {enabledKeys.map(key => (
+                <button type="button" key={key} onClick={() => toggleKey(key)} className={`min-h-10 rounded border px-2 py-1 text-[9px] font-mono ${visibleKeys.includes(key) ? 'border-emerald-400 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300' : 'border-zinc-300 text-zinc-400 dark:border-zinc-700'}`}>{key}</button>
+              ))}
+            </div>
+          </div>
+          <div className="grid min-w-0 gap-2 sm:grid-cols-[minmax(220px,1fr)_auto] sm:items-end">
+            <input value={search} onChange={event => setSearch(event.target.value)} placeholder={t('Search names, notes or tags')} className="min-h-11 w-full min-w-0 rounded border border-zinc-300 bg-white px-2 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900" />
+            <label className="min-w-0 text-[10px] text-zinc-500">{t('Min. significance')}
+              <select value={minimumSignificance} onChange={event => setMinimumSignificance(Number(event.target.value))} className="mt-1 min-h-11 w-full rounded border border-zinc-300 bg-white px-2 py-2 sm:mt-0 sm:ml-1 sm:w-auto dark:border-zinc-700 dark:bg-zinc-900">
+                {[1, 2, 3, 4, 5].map(value => <option key={value}>{value}</option>)}
+              </select>
+            </label>
+          </div>
+          {events.length > 0 && <DashaEventBulkBar shown={filteredEvents.length} selected={chosen.size} groupByYear={groupByYear} onGroupByYear={setGroupByYear} onToggleAll={toggleAllShown} onChange={bulkChange} onDelete={bulkDelete} />}
+          {!events.length ? <p className="py-3 text-center text-xs italic text-zinc-400">{t('No saved events yet.')}</p>
+            : !filteredEvents.length ? <p className="py-3 text-center text-xs italic text-zinc-400">{t('No events match the filters.')}</p>
+            : (
+              <div className="space-y-2">
+                {filteredEvents.map((item, index) => {
+                  const year = item.date.slice(0, 4);
+                  const startsYear = groupByYear && (index === 0 || filteredEvents[index - 1].date.slice(0, 4) !== year);
+                  return (
+                    <div key={item.id} className="space-y-2">
+                      {startsYear && <div role="heading" aria-level={4} className="px-1 pt-2 font-mono text-[10px] uppercase tracking-widest text-zinc-400">{year} · {yearCounts.get(year)}</div>}
+                      <DashaEventCard
+                        item={item}
+                        open={index === 0}
+                        selected={selected.has(item.id)}
+                        hovered={hoveredId === item.id}
+                        onSelect={() => toggleSelected(item.id)}
+                        onChange={update => updateEvent(item.id, update)}
+                        onDelete={() => commit(fill(t('Deleted {name}.'), { name: item.name }), removeEvents(events, new Set([item.id])))}
+                        onHover={hovered => setHoveredId(current => hovered ? item.id : current === item.id ? null : current)}
+                        planets={planets}
+                        startSnapshots={snapshotsFor(item)}
+                        endSnapshots={item.endDate ? snapshotsFor(item, item.endDate) : []}
+                        transitDatetime={transitDatetime}
+                        transitPlanets={transitPlanets}
+                        onSetTransitDatetime={onSetTransitDatetime}
+                        onOpenVargaMatrix={onOpenVargaMatrix}
+                        onOpenDateInChart={onOpenDateInChart}
+                        chart={chart}
+                        chartDisplaySettings={chartDisplaySettings}
+                        transitLocation={transitLocation}
+                        calculationSettings={calculationSettings}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+        </>
+      )}
+    </section>
+  );
 }

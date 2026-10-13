@@ -22,8 +22,6 @@ const ITEMS: Item[] = [
 interface Props {
   active: Workspace;
   onChange: (workspace: Workspace) => void;
-  /** Bottom-nav mode (fixed to the bottom on small screens). */
-  variant?: 'top' | 'bottom';
   /**
    * Which screens the navigation is drawn for. The phone and the wide layout keep their own current
    * workspace (a calculation lands on CHART on a phone and on ANALYSIS beside the chart), so each has its own.
@@ -43,19 +41,15 @@ interface Props {
   };
 }
 
-export default function PrimaryNav({ active, onChange, variant = 'top', show, split }: Props) {
+export default function PrimaryNav({ active, onChange, show, split }: Props) {
   const t = useT();
 
   return (
     <nav
       aria-label="Primary"
-      className={
-        variant === 'bottom'
-          ? 'fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 safe-bottom'
-          : `sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800${show === 'mobile' ? ' lg:hidden' : show === 'desktop' ? ' hidden lg:block' : ''}`
-      }
+      className={`sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800${show === 'mobile' ? ' lg:hidden' : show === 'desktop' ? ' hidden lg:block' : ''}`}
     >
-      <div className={variant === 'bottom' ? 'flex' : 'flex items-center gap-1 px-4 py-2'}>
+      <div className="flex items-center gap-1 px-4 py-2">
         {ITEMS.map((item) => {
           // In the split view the workspaces are on or off together; Settings is one screen, so it is "current".
           const asSwitch = split?.on === true && !item.gear;
@@ -116,7 +110,7 @@ export default function PrimaryNav({ active, onChange, variant = 'top', show, sp
                 data-split-item={asSwitch ? item.id : undefined}
                 className={
                   item.gear
-                    ? `${variant === 'bottom' ? 'flex-1' : split ? 'ml-1' : 'ml-auto'} min-w-[44px] py-1.5 px-2 text-sm font-mono transition-colors ${
+                    ? `${split ? 'ml-1' : 'ml-auto'} min-w-[44px] py-1.5 px-2 text-sm font-mono transition-colors ${
                         selected
                           ? 'text-emerald-700 dark:text-green-400 font-semibold'
                           : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'

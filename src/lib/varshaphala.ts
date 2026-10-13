@@ -9,11 +9,12 @@
 
 import type { ChartData, PlanetData } from '@/types';
 import { normalizeDegrees } from './angles';
+import { SIGN_LORDS } from './signs';
+import { NATURAL_ENEMIES, NATURAL_FRIENDS } from './dignity';
 
 export const SEVEN = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'] as const;
 export type SevenPlanet = typeof SEVEN[number];
 
-const SIGN_LORDS: SevenPlanet[] = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'];
 
 /** Lord of sign 1–12. */
 export function signLord(sign: number): SevenPlanet {
@@ -21,25 +22,6 @@ export function signLord(sign: number): SevenPlanet {
 }
 
 // Naisargika (natural) relationships.
-const FRIENDS: Record<SevenPlanet, SevenPlanet[]> = {
-  Sun: ['Moon', 'Mars', 'Jupiter'],
-  Moon: ['Sun', 'Mercury'],
-  Mars: ['Sun', 'Moon', 'Jupiter'],
-  Mercury: ['Sun', 'Venus'],
-  Jupiter: ['Sun', 'Moon', 'Mars'],
-  Venus: ['Mercury', 'Saturn'],
-  Saturn: ['Mercury', 'Venus'],
-};
-const ENEMIES: Record<SevenPlanet, SevenPlanet[]> = {
-  Sun: ['Venus', 'Saturn'],
-  Moon: [],
-  Mars: ['Mercury'],
-  Mercury: ['Moon'],
-  Jupiter: ['Mercury', 'Venus'],
-  Venus: ['Sun', 'Moon'],
-  Saturn: ['Sun', 'Moon', 'Mars'],
-};
-
 /** Deep exaltation longitudes (sidereal degrees). */
 const EXALTATION: Record<SevenPlanet, number> = {
   Sun: 10, Moon: 33, Mars: 298, Mercury: 165, Jupiter: 95, Venus: 357, Saturn: 200,
@@ -83,8 +65,8 @@ function dignityIn(planet: SevenPlanet, sign: number): VargaDignity {
   const exaltSign = Math.floor(EXALTATION[planet] / 30) + 1;
   if (sign === exaltSign) return 'own';
   if (sign === ((exaltSign + 5) % 12) + 1) return 'debilitated';
-  if (FRIENDS[planet].includes(lord)) return 'friend';
-  if (ENEMIES[planet].includes(lord)) return 'enemy';
+  if (NATURAL_FRIENDS[planet].includes(lord)) return 'friend';
+  if (NATURAL_ENEMIES[planet].includes(lord)) return 'enemy';
   return 'neutral';
 }
 
@@ -115,8 +97,8 @@ export function haddaLord(longitude: number): SevenPlanet {
 function haddaDignity(planet: SevenPlanet, longitude: number): Exclude<VargaDignity, 'debilitated'> {
   const lord = haddaLord(longitude);
   if (lord === planet) return 'own';
-  if (FRIENDS[planet].includes(lord)) return 'friend';
-  if (ENEMIES[planet].includes(lord)) return 'enemy';
+  if (NATURAL_FRIENDS[planet].includes(lord)) return 'friend';
+  if (NATURAL_ENEMIES[planet].includes(lord)) return 'enemy';
   return 'neutral';
 }
 

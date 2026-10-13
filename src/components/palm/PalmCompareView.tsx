@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { pairFor } from '@/lib/palm/compare';
 import type { PalmRecord } from '@/lib/palm/storage';
 import type { LinkedView } from '@/lib/palm/viewport';
 import { useT } from '@/lib/i18n';
 import PalmCanvas from './PalmCanvas';
 import { useObjectUrl } from './useObjectUrl';
+import { useOverlay } from '@/hooks/useOverlay';
 
 type Props = {
   records: PalmRecord[];
@@ -78,16 +79,7 @@ export default function PalmCompareView({ records, firstId, onClose }: Props) {
   const left = records.find(record => record.id === leftId) ?? records[0];
   const right = records.find(record => record.id === rightId) ?? records[records.length - 1];
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [onClose]);
+  useOverlay(onClose);
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col bg-zinc-950 text-zinc-100" role="dialog" aria-modal="true" aria-label={t('Compare palms')} data-palm="compare">

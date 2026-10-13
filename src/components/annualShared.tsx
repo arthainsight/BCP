@@ -7,6 +7,9 @@
 import { useEffect, useState } from 'react';
 import type { CalculationSettings, ChartData, ChartDisplaySettings, DegreePrecision, GeoResult, PlanetData } from '@/types';
 import { formatDegree } from '@/lib/formatDegree';
+import { SIGN_ABBR } from '@/lib/signs';
+import { pad2 } from '@/lib/dateFormat';
+import { calculationParams } from '@/lib/apiParams';
 
 export type LocalParts = { year: number; month: number; day: number; hour: number; minute: number; second: number };
 
@@ -16,15 +19,13 @@ export type AnnualPlace = { name: string; latitude: number; longitude: number; t
 export type LocalPeriod = { lord: string; startJd: number; endJd: number; start: LocalParts; end: LocalParts };
 export type LocalMahadasha = LocalPeriod & { antardashas: LocalPeriod[] };
 
-export const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 
-const pad = (n: number) => String(n).padStart(2, '0');
-export const fmtLocal = (p: LocalParts) => `${pad(p.day)}.${pad(p.month)}.${p.year} ${pad(p.hour)}:${pad(p.minute)}:${pad(p.second)}`;
-export const fmtDate = (p: LocalParts) => `${pad(p.day)}.${pad(p.month)}.${p.year}`;
+export const fmtLocal = (p: LocalParts) => `${pad2(p.day)}.${pad2(p.month)}.${p.year} ${pad2(p.hour)}:${pad2(p.minute)}:${pad2(p.second)}`;
+export const fmtDate = (p: LocalParts) => `${pad2(p.day)}.${pad2(p.month)}.${p.year}`;
 export const fmtOffset = (h: number) => {
   const sign = h < 0 ? '−' : '+';
   const abs = Math.abs(h);
-  return `UTC${sign}${Math.floor(abs)}${abs % 1 ? `:${pad(Math.round((abs % 1) * 60))}` : ''}`;
+  return `UTC${sign}${Math.floor(abs)}${abs % 1 ? `:${pad2(Math.round((abs % 1) * 60))}` : ''}`;
 };
 
 export function ordinal(n: number): string {
@@ -74,9 +75,7 @@ export function buildAnnualParams(opts: {
     tz: String(debug.utcOffset),
     lat: String(opts.place?.latitude ?? debug.latitude),
     lng: String(opts.place?.longitude ?? debug.longitude),
-    ayanamsa: opts.calculationSettings?.ayanamsa ?? 'lahiri',
-    ayanamsaOffset: String(opts.calculationSettings?.ayanamsaOffsetDegrees ?? 0),
-    nodeMode: opts.calculationSettings?.nodeMode ?? 'mean',
+    ...calculationParams(opts.calculationSettings),
     ...opts.extra,
   });
   const iana = opts.place ? opts.place.timezone : opts.ianaTimezone;

@@ -1,5 +1,6 @@
 'use client';
 
+import ChipPicker from './ChipPicker';
 import { useEffect, useRef, useState } from 'react';
 import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
 import StyledChart from './StyledChart';
@@ -69,6 +70,15 @@ function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: 
     </div>
   );
 }
+
+/** The chart styles the buttons above the chart switch between, in order. */
+const CHART_STYLE_BUTTONS: { style: 'north' | 'south' | 'both' | 'mixedNorth' | 'mixedSouth'; label: string; title?: string }[] = [
+  { style: 'north', label: 'N' },
+  { style: 'south', label: 'S' },
+  { style: 'both', label: 'N+S', title: 'North and South together' },
+  { style: 'mixedNorth', label: 'MIX N', title: 'The D1 chart and any varga chart in the same houses, North layout' },
+  { style: 'mixedSouth', label: 'MIX S', title: 'The D1 chart and any varga chart in the same houses, South layout' },
+];
 
 export default function ChartSection({
   bcp,
@@ -264,53 +274,7 @@ export default function ChartSection({
             title={t('chart style')}
             className="inline-flex shrink-0 overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700"
           >
-            <button
-              type="button"
-              onClick={() => {
-                setChartStyle('north');
-                onUpdateChartDisplay?.({ chartStyle: 'north' });
-              }}
-              aria-pressed={chartStyle === 'north'}
-              className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors ${
-                chartStyle === 'north'
-                  ? 'bg-emerald-600 dark:bg-green-700 text-white'
-                  : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
-              }`}
-            >
-              N
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setChartStyle('south');
-                onUpdateChartDisplay?.({ chartStyle: 'south' });
-              }}
-              aria-pressed={chartStyle === 'south'}
-              className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors border-l border-zinc-200 dark:border-zinc-700 ${
-                chartStyle === 'south'
-                  ? 'bg-emerald-600 dark:bg-green-700 text-white'
-                  : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
-              }`}
-            >
-              S
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setChartStyle('both');
-                onUpdateChartDisplay?.({ chartStyle: 'both' });
-              }}
-              aria-pressed={chartStyle === 'both'}
-              title={t('North and South together')}
-              className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors border-l border-zinc-200 dark:border-zinc-700 ${
-                chartStyle === 'both'
-                  ? 'bg-emerald-600 dark:bg-green-700 text-white'
-                  : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
-              }`}
-            >
-              N+S
-            </button>
-            {(['mixedNorth', 'mixedSouth'] as const).map(style => (
+            {CHART_STYLE_BUTTONS.map(({ style, label, title }, index) => (
               <button
                 key={style}
                 type="button"
@@ -319,14 +283,14 @@ export default function ChartSection({
                   onUpdateChartDisplay?.({ chartStyle: style });
                 }}
                 aria-pressed={chartStyle === style}
-                title={style === 'mixedNorth' ? t('The D1 chart and any varga chart in the same houses, North layout') : t('The D1 chart and any varga chart in the same houses, South layout')}
-                className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors border-l border-zinc-200 dark:border-zinc-700 ${
+                title={title ? t(title) : undefined}
+                className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors ${index > 0 ? 'border-l border-zinc-200 dark:border-zinc-700 ' : ''}${
                   chartStyle === style
                     ? 'bg-emerald-600 dark:bg-green-700 text-white'
                     : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
                 }`}
               >
-                {style === 'mixedNorth' ? 'MIX N' : 'MIX S'}
+                {label}
               </button>
             ))}
           </div>
@@ -379,86 +343,9 @@ export default function ChartSection({
                     </label>
                   )}
                   <div className="border-t border-zinc-200 dark:border-zinc-700" />
-                  <div className="flex items-baseline justify-between">
-                    <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('arudha padas')}</div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setArudhaPadas([...ARUDHA_PADAS])}
-                        disabled={arudhaPadas.length === ARUDHA_PADAS.length}
-                        className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-zinc-200"
-                      >
-                        {t('all')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setArudhaPadas([])}
-                        disabled={arudhaPadas.length === 0}
-                        className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-zinc-200"
-                      >
-                        {t('none')}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1" role="group" aria-label={t('arudha padas')}>
-                    {ARUDHA_PADAS.map(house => {
-                      const on = arudhaPadas.includes(house);
-                      return (
-                        <button
-                          key={house}
-                          type="button"
-                          aria-pressed={on}
-                          onClick={() => setArudhaPadas(on ? arudhaPadas.filter(item => item !== house) : [...arudhaPadas, house])}
-                          className={`rounded-sm border px-2 py-1.5 text-[10px] font-mono sm:px-1.5 sm:py-0.5 sm:text-[9px] ${on
-                            ? 'border-amber-500 bg-amber-500 text-white dark:border-amber-600 dark:bg-amber-600'
-                            : 'border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'}`}
-                        >
-                          {arudhaName(house)}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <ChipPicker title={t('arudha padas')} items={ARUDHA_PADAS} selected={arudhaPadas} onChange={setArudhaPadas} label={arudhaName} colour="amber" />
                   <div className="border-t border-zinc-200 dark:border-zinc-700" />
-                  <div className="flex items-baseline justify-between">
-                    <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('upagrahas and karakamsa')}</div>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setChartPointKeys([...POINT_KEYS])}
-                        disabled={points.keys.length === POINT_KEYS.length}
-                        className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-zinc-200"
-                      >
-                        {t('all')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setChartPointKeys([])}
-                        disabled={points.keys.length === 0}
-                        className="text-[9px] font-mono text-zinc-400 hover:text-zinc-700 disabled:opacity-30 dark:hover:text-zinc-200"
-                      >
-                        {t('none')}
-                      </button>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1" role="group" aria-label={t('upagrahas and karakamsa')}>
-                    {POINT_KEYS.map(key => {
-                      const on = points.keys.includes(key);
-                      return (
-                        <button
-                          key={key}
-                          type="button"
-                          aria-pressed={on}
-                          title={POINT_NAMES[key]}
-                          onClick={() => setChartPointKeys(on ? points.keys.filter(item => item !== key) : [...points.keys, key])}
-                          className={`rounded-sm border px-2 py-1.5 text-[10px] font-mono sm:px-1.5 sm:py-0.5 sm:text-[9px] ${on
-                            ? 'border-violet-500 bg-violet-500 text-white dark:border-violet-600 dark:bg-violet-600'
-                            : 'border-zinc-200 bg-white text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400'}`}
-                        >
-                          {key}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <ChipPicker title={t('upagrahas and karakamsa')} items={POINT_KEYS} selected={points.keys} onChange={setChartPointKeys} label={key => key} hint={key => POINT_NAMES[key]} colour="violet" />
                   <div className="border-t border-zinc-200 dark:border-zinc-700" />
                   <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('chart display')}</div>
                   <ChartDisplayToggle label={t('nakshatra')} value={chartDisplaySettings.showNakshatra} onToggle={() => onToggleChartDisplay?.('showNakshatra')} />

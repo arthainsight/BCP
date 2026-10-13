@@ -4,8 +4,8 @@ import { useState } from 'react';
 import type { ChartData } from '@/types';
 import { buildAshtakavarga, mapAshtakavargaHousesToSigns } from '@/lib/ashtakavarga';
 import type { AshtakavargaPlanet } from '@/lib/ashtakavarga';
+import { SIGN_ABBR } from '@/lib/signs';
 
-const SIGNS = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const PLANET_ABBR: Record<string, string> = {
   Sun: 'Su',
   Moon: 'Mo',
@@ -59,7 +59,7 @@ function NorthIndianAvChart({ houses, ascendantSign, label, isSav }: { houses: n
                 {houses[item.house - 1] ?? 0}
               </text>
               <text x={item.sx} y={item.sy} textAnchor="middle" dominantBaseline="middle" fontSize="12" fontWeight="600" fill="currentColor" opacity="0.55">
-                {SIGNS[signIndex]}
+                {SIGN_ABBR[signIndex]}
               </text>
             </g>
           );
@@ -107,7 +107,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
           <thead>
             <tr className="text-zinc-500 dark:text-zinc-400">
               <th scope="col" className="sticky left-0 z-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 px-2 py-2 text-left">Graha</th>
-              {SIGNS.map((sign) => (
+              {SIGN_ABBR.map((sign) => (
                 <th scope="col" key={sign} className="border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-semibold">{sign}</th>
               ))}
               <th scope="col" className="border border-zinc-200 dark:border-zinc-700 px-2 py-2">Σ</th>
@@ -122,7 +122,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
                     {PLANET_ABBR[row.planet]}
                   </th>
                   {values.map((value, signIndex) => (
-                    <td key={SIGNS[signIndex]} className={`border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-semibold tabular-nums ${numberColor(value, false)}`}>{value}</td>
+                    <td key={SIGN_ABBR[signIndex]} className={`border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-semibold tabular-nums ${numberColor(value, false)}`}>{value}</td>
                   ))}
                   <td className="border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-semibold tabular-nums">{row.total}</td>
                 </tr>
@@ -131,7 +131,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
             <tr>
               <th scope="row" title="Sarva Ashtakavarga" className="sticky left-0 z-10 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 px-2 py-2 text-left font-bold">SAV</th>
               {mapAshtakavargaHousesToSigns(sav.houses, ascendantSign).map((value, signIndex) => (
-                <td key={SIGNS[signIndex]} className={`border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-bold tabular-nums ${numberColor(value, true)}`}>{value}</td>
+                <td key={SIGN_ABBR[signIndex]} className={`border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-bold tabular-nums ${numberColor(value, true)}`}>{value}</td>
               ))}
               <td className="border border-zinc-200 dark:border-zinc-700 px-2 py-2 font-bold tabular-nums">{sav.total}</td>
             </tr>

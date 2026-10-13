@@ -5,9 +5,11 @@ import type { DashaSettings, PlanetData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { calculateDashaEventSnapshots } from '@/lib/dashaEvents';
-import { DAY_MS, YEAR_MS, dashaSnapshotOptions, enabledSnapshots } from '@/lib/dashaView';
+import { dashaSnapshotOptions, enabledSnapshots } from '@/lib/dashaView';
+import { DAY_MS, JULIAN_YEAR_MS } from '@/lib/time';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { formatDate } from '@/lib/dateFormat';
 
 type Props = {
   planets: PlanetData[];
@@ -18,8 +20,6 @@ type Props = {
 };
 
 const SPAN_YEARS = 100;
-const pad = (value: number) => String(value).padStart(2, '0');
-const formatDate = (date: Date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
 
 /**
  * Drag through time: a slider from birth to a hundred years on, and the
@@ -29,7 +29,7 @@ export default function DashaSlider({ planets, ascendant, birthDatetime, dashaSe
   const t = useT();
   const { translate } = useGrahaNames();
   const birth = parseDateTime(birthDatetime);
-  const maxDays = Math.round((SPAN_YEARS * YEAR_MS) / DAY_MS);
+  const maxDays = Math.round((SPAN_YEARS * JULIAN_YEAR_MS) / DAY_MS);
   const [days, setDays] = useState(() => {
     const target = (targetDate && parseTargetDateString(targetDate)) || new Date();
     return birth ? Math.min(maxDays, Math.max(0, Math.round((target.getTime() - birth.getTime()) / DAY_MS))) : 0;
@@ -55,7 +55,7 @@ export default function DashaSlider({ planets, ascendant, birthDatetime, dashaSe
       </div>
       <div className="flex items-baseline justify-between gap-2 font-mono">
         <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{date ? formatDate(date) : '–'}</span>
-        <span className="text-[11px] text-zinc-500">{t('age')} {(days / (YEAR_MS / DAY_MS)).toFixed(1)}</span>
+        <span className="text-[11px] text-zinc-500">{t('age')} {(days / (JULIAN_YEAR_MS / DAY_MS)).toFixed(1)}</span>
       </div>
       <input
         type="range"

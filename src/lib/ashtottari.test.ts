@@ -8,7 +8,7 @@ const cases: Array<[number, string, string]> = [
   [160, 'Hasta', 'Mars'],
   [220, 'Anuradha', 'Mercury'],
   [260, 'Purva Ashadha', 'Saturn'],
-  [300, 'Dhanishta', 'Jupiter'],
+  [300, 'Dhanishtha', 'Jupiter'],
   [340, 'Uttara Bhadrapada', 'Rahu'],
   [30, 'Krittika', 'Venus'],
   [278, 'Abhijit', 'Saturn'],

@@ -1,4 +1,4 @@
-import { SIGN_NAMES } from '@/lib/varga/index';
+import { SIGN_NAMES } from '@/lib/signs';
 import type { ParayaSpeed } from '@/types';
 
 export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu';

@@ -4,17 +4,13 @@ import { useMemo, useState } from 'react';
 import type { PlanetData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { calculateKalachakra, calculateKalachakraSubDashas, type KalachakraEntry } from '@/lib/kalachakra';
+import { formatDate } from '@/lib/dateFormat';
 
 const ABBR: Record<string, string> = { Aries:'Ar', Taurus:'Ta', Gemini:'Ge', Cancer:'Cn', Leo:'Le', Virgo:'Vi', Libra:'Li', Scorpio:'Sc', Sagittarius:'Sg', Capricorn:'Cp', Aquarius:'Aq', Pisces:'Pi' };
 
 const LEVELS = ['md', 'ad', 'pd', 'sd', 'prana', 'deha'] as const;
 type Level = (typeof LEVELS)[number];
 const LEVEL_LABEL: Record<Level, string> = { md: 'MD', ad: 'AD', pd: 'PD', sd: 'SD', prana: 'PR', deha: 'DE' };
-
-function fmt(date: Date, withTime = false) {
-  const day = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
-  return withTime ? `${day} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}` : day;
-}
 
 function active(entry: KalachakraEntry, now: Date) {
   return entry.startDate <= now && now < entry.endDate;
@@ -87,7 +83,7 @@ export default function KalachakraPanel({ planets, birthDatetime }: { planets: P
           return (
             <button key={`${item.sign}-${item.startDate.getTime()}`} type="button" onClick={() => openEntry(item)} className={`grid min-h-11 w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-1 rounded-md border px-3 py-2 text-left font-mono text-xs ${isNow ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-600 dark:bg-cyan-950/30 dark:text-cyan-300' : 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200'}`}>
               <span className="row-span-2 font-bold">{ABBR[item.signName]}</span>
-              <span className="break-words text-[10px] sm:text-xs">{fmt(item.startDate, deep)}–{fmt(item.endDate, deep)}</span>
+              <span className="break-words text-[10px] sm:text-xs">{formatDate(item.startDate, deep)}–{formatDate(item.endDate, deep)}</span>
               <span className="text-[10px] text-zinc-400">{item.durationYears.toFixed(2)} y</span>
             </button>
           );

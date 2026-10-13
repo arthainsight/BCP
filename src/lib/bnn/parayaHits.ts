@@ -1,6 +1,7 @@
 import type { ChartData } from '@/types';
 import { RELATION_OFFSET, type HitRelation } from '@/lib/transitHits';
 import { findParayaAgesForPosition, type ParayaBody, type ParayaOptions } from './nadiParaya';
+import { JULIAN_YEAR_MS } from '../time';
 
 // When the Nāḍī Paraya grahas (Jupiter, Saturn, Rahu and Ketu, moved by age
 // through the signs) reach a natal graha: the same degree in its own sign, or
@@ -9,7 +10,6 @@ import { findParayaAgesForPosition, type ParayaBody, type ParayaOptions } from '
 
 export const PARAYA_BODIES: ParayaBody[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
 
-const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
 /** The grahas whose natal positions the Paraya hits are counted to. */
 const NATAL_GRAHAS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 
@@ -40,8 +40,8 @@ export function findParayaHits(params: {
   const rahu = chart.planets.find(p => p.name === 'Rahu');
   if (!jupiter || !saturn || !rahu) return [];
 
-  const fromAge = Math.max(0, (fromTime - birthTime) / YEAR_MS);
-  const toAge = (toTime - birthTime) / YEAR_MS;
+  const fromAge = Math.max(0, (fromTime - birthTime) / JULIAN_YEAR_MS);
+  const toAge = (toTime - birthTime) / JULIAN_YEAR_MS;
   if (toAge <= fromAge) return [];
 
   const natal = [
@@ -68,7 +68,7 @@ export function findParayaHits(params: {
         });
         for (const match of matches) {
           if (match.ageYears < fromAge || match.ageYears > toAge) continue;
-          hits.push({ body, natal: point.name, relation, ageYears: match.ageYears, time: birthTime + match.ageYears * YEAR_MS });
+          hits.push({ body, natal: point.name, relation, ageYears: match.ageYears, time: birthTime + match.ageYears * JULIAN_YEAR_MS });
         }
       }
     }

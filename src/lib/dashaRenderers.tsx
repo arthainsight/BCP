@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { BcpResult, PlanetData, CharaOptions, RasiDashaOptions } from '@/types';
+import { PlanetData, CharaOptions, RasiDashaOptions } from '@/types';
 import { DashaRendererKey } from './dashaRegistry';
 import VimshottariPanel from '@/components/VimshottariPanel';
 import VdsPanel from '@/components/VdsPanel';
@@ -12,7 +12,6 @@ import AshtottariPanel from '@/components/AshtottariPanel';
 import RasiDashaPanel from '@/components/RasiDashaPanel';
 
 export type DashaRendererContext = {
-  bcp: BcpResult;
   planets: PlanetData[];
   ascendant: { longitude: number; sign: number; degree: number };
   birthDatetime: string;

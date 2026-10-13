@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import type { DashaEventSnapshot } from './dashaEvents';
-import { DAY_MS, enabledSnapshots, levelValue, mdChangeFlag, periodChanges } from './dashaView';
+import { enabledSnapshots, levelValue, mdChangeFlag, periodChanges } from './dashaView';
+import { DAY_MS } from './time';
 
 const snap = (key: string, md: string, ad: string, end?: Date): DashaEventSnapshot => ({
   key, label: key, levels: [{ level: 'MD', value: md }, { level: 'AD', value: ad }],
