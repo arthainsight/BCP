@@ -10,6 +10,8 @@
 // along the weekday order; the night starts from the fifth lord from it and goes
 // on by four.
 
+import { pad2 } from './dateFormat';
+
 /** Local hours since midnight of the date; the next sunrise exceeds 24. */
 export interface DayTimes {
   sunrise: number;
@@ -83,6 +85,5 @@ export function choghadiya(day: DayTimes, weekday: number): { day: ChoghadiyaPar
 /** "06:28:31": local hours as a clock, past 24 hours wrapping to the next day. */
 export function clockTime(hours: number, withSeconds = true): string {
   const total = Math.round((((hours % 24) + 24) % 24) * 3600);
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}${withSeconds ? `:${pad(total % 60)}` : ''}`;
+  return `${pad2(Math.floor(total / 3600))}:${pad2(Math.floor((total % 3600) / 60))}${withSeconds ? `:${pad2(total % 60)}` : ''}`;
 }

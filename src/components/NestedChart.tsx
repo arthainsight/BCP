@@ -12,8 +12,9 @@ import { layoutHouseLabels, type ExclusionBox, type LabelToken, type Point } fro
 import { INNER_SQUARE, SOUTH_CENTRE, centroidOf, northRegions, southRegions, type NestedRegion } from '@/lib/nestedChart';
 import { dashaMark, dignityColor } from './chartLayers';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
-import NorthIndianChart, { getNakAbbr } from './NorthIndianChart';
+import NorthIndianChart from './NorthIndianChart';
 import { SIGN_ABBR } from '@/lib/signs';
+import { nakshatraAbbr } from '@/lib/nakshatras';
 
 type ChartProps = ComponentProps<typeof NorthIndianChart>;
 
@@ -66,7 +67,7 @@ export default function NestedChart({ shape, outer, inner, outerTitle, innerTitl
     const parts = [grahaCode(planet.name) + (planet.isRetrograde ? '℞' : '') + dashaMark(planet.name, layer.dashaLords ?? null)];
     if ((layer.degreePrecision ?? 'off') !== 'off') parts.push(formatDegree(planet.degree, layer.degreePrecision!));
     if (layer.showCharaKaraka && layer.karakaByPlanet?.[planet.name]) parts.push(layer.karakaByPlanet[planet.name]);
-    if (layer.showNakshatra) parts.push(getNakAbbr(normalizeDegrees(planet.longitude + (layer.nakshatraAdjust ?? 0))));
+    if (layer.showNakshatra) parts.push(nakshatraAbbr(normalizeDegrees(planet.longitude + (layer.nakshatraAdjust ?? 0))));
     return parts.join(' ');
   };
 

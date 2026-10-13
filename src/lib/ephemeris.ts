@@ -11,6 +11,7 @@ import { normalizeDegrees } from './angles';
 import { lunarMonthAt } from './lunisolar';
 import { SATURN_PORTION_MOMENTS, saturnPortion, saturnPortionHour } from './upagrahas';
 import { calculateSpecialSphutas, equationOfTimeMinutes, ishtaGhatis, type SunriseMode } from './specialSphutas';
+import { pad2 } from './dateFormat';
 
 const PLANET_NAMES: Record<number, string> = {
   [SE_SUN]: "Sun",
@@ -177,7 +178,6 @@ export async function calculateChart(
   }
   const lunarMonth = await lunarMonthAt(jd, ayanamsaSetting, ayanamsaOffsetDegrees);
 
-  const pad = (n: number) => String(n).padStart(2, '0');
   const debug: DebugInfo = {
     julianDay: jd,
     ayanamsa,
@@ -186,7 +186,7 @@ export async function calculateChart(
     ascendantDegree: ascDegree,
     ascendantSign: ascSignIndex + 1,
     ephemerisEngine: `swisseph-wasm · ${ayanamsaMode} · ${nodeMode}-node`,
-    inputDateTime: `${year}-${pad(month)}-${pad(day)} ${pad(hour)}:${pad(minute)}:${pad(second)}`,
+    inputDateTime: `${year}-${pad2(month)}-${pad2(day)} ${pad2(hour)}:${pad2(minute)}:${pad2(second)}`,
     latitude: lat,
     longitude: lng,
     sunriseLocalHours: sunTimes.sunrise,

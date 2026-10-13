@@ -1,6 +1,8 @@
 // Dates as the input fields hold them: the target date as YYYY-MM-DD and the
 // transit moment as DD.MM.YYYY HH.MM.SS, both in local time.
 
+import { pad2 } from './dateFormat';
+
 export function getTodayString(): string {
   const d = new Date();
   return (
@@ -14,8 +16,7 @@ export function getTodayString(): string {
 
 export function getNowDateTimeString(): string {
   const d = new Date();
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}.${pad(d.getMinutes())}.${pad(d.getSeconds())}`;
+  return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()} ${pad2(d.getHours())}.${pad2(d.getMinutes())}.${pad2(d.getSeconds())}`;
 }
 
 export function parseTargetDateString(value: string): Date | null {
@@ -31,8 +32,7 @@ export function parseTargetDateString(value: string): Date | null {
 export type DateStep = 'day' | 'month' | 'year';
 
 function formatTargetDate(date: Date): string {
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
 /**
@@ -70,10 +70,9 @@ export function shiftTargetHours(date: string, time: string, hours: number): { d
   const total = Number(match[1]) * 60 + Number(match[2]) + hours * 60;
   const days = Math.floor(total / 1440);
   const minutes = ((total % 1440) + 1440) % 1440;
-  const pad = (value: number) => String(value).padStart(2, '0');
   return {
     date: days === 0 ? date : shiftTargetDate(date, 'day', days),
-    time: `${pad(Math.floor(minutes / 60))}:${pad(minutes % 60)}`,
+    time: `${pad2(Math.floor(minutes / 60))}:${pad2(minutes % 60)}`,
   };
 }
 

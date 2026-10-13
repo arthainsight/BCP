@@ -1,4 +1,4 @@
-import { NAKSHATRA_NAMES } from './specialSphutas';
+import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
 import { calculateVimshottari, type VimshottariResult } from './vimshottari';
 import { normalizeDegrees as normalize } from './angles';
 
@@ -44,7 +44,6 @@ export const HOUSE_VARIANT: Partial<Record<number, VimshottariVariant>> = {
 /** The houses of the Moon in which the daśā applies, in order. */
 export const VARIANT_HOUSES = Object.keys(HOUSE_VARIANT).map(Number).sort((a, b) => a - b);
 
-const NAKSHATRA_SIZE = 360 / 27;
 const LORDS = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'] as const;
 
 

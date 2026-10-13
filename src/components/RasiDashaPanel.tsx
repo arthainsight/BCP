@@ -6,6 +6,7 @@ import type { RasiDashaOptions } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { calculateRasiDasha, calculateRasiSubDashas, type RasiDashaEntry, type RasiDashaSystem } from '@/lib/rasiDashas';
 import { validateRasiDashaRegression } from '@/lib/rasiDashaValidation';
+import { formatDate } from '@/lib/dateFormat';
 
 const LEVELS = ['MD', 'AD', 'PD', 'SD', 'PR', 'DE'] as const;
 const TITLES: Record<RasiDashaSystem, string> = { narayana: 'nārāyaṇa daśā', moola: 'mūla daśā', sthira: 'sthira daśā' };
@@ -14,11 +15,6 @@ const NOTES: Record<RasiDashaSystem, string> = {
   moola: 'Lagna Kendrādi Rāśi (Mūla) variant · kendra, pāṇaphara and apoklima progression.',
   sthira: 'Rāśi daśā · Brahma seed · movable 7 y, fixed 8 y and dual 9 y.',
 };
-
-function fmt(date: Date, withTime: boolean) {
-  const day = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
-  return withTime ? `${day} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}` : day;
-}
 
 export default function RasiDashaPanel({ system, planets, ascendant, birthDatetime, options }: { system: RasiDashaSystem; planets: PlanetData[]; ascendant: { sign: number }; birthDatetime: string; options: RasiDashaOptions }) {
   const [level, setLevel] = useState(0);
@@ -52,7 +48,7 @@ export default function RasiDashaPanel({ system, planets, ascendant, birthDateti
     </details>
     <div className="flex items-center justify-between gap-2"><button type="button" onClick={back} disabled={!level} className="min-h-11 rounded border border-zinc-300 px-3 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">← back</button><div className="text-right text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LEVELS[level]} · {rows.length} periods</div></div>
     {path.length > 0 && <div className="break-words text-[10px] font-mono leading-relaxed text-emerald-700 dark:text-emerald-300">{path.map((entry, i) => `${entry.abbr} ${LEVELS[i]}`).join(' › ')} › {LEVELS[level]}</div>}
-    <div className="space-y-1">{rows.map((entry) => { const active = entry.startDate <= now && now < entry.endDate; return <button title={entry.calculation} key={`${entry.sign}-${entry.startDate.getTime()}`} type="button" onClick={() => open(entry)} className={`grid min-h-11 w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-1 rounded-md border px-3 py-2 text-left font-mono text-xs ${active ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-600 dark:bg-cyan-950/30 dark:text-cyan-300' : 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200'}`}><span className="row-span-2 font-bold">{entry.abbr}</span><span className="break-words text-[10px] sm:text-xs">{fmt(entry.startDate, level >= 2)}–{fmt(entry.endDate, level >= 2)}</span><span className="break-words text-[10px] text-zinc-400">{entry.durationYears.toFixed(2)} y{entry.cycle ? ` · C${entry.cycle}` : ''} · ⓘ</span></button>; })}</div>
+    <div className="space-y-1">{rows.map((entry) => { const active = entry.startDate <= now && now < entry.endDate; return <button title={entry.calculation} key={`${entry.sign}-${entry.startDate.getTime()}`} type="button" onClick={() => open(entry)} className={`grid min-h-11 w-full min-w-0 grid-cols-[auto_minmax(0,1fr)] gap-x-2 gap-y-1 rounded-md border px-3 py-2 text-left font-mono text-xs ${active ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-600 dark:bg-cyan-950/30 dark:text-cyan-300' : 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200'}`}><span className="row-span-2 font-bold">{entry.abbr}</span><span className="break-words text-[10px] sm:text-xs">{formatDate(entry.startDate, level >= 2)}–{formatDate(entry.endDate, level >= 2)}</span><span className="break-words text-[10px] text-zinc-400">{entry.durationYears.toFixed(2)} y{entry.cycle ? ` · C${entry.cycle}` : ''} · ⓘ</span></button>; })}</div>
     <p className="text-[9px] font-mono leading-relaxed text-zinc-400 dark:text-zinc-600">{NOTES[system]}</p>
   </div>;
 }

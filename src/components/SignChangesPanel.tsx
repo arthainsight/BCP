@@ -7,6 +7,7 @@ import type { LongitudeSeries } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_NAMES } from '@/lib/signs';
+import { pad2 } from '@/lib/dateFormat';
 
 type Props = {
   chart: ChartData;
@@ -28,11 +29,10 @@ const DEFAULT_BODIES = BODIES.filter(body => body !== 'Moon');
 
 type Loaded = { key: string; start: number; series: Record<string, { step: number; longitudes: number[] }> };
 
-const pad = (value: number) => String(value).padStart(2, '0');
 
 function formatMoment(time: number): string {
   const d = new Date(time);
-  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 /**
@@ -174,7 +174,7 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
                   type="button"
                   onClick={() => {
                     const d = new Date(event.time);
-                    onSetTransit(`${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}.${pad(d.getMinutes())}.00`);
+                    onSetTransit(`${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()} ${pad2(d.getHours())}.${pad2(d.getMinutes())}.00`);
                   }}
                   className="shrink-0 rounded border border-violet-300 px-2 py-1.5 text-[10px] sm:px-1.5 sm:py-0.5 text-violet-700 dark:border-violet-700 dark:text-violet-300"
                 >

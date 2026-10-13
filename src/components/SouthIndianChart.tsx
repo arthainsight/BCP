@@ -13,6 +13,7 @@ import { useChartFontScale } from '@/lib/chartFont';
 import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 import { SIGN_ABBR } from '@/lib/signs';
+import { nakshatraAbbr } from '@/lib/nakshatras';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -79,14 +80,6 @@ const DEFAULT_GRID_WIDTH = 328;
 /** The largest a label is drawn, in pixels, at the usual text size of a full-size chart. */
 export const LABEL_PX = 11;
 
-const NAK_ABBR = [
-  'Asw', 'Bha', 'Krt', 'Roh', 'Mrg', 'Ard',
-  'Pun', 'Pus', 'Asl', 'Mag', 'PFa', 'UFa',
-  'Has', 'Cit', 'Swa', 'Vis', 'Anu', 'Jye',
-  'Mul', 'PAs', 'UAs', 'Sra', 'Dha', 'Sat',
-  'PBh', 'UBh', 'Rev',
-];
-
 const GRID: (number | null)[] = [
   12, 1, 2, 3,
   11, null, null, 4,
@@ -100,11 +93,6 @@ function filterOuter(planets: PlanetData[], showOuter?: boolean) {
 
 function getHouse(sign: number, ascendantSign: number): number {
   return ((sign - ascendantSign + 12) % 12) + 1;
-}
-
-function getNakAbbr(longitude: number): string {
-  const idx = Math.floor(longitude / (40 / 3));
-  return NAK_ABBR[Math.min(idx, 26)] ?? '';
 }
 
 function getCellClass(house: number, year: number, month: number): string {
@@ -135,7 +123,7 @@ function getPlanetLabel(
       const karaka = karakaByPlanet[planet.name];
       if (karaka) parts.push(karaka);
     }
-    if (showNakshatra) parts.push(getNakAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
+    if (showNakshatra) parts.push(nakshatraAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
   }
   return parts.join(' ');
 }

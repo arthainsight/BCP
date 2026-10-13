@@ -13,6 +13,7 @@ import { SATURN_PORTION_MOMENTS, type SaturnPortionMoment } from '@/lib/upagraha
 import { getVargaSignIndex } from '@/lib/varga';
 import { useT } from '@/lib/i18n';
 import { SIGN_NAMES } from '@/lib/signs';
+import { pad2 } from '@/lib/dateFormat';
 
 type Props = {
   chart: ChartData;
@@ -31,7 +32,6 @@ const MOMENT_LABELS: Record<SaturnPortionMoment, string> = {
 
 const houseFrom = (lagnaSign: number, sign: number) => ((sign - lagnaSign + 12) % 12) + 1;
 
-const pad = (value: number) => String(value).padStart(2, '0');
 
 /** "06:28:31" or "6:28" as decimal hours, or null when it is not a time of day. */
 function parseClock(text: string): number | null {
@@ -42,7 +42,7 @@ function parseClock(text: string): number | null {
 }
 const clock = (hours: number) => {
   const total = Math.round((((hours % 24) + 24) % 24) * 3600);
-  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor((total % 3600) / 60))}:${pad(total % 60)}`;
+  return `${pad2(Math.floor(total / 3600))}:${pad2(Math.floor((total % 3600) / 60))}:${pad2(total % 60)}`;
 };
 
 /**

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { NAKSHATRAS, TARAS, buildNavatara, nakshatraIndex, taraNumber } from './navatara';
+import { TARAS, buildNavatara, nakshatraIndex, taraNumber } from './navatara';
+import { NAKSHATRA_NAMES as NAKSHATRAS } from './nakshatras';
 
 // --- Nakṣatra of a longitude ----------------------------------------------------
 assert.equal(nakshatraIndex(0), 0, '0° is Ashwini');

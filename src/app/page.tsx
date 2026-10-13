@@ -30,6 +30,7 @@ import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
+import { saveFile } from '@/lib/download';
 
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'settings';
@@ -453,15 +454,7 @@ export default function Home() {
       return;
     }
     const payload = JSON.stringify({ exportedAt: new Date().toISOString(), charts }, null, 2);
-    const blob = new Blob([payload], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'bcp-charts-export.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    saveFile('bcp-charts-export.json', payload, 'application/json');
   }, []);
 
   const handleImportCharts = useCallback(() => {

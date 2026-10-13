@@ -5,6 +5,7 @@ import { calculateSubDashas, MahadashaEntry } from '@/lib/vimshottari';
 import { calculateVds } from '@/lib/vds';
 import { parseDateTime } from '@/lib/bcp';
 import { PlanetData } from '@/types';
+import { formatDate, formatDateTime } from '@/lib/dateFormat';
 
 const ABBR: Record<string, string> = {
   Ketu: 'Ke', Venus: 'Ve', Sun: 'Su', Moon: 'Mo', Mars: 'Ma',
@@ -31,22 +32,10 @@ function showTimeForLevel(level: Level): boolean {
   return levelIndex(level) >= levelIndex('pd');
 }
 
-function fmtDate(d: Date): string {
-  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`;
-}
-
-function fmtTime(d: Date): string {
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-}
-
-function fmtDateTime(d: Date): string {
-  return `${fmtDate(d)} ${fmtTime(d)}`;
-}
-
 function fmtRange(start: Date, end: Date, level: Level): string {
   return showTimeForLevel(level)
-    ? `${fmtDateTime(start)}–${fmtDateTime(end)}`
-    : `${fmtDate(start)}–${fmtDate(end)}`;
+    ? `${formatDateTime(start)}–${formatDateTime(end)}`
+    : `${formatDate(start)}–${formatDate(end)}`;
 }
 
 function isActive(e: MahadashaEntry, now: Date): boolean {
@@ -288,8 +277,8 @@ export default function VdsPanel({ planets, ascendant, birthDatetime }: Props) {
 
               {deep ? (
                 <span className="min-w-0 flex-1 font-mono text-[10px] md:text-[11px] text-zinc-500 dark:text-zinc-500 tabular-nums leading-4">
-                  <span className="block truncate">{fmtDateTime(entry.startDate)}</span>
-                  <span className="block truncate text-zinc-400 dark:text-zinc-600">→ {fmtDateTime(entry.endDate)}</span>
+                  <span className="block truncate">{formatDateTime(entry.startDate)}</span>
+                  <span className="block truncate text-zinc-400 dark:text-zinc-600">→ {formatDateTime(entry.endDate)}</span>
                 </span>
               ) : (
                 <span className="min-w-0 flex-1 font-mono text-[11px] md:text-xs text-zinc-500 dark:text-zinc-500 tabular-nums truncate">

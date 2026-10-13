@@ -4,16 +4,8 @@
 
 import { MahadashaEntry } from './vimshottari';
 import { normalizeDegrees } from './angles';
+import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
 
-const NAKSHATRA_SIZE = 360 / 27;
-
-const NAKSHATRA_NAMES = [
-  'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
-  'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
-  'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
-  'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishtha',
-  'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati',
-];
 
 // Standard Vimshottari sequence and durations — same for VDS
 const LORDS = [

@@ -11,6 +11,7 @@ import { renderAnnotated } from '@/lib/palm/image';
 import { useT } from '@/lib/i18n';
 import RangeField from '../RangeField';
 import PalmCanvas, { type PalmTool } from './PalmCanvas';
+import { saveFile } from '@/lib/download';
 
 type Props = {
   record: PalmRecord;
@@ -239,13 +240,7 @@ export default function PalmEditor({ record, imageUrl, onChange, onClientView, s
     setExporting(true);
     try {
       const blob = await renderAnnotated(record.image, record.width, record.height, annotations, withNotes, scale);
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `${(record.name || 'palm').replace(/[^\p{L}\p{N}_ -]+/gu, '').trim() || 'palm'}.png`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(link.href), 4000);
+      saveFile(`${(record.name || 'palm').replace(/[^\p{L}\p{N}_ -]+/gu, '').trim() || 'palm'}.png`, blob, 'image/png');
     } finally {
       setExporting(false);
     }

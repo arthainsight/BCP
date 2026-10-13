@@ -13,6 +13,7 @@ import { useChartFontScale } from '@/lib/chartFont';
 import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, polygonSpanAt, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
 import { SIGN_ABBR } from '@/lib/signs';
+import { nakshatraAbbr } from '@/lib/nakshatras';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -75,19 +76,6 @@ interface Props {
   selectedPlanet?: { kind: 'natal' | 'transit'; name: string } | null;
   /** Called with the kind and name of any natal or transit label that is clicked. */
   onPlanetSelect?: (selection: { kind: 'natal' | 'transit'; name: string }) => void;
-}
-
-const NAK_ABBR = [
-  'Asw', 'Bha', 'Krt', 'Roh', 'Mrg', 'Ard',
-  'Pun', 'Pus', 'Asl', 'Mag', 'PFa', 'UFa',
-  'Has', 'Cit', 'Swa', 'Vis', 'Anu', 'Jye',
-  'Mul', 'PAs', 'UAs', 'Sra', 'Dha', 'Sat',
-  'PBh', 'UBh', 'Rev',
-];
-
-export function getNakAbbr(longitude: number): string {
-  const idx = Math.floor(longitude / (40 / 3));
-  return NAK_ABBR[Math.min(idx, 26)] ?? '';
 }
 
 
@@ -321,7 +309,7 @@ export default function NorthIndianChart({
     const parts = [grahaCode(planet.name) + (planet.isRetrograde ? '℞' : '') + dashaMark(planet.name, dashaLords)];
     if (degreePrecision !== 'off') parts.push(formatDegree(planet.degree, degreePrecision));
     if (showCharaKaraka && karakaByPlanet[planet.name]) parts.push(karakaByPlanet[planet.name]);
-    if (showNakshatra) parts.push(getNakAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
+    if (showNakshatra) parts.push(nakshatraAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
     return parts.join(' ');
   };
   const transitLabel = (planet: PlanetData) => {

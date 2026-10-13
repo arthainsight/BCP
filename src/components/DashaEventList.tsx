@@ -16,6 +16,7 @@ import DashaEventCard from './DashaEventCard';
 import DashaEventForm, { type NewEvent } from './DashaEventForm';
 import DashaEventPaste from './DashaEventPaste';
 import DashaEventPatterns from './DashaEventPatterns';
+import { csvText, saveFile } from '@/lib/download';
 
 type SnapshotKey = DashaEventSnapshot['key'];
 
@@ -42,15 +43,6 @@ interface Props {
 const MAX_IMPORT_BYTES = 2_000_000;
 const TOOL = 'min-h-11 rounded border px-2 py-2 text-[10px] font-mono';
 
-function download(filename: string, content: string, type: string) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
-const csvCell = (value: unknown) => `"${String(value ?? '').replaceAll('"', '""')}"`;
 const newId = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
 /** The saved events of a chart (mode "events"), or the patterns that repeat across them (mode "patterns"). */
@@ -142,11 +134,10 @@ export default function DashaEventList({
   })));
   function exportCsv() {
     const headers = ['event', 'category', 'date', 'end_date', 'varga', 'notes', 'tags', 'significance', 'dasha', 'MD', 'AD', 'PD', 'note'] as const;
-    const lines = [headers.map(csvCell).join(','), ...exportRows().map(row => headers.map(header => csvCell(row[header])).join(','))];
-    download('bhrigu-dasha-events.csv', lines.join('\n'), 'text/csv;charset=utf-8');
+    saveFile('bhrigu-dasha-events.csv', csvText([[...headers], ...exportRows().map(row => headers.map(header => row[header]))]), 'text/csv;charset=utf-8');
   }
   function exportJson() {
-    download('bhrigu-dasha-events.json', JSON.stringify({ version: 1, birthDatetime, visibleDashas: visibleKeys, events: events.map(item => ({ ...item, dashas: snapshotsFor(item) })) }, null, 2), 'application/json');
+    saveFile('bhrigu-dasha-events.json', JSON.stringify({ version: 1, birthDatetime, visibleDashas: visibleKeys, events: events.map(item => ({ ...item, dashas: snapshotsFor(item) })) }, null, 2), 'application/json');
   }
 
   return (

@@ -12,6 +12,7 @@ import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_NAMES } from '@/lib/signs';
+import { pad2 } from '@/lib/dateFormat';
 
 type Props = {
   chart: ChartData;
@@ -30,9 +31,8 @@ const HIT_ROWS = 6;
 type SignSeries = { start: number; series: Record<string, { step: number; longitudes: number[] }> };
 type HitSeries = { start: number; step: number; longitudes: Record<string, number[]> };
 
-const pad = (value: number) => String(value).padStart(2, '0');
-const day = (time: number) => { const d = new Date(time); return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`; };
-const moment = (time: number) => { const d = new Date(time); return `${day(time)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const day = (time: number) => { const d = new Date(time); return `${pad2(d.getDate())}.${pad2(d.getMonth() + 1)}.${d.getFullYear()}`; };
+const moment = (time: number) => { const d = new Date(time); return `${day(time)} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
 
 /**
  * Everything about the target day on one page: the running daśās, the next

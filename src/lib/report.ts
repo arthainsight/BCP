@@ -1,10 +1,11 @@
 // Small helpers of the client report.
 
-const pad = (value: number) => String(value).padStart(2, '0');
+
+import { pad2 } from './dateFormat';
 
 /** A date as it is written on the report: day.month.year. */
 export function reportDate(date: Date): string {
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+  return `${pad2(date.getDate())}.${pad2(date.getMonth() + 1)}.${date.getFullYear()}`;
 }
 
 /**

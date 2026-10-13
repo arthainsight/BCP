@@ -5,17 +5,13 @@ import { createBcpBackup, parseBcpBackup, restoreBcpBackup, type BcpBackup } fro
 import { backupToPalms, palmsToBackup } from '@/lib/palm/backup';
 import { listPalms, replacePalms, storageAvailable } from '@/lib/palm/storage';
 import { fill, useT } from '@/lib/i18n';
+import { saveFile } from '@/lib/download';
 
 /** Palm photographs make a backup large; this is the most the panel will read back. */
 const MAX_BACKUP_BYTES = 150_000_000;
 
 function download(content: string) {
-  const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = `bhrigu-code-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  anchor.click();
-  URL.revokeObjectURL(url);
+  saveFile(`bhrigu-code-backup-${new Date().toISOString().slice(0, 10)}.json`, content, 'application/json');
 }
 
 export default function BackupPanel() {

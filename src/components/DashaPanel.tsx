@@ -13,6 +13,7 @@ import DashaSystemCard from './DashaSystemCard';
 import { useDashaNotes } from '@/hooks/useDashaNotes';
 import { useT } from '@/lib/i18n';
 import { useEffect, useState, type CSSProperties } from 'react';
+import { pad2 } from '@/lib/dateFormat';
 
 interface Props {
   bcp: BcpResult;
@@ -116,12 +117,11 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
   );
 }
 
-const pad = (value: number) => String(value).padStart(2, '0');
 
 /** "Ve – Sa – Me · MD until 03.2027": the running periods of one system, for its header. */
 function runningPeriod(snapshot?: DashaEventSnapshot): string | undefined {
   if (!snapshot || snapshot.levels.length === 0) return snapshot?.note;
   const periods = snapshot.levels.map(level => level.value).join(' – ');
   const end = snapshot.mdRange?.endDate;
-  return end ? `${periods} · MD → ${pad(end.getMonth() + 1)}.${end.getFullYear()}` : periods;
+  return end ? `${periods} · MD → ${pad2(end.getMonth() + 1)}.${end.getFullYear()}` : periods;
 }

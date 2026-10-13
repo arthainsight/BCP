@@ -1,6 +1,8 @@
 // Helpers of the screen recorder: which video format the browser can make, what the file is called,
 // and how the running time and the size are written.
 
+import { pad2 } from './dateFormat';
+
 /** The formats to try, best first: WebM with VP9, then VP8, then plain WebM; Safari makes MP4. */
 export const RECORDING_MIME_TYPES = [
   'video/webm;codecs=vp9,opus',
@@ -21,9 +23,8 @@ export function recordingExtension(mime: string): string {
 
 /** For example bhrigu-code-2026-10-09-1432.webm, from the local time. */
 export function recordingFileName(now: Date, mime: string): string {
-  const two = (value: number) => String(value).padStart(2, '0');
-  const day = `${now.getFullYear()}-${two(now.getMonth() + 1)}-${two(now.getDate())}`;
-  return `bhrigu-code-${day}-${two(now.getHours())}${two(now.getMinutes())}.${recordingExtension(mime)}`;
+  const day = `${now.getFullYear()}-${pad2(now.getMonth() + 1)}-${pad2(now.getDate())}`;
+  return `bhrigu-code-${day}-${pad2(now.getHours())}${pad2(now.getMinutes())}.${recordingExtension(mime)}`;
 }
 
 /** The running time as m:ss, or h:mm:ss from an hour. */
@@ -32,8 +33,7 @@ export function formatClock(ms: number): string {
   const hours = Math.floor(total / 3600);
   const minutes = Math.floor((total % 3600) / 60);
   const seconds = total % 60;
-  const two = (value: number) => String(value).padStart(2, '0');
-  return hours > 0 ? `${hours}:${two(minutes)}:${two(seconds)}` : `${minutes}:${two(seconds)}`;
+  return hours > 0 ? `${hours}:${pad2(minutes)}:${pad2(seconds)}` : `${minutes}:${pad2(seconds)}`;
 }
 
 /** The size of a file: 640 kB, 8.3 MB. */

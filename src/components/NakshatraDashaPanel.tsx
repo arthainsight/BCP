@@ -2,15 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import type { NakshatraDashaEntry } from '@/lib/nakshatraDasha';
+import { formatDate } from '@/lib/dateFormat';
 
 const LEVELS = ['md', 'ad', 'pd', 'sd', 'prana', 'deha'] as const;
 const LABELS = ['MD', 'AD', 'PD', 'SD', 'PR', 'DE'] as const;
 const PLANET_ABBR: Record<string, string> = { Sun:'Su', Moon:'Mo', Mars:'Ma', Mercury:'Me', Jupiter:'Ju', Venus:'Ve', Saturn:'Sa', Rahu:'Ra' };
-
-function fmt(date: Date, withTime: boolean) {
-  const day = `${String(date.getDate()).padStart(2, '0')}.${String(date.getMonth() + 1).padStart(2, '0')}.${date.getFullYear()}`;
-  return withTime ? `${day} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}` : day;
-}
 
 function isActive(entry: NakshatraDashaEntry, now: Date) {
   return entry.startDate <= now && now < entry.endDate;
@@ -77,7 +73,7 @@ export default function NakshatraDashaPanel({
           <button key={`${entry.key}-${entry.startDate.getTime()}`} type="button" onClick={() => openEntry(entry)} className={`grid min-h-11 w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] gap-x-2 gap-y-1 rounded-md border px-3 py-2 text-left font-mono text-xs ${isActive(entry, now) ? 'border-cyan-400 bg-cyan-50 text-cyan-800 dark:border-cyan-600 dark:bg-cyan-950/30 dark:text-cyan-300' : 'border-zinc-200 text-zinc-700 dark:border-zinc-700 dark:text-zinc-200'}`}>
             <span className="min-w-0 break-words font-bold">{displayName(entry)}</span>
             <span className="text-zinc-400">{entry.durationYears.toFixed(2)} y</span>
-            <span className="col-span-2 break-words text-[10px] sm:text-xs">{fmt(entry.startDate, levelIndex >= 2)}–{fmt(entry.endDate, levelIndex >= 2)}</span>
+            <span className="col-span-2 break-words text-[10px] sm:text-xs">{formatDate(entry.startDate, levelIndex >= 2)}–{formatDate(entry.endDate, levelIndex >= 2)}</span>
           </button>
         ))}
       </div>

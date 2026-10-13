@@ -5,6 +5,7 @@ import type { CalculationSettings, ChartData } from '@/types';
 import { findTransitHits, type LongitudeSeries, type TransitHit } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { pad2 } from '@/lib/dateFormat';
 
 type Props = {
   chart: ChartData;
@@ -21,8 +22,7 @@ type Series = { start: number; step: number; longitudes: Record<string, number[]
 
 function formatDay(time: number): string {
   const date = new Date(time);
-  const pad = (value: number) => String(value).padStart(2, '0');
-  return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
+  return `${pad2(date.getDate())}.${pad2(date.getMonth() + 1)}.${date.getFullYear()}`;
 }
 
 /**

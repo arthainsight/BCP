@@ -1,14 +1,7 @@
 import { normalizeDegrees } from './angles';
 import { SIGN_NAMES } from './signs';
+import { NAKSHATRA_NAMES } from './nakshatras';
 const SIGN_YEARS = [7, 16, 9, 21, 5, 9, 16, 7, 10, 4, 4, 10] as const;
-const NAKSHATRA_NAMES = [
-  'Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra',
-  'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni',
-  'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha',
-  'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanistha',
-  'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati',
-] as const;
-
 const STAR_GROUPS = [
   [0, 2, 6, 8, 12, 14, 18, 20, 24],
   [1, 7, 13, 19, 25, 26],

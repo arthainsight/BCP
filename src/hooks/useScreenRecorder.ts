@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 import { pickMimeType, recordingFileName } from '@/lib/recording';
+import { saveUrl } from '@/lib/download';
 
 // The screen recorder: the screen (a tab, a window or the whole screen, as the browser lets the person
 // choose) and the microphone are recorded to one video, so a chart or a palm drawing can be explained aloud.
@@ -242,12 +243,7 @@ export function discardRecording() {
 export function downloadRecording() {
   const result = state.result;
   if (!result) return;
-  const link = document.createElement('a');
-  link.href = result.url;
-  link.download = result.name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
+  saveUrl(result.url, result.name);
   emit({ saved: true });
 }
 

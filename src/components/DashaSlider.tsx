@@ -8,6 +8,7 @@ import { calculateDashaEventSnapshots } from '@/lib/dashaEvents';
 import { DAY_MS, YEAR_MS, dashaSnapshotOptions, enabledSnapshots } from '@/lib/dashaView';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { formatDate } from '@/lib/dateFormat';
 
 type Props = {
   planets: PlanetData[];
@@ -18,8 +19,6 @@ type Props = {
 };
 
 const SPAN_YEARS = 100;
-const pad = (value: number) => String(value).padStart(2, '0');
-const formatDate = (date: Date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()}`;
 
 /**
  * Drag through time: a slider from birth to a hundred years on, and the
