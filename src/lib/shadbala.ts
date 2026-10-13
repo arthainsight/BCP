@@ -11,6 +11,8 @@
 
 import { getVargaSignIndex, getDegreesInSign } from './varga';
 import { normalizeLongitude } from './varga/utils';
+import { SIGN_LORDS } from './signs';
+import { DEBILITATION, EXALTATION, NATURAL_ENEMIES, NATURAL_FRIENDS, OWN_SIGNS as OWN_SIGN_NUMBERS } from './dignity';
 
 export type ShadbalaPlanet = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
 export type Dignity = 'exalted' | 'moolatrikona' | 'own' | 'friend' | 'neutral' | 'enemy' | 'debilitated' | 'none';
@@ -93,10 +95,11 @@ export type ShadbalaRow = {
 export const SCORE_PLANETS: readonly ShadbalaPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 const BENEFICS: readonly ShadbalaPlanet[] = ['Moon', 'Mercury', 'Jupiter', 'Venus'];
 
-const SIGN_LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'];
-const OWN_SIGNS: Record<ShadbalaPlanet, number[]> = { Sun: [4], Moon: [3], Mars: [0, 7], Mercury: [2, 5], Jupiter: [8, 11], Venus: [1, 6], Saturn: [9, 10] };
-const EXALTATION_SIGNS: Record<ShadbalaPlanet, number> = { Sun: 0, Moon: 1, Mars: 9, Mercury: 5, Jupiter: 3, Venus: 11, Saturn: 6 };
-const DEBILITATION_SIGNS: Record<ShadbalaPlanet, number> = { Sun: 6, Moon: 7, Mars: 3, Mercury: 11, Jupiter: 9, Venus: 5, Saturn: 0 };
+// The dignity tables count signs from 1 (Aries); this module counts them from 0.
+const fromZero = (table: Record<string, number>) => Object.fromEntries(Object.entries(table).map(([planet, sign]) => [planet, sign - 1])) as Record<ShadbalaPlanet, number>;
+const OWN_SIGNS = Object.fromEntries(Object.entries(OWN_SIGN_NUMBERS).map(([planet, signs]) => [planet, signs.map(sign => sign - 1)])) as Record<ShadbalaPlanet, number[]>;
+const EXALTATION_SIGNS = fromZero(EXALTATION);
+const DEBILITATION_SIGNS = fromZero(DEBILITATION);
 const EXALTATION_LONGITUDES: Record<ShadbalaPlanet, number> = { Sun: 10, Moon: 33, Mars: 298, Mercury: 165, Jupiter: 95, Venus: 357, Saturn: 200 };
 
 export const SHADBALA_REQUIRED_VIRUPA: Record<ShadbalaPlanet, number> = { Sun: 390, Moon: 360, Mars: 300, Mercury: 420, Jupiter: 390, Venus: 330, Saturn: 300 };
@@ -106,16 +109,6 @@ export const DIG_BALA_MAX_HOUSE: Record<ShadbalaPlanet, number> = { Sun: 10, Mar
 const ODD_EVEN_STRENGTH: Record<ShadbalaPlanet, 'odd' | 'even' | 'both'> = { Sun: 'odd', Mars: 'odd', Jupiter: 'odd', Moon: 'even', Venus: 'even', Mercury: 'both', Saturn: 'both' };
 const DREKKANA_STRENGTH: Record<ShadbalaPlanet, number> = { Sun: 1, Mars: 1, Jupiter: 1, Mercury: 2, Saturn: 2, Moon: 3, Venus: 3 };
 const DAY_NIGHT_STRENGTH: Record<ShadbalaPlanet, 'day' | 'night' | 'both'> = { Sun: 'day', Jupiter: 'day', Venus: 'day', Moon: 'night', Mars: 'night', Saturn: 'night', Mercury: 'both' };
-
-const NATURAL_RELATIONS: Record<ShadbalaPlanet, { friends: string[]; neutral: string[]; enemies: string[] }> = {
-  Sun: { friends: ['Moon', 'Mars', 'Jupiter'], neutral: ['Mercury'], enemies: ['Venus', 'Saturn'] },
-  Moon: { friends: ['Sun', 'Mercury'], neutral: ['Mars', 'Jupiter', 'Venus', 'Saturn'], enemies: [] },
-  Mars: { friends: ['Sun', 'Moon', 'Jupiter'], neutral: ['Venus', 'Saturn'], enemies: ['Mercury'] },
-  Mercury: { friends: ['Sun', 'Venus'], neutral: ['Mars', 'Jupiter', 'Saturn'], enemies: ['Moon'] },
-  Jupiter: { friends: ['Sun', 'Moon', 'Mars'], neutral: ['Saturn'], enemies: ['Mercury', 'Venus'] },
-  Venus: { friends: ['Mercury', 'Saturn'], neutral: ['Mars', 'Jupiter'], enemies: ['Sun', 'Moon'] },
-  Saturn: { friends: ['Mercury', 'Venus'], neutral: ['Jupiter'], enemies: ['Sun', 'Moon', 'Mars'] },
-};
 
 // Classical Saptavargaja Bala virupa per dignity (BPHS Ch.27). Used as per-varga
 // weights; the sum across 7 vargas is divided by 7 so max = 45.
@@ -191,9 +184,8 @@ export function getDignity(planet: string, signIndex: number | null | undefined,
   if (EXALTATION_SIGNS[planet] === signIndex) return 'exalted';
   if (OWN_SIGNS[planet]?.includes(signIndex)) return 'own';
   const signLord = SIGN_LORDS[signIndex];
-  const relation = NATURAL_RELATIONS[planet];
-  if (relation?.friends.includes(signLord)) return 'friend';
-  if (relation?.enemies.includes(signLord)) return 'enemy';
+  if (NATURAL_FRIENDS[planet]?.includes(signLord)) return 'friend';
+  if (NATURAL_ENEMIES[planet]?.includes(signLord)) return 'enemy';
   return 'neutral';
 }
 
@@ -382,8 +374,8 @@ function calculateVarsheshadiBalaVirupa(planetName: ShadbalaPlanet, chart: Shadb
   const lord = date && !Number.isNaN(date.getTime()) ? dayLords[date.getDay()] : null;
   if (!lord) return 0;
   if (planetName === lord) return 60;
-  if (NATURAL_RELATIONS[planetName]?.friends.includes(lord)) return 30;
-  if (NATURAL_RELATIONS[planetName]?.enemies.includes(lord)) return 0;
+  if (NATURAL_FRIENDS[planetName]?.includes(lord)) return 30;
+  if (NATURAL_ENEMIES[planetName]?.includes(lord)) return 0;
   return 15;
 }
 

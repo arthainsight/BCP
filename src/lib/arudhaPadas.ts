@@ -1,5 +1,6 @@
 import type { SpecialLagna } from '@/types';
-import { SIGN_LORDS, arudhaSign } from '@/lib/specialSphutas';
+import { arudhaSign } from '@/lib/specialSphutas';
+import { SIGN_LORDS } from '@/lib/signs';
 
 // The Jaimini Āruḍha padas: for each house, the lord of its sign is found, and
 // the pada stands as many signs from the lord as the lord stands from the

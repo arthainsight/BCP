@@ -6,6 +6,7 @@ import { buildGochara, type BavStrength } from '@/lib/gochara';
 import type { AshtakavargaPlanet } from '@/lib/ashtakavarga';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
 
 type Props = {
   chart: ChartData;
@@ -13,8 +14,6 @@ type Props = {
   transitPlanets?: PlanetData[];
 };
 
-const SIGNS = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
-const SIGN_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 const BAV_PLANETS: AshtakavargaPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 
 const STRENGTH_CLASS: Record<BavStrength, string> = {
@@ -91,7 +90,7 @@ export default function GocharaPanel({ chart, transitPlanets = [] }: Props) {
           <thead>
             <tr className="text-zinc-500 dark:text-zinc-400">
               <th className={`${cell} text-left`}>{t('Graha')}</th>
-              {SIGNS.map(sign => <th key={sign} className={`${cell} font-semibold`}>{sign}</th>)}
+              {SIGN_ABBR.map(sign => <th key={sign} className={`${cell} font-semibold`}>{sign}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -120,7 +119,7 @@ export default function GocharaPanel({ chart, transitPlanets = [] }: Props) {
             </tr>
             <tr>
               <th scope="row" className={`${cell} text-left`}>{t('transit')}</th>
-              {SIGNS.map((_, index) => <td key={index} className={`${cell} text-[10px] text-cyan-700 dark:text-cyan-300`}>{savMarks(index + 1)}</td>)}
+              {SIGN_ABBR.map((_, index) => <td key={index} className={`${cell} text-[10px] text-cyan-700 dark:text-cyan-300`}>{savMarks(index + 1)}</td>)}
             </tr>
           </tbody>
         </table>

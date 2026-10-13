@@ -4,11 +4,8 @@ import { ChartData, PlanetData } from '@/types';
 import { buildDrishti, calculateGrahaDrishti, calculateRashiDrishti } from '@/lib/drishti';
 import CollapsibleCard from './CollapsibleCard';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { SIGN_ABBR } from '@/lib/signs';
 
-const SIGN_ABBR: Record<number, string> = {
-  1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
-  7: 'Li', 8: 'Sc', 9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
-};
 
 interface Props {
   chart?: ChartData;
@@ -87,11 +84,11 @@ export default function DrishtiPanel({
               <tbody>
                 {rashiAspects.map((a, i) => (
                   <tr key={`${a.fromSign}-${a.toSign}-${i}`} className="border-b border-zinc-100 dark:border-zinc-800">
-                    <td className="p-1.5 text-violet-700 dark:text-violet-300 font-semibold">{SIGN_ABBR[a.fromSign]}</td>
+                    <td className="p-1.5 text-violet-700 dark:text-violet-300 font-semibold">{SIGN_ABBR[a.fromSign - 1]}</td>
                     <td className="p-1.5 text-zinc-600 dark:text-zinc-300">
                       {a.fromPlanets.length ? a.fromPlanets.map(code).join(', ') : '—'}
                     </td>
-                    <td className="p-1.5 text-violet-700 dark:text-violet-300 font-semibold">{SIGN_ABBR[a.toSign]}</td>
+                    <td className="p-1.5 text-violet-700 dark:text-violet-300 font-semibold">{SIGN_ABBR[a.toSign - 1]}</td>
                     <td className="p-1.5 text-cyan-700 dark:text-cyan-300">
                       {a.toPlanets.length ? a.toPlanets.map(code).join(', ') : '—'}
                     </td>

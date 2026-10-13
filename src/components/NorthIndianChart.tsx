@@ -12,6 +12,7 @@ import { useGrahaNames } from '@/lib/grahaNames';
 import { useChartFontScale } from '@/lib/chartFont';
 import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
 import { layoutHouseLabels, polygonSpanAt, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
+import { SIGN_ABBR } from '@/lib/signs';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 const SPECIAL_LAGNA_COLOR = '#d97706';
@@ -89,11 +90,6 @@ export function getNakAbbr(longitude: number): string {
   return NAK_ABBR[Math.min(idx, 26)] ?? '';
 }
 
-const SIGN_ABBR: Record<number, string> = {
-  1: 'Ar',  2: 'Ta',  3: 'Ge',  4: 'Cn',
-  5: 'Le',  6: 'Vi',  7: 'Li',  8: 'Sc',
-  9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
-};
 
 type HouseShape = {
   house: number;
@@ -441,7 +437,7 @@ export default function NorthIndianChart({
               )}
               {showSigns && (
                 <text x={item.sign.x} y={item.sign.y} textAnchor="middle" dominantBaseline="middle" fontSize={(compact ? 24 : 13) * k} fontWeight="600" fill={signFill}>
-                  {SIGN_ABBR[sign]}
+                  {SIGN_ABBR[sign - 1]}
                 </text>
               )}
               {showHouseNumbers && (

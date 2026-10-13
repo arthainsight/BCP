@@ -11,6 +11,7 @@ import { findTransitHits, type LongitudeSeries } from '@/lib/transitHits';
 import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { SIGN_NAMES } from '@/lib/signs';
 
 type Props = {
   chart: ChartData;
@@ -20,7 +21,6 @@ type Props = {
   calculationSettings?: CalculationSettings;
 };
 
-const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 // The Moon changes sign every two to three days and would crowd the list out.
 const BODIES = ['Sun', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 const NATAL = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
@@ -131,8 +131,8 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
               <span className="w-32 shrink-0 text-zinc-500 dark:text-zinc-400">{moment(event.time)}</span>
               <span className="min-w-0 text-zinc-700 dark:text-zinc-200">
                 <span className="font-bold text-rose-500">{code(event.body)}{event.kind === 'sign' && event.retrograde ? '℞' : ''}</span>
-                {event.kind === 'sign' && <> → <span className="whitespace-nowrap"><span className="font-bold">{SIGNS[event.to - 1]}</span> <span className="text-zinc-400 dark:text-zinc-500">H{house(event.to)}</span></span></>}
-                {event.kind === 'station' && <> {event.turnsTo === 'retrograde' ? `${t('turns retrograde')} ℞` : t('turns direct')} <span className="whitespace-nowrap text-zinc-400 dark:text-zinc-500">{SIGNS[event.sign - 1]} H{house(event.sign)}</span></>}
+                {event.kind === 'sign' && <> → <span className="whitespace-nowrap"><span className="font-bold">{SIGN_NAMES[event.to - 1]}</span> <span className="text-zinc-400 dark:text-zinc-500">H{house(event.to)}</span></span></>}
+                {event.kind === 'station' && <> {event.turnsTo === 'retrograde' ? `${t('turns retrograde')} ℞` : t('turns direct')} <span className="whitespace-nowrap text-zinc-400 dark:text-zinc-500">{SIGN_NAMES[event.sign - 1]} H{house(event.sign)}</span></>}
                 {event.kind === 'combust' && <> {event.combust ? t('becomes combust') : t('leaves combustion')}</>}
               </span>
             </li>

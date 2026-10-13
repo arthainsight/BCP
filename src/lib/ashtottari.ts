@@ -1,8 +1,8 @@
 import { buildDashaSubPeriods, buildDashaTimeline, type NakshatraDashaEntry } from './nakshatraDasha';
 import { normalizeDegrees } from './angles';
+import { SIGN_LORDS } from './signs';
 
 type EligibilityPlanet = { name: string; sign: number };
-const SIGN_LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'] as const;
 
 export interface AshtottariEligibility {
   eligible: boolean;

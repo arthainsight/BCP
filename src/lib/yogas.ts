@@ -1,6 +1,8 @@
 import { PlanetData } from '@/types';
 import { getRashiAspectSigns } from '@/lib/drishti';
 import { normalizeDegrees } from '@/lib/angles';
+import { signLord, signName } from '@/lib/signs';
+import { DEBILITATION, EXALTATION } from '@/lib/dignity';
 
 export type YogaStatus = 'active' | 'inactive';
 export type YogaCategory = 'solar' | 'moon' | 'raja' | 'dhana' | 'general' | 'pancha-mahapurusha';
@@ -20,26 +22,6 @@ export interface YogaResult {
 
 const ELIGIBLE = new Set(['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn']);
 const BENEFICS  = new Set(['Jupiter', 'Venus', 'Mercury']);
-
-const SIGN_LORDS: Record<number, string> = {
-  1: 'Mars',    2: 'Venus',   3: 'Mercury',  4: 'Moon',
-  5: 'Sun',     6: 'Mercury', 7: 'Venus',    8: 'Mars',
-  9: 'Jupiter', 10: 'Saturn', 11: 'Saturn',  12: 'Jupiter',
-};
-
-const SIGN_NAMES: Record<number, string> = {
-  1: 'Aries',       2: 'Taurus',      3: 'Gemini',      4: 'Cancer',
-  5: 'Leo',         6: 'Virgo',       7: 'Libra',       8: 'Scorpio',
-  9: 'Sagittarius', 10: 'Capricorn',  11: 'Aquarius',   12: 'Pisces',
-};
-
-const EXALTATION: Record<string, number> = {
-  Sun: 1, Moon: 2, Mars: 10, Mercury: 6, Jupiter: 4, Venus: 12, Saturn: 7,
-};
-
-const DEBILITATION: Record<string, number> = {
-  Sun: 7, Moon: 8, Mars: 4, Mercury: 12, Jupiter: 10, Venus: 6, Saturn: 1,
-};
 
 const PANCHA_DEFS: { id: string; name: string; planet: string; ownSigns: number[]; exaltSign: number }[] = [
   { id: 'ruchaka', name: 'Ruchaka', planet: 'Mars',    ownSigns: [1, 8],   exaltSign: 10 },
@@ -97,11 +79,11 @@ function getBeneficsInRelativeSign(referenceSign: number, relativeHouse: number,
 
 function houseLord(ascSign: number, houseNum: number): string {
   const houseSign = ((ascSign - 1 + houseNum - 1) % 12) + 1;
-  return SIGN_LORDS[houseSign];
+  return signLord(houseSign);
 }
 
 function sn(sign: number): string {
-  return SIGN_NAMES[sign] ?? `sign ${sign}`;
+  return signName(sign) ?? `sign ${sign}`;
 }
 
 function ordinal(n: number): string {

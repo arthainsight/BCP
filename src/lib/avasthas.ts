@@ -1,19 +1,11 @@
 import type { ChartData, PlanetData } from '@/types';
 import { calculateGrahaDrishti } from './drishti';
 import { calcSolarTimes } from './panchang/solar';
-import { DEBILITATION, EXALTATION, MOOLATRIKONA, OWN_SIGNS } from './dignity';
+import { DEBILITATION, EXALTATION, MOOLATRIKONA, NATURAL_ENEMIES, NATURAL_FRIENDS, OWN_SIGNS } from './dignity';
+import { signLord } from './signs';
 
 const CLASSICAL = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'] as const;
 const PLANET_NUMBER: Record<string, number> = { Sun: 1, Moon: 2, Mars: 3, Mercury: 4, Jupiter: 5, Venus: 6, Saturn: 7, Rahu: 8, Ketu: 9 };
-const SIGN_LORD = ['', 'Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'];
-const FRIENDS: Record<string, string[]> = {
-  Sun: ['Moon', 'Mars', 'Jupiter'], Moon: ['Sun', 'Mercury'], Mars: ['Sun', 'Moon', 'Jupiter'],
-  Mercury: ['Sun', 'Venus'], Jupiter: ['Sun', 'Moon', 'Mars'], Venus: ['Mercury', 'Saturn'], Saturn: ['Mercury', 'Venus'],
-};
-const ENEMIES: Record<string, string[]> = {
-  Sun: ['Venus', 'Saturn'], Moon: [], Mars: ['Mercury'], Mercury: ['Moon'],
-  Jupiter: ['Mercury', 'Venus'], Venus: ['Sun', 'Moon'], Saturn: ['Sun', 'Moon', 'Mars'],
-};
 const COMBUST_ORB: Record<string, number> = { Moon: 12, Mars: 17, Mercury: 14, Jupiter: 11, Venus: 10, Saturn: 15 };
 const SAYANADI = ['Śayana', 'Upaveśana', 'Netrāṇi', 'Prakāśa', 'Gamana', 'Āgamana', 'Sabhā', 'Āgama', 'Bhojana', 'Nṛtyalipsā', 'Kautuka', 'Nidrā'];
 
@@ -33,9 +25,9 @@ function angularDistance(a: number, b: number): number {
 }
 
 function relationship(planet: string, sign: number): 'friend' | 'enemy' | 'neutral' {
-  const lord = SIGN_LORD[sign];
-  if (FRIENDS[planet]?.includes(lord)) return 'friend';
-  if (ENEMIES[planet]?.includes(lord)) return 'enemy';
+  const lord = signLord(sign);
+  if (NATURAL_FRIENDS[planet]?.includes(lord)) return 'friend';
+  if (NATURAL_ENEMIES[planet]?.includes(lord)) return 'enemy';
   return 'neutral';
 }
 
@@ -64,9 +56,9 @@ function calculateDeeptadi(planet: PlanetData, sun: PlanetData | undefined): { v
   if (planet.sign === DEBILITATION[planet.name]) return { value: 'Duḥkhita', reason: 'debilitation sign' };
   if (OWN_SIGNS[planet.name]?.includes(planet.sign)) return { value: 'Svastha', reason: 'own sign' };
   const relation = relationship(planet.name, planet.sign);
-  if (relation === 'friend') return { value: 'Mudita', reason: `friend's sign (${SIGN_LORD[planet.sign]})` };
-  if (relation === 'enemy') return { value: 'Dīna', reason: `enemy's sign (${SIGN_LORD[planet.sign]})` };
-  return { value: 'Śānta', reason: `neutral sign (${SIGN_LORD[planet.sign]})` };
+  if (relation === 'friend') return { value: 'Mudita', reason: `friend's sign (${signLord(planet.sign)})` };
+  if (relation === 'enemy') return { value: 'Dīna', reason: `enemy's sign (${signLord(planet.sign)})` };
+  return { value: 'Śānta', reason: `neutral sign (${signLord(planet.sign)})` };
 }
 
 function calculateLajjitadi(planet: PlanetData, planets: PlanetData[]): { values: string[]; reason: string } {
@@ -78,14 +70,14 @@ function calculateLajjitadi(planet: PlanetData, planets: PlanetData[]): { values
   const values: string[] = [];
   const why: string[] = [];
   const malefics = ['Sun', 'Mars', 'Saturn', 'Rahu', 'Ketu'];
-  const enemies = ENEMIES[planet.name] ?? [];
+  const enemies = NATURAL_ENEMIES[planet.name] ?? [];
   const benefics = ['Moon', 'Mercury', 'Jupiter', 'Venus'];
 
   if (planet.house === 5 && conjunct.some((name) => malefics.includes(name))) { values.push('Lajjita'); why.push('5th house with a malefic/node'); }
   if (planet.sign === EXALTATION[planet.name] || planet.sign === MOOLATRIKONA[planet.name]) { values.push('Garvita'); why.push('exaltation/mūlatrikoṇa'); }
   if (relationship(planet.name, planet.sign) === 'enemy' || conjunct.some((name) => enemies.includes(name)) || aspecting.includes('Saturn')) { values.push('Kṣudhita'); why.push('enemy sign/conjunction or Saturn aspect'); }
   if ([4, 8, 12].includes(planet.sign) && aspecting.some((name) => enemies.includes(name)) && !aspecting.some((name) => benefics.includes(name))) { values.push('Tṛṣita'); why.push('water sign with enemy aspect and no benefic aspect'); }
-  if (relationship(planet.name, planet.sign) === 'friend' || conjunct.includes('Jupiter') || aspecting.some((name) => FRIENDS[planet.name]?.includes(name))) { values.push('Mudita'); why.push('friend sign/contact or Jupiter conjunction'); }
+  if (relationship(planet.name, planet.sign) === 'friend' || conjunct.includes('Jupiter') || aspecting.some((name) => NATURAL_FRIENDS[planet.name]?.includes(name))) { values.push('Mudita'); why.push('friend sign/contact or Jupiter conjunction'); }
   if (conjunct.includes('Sun') && (aspecting.some((name) => malefics.includes(name)) || conjunct.some((name) => enemies.includes(name)))) { values.push('Kṣobhita'); why.push('Sun conjunction plus malefic/enemy affliction'); }
   return { values, reason: why.join('; ') || 'no Lajjitādi condition triggered' };
 }

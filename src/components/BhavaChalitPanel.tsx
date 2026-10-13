@@ -6,8 +6,8 @@ import { buildChalit, type ChalitSystem } from '@/lib/bhavaChalit';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import NorthIndianChart from './NorthIndianChart';
+import { SIGN_ABBR } from '@/lib/signs';
 
-const SIGNS = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 const GRAHAS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 
 /** A longitude as "Cn 10°05′". */
@@ -15,7 +15,7 @@ function point(longitude: number): string {
   const inSign = longitude % 30;
   const degrees = Math.floor(inSign);
   const minutes = Math.floor((inSign - degrees) * 60);
-  return `${SIGNS[Math.floor(longitude / 30)]} ${degrees}°${String(minutes).padStart(2, '0')}′`;
+  return `${SIGN_ABBR[Math.floor(longitude / 30)]} ${degrees}°${String(minutes).padStart(2, '0')}′`;
 }
 
 /**
@@ -99,7 +99,7 @@ export default function BhavaChalitPanel({ chart }: { chart: ChartData }) {
                 {chalit.bhavas.map(bhava => (
                   <tr key={bhava.house} data-bhava={bhava.house} className="text-zinc-700 dark:text-zinc-200">
                     <th scope="row" className={`${cell} font-semibold`}>{bhava.house}</th>
-                    <td className={cell}>{SIGNS[(chart.ascendant.sign + bhava.house - 2) % 12]}</td>
+                    <td className={cell}>{SIGN_ABBR[(chart.ascendant.sign + bhava.house - 2) % 12]}</td>
                     <td className={cell}>{point(bhava.madhya)}</td>
                     <td className={cell}>{point(bhava.start)}</td>
                     <td className={cell}>{point(bhava.end)}</td>

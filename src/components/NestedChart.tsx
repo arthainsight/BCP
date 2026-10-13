@@ -13,6 +13,7 @@ import { INNER_SQUARE, SOUTH_CENTRE, centroidOf, northRegions, southRegions, typ
 import { dashaMark, dignityColor } from './chartLayers';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import NorthIndianChart, { getNakAbbr } from './NorthIndianChart';
+import { SIGN_ABBR } from '@/lib/signs';
 
 type ChartProps = ComponentProps<typeof NorthIndianChart>;
 
@@ -35,7 +36,6 @@ const SPECIAL_COLOR = '#d97706';
 const ASCENDANT_COLOR = '#c026d3';
 const HIGHLIGHT_COLOR = '#0891b2';
 const BASE_LABEL_SIZE = 16;
-const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 
 const signForHouse = (lagnaSign: number, house: number) => ((lagnaSign + house - 2) % 12) + 1;
 

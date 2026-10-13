@@ -6,6 +6,7 @@ import { COMBUST_ORBS, collectTimingEvents, type TimingEvent } from '@/lib/signC
 import type { LongitudeSeries } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { SIGN_NAMES } from '@/lib/signs';
 
 type Props = {
   chart: ChartData;
@@ -16,7 +17,6 @@ type Props = {
 };
 
 const BODIES = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'] as const;
-const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 const RANGES = [
   { label: '1 mo', days: 31 },
   { label: '3 mo', days: 92 },
@@ -152,14 +152,14 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
                   <>
                     <span className="font-bold text-rose-500">{code(event.body)}{event.retrograde ? '℞' : ''}</span>
                     {` → `}
-                    <span className="whitespace-nowrap"><span className="font-bold">{SIGNS[event.to - 1]}</span><span className="text-zinc-400 dark:text-zinc-500"> H{house(event.to)}</span></span>
+                    <span className="whitespace-nowrap"><span className="font-bold">{SIGN_NAMES[event.to - 1]}</span><span className="text-zinc-400 dark:text-zinc-500"> H{house(event.to)}</span></span>
                   </>
                 )}
                 {event.kind === 'station' && (
                   <>
                     <span className="font-bold text-amber-600 dark:text-amber-400">{code(event.body)}</span>
                     {` ${event.turnsTo === 'retrograde' ? t('turns retrograde') + ' ℞' : t('turns direct')} `}
-                    <span className="whitespace-nowrap text-zinc-400 dark:text-zinc-500">{SIGNS[event.sign - 1]} H{house(event.sign)}</span>
+                    <span className="whitespace-nowrap text-zinc-400 dark:text-zinc-500">{SIGN_NAMES[event.sign - 1]} H{house(event.sign)}</span>
                   </>
                 )}
                 {event.kind === 'combust' && (

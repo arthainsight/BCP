@@ -1,7 +1,7 @@
 'use client';
 
 import type { ChartData } from '@/types';
-import { SIGN_ABBR } from '@/lib/varga';
+import { SIGN_ABBR } from '@/lib/signs';
 import { calculateDevaKeralamNadiAmsa, calculateNadiD150 } from '@/lib/nadiAmsa';
 import { normalizeDegrees } from '@/lib/angles';
 

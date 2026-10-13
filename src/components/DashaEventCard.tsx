@@ -5,7 +5,8 @@ import type { TransitLocation } from '@/hooks/useEventTransits';
 import type { DashaEventSnapshot } from '@/lib/dashaEvents';
 import { DASHA_EVENT_CATEGORY_LABELS, DASHA_EVENT_VARGAS, formatEventDate, type DashaEventCategory, type DashaEventVarga, type StoredDashaEvent } from '@/lib/dashaEventStore';
 import { fill, useT } from '@/lib/i18n';
-import { getVargaSignIndex, SIGN_ABBR } from '@/lib/varga';
+import { SIGN_ABBR } from '@/lib/signs';
+import { getVargaSignIndex } from '@/lib/varga';
 import EventTransits from './EventTransits';
 
 const SELECT = 'mt-1 min-h-11 w-full min-w-0 rounded border border-zinc-300 bg-white px-1.5 py-2 dark:border-zinc-700 dark:bg-zinc-900';

@@ -1,4 +1,5 @@
 import { normalizeDegrees } from './angles';
+import { SIGN_ABBR, SIGN_LORDS } from './signs';
 export type OccupantDetail = {
   name: string;
   nature: 'benefic' | 'malefic';
@@ -64,8 +65,6 @@ type ShadbalaEntry = {
   ratio: number;
 };
 
-const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
-const SIGN_LORDS = ['Mars', 'Venus', 'Mercury', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars', 'Jupiter', 'Saturn', 'Saturn', 'Jupiter'];
 const PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 const BENEFICS = new Set(['Moon', 'Mercury', 'Jupiter', 'Venus']);
 

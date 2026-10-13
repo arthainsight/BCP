@@ -1,4 +1,5 @@
 import type { DashaEventSnapshot } from './dashaEvents';
+import { SIGN_ABBR, SIGN_LORDS } from './signs';
 
 export interface DashaPatternRecord {
   eventId: string;
@@ -19,7 +20,8 @@ export interface DashaEventPattern {
   confidence: 'low sample' | 'indicative' | 'strong';
 }
 
-const SIGN_LORDS: Record<string, string> = { ar: 'Mars', ta: 'Venus', ge: 'Mercury', cn: 'Moon', le: 'Sun', vi: 'Mercury', li: 'Venus', sc: 'Mars', sg: 'Jupiter', cp: 'Saturn', aq: 'Saturn', pi: 'Jupiter' };
+/** The lord of the sign whose abbreviation (any case) is the value of a level, if it is one. */
+const lordOfAbbr = (value: string) => SIGN_LORDS[SIGN_ABBR.findIndex(abbr => abbr.toLocaleLowerCase() === value.toLocaleLowerCase())];
 
 export function analyzeDashaEventPatterns(records: DashaPatternRecord[], category = 'all'): DashaEventPattern[] {
   const patterns = new Map<string, DashaEventPattern>();
@@ -32,7 +34,7 @@ export function analyzeDashaEventPatterns(records: DashaPatternRecord[], categor
       candidates.push({ level: levels.map(item => item.level).join(' + '), value: levels.map(item => item.value).join(' › '), kind: 'combination' });
     }
     for (const level of record.snapshot.levels) {
-      const lord = SIGN_LORDS[level.value.toLocaleLowerCase()];
+      const lord = lordOfAbbr(level.value);
       if (lord) candidates.push({ level: `${level.level} ruler`, value: lord, kind: 'ruler' });
     }
     for (const candidate of candidates) {

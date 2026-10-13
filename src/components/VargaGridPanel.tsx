@@ -23,6 +23,7 @@ import ChartExportButtons from './ChartExportButtons';
 import StyledChart from './StyledChart';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
+import { SIGN_ABBR } from '@/lib/signs';
 
 const STORAGE_KEY = 'vargaGrid';
 const PLANET_ORDER = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
@@ -35,7 +36,6 @@ type Props = {
   dashaLords?: DashaLordMarks | null;
 };
 
-const SIGN_ABBR = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
 
 const PILL = 'shrink-0 rounded-md px-2 py-1.5 text-[10px] font-mono';
 const PILL_ON = 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400';

@@ -5,6 +5,7 @@ import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import { normalizeDegrees } from '@/lib/angles';
 import { grahaCode, grahaCodeFromEnglishCode, grahaName, useGrahaNames } from '@/lib/grahaNames';
 import type { GrahaNameStyle } from '@/types';
+import { SIGN_ABBR } from '@/lib/signs';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 
@@ -14,10 +15,6 @@ const KARAKA_NAMES: Record<string, string> = {
   PiK: 'Pitṛkāraka', PuK: 'Putrakāraka', GK: 'Jñātikāraka', DK: 'Dārakāraka',
 };
 
-const SIGN_ABBR: Record<number, string> = {
-  1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi',
-  7: 'Li', 8: 'Sc', 9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi',
-};
 
 const NAKSHATRAS = [
   { name: 'Aśvinī', lord: 'Ke' },
@@ -90,11 +87,11 @@ function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, strin
     code: graha.code + (planet.isRetrograde ? ' ℞' : ''),
     name: graha.name,
     karaka: karakaByPlanet[planet.name] ?? '',
-    position: `${SIGN_ABBR[planet.sign]} ${tableFormatDeg(planet.degree, precision)}`,
+    position: `${SIGN_ABBR[planet.sign - 1]} ${tableFormatDeg(planet.degree, precision)}`,
     nakshatra: `${nak.name}(${nak.number}) ${grahaCodeFromEnglishCode(nak.lord, style)}`,
     pada: nak.pada,
     pada108: nak.pada108,
-    d108: `${SIGN_ABBR[d108.sign]} (${d108.part})`,
+    d108: `${SIGN_ABBR[d108.sign - 1]} (${d108.part})`,
   };
 }
 
@@ -133,11 +130,11 @@ export default function JyotishGrahaTable({
       code: sl.name,
       name: sl.name,
       karaka: '',
-      position: `${SIGN_ABBR[sl.sign]} ${tableFormatDeg(sl.degree, degreePrecision)}`,
+      position: `${SIGN_ABBR[sl.sign - 1]} ${tableFormatDeg(sl.degree, degreePrecision)}`,
       nakshatra: `${nak.name}(${nak.number}) ${grahaCodeFromEnglishCode(nak.lord, style)}`,
       pada: nak.pada,
       pada108: nak.pada108,
-      d108: `${SIGN_ABBR[d108.sign]} (${d108.part})`,
+      d108: `${SIGN_ABBR[d108.sign - 1]} (${d108.part})`,
       isSpecial: true,
     };
   };
@@ -151,11 +148,11 @@ export default function JyotishGrahaTable({
       code: 'As',
       name: 'Lagna',
       karaka: '',
-      position: `${SIGN_ABBR[chart.ascendant.sign]} ${tableFormatDeg(chart.ascendant.degree, degreePrecision)}`,
+      position: `${SIGN_ABBR[chart.ascendant.sign - 1]} ${tableFormatDeg(chart.ascendant.degree, degreePrecision)}`,
       nakshatra: `${ascNak.name}(${ascNak.number}) ${grahaCodeFromEnglishCode(ascNak.lord, style)}`,
       pada: ascNak.pada,
       pada108: ascNak.pada108,
-      d108: `${SIGN_ABBR[ascD108.sign]} (${ascD108.part})`,
+      d108: `${SIGN_ABBR[ascD108.sign - 1]} (${ascD108.part})`,
       isSpecial: false,
     },
     ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet, adjLon, degreePrecision, style), isSpecial: false })),

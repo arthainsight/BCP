@@ -1,5 +1,6 @@
 import { CharaOptions, PlanetData } from '@/types';
 import { calculateCharaKarakas } from './karakas';
+import { signAbbr, signLord, signName } from './signs';
 
 export interface CleanCharaEntry {
   sign: number;
@@ -24,9 +25,6 @@ export interface CleanCharaResult {
   entries: CleanCharaEntry[];
 }
 
-const SIGN_NAMES: Record<number, string> = { 1: 'Aries', 2: 'Taurus', 3: 'Gemini', 4: 'Cancer', 5: 'Leo', 6: 'Virgo', 7: 'Libra', 8: 'Scorpio', 9: 'Sagittarius', 10: 'Capricorn', 11: 'Aquarius', 12: 'Pisces' };
-const SIGN_ABBR: Record<number, string> = { 1: 'Ar', 2: 'Ta', 3: 'Ge', 4: 'Cn', 5: 'Le', 6: 'Vi', 7: 'Li', 8: 'Sc', 9: 'Sg', 10: 'Cp', 11: 'Aq', 12: 'Pi' };
-const LORDS: Record<number, string> = { 1: 'Mars', 2: 'Venus', 3: 'Mercury', 4: 'Moon', 5: 'Sun', 6: 'Mercury', 7: 'Venus', 8: 'Mars', 9: 'Jupiter', 10: 'Saturn', 11: 'Saturn', 12: 'Jupiter' };
 const EXALT: Record<string, number> = { Sun: 1, Moon: 2, Mars: 10, Mercury: 6, Jupiter: 4, Venus: 12, Saturn: 7, Rahu: 3, Ketu: 9 };
 const DEBIL: Record<string, number> = { Sun: 7, Moon: 8, Mars: 4, Mercury: 12, Jupiter: 10, Venus: 6, Saturn: 1, Rahu: 9, Ketu: 3 };
 const MOVABLE = new Set([1, 4, 7, 10]);
@@ -47,7 +45,7 @@ function directionFor(sign: number, options: CharaOptions): 1 | -1 {
 function lordFor(sign: number, options: CharaOptions): string {
   if (sign === 8) return options.scorpioLord;
   if (sign === 11) return options.aquariusLord;
-  return LORDS[sign];
+  return signLord(sign);
 }
 
 function countSigns(from: number, to: number, direction: 1 | -1, mode: 'inclusive' | 'exclusive'): number {
@@ -100,8 +98,8 @@ export function calculateCleanCharaMD(planets: PlanetData[], ascSign: number, bi
     const endDate = addYears(cursorDate, d.years);
     entries.push({
       sign,
-      signName: SIGN_NAMES[sign],
-      abbr: SIGN_ABBR[sign],
+      signName: signName(sign),
+      abbr: signAbbr(sign),
       startDate: cursorDate,
       endDate,
       durationYears: d.years,
@@ -124,8 +122,8 @@ export function calculateCleanCharaSubDashas(parent: CleanCharaEntry, options: C
     const endDate = addYears(cursorDate, durationYears);
     entries.push({
       sign,
-      signName: SIGN_NAMES[sign],
-      abbr: SIGN_ABBR[sign],
+      signName: signName(sign),
+      abbr: signAbbr(sign),
       startDate: cursorDate,
       endDate,
       durationYears,

@@ -20,15 +20,6 @@ export { getSignIndex, getDegreesInSign } from './utils';
 export { calcD1, calcD2, calcD3, calcD4, calcD5, calcD7, calcD9, calcD10,
          calcD12, calcD16, calcD20, calcD24, calcD27, calcD30, calcD40, calcD45, calcD60 };
 
-export const SIGN_NAMES = [
-  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
-  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces',
-] as const;
-
-export const SIGN_ABBR = [
-  'Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi',
-  'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi',
-] as const;
 
 export interface VargaRow {
   D1:  number;
