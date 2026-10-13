@@ -956,6 +956,44 @@ test('the Event List is in Finnish, with its messages and Undo', async ({ page }
   expect(errors).toEqual([]);
 });
 
+test('the Vimsottari daśās drill down level by level, and NOW opens the running periods', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  // The original method of U K Jha is switched on in Settings; it shares the drill-down with the plain Vimsottari.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /dasha systems/ })).click();
+  await visible(page, page.getByText('Vimsottari Original (U K Jha)')).locator('..').getByRole('switch').click();
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+
+  for (const system of [/^Vimsottari (?!Utpanna|Kshema|Adhana|Original)/, /^Vimsottari Original/]) {
+    const card = visible(page, page.getByRole('button', { name: system }));
+    await card.click();
+    const panel = visible(page, page.locator('div.space-y-3').filter({ has: page.getByRole('button', { name: 'NOW', exact: true }) }));
+    await expect(panel).toContainText('active now');
+    await expect(panel).toContainText(/MD · \d+ periods/);
+    // The method of U K Jha shows its own parameters above the periods.
+    if (system.source.includes('Original')) await expect(panel).toContainText('original method parameters');
+
+    // A period opens the periods inside it; back goes up again.
+    await panel.getByRole('button', { name: /^(Ke|Ve|Su|Mo|Ma|Ra|Ju|Sa|Me)\b/ }).first().click();
+    await expect(panel).toContainText(/AD · \d+ periods/);
+    await panel.getByRole('button', { name: '← back' }).click();
+    await expect(panel).toContainText(/MD · \d+ periods/);
+
+    // NOW goes to the deepest of the periods running now, with the ones above it as the way back.
+    await panel.getByRole('button', { name: 'NOW', exact: true }).click();
+    await expect(panel).not.toContainText(/MD · \d+ periods/);
+    await expect(panel.getByRole('button', { name: '← back' })).toBeEnabled();
+    await card.click();
+  }
+  await expect(visible(page, page.getByText('original method parameters'))).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('the timing panel can take the whole width on a wide screen', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'the wide mode is for a wide screen');
   const errors: string[] = [];

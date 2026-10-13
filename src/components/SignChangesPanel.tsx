@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
 import { COMBUST_ORBS, collectTimingEvents, type TimingEvent } from '@/lib/signChanges';
 import type { LongitudeSeries } from '@/lib/transitHits';
@@ -8,6 +8,8 @@ import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_NAMES } from '@/lib/signs';
 import { pad2 } from '@/lib/dateFormat';
+import { signChangesUrl } from '@/lib/apiParams';
+import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 
 type Props = {
   chart: ChartData;
@@ -27,7 +29,7 @@ const FIRST_ROWS = 20;
 type Event = TimingEvent & { time: number };
 const DEFAULT_BODIES = BODIES.filter(body => body !== 'Moon');
 
-type Loaded = { key: string; start: number; series: Record<string, { step: number; longitudes: number[] }> };
+type Loaded = { start: number; series: Record<string, { step: number; longitudes: number[] }> };
 
 
 function formatMoment(time: number): string {
@@ -46,46 +48,11 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
   const [days, setDays] = useState(92);
   const [stations, setStations] = useState(true);
   const [showAll, setShowAll] = useState(false);
-  const [data, setData] = useState<Loaded | null>(null);
-  const [error, setError] = useState('');
-
   const bodies = BODIES.filter(body => selected.includes(body));
   // Combustion compares Mercury and Venus with the Sun, so the Sun is fetched along.
   const needsSun = stations && bodies.some(body => body in COMBUST_ORBS);
   const requested = needsSun ? BODIES.filter(body => body === 'Sun' || bodies.includes(body)) : bodies;
-  const key = [
-    targetDate, days, requested.join(','),
-    calculationSettings?.ayanamsa ?? 'lahiri',
-    calculationSettings?.ayanamsaOffsetDegrees ?? 0,
-    calculationSettings?.nodeMode ?? 'mean',
-  ].join('|');
-
-  useEffect(() => {
-    if (bodies.length === 0 || data?.key === key) return;
-    const controller = new AbortController();
-    // Wait for the date to settle while it is being stepped.
-    const timer = window.setTimeout(async () => {
-      const params = new URLSearchParams({
-        start: targetDate,
-        days: String(days),
-        bodies: requested.join(','),
-        ayanamsa: calculationSettings?.ayanamsa ?? 'lahiri',
-        ayanamsaOffset: String(calculationSettings?.ayanamsaOffsetDegrees ?? 0),
-        nodeMode: calculationSettings?.nodeMode ?? 'mean',
-      });
-      try {
-        const response = await fetch(`/api/sign-changes?${params}`, { signal: controller.signal });
-        const json = await response.json();
-        if (!response.ok) throw new Error(json.error ?? 'Request failed');
-        setData({ key, start: json.start, series: json.series });
-        setError('');
-      } catch (caught) {
-        if (!controller.signal.aborted) setError(caught instanceof Error ? caught.message : 'Request failed');
-      }
-    }, 400);
-    return () => { window.clearTimeout(timer); controller.abort(); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, data?.key]);
+  const { data, error, loading } = useDebouncedJson<Loaded>(bodies.length > 0 ? signChangesUrl(targetDate, days, requested, calculationSettings) : null);
 
   const events: Event[] = useMemo(() => {
     if (!data) return [];
@@ -97,7 +64,6 @@ export default function SignChangesPanel({ chart, targetDate, calculationSetting
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, stations]);
 
-  const loading = bodies.length > 0 && data?.key !== key && !error;
   const rows = showAll ? events : events.slice(0, FIRST_ROWS);
   const house = (sign: number) => ((sign - chart.ascendant.sign + 12) % 12) + 1;
 

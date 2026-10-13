@@ -1,4 +1,5 @@
 import { ChartDisplaySettings, CalculationSettings, DashaSettings } from '@/types';
+import { newId } from './ids';
 
 export interface SavedChartData {
   birthDatetime: string;
@@ -56,10 +57,7 @@ export function saveChartAsNew(name: string, chartData: SavedChartData): SavedCh
   const charts = loadSavedCharts();
   const now = new Date().toISOString();
   const newChart: SavedChart = {
-    id:
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    id: newId(),
     name,
     createdAt: now,
     updatedAt: now,

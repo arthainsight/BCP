@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { noteList, type Annotation } from '@/lib/palm/annotations';
 import type { PalmRecord } from '@/lib/palm/storage';
 import { useT } from '@/lib/i18n';
 import PalmCanvas from './PalmCanvas';
+import { useOverlay } from '@/hooks/useOverlay';
 
 type Props = {
   record: PalmRecord;
@@ -25,16 +26,7 @@ export default function PalmClientView({ record, imageUrl, annotations, onClose 
   const [focus, setFocus] = useState<{ id: string | null; nonce: number }>({ id: null, nonce: 0 });
   const [showNotes, setShowNotes] = useState(true);
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [onClose]);
+  useOverlay(onClose);
 
   const show = (id: string) => {
     setSelectedId(id);

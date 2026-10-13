@@ -1,3 +1,4 @@
+import { newId } from '../ids';
 // Annotations drawn on a palm photograph.
 //
 // Everything is kept in image pixels, so the drawing looks the same at any zoom
@@ -65,12 +66,6 @@ export const clampStroke = (units: number) =>
 export const BADGE_UNITS = 22;
 export const TEXT_UNITS = 38;
 export const LABEL_UNITS = 32;
-
-export function newId(): string {
-  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
-    ? crypto.randomUUID()
-    : `a${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-}
 
 // ── Geometry ───────────────────────────────────────────────────────────────
 

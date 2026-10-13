@@ -31,6 +31,8 @@ import { setSplitView, useSplitView } from '@/hooks/useSplitView';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
 import { saveFile } from '@/lib/download';
+import { newId } from '@/lib/ids';
+import { calculationParams } from '@/lib/apiParams';
 
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'settings';
@@ -297,6 +299,9 @@ export default function Home() {
     setShowCoords(true);
   }, []);
 
+  // The settings the chart routes take, rebuilt only when one of them changes.
+  const { ayanamsa, ayanamsaOffsetDegrees, nodeMode } = calculationSettings;
+  const settingsParams = useMemo(() => calculationParams({ ayanamsa, ayanamsaOffsetDegrees, nodeMode }), [ayanamsa, ayanamsaOffsetDegrees, nodeMode]);
   const performCalculation = useCallback(
     async (dt: string, lat: number, lng: number, tzOffset: number, tDate: string, options?: CalculationOptions) => {
       setError('');
@@ -320,9 +325,7 @@ export default function Home() {
         const params = new URLSearchParams({
           year: yyyy, month: mm, day: dd, hour: hh, minute: min, second: ss,
           lat: String(lat), lng: String(lng), tz: String(tzOffset),
-          ayanamsa: calculationSettings.ayanamsa,
-          ayanamsaOffset: String(calculationSettings.ayanamsaOffsetDegrees ?? 0),
-          nodeMode: calculationSettings.nodeMode,
+          ...settingsParams,
           sunrise: calculationSettings.sunriseMode ?? 'true',
         });
 
@@ -347,7 +350,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [calculationSettings.ayanamsa, calculationSettings.ayanamsaOffsetDegrees, calculationSettings.nodeMode, calculationSettings.sunriseMode]
+    [settingsParams, calculationSettings.sunriseMode]
   );
 
   const handleCalculate = useCallback(async (options?: CalculationOptions) => {
@@ -418,9 +421,7 @@ export default function Home() {
       const params = new URLSearchParams({
         year: yyyy, month: mm, day: dd, hour: hh, minute: min, second: ss,
         lat: String(lat), lng: String(lng), tz: String(effectiveTzOffset),
-        ayanamsa: calculationSettings.ayanamsa,
-        ayanamsaOffset: String(calculationSettings.ayanamsaOffsetDegrees ?? 0),
-        nodeMode: calculationSettings.nodeMode,
+        ...settingsParams,
       });
       const res = await fetch('/api/chart?' + params.toString());
       const data = await res.json();
@@ -438,7 +439,7 @@ export default function Home() {
     } finally {
       setTransitLoading(false);
     }
-  }, [transitDatetime, chartData, manualLat, manualLng, effectiveTzOffset, calculationSettings.ayanamsa, calculationSettings.ayanamsaOffsetDegrees, calculationSettings.nodeMode]);
+  }, [transitDatetime, chartData, manualLat, manualLng, effectiveTzOffset, settingsParams]);
 
   useEffect(() => {
     if (!chartData || !transitDatetime.trim()) return;
@@ -479,10 +480,7 @@ export default function Home() {
           for (const chart of parsed.charts) {
             if (!chart || typeof chart !== 'object') continue;
             if (existingIds.has(chart.id)) {
-              chart.id =
-                typeof crypto !== 'undefined' && crypto.randomUUID
-                  ? crypto.randomUUID()
-                  : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+              chart.id = newId();
             }
             existing.push(chart);
             imported++;

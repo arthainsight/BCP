@@ -17,6 +17,7 @@ import DashaEventForm, { type NewEvent } from './DashaEventForm';
 import DashaEventPaste from './DashaEventPaste';
 import DashaEventPatterns from './DashaEventPatterns';
 import { csvText, saveFile } from '@/lib/download';
+import { newId } from '@/lib/ids';
 
 type SnapshotKey = DashaEventSnapshot['key'];
 
@@ -43,7 +44,6 @@ interface Props {
 const MAX_IMPORT_BYTES = 2_000_000;
 const TOOL = 'min-h-11 rounded border px-2 py-2 text-[10px] font-mono';
 
-const newId = () => globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
 
 /** The saved events of a chart (mode "events"), or the patterns that repeat across them (mode "patterns"). */
 export default function DashaEventList({

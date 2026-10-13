@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
 import { findTransitHits, type LongitudeSeries, type TransitHit } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { pad2 } from '@/lib/dateFormat';
+import { transitHitsUrl } from '@/lib/apiParams';
+import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 
 type Props = {
   chart: ChartData;
@@ -34,46 +36,13 @@ export default function TransitHitsPanel({ chart, targetDate, calculationSetting
   const { code } = useGrahaNames();
   const [open, setOpen] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const [data, setData] = useState<{ key: string; series: Series } | null>(null);
-  const [error, setError] = useState('');
-
-  const key = [
-    targetDate,
-    calculationSettings?.ayanamsa ?? 'lahiri',
-    calculationSettings?.ayanamsaOffsetDegrees ?? 0,
-    calculationSettings?.nodeMode ?? 'mean',
-  ].join('|');
-
-  useEffect(() => {
-    if (!open || data?.key === key) return;
-    const controller = new AbortController();
-    // Wait for the date to settle while it is being stepped.
-    const timer = window.setTimeout(async () => {
-      const params = new URLSearchParams({
-        start: targetDate,
-        days: '366',
-        ayanamsa: calculationSettings?.ayanamsa ?? 'lahiri',
-        ayanamsaOffset: String(calculationSettings?.ayanamsaOffsetDegrees ?? 0),
-        nodeMode: calculationSettings?.nodeMode ?? 'mean',
-      });
-      try {
-        const response = await fetch(`/api/transit-hits?${params}`, { signal: controller.signal });
-        const json = await response.json();
-        if (!response.ok) throw new Error(json.error ?? 'Request failed');
-        setData({ key, series: json });
-        setError('');
-      } catch (caught) {
-        if (!controller.signal.aborted) setError(caught instanceof Error ? caught.message : 'Request failed');
-      }
-    }, 400);
-    return () => { window.clearTimeout(timer); controller.abort(); };
-  }, [open, key, data?.key, targetDate, calculationSettings]);
+  const { data, error, loading } = useDebouncedJson<Series>(open ? transitHitsUrl(targetDate, calculationSettings) : null);
 
   const hits: TransitHit[] = useMemo(() => {
     if (!data) return [];
     const series: Record<string, LongitudeSeries> = {};
-    for (const [body, longitudes] of Object.entries(data.series.longitudes)) {
-      series[body] = { start: data.series.start, step: data.series.step, longitudes };
+    for (const [body, longitudes] of Object.entries(data.longitudes)) {
+      series[body] = { start: data.start, step: data.step, longitudes };
     }
     const natal = [
       ...chart.planets.filter(p => NATAL.includes(p.name)).map(p => ({ name: p.name, longitude: p.longitude })),
@@ -82,7 +51,6 @@ export default function TransitHitsPanel({ chart, targetDate, calculationSetting
     return findTransitHits(series, natal);
   }, [data, chart]);
 
-  const loading = open && data?.key !== key && !error;
   const rows = showAll ? hits : hits.slice(0, FIRST_ROWS);
 
   return (

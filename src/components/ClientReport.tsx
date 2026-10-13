@@ -13,6 +13,7 @@ import type { DashaLordMarks } from './chartLayers';
 import ChartDivisionsView from './ChartDivisionsView';
 import JyotishGrahaTable from './JyotishGrahaTable';
 import TimingSummary from './TimingSummary';
+import { useOverlay } from '@/hooks/useOverlay';
 
 type Props = {
   chart: ChartData | null;
@@ -120,16 +121,7 @@ export default function ClientReport({
     document.title = title.trim() || previous;
     return () => { document.title = previous; };
   }, [title]);
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose(); };
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [onClose]);
+  useOverlay(onClose);
 
   // The palm photographs are kept in the browser's database; all of them are in the report until they are unticked.
   useEffect(() => {

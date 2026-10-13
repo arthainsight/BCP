@@ -13,6 +13,7 @@ import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_NAMES } from '@/lib/signs';
 import { pad2 } from '@/lib/dateFormat';
+import { signChangesUrl, transitHitsUrl } from '@/lib/apiParams';
 
 type Props = {
   chart: ChartData;
@@ -55,15 +56,9 @@ export default function TimingSummary({ chart, birthDatetime, targetDate, dashaS
       .filter(snapshot => enabled[snapshot.key as keyof typeof enabled]);
   }, [birthDatetime, targetDate, dashaSettings, chart]);
 
-  const settings = new URLSearchParams({
-    start: targetDate,
-    ayanamsa: calculationSettings?.ayanamsa ?? 'lahiri',
-    ayanamsaOffset: String(calculationSettings?.ayanamsaOffsetDegrees ?? 0),
-    nodeMode: calculationSettings?.nodeMode ?? 'mean',
-  });
   const validDate = Boolean(parseTargetDateString(targetDate));
-  const signUrl = validDate ? `/api/sign-changes?${new URLSearchParams({ days: '92', bodies: BODIES.join(','), ...Object.fromEntries(settings) })}` : null;
-  const hitUrl = validDate ? `/api/transit-hits?${new URLSearchParams({ days: '366', ...Object.fromEntries(settings) })}` : null;
+  const signUrl = validDate ? signChangesUrl(targetDate, 92, BODIES, calculationSettings) : null;
+  const hitUrl = validDate ? transitHitsUrl(targetDate, calculationSettings) : null;
   const signs = useDebouncedJson<SignSeries>(signUrl);
   const hits = useDebouncedJson<HitSeries>(hitUrl);
 
