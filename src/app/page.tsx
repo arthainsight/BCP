@@ -31,7 +31,7 @@ import { setSplitView, useSplitView } from '@/hooks/useSplitView';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
 import { saveFile } from '@/lib/download';
-import { newId } from '@/lib/ids';
+import { exportSavedCharts, importSavedCharts } from '@/lib/savedCharts';
 import { calculationParams } from '@/lib/apiParams';
 
 
@@ -43,37 +43,12 @@ type CalculationOptions = {
   preserveCurrentPanel?: boolean;
 };
 
-// Maps the three primary workspaces (plus Settings) onto the existing tab
-// machinery. Desktop always shows the chart on the left, so CHART targets the
-// birth-data panel on the right; mobile shows a single full-screen panel.
-const WORKSPACE_TO_DESKTOP: Record<Workspace, DesktopTab> = {
-  chart: 'data',
-  timing: 'dasha',
-  analysis: 'grahas',
-  palm: 'palm',
-  settings: 'settings',
-};
-const WORKSPACE_TO_MOBILE: Record<Workspace, TabId> = {
-  chart: 'chart',
-  timing: 'dasha',
-  analysis: 'grahas',
-  palm: 'palm',
-  settings: 'settings',
-};
-function desktopToWorkspace(tab: DesktopTab): Workspace {
-  switch (tab) {
-    case 'dasha': return 'timing';
-    case 'grahas': return 'analysis';
-    case 'palm': return 'palm';
-    case 'settings': return 'settings';
-    default: return 'chart'; // 'data' lands on CHART
-  }
-}
-
-
-
-// The phone's current screen as a workspace: the data and the chart are both CHART.
-function mobileToWorkspace(tab: TabId): Workspace {
+// The primary workspaces (and Settings) and the screens that show them. The wide layout always shows the chart on the
+// left, so there CHART is the birth-data panel on the right; a phone shows one screen at a time, and CHART is the chart.
+const WORKSPACE_TO_DESKTOP: Record<Workspace, DesktopTab> = { chart: 'data', timing: 'dasha', analysis: 'grahas', palm: 'palm', settings: 'settings' };
+const WORKSPACE_TO_MOBILE: Record<Workspace, TabId> = { chart: 'chart', timing: 'dasha', analysis: 'grahas', palm: 'palm', settings: 'settings' };
+/** The workspace a screen belongs to: the birth data and the chart both belong to CHART. */
+function tabToWorkspace(tab: TabId): Workspace {
   switch (tab) {
     case 'dasha': return 'timing';
     case 'grahas': return 'analysis';
@@ -448,14 +423,9 @@ export default function Home() {
   }, [chartData, transitDatetime, handleCalculateTransit]);
 
   const handleExportCharts = useCallback(() => {
-    const raw = localStorage.getItem('bcp_saved_charts');
-    const charts = raw ? JSON.parse(raw) : [];
-    if (!charts.length) {
-      alert('No saved charts to export.');
-      return;
-    }
-    const payload = JSON.stringify({ exportedAt: new Date().toISOString(), charts }, null, 2);
-    saveFile('bcp-charts-export.json', payload, 'application/json');
+    const exported = exportSavedCharts();
+    if (exported === null) alert('No saved charts to export.');
+    else saveFile('bcp-charts-export.json', exported, 'application/json');
   }, []);
 
   const handleImportCharts = useCallback(() => {
@@ -468,24 +438,7 @@ export default function Home() {
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          const parsed = JSON.parse(reader.result as string);
-          if (!Array.isArray(parsed?.charts)) {
-            alert('Invalid export file: missing "charts" array.');
-            return;
-          }
-          const raw = localStorage.getItem('bcp_saved_charts');
-          const existing: { id: string }[] = raw ? JSON.parse(raw) : [];
-          const existingIds = new Set(existing.map((c) => c.id));
-          let imported = 0;
-          for (const chart of parsed.charts) {
-            if (!chart || typeof chart !== 'object') continue;
-            if (existingIds.has(chart.id)) {
-              chart.id = newId();
-            }
-            existing.push(chart);
-            imported++;
-          }
-          localStorage.setItem('bcp_saved_charts', JSON.stringify(existing));
+          const imported = importSavedCharts(reader.result as string);
           alert(`Imported ${imported} chart${imported !== 1 ? 's' : ''}.`);
         } catch {
           alert('Failed to read file. Make sure it is a valid export file.');
@@ -732,16 +685,16 @@ export default function Home() {
 
       {/* Primary navigation: CHART / TIMING / ANALYSIS + Settings gear (desktop). */}
       <PrimaryNav
-        active={mobileToWorkspace(activeTab)}
+        active={tabToWorkspace(activeTab)}
         onChange={(ws) => navigate(ws, activeTab === 'settings')}
         show="mobile"
-        split={splitNav(mobileToWorkspace(activeTab))}
+        split={splitNav(tabToWorkspace(activeTab))}
       />
       <PrimaryNav
-        active={desktopToWorkspace(desktopTab)}
+        active={tabToWorkspace(desktopTab)}
         onChange={(ws) => navigate(ws, desktopTab === 'settings')}
         show="desktop"
-        split={splitNav(desktopToWorkspace(desktopTab))}
+        split={splitNav(tabToWorkspace(desktopTab))}
       />
 
       {/* ── DESKTOP, split view: the workspaces that are on, side by side ───────── */}
@@ -760,35 +713,21 @@ export default function Home() {
         <div className={`hidden lg:grid gap-4 items-start p-4 ${fullWidth ? 'lg:grid-cols-1' : desktopTab === 'palm' ? 'lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]' : 'lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)]'}`}>
           {/* Left: Chart + optional BCP summary + optional Panchang (hidden on Public) */}
           <div className={`space-y-3 ${fullWidth ? 'hidden' : ''}`}>
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
+            <Panel>
               <ChartSection {...chartSectionProps} />
-            </div>
-            {chartDisplaySettings.showPanchang && chartData && (
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-                <PanchangPanel
-                  chart={chartData}
-                  birthDatetime={birthDatetime}
-                  utcOffsetHours={effectiveTzOffset ?? 0}
-                  ayanamsaName={calculationSettings.ayanamsa}
-                  nakshatraAdjust={nakshatraAdjust}
-                />
-              </div>
-            )}
+            </Panel>
+            {panchangPanel}
           </div>
 
           {/* Right: panel for the active workspace */}
           <div className="space-y-3">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-              {desktopTab === 'data' && (
-                <DataPanel {...dataProps} />
-              )}
+            <Panel>
+              {desktopTab === 'data' && <DataPanel {...dataProps} />}
               {desktopTab === 'grahas' && analysisPanel({ wide: fullAnalysis, onToggleWide: toggleAnalysisFull })}
               {desktopTab === 'dasha' && timingPanel({ wide: fullTiming, onToggleWide: toggleTimingFull })}
               {desktopTab === 'palm' && <PalmWorkspace wide={fullPalm} onToggleWide={togglePalmFull} />}
-              {desktopTab === 'settings' && (
-                <SettingsPanel {...settingsProps} />
-              )}
-            </div>
+              {desktopTab === 'settings' && <SettingsPanel {...settingsProps} />}
+            </Panel>
           </div>
         </div>
       )}
@@ -819,17 +758,7 @@ export default function Home() {
                     <ChartSection {...chartSectionProps} />
                   </Panel>
                 )}
-                {chartDisplaySettings.showPanchang && chartData && (
-                  <Panel>
-                    <PanchangPanel
-                      chart={chartData}
-                      birthDatetime={birthDatetime}
-                      utcOffsetHours={effectiveTzOffset ?? 0}
-                      ayanamsaName={calculationSettings.ayanamsa}
-                      nakshatraAdjust={nakshatraAdjust}
-                    />
-                  </Panel>
-                )}
+                {panchangPanel}
               </div>
             )}
 
@@ -839,14 +768,7 @@ export default function Home() {
               </Panel>
             )}
 
-            {activeTab === 'grahas' && (
-              <Panel>
-                {chartData
-                  ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} request={analysisRequest} />
-                  : <EmptyState message="Calculate a chart in Data to see graha positions" />
-                }
-              </Panel>
-            )}
+            {activeTab === 'grahas' && <Panel>{analysisPanel()}</Panel>}
 
             {activeTab === 'dasha' && (
               <div className="space-y-3">
@@ -859,12 +781,7 @@ export default function Home() {
                     dashaLords={chartDashaLords}
                   />
                 )}
-                <Panel>
-                  {bcpResult && chartData
-                    ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={showVargaMatrix} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} />
-                    : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
-                  }
-                </Panel>
+                <Panel>{timingPanel()}</Panel>
               </div>
             )}
 

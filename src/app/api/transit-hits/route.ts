@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { calculateSlowTransitSeries } from '@/lib/ephemeris';
+import { DAY_MS } from '@/lib/time';
 
-const DAY_MS = 86_400_000;
 const MAX_DAYS = 3 * 366;
 
 // Daily sidereal longitudes of Jupiter, Saturn, Rahu and Ketu from a start

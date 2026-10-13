@@ -88,9 +88,7 @@ export const FI: Record<string, string> = {
 
   // Main page
   'Calculate a chart to see graha positions': 'Laske kartta nähdäksesi grahojen sijainnit',
-  'Calculate a chart in Data to see graha positions': 'Laske kartta Tiedot-välilehdellä nähdäksesi grahojen sijainnit',
   'Calculate a chart to see Dasha analysis': 'Laske kartta nähdäksesi daśā-analyysin',
-  'Calculate a chart in Data to see Dasha analysis': 'Laske kartta Tiedot-välilehdellä nähdäksesi daśā-analyysin',
   'ayanamsa': 'ayanamsa',
   'true node': 'todellinen solmu',
   'mean node': 'keskisolmu',

@@ -1,6 +1,7 @@
 import { CharaOptions, PlanetData } from '@/types';
 import { calculateCharaKarakas } from './karakas';
 import { signAbbr, signLord, signName } from './signs';
+import { addDashaYears } from './time';
 
 export interface CleanCharaEntry {
   sign: number;
@@ -31,7 +32,6 @@ const MOVABLE = new Set([1, 4, 7, 10]);
 const FIXED = new Set([2, 5, 8, 11]);
 
 function norm(sign: number): number { return ((sign - 1 + 240) % 12) + 1; }
-function addYears(date: Date, years: number): Date { return new Date(date.getTime() + years * 365.25 * 24 * 60 * 60 * 1000); }
 function nextSign(sign: number, direction: 1 | -1): number { return norm(sign + direction); }
 function planetSign(planets: PlanetData[], name: string): number | null { return planets.find((p) => p.name === name)?.sign ?? null; }
 
@@ -95,7 +95,7 @@ export function calculateCleanCharaMD(planets: PlanetData[], ascSign: number, bi
   let cursorDate = birthDate;
   for (const sign of signs) {
     const d = durationFor(sign, planets, options);
-    const endDate = addYears(cursorDate, d.years);
+    const endDate = addDashaYears(cursorDate, d.years);
     entries.push({
       sign,
       signName: signName(sign),
@@ -119,7 +119,7 @@ export function calculateCleanCharaSubDashas(parent: CleanCharaEntry, options: C
   let cursorDate = parent.startDate;
 
   for (let i = 0; i < 12; i++) {
-    const endDate = addYears(cursorDate, durationYears);
+    const endDate = addDashaYears(cursorDate, durationYears);
     entries.push({
       sign,
       signName: signName(sign),

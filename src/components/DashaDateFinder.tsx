@@ -8,11 +8,11 @@ import { groupDailyMatches, snapshotMatches } from '@/lib/dashaDateFinder';
 import { parseDateTime } from '@/lib/bcp';
 import { csvText, saveFile } from '@/lib/download';
 import { formatDate } from '@/lib/dateFormat';
+import { DAY_MS } from '@/lib/time';
 
 type Key = DashaEventSnapshot['key'];
 const KEYS: { key: Key | 'all'; label: string }[] = [{ key: 'all', label: 'All enabled systems' }, { key: 'vimshottari', label: 'Vimsottari' }, { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana' }, { key: 'vds', label: 'Vimsottari Original (U K Jha)' }, { key: 'chara', label: 'Chara' }, { key: 'yogini', label: 'Yogini' }, { key: 'ashtottari', label: 'Ashtottari' }, { key: 'kalaChakra', label: 'Kalachakra' }, { key: 'narayana', label: 'Narayana' }, { key: 'moola', label: 'Mula' }, { key: 'sthira', label: 'Sthira' }];
 const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
-const DAY = 24 * 60 * 60 * 1000;
 const value = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 interface Props { planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashas: DashaSettings['dashas']; charaOptions: CharaOptions; rasiOptions: RasiDashaOptions; variantChoice?: VimshottariVariantChoice; }
@@ -26,11 +26,11 @@ export default function DashaDateFinder({ planets, ascendant, birthDatetime, das
     const birthDate = parseDateTime(birthDatetime); const from = new Date(`${start}T12:00:00`); const to = new Date(`${end}T12:00:00`);
     if (!birthDate || !start || !end || from > to) return setMessage('Check the date range.');
     if (!md.trim() && !ad.trim() && !pd.trim() && !any.trim()) return setMessage('Enter at least one level or any-level value.');
-    if ((to.getTime() - from.getTime()) / DAY > 5 * 366) return setMessage('One search may cover at most five years.');
+    if ((to.getTime() - from.getTime()) / DAY_MS > 5 * 366) return setMessage('One search may cover at most five years.');
     setBusy(true); setMessage('Searching…'); await new Promise(resolve => setTimeout(resolve, 0));
     const matches = [];
     let scanned = 0;
-    for (let time = from.getTime(); time <= to.getTime(); time += DAY) {
+    for (let time = from.getTime(); time <= to.getTime(); time += DAY_MS) {
       const date = new Date(time); const snapshots = calculateDashaEventSnapshots({ eventDate: date, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice });
       const candidates = snapshots.filter(snapshot => dashas[SETTING[snapshot.key]] && (system === 'all' || snapshot.key === system) && snapshotMatches(snapshot, { md, ad, pd, any, operator }));
       if (candidates.length >= (system === 'all' ? minimum : 1)) matches.push({ date, snapshots: candidates });

@@ -1,6 +1,7 @@
 // Vimshottari Dasha — standard 120-year cycle from Moon nakshatra
 
 import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
+import { addDashaYears } from './time';
 
 const LORDS = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'] as const;
 
@@ -9,11 +10,6 @@ const YEARS: Record<string, number> = {
   Rahu: 18, Jupiter: 16, Saturn: 19, Mercury: 17,
 };
 
-
-// Julian year: 365.25 days — standard for Vimshottari date arithmetic
-function addYears(date: Date, years: number): Date {
-  return new Date(date.getTime() + years * 365.25 * 24 * 60 * 60 * 1000);
-}
 
 export interface MahadashaEntry {
   lord: string;
@@ -46,7 +42,7 @@ export function calculateVimshottari(
   for (let i = 0; i < 9; i++) {
     const lord = LORDS[(lordIndex + i) % 9];
     const duration = i === 0 ? YEARS[startLord] * fractionRemaining : YEARS[lord];
-    const endDate = addYears(cursor, duration);
+    const endDate = addDashaYears(cursor, duration);
     entries.push({ lord, startDate: cursor, endDate, durationYears: duration });
     cursor = endDate;
   }
@@ -68,7 +64,7 @@ export function calculateSubDashas(parent: MahadashaEntry): MahadashaEntry[] {
   return LORDS.map((_, i) => {
     const lord = LORDS[(parentLordIndex + i) % 9];
     const duration = (parent.durationYears * YEARS[lord]) / 120;
-    const endDate = addYears(cursor, duration);
+    const endDate = addDashaYears(cursor, duration);
     const entry: MahadashaEntry = { lord, startDate: cursor, endDate, durationYears: duration };
     cursor = endDate;
     return entry;

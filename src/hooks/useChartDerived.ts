@@ -9,6 +9,7 @@ import { calculateCharaKarakas, type CharaKaraka } from '@/lib/karakas';
 import { nakshatraAdjustFor } from '@/lib/nakshatraZodiac';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { GRAHA_DASHA_SYSTEMS, runningGrahaDashaLords, type GrahaDashaSystem } from '@/lib/dashaEvents';
+import { JULIAN_YEAR_MS } from '@/lib/time';
 
 /** Values worked out from the calculated chart and the target date. */
 export function useChartDerived(
@@ -42,7 +43,7 @@ export function useChartDerived(
     const birth = parseDateTime(birthDatetime);
     const target = parseTargetDateString(targetDate);
     if (!birth || !target) return 0;
-    return Math.max(0, (target.getTime() - birth.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
+    return Math.max(0, (target.getTime() - birth.getTime()) / JULIAN_YEAR_MS);
   }, [birthDatetime, targetDate]);
 
   const effectiveBnnHouses = useMemo(() => calculateBnnHouses(chartData, bnnAge), [chartData, bnnAge]);

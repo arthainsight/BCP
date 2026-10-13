@@ -1,4 +1,5 @@
 import type { DashaEventSnapshot } from './dashaEvents';
+import { DAY_MS } from './time';
 
 export interface DashaDateMatch {
   date: Date;
@@ -19,12 +20,11 @@ export function snapshotMatches(snapshot: DashaEventSnapshot, filters: DashaDate
 }
 
 export function groupDailyMatches(matches: DashaDateMatch[]): { start: Date; end: Date; snapshots: DashaEventSnapshot[] }[] {
-  const day = 24 * 60 * 60 * 1000;
   return matches.reduce<{ start: Date; end: Date; snapshots: DashaEventSnapshot[] }[]>((groups, match) => {
     const signature = match.snapshots.map(snapshot => `${snapshot.key}:${snapshot.levels.map(level => level.value).join('/')}`).join('|');
     const previous = groups.at(-1);
     const previousSignature = previous?.snapshots.map(snapshot => `${snapshot.key}:${snapshot.levels.map(level => level.value).join('/')}`).join('|');
-    if (previous && match.date.getTime() - previous.end.getTime() === day && signature === previousSignature) previous.end = match.date;
+    if (previous && match.date.getTime() - previous.end.getTime() === DAY_MS && signature === previousSignature) previous.end = match.date;
     else groups.push({ start: match.date, end: match.date, snapshots: match.snapshots });
     return groups;
   }, []);

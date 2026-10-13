@@ -6,6 +6,7 @@ import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { calculateDashaEventSnapshots } from '@/lib/dashaEvents';
 import { parseDateTime } from '@/lib/bcp';
 import { formatDate, isoDate } from '@/lib/dateFormat';
+import { JULIAN_YEAR_MS } from '@/lib/time';
 
 interface Props {
   planets: PlanetData[];
@@ -17,7 +18,6 @@ interface Props {
   variantChoice?: VimshottariVariantChoice;
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
 const COLORS = ['bg-emerald-500', 'bg-cyan-500', 'bg-violet-500', 'bg-amber-500', 'bg-rose-500', 'bg-sky-500', 'bg-lime-600', 'bg-fuchsia-500', 'bg-orange-500'];
 
 function parseDate(value: string) { const [y, m, d] = value.split('-').map(Number); return new Date(y, m - 1, d, 12); }
@@ -29,8 +29,8 @@ export default function DashaTimeline({ planets, ascendant, birthDatetime, norma
   const selectedDate = useMemo(() => parseDate(selectedValue), [selectedValue]);
   const snapshots = useMemo(() => birthDate ? calculateDashaEventSnapshots({ eventDate: selectedDate, birthDate, planets, ascendant, charaOptions, rasiOptions, variantChoice }) : [], [birthDate, selectedDate, planets, ascendant, charaOptions, rasiOptions, variantChoice]);
   const visible = snapshots.filter(snapshot => normalizedDashas[snapshot.key]);
-  const windowStart = new Date(selectedDate.getTime() - 10 * 365.25 * DAY_MS);
-  const windowEnd = new Date(selectedDate.getTime() + 10 * 365.25 * DAY_MS);
+  const windowStart = new Date(selectedDate.getTime() - 10 * JULIAN_YEAR_MS);
+  const windowEnd = new Date(selectedDate.getTime() + 10 * JULIAN_YEAR_MS);
   const span = windowEnd.getTime() - windowStart.getTime();
   const moveYears = (years: number) => { const next = new Date(selectedDate); next.setFullYear(next.getFullYear() + years); setSelectedValue(isoDate(next)); };
 

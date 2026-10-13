@@ -9,6 +9,7 @@ import { HIT_RELATIONS } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { pad2 } from '@/lib/dateFormat';
+import { JULIAN_YEAR_MS } from '@/lib/time';
 
 type Props = {
   chart: ChartData;
@@ -25,7 +26,6 @@ const RANGES = [
   { label: '10 yr', years: 10 },
 ];
 const FIRST_ROWS = 12;
-const YEAR_MS = 365.25 * 24 * 60 * 60 * 1000;
 
 const formatMoment = (time: number) => {
   const d = new Date(time);
@@ -54,7 +54,7 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, calc
       chart,
       birthTime: birth.getTime(),
       fromTime: from.getTime(),
-      toTime: from.getTime() + years * YEAR_MS,
+      toTime: from.getTime() + years * JULIAN_YEAR_MS,
       relations: HIT_RELATIONS,
       options: { saturn, rahu },
     });
