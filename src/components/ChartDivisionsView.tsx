@@ -7,7 +7,7 @@ import { vargaChartProps } from '@/lib/vargaChartProps';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import { useChartPoints } from '@/hooks/useChartPoints';
 import type { DashaLordMarks } from './chartLayers';
-import StyledChart from './StyledChart';
+import StyledChart, { MixedChart } from './StyledChart';
 
 type Props = {
   chart: ChartData;
@@ -19,6 +19,8 @@ type Props = {
   dashaLords?: DashaLordMarks | null;
   /** Transiting grahas drawn on every chart, for example those of an event's day. */
   transitPlanets?: PlanetData[];
+  /** The varga drawn outside the D1 chart in the mixed style (a single chart is then D1 inside and this one outside). */
+  outerDivision?: number;
   /** Called with one division to show it on its own, full size. */
   onFocus: (division: number) => void;
 };
@@ -28,13 +30,23 @@ type Props = {
  * a planet follows it through every chart; a tap on a title shows that chart
  * alone, with all its layers.
  */
-export default function ChartDivisionsView({ chart, divisions, chartStyle, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, transitPlanets, onFocus }: Props) {
+export default function ChartDivisionsView({ chart, divisions, chartStyle, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, transitPlanets, outerDivision, onFocus }: Props) {
   const [highlight, setHighlight] = useState<string | null>(null);
   const [arudhaPadas] = useArudhaPadas();
   const points = useChartPoints();
   const toggleHighlight = (name: string) => setHighlight(current => (current === name ? null : name));
   // A single chart is drawn full size with the display settings, like D1.
   const compact = divisions.length > 1;
+
+  // The mixed style: the D1 chart inside and the chosen varga outside, a planet tapped marked in both.
+  if (chartStyle === 'mixed' && outerDivision !== undefined && !compact) {
+    const common = { chart, compact: false, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, highlight, onPlanetClick: toggleHighlight, transitPlanets, arudhaPadas, points };
+    return (
+      <div className="@container">
+        <MixedChart inner={vargaChartProps({ ...common, division: 1 })} outer={vargaChartProps({ ...common, division: outerDivision })} />
+      </div>
+    );
+  }
 
   return (
     <div className="@container">

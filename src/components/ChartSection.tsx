@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
-import StyledChart from './StyledChart';
+import StyledChart, { MixedChart } from './StyledChart';
 import ChartExportButtons from './ChartExportButtons';
 import TargetDateBar from './TargetDateBar';
 import ChartDivisionBar from './ChartDivisionBar';
 import ChartDivisionsView from './ChartDivisionsView';
 import { useChartDivisions } from '@/hooks/useChartDivisions';
+import { VARGA_DIVISIONS, VARGA_NAMES } from '@/lib/vargaChart';
+import { vargaChartProps } from '@/lib/vargaChartProps';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import { setChartPointKeys, useChartPoints } from '@/hooks/useChartPoints';
 import { atmakarakaOf, POINT_KEYS, POINT_NAMES, selectedChartPoints } from '@/lib/chartPoints';
@@ -139,7 +141,7 @@ export default function ChartSection({
   useEffect(() => {
     const handleChartStyleChange = (event: Event) => {
       const customEvent = event as CustomEvent<ChartStyle>;
-      if (customEvent.detail === 'north' || customEvent.detail === 'south' || customEvent.detail === 'both') {
+      if (customEvent.detail === 'north' || customEvent.detail === 'south' || customEvent.detail === 'both' || customEvent.detail === 'mixed') {
         setChartStyle(customEvent.detail);
       }
     };
@@ -168,6 +170,7 @@ export default function ChartSection({
   const d1ShowSpecialLagnas = chartDisplaySettings.showSpecialLagnas || arudhaMarks.length > 0 || pointMarks.length > 0;
   const showBcp = chartDisplaySettings.showBcpHighlight === true;
   const dashaLords = withDashaLayers(dashaLordsFromParent, chartDisplaySettings);
+  const outerDivision = chartDisplaySettings.mixedOuterDivision;
   const yearHouse = showBcp ? bcp.activeYearHouse : 0;
   const monthHouse = showBcp ? bcp.activeMonthHouse : 0;
   const bnnMajorHouse = chartDisplaySettings.showBnnMajorHighlight ? bnnHouses.major : 0;
@@ -186,6 +189,51 @@ export default function ChartSection({
     bnnMinor: bnnHouses.minor > 0,
     paraya: nadiParayaHousesFromParent.length > 0,
   }, onToggleChartDisplay);
+
+  // The props of the D1 chart with all its layers; the mixed style draws it in the middle.
+  const d1Props = {
+    activeYearHouse: yearHouse,
+    activeMonthHouse: monthHouse,
+    ascendantSign: chart.ascendant.sign,
+    ascendantDegree: chart.ascendant.degree,
+    planets: chart.planets,
+    specialLagnas: d1SpecialLagnas,
+    transitPlanets: transitPlanets,
+    showSigns: chartDisplaySettings.showSigns,
+    showNatalPlanets: chartDisplaySettings.showNatalPlanets,
+    showTransitPlanets: showTransit,
+    degreePrecision: chartDisplaySettings.degreePrecision ?? 'off',
+    showCharaKaraka: chartDisplaySettings.showCharaKaraka,
+    showNakshatra: chartDisplaySettings.showNakshatra,
+    showOuterPlanets: chartDisplaySettings.showOuterPlanets,
+    showSpecialLagnas: d1ShowSpecialLagnas,
+    showBcpHighlights: showBcp,
+    karakaByPlanet: karakaByPlanet,
+    nakshatraAdjust: nakshatraAdjust,
+    bnnMajorHouse: bnnMajorHouse,
+    bnnMinorHouse: bnnMinorHouse,
+    nadiParayaHouses: parayaHouses,
+    dashaLords: dashaLords,
+    selectedPlanet: selectedPlanet,
+    onPlanetSelect: setSelectedPlanet,
+  };
+
+  // The chart outside in the mixed style: a varga, with the layers that are marked on the vargas, and a planet that is
+  // tapped on either chart is marked on both.
+  const outerProps = vargaChartProps({
+    chart,
+    division: outerDivision,
+    compact: false,
+    chartDisplaySettings,
+    karakaByPlanet,
+    nakshatraAdjust,
+    dashaLords,
+    highlight: selectedPlanet?.kind === 'natal' ? selectedPlanet.name : null,
+    onPlanetClick: name => setSelectedPlanet(current => (current?.kind === 'natal' && current.name === name ? null : { kind: 'natal', name })),
+    transitPlanets: showTransit ? transitPlanets : undefined,
+    arudhaPadas,
+    points,
+  });
 
   return (
     <ChartFillContext.Provider value={fullscreen}>
@@ -260,7 +308,34 @@ export default function ChartSection({
             >
               N+S
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setChartStyle('mixed');
+                onUpdateChartDisplay?.({ chartStyle: 'mixed' });
+              }}
+              aria-pressed={chartStyle === 'mixed'}
+              title={t('The D1 chart inside, any varga chart outside')}
+              className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors border-l border-zinc-200 dark:border-zinc-700 ${
+                chartStyle === 'mixed'
+                  ? 'bg-emerald-600 dark:bg-green-700 text-white'
+                  : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
+              }`}
+            >
+              MIX
+            </button>
           </div>
+          {chartStyle === 'mixed' && onUpdateChartDisplay && (
+            <select
+              value={outerDivision}
+              onChange={(event) => onUpdateChartDisplay({ mixedOuterDivision: Number(event.target.value) })}
+              aria-label={t('outer chart')}
+              title={t('The varga chart drawn outside the D1 chart')}
+              className="shrink-0 rounded-md border border-zinc-200 bg-white px-1.5 py-1.5 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+            >
+              {VARGA_DIVISIONS.map(division => <option key={division} value={division}>D{division} {VARGA_NAMES[division]}</option>)}
+            </select>
+          )}
           <div className="relative shrink-0">
             <button
               type="button"
@@ -434,11 +509,18 @@ export default function ChartSection({
         </div>
       </div>
 
-        <ChartDivisionBar selected={divisions} onChange={setDivisions} />
+        {chartStyle !== 'mixed' && <ChartDivisionBar selected={divisions} onChange={setDivisions} />}
 
         <div ref={chartRef} className="space-y-2">
-        <ChartExportButtons targetRef={chartRef} fileName={`chart-${divisions.map(d => `d${d}`).join('-')}`} />
-        {!(divisions.length === 1 && divisions[0] === 1) ? (
+        <ChartExportButtons targetRef={chartRef} fileName={chartStyle === 'mixed' ? `chart-d1-d${outerDivision}` : `chart-${divisions.map(d => `d${d}`).join('-')}`} />
+        {chartStyle === 'mixed' ? (
+          <div className="space-y-1.5" data-chart="mixed">
+            <div className="text-center text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+              {t('inside')} D1 · {t('outside')} D{outerDivision} {VARGA_NAMES[outerDivision]}
+            </div>
+            <MixedChart inner={d1Props} outer={outerProps} />
+          </div>
+        ) : !(divisions.length === 1 && divisions[0] === 1) ? (
         <ChartDivisionsView
           chart={chart}
           divisions={divisions}
@@ -450,33 +532,7 @@ export default function ChartSection({
           onFocus={(division) => setDivisions([division])}
         />
         ) : (
-        <StyledChart
-          style={chartStyle}
-          activeYearHouse={yearHouse}
-          activeMonthHouse={monthHouse}
-          ascendantSign={chart.ascendant.sign}
-          ascendantDegree={chart.ascendant.degree}
-          planets={chart.planets}
-          specialLagnas={d1SpecialLagnas}
-          transitPlanets={transitPlanets}
-          showSigns={chartDisplaySettings.showSigns}
-          showNatalPlanets={chartDisplaySettings.showNatalPlanets}
-          showTransitPlanets={showTransit}
-          degreePrecision={chartDisplaySettings.degreePrecision ?? 'off'}
-          showCharaKaraka={chartDisplaySettings.showCharaKaraka}
-          showNakshatra={chartDisplaySettings.showNakshatra}
-          showOuterPlanets={chartDisplaySettings.showOuterPlanets}
-          showSpecialLagnas={d1ShowSpecialLagnas}
-          showBcpHighlights={showBcp}
-          karakaByPlanet={karakaByPlanet}
-          nakshatraAdjust={nakshatraAdjust}
-          bnnMajorHouse={bnnMajorHouse}
-          bnnMinorHouse={bnnMinorHouse}
-          nadiParayaHouses={parayaHouses}
-          dashaLords={dashaLords}
-          selectedPlanet={selectedPlanet}
-          onPlanetSelect={setSelectedPlanet}
-        />
+        <StyledChart style={chartStyle} {...d1Props} />
         )}
         </div>
     </div>

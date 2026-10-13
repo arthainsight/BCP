@@ -2301,3 +2301,59 @@ test('REPORT puts the chart, the timing summary and the palm photographs on page
 
   expect(errors).toEqual([]);
 });
+
+test('the mixed chart has D1 inside and any varga outside', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const mix = visible(page, page.getByRole('button', { name: 'MIX', exact: true }));
+  await mix.click();
+  const mixed = visible(page, page.locator('[data-chart="mixed"]'));
+  await expect(mixed).toBeVisible();
+
+  // The D1 chart is in the middle, in the North style, with its degrees; the divisional bar has no use and is gone.
+  const inner = mixed.locator('[data-chart="center"] svg[aria-label="North Indian Jyotish chart"]');
+  await expect(inner).toBeVisible();
+  await expect(inner).toContainText(/Asc 12°18'/);
+  await expect(visible(page, page.getByRole('group', { name: 'divisional charts' }))).toHaveCount(0);
+
+  // The navamsa is outside to begin with; any varga can be chosen, and the outside changes while the inside does not.
+  const outer = visible(page, page.getByRole('combobox', { name: 'outer chart' }));
+  await expect(outer).toHaveValue('9');
+  await expect(mixed).toContainText('outside D9');
+  const outside = () => mixed.locator('[data-chart="center"]').evaluate(center => [...center.parentElement!.children].filter(cell => !cell.hasAttribute('data-chart')).map(cell => cell.textContent).join('|'));
+  const navamsa = await outside();
+  await outer.selectOption('10');
+  await expect(mixed).toContainText('outside D10');
+  expect(await outside()).not.toEqual(navamsa);
+  await expect(inner).toContainText(/Asc 12°18'/);
+  await outer.selectOption('1');
+  await expect(mixed).toContainText('outside D1');
+
+  // The style and the varga are kept with the settings.
+  await outer.selectOption('16');
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}'));
+  expect(stored.chartStyle).toBe('mixed');
+  expect(stored.mixedOuterDivision).toBe(16);
+
+  // The report draws it too.
+  if (info.project.name === 'phone') await visible(page, page.getByRole('button', { name: 'Chart actions', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'REPORT', exact: true })).click();
+  const report = page.getByRole('dialog', { name: 'Client report' });
+  await expect(report.locator('[data-report-section="chart"] [data-chart="center"]')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(report).toBeHidden();
+
+  // And Settings has it among the chart styles, with the same choice of varga.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /^chart style / })).click();
+  await expect(visible(page, page.getByRole('button', { name: 'Mixed', exact: true }))).toHaveAttribute('class', /emerald/);
+  const settingsOuter = visible(page, page.getByRole('combobox', { name: 'outer chart' }));
+  await expect(settingsOuter).toHaveValue('16');
+  await settingsOuter.selectOption('7');
+  await visible(page, page.getByRole('button', { name: 'North Indian', exact: true })).click();
+  await expect(visible(page, page.getByRole('combobox', { name: 'outer chart' }))).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});

@@ -233,6 +233,7 @@ export default function ClientReport({
                 chart={chart}
                 divisions={[1]}
                 chartStyle={chartDisplaySettings.chartStyle ?? 'north'}
+                outerDivision={chartDisplaySettings.mixedOuterDivision}
                 chartDisplaySettings={chartDisplaySettings}
                 karakaByPlanet={karakaByPlanet}
                 nakshatraAdjust={nakshatraAdjust}
