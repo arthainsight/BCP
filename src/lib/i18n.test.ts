@@ -25,11 +25,11 @@ const wanted = new Set<string>(Object.values(CHART_LAYER_LABELS));
 for (const path of files) {
   const source = readFileSync(path, 'utf8');
   for (const match of source.matchAll(/\bt\('((?:[^'\\]|\\.)*)'\)/g)) wanted.add(match[1]);
-  if (path.endsWith('BottomNav.tsx') || path.endsWith('SettingsPanel.tsx')) {
+  if (path.endsWith('SettingsPanel.tsx')) {
     for (const match of source.matchAll(/label: '([^']+)'/g)) wanted.add(match[1]);
   }
 }
-for (const tab of ['data', 'grahas', 'dasha', 'public', 'settings', 'Off']) wanted.add(tab);
+for (const tab of ['data', 'grahas', 'dasha', 'settings', 'Off']) wanted.add(tab);
 
 const missing = [...wanted].filter(text => !(text in FI));
 assert.deepEqual(missing, [], `strings without a Finnish translation: ${missing.join(' | ')}`);

@@ -18,9 +18,9 @@ import BhavaChalitPanel from './BhavaChalitPanel';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 
-type View = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas';
+export type AnalysisView = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas';
 
-const VIEWS: { key: View; label: string }[] = [
+const VIEWS: { key: AnalysisView; label: string }[] = [
   { key: 'grahas', label: 'Grahas' },
   { key: 'varga', label: 'Varga' },
   { key: 'nadi', label: 'Nāḍī' },
@@ -33,6 +33,13 @@ const VIEWS: { key: View; label: string }[] = [
   { key: 'dik', label: 'Directions' },
   { key: 'sphutas', label: 'Special Sphutas' },
 ];
+
+/** A request from elsewhere in the app to show one view, for example the Matrix & Bala of the Varga view. A new id is a new request. */
+export interface AnalysisRequest {
+  id: number;
+  view: AnalysisView;
+  vargaView?: 'chart' | 'table';
+}
 
 interface Props {
   chart: ChartData;
@@ -48,6 +55,7 @@ interface Props {
   /** The analysis takes the whole width of a wide screen, with the chart hidden. */
   wide?: boolean;
   onToggleWide?: () => void;
+  request?: AnalysisRequest | null;
 }
 
 /**
@@ -66,13 +74,21 @@ export default function AnalysisPanel({
   calculationSettings,
   wide = false,
   onToggleWide,
+  request,
 }: Props) {
   const t = useT();
   const chartStyle = chartDisplaySettings.chartStyle ?? 'north';
-  const [view, setView] = useState<View>('grahas');
-  const [vargaView, setVargaView] = useState<'chart' | 'table'>('chart');
+  const [view, setView] = useState<AnalysisView>(request?.view ?? 'grahas');
+  const [vargaView, setVargaView] = useState<'chart' | 'table'>(request?.vargaView ?? 'chart');
+  // A new request while the panel is open: follow it. One made before the panel opened is the starting point above.
+  const [handledRequest, setHandledRequest] = useState(request?.id);
+  if (request && request.id !== handledRequest) {
+    setHandledRequest(request.id);
+    setView(request.view);
+    if (request.vargaView) setVargaView(request.vargaView);
+  }
 
-  const tabClass = (id: View) =>
+  const tabClass = (id: AnalysisView) =>
     `shrink-0 px-2.5 py-1.5 text-[10px] font-mono rounded-md ${view === id ? 'bg-white dark:bg-zinc-700 text-emerald-700 dark:text-green-400 shadow-sm' : 'text-zinc-500 dark:text-zinc-400'}`;
 
   return (

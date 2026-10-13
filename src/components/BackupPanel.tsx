@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createBcpBackup, parseBcpBackup, restoreBcpBackup, type BcpBackup } from '@/lib/localBackup';
 import { backupToPalms, palmsToBackup } from '@/lib/palm/backup';
 import { listPalms, replacePalms, storageAvailable } from '@/lib/palm/storage';
-import { useT } from '@/lib/i18n';
+import { fill, useT } from '@/lib/i18n';
 
 /** Palm photographs make a backup large; this is the most the panel will read back. */
 const MAX_BACKUP_BYTES = 150_000_000;
@@ -17,8 +17,6 @@ function download(content: string) {
   anchor.click();
   URL.revokeObjectURL(url);
 }
-
-const fill = (text: string, values: Record<string, number>) => text.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''));
 
 export default function BackupPanel() {
   const t = useT();

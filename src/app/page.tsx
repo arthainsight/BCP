@@ -6,15 +6,13 @@ import { calculateBcp, parseDateTime } from '@/lib/bcp';
 import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import PrimaryNav, { type Workspace } from '@/components/PrimaryNav';
-import { type TabId } from '@/components/BottomNav';
 import DataPanel from '@/components/DataPanel';
 import SettingsPanel from '@/components/SettingsPanel';
-import AnalysisPanel from '@/components/AnalysisPanel';
+import AnalysisPanel, { type AnalysisRequest } from '@/components/AnalysisPanel';
 import TimingPanel from '@/components/TimingPanel';
 import ChartSection from '@/components/ChartSection';
 import PanchangPanel from '@/components/PanchangPanel';
 import type { ChartSnapshot } from '@/components/FileActions';
-import PublicChartsPanel from '@/components/PublicChartsPanel';
 import PalmWorkspace from '@/components/palm/PalmWorkspace';
 import { DataLine, DataSummary, EmptyState, Panel, SplitPane } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
@@ -34,7 +32,9 @@ import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
 
 
-type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'public' | 'settings';
+type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'settings';
+/** The screens of the phone: the birth data and the chart are two of them. */
+type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'palm' | 'settings';
 
 type CalculationOptions = {
   preserveCurrentPanel?: boolean;
@@ -63,7 +63,7 @@ function desktopToWorkspace(tab: DesktopTab): Workspace {
     case 'grahas': return 'analysis';
     case 'palm': return 'palm';
     case 'settings': return 'settings';
-    default: return 'chart'; // 'data' and 'public' land on CHART for now
+    default: return 'chart'; // 'data' lands on CHART
   }
 }
 
@@ -124,6 +124,13 @@ export default function Home() {
     const panes = isSplitWorkspace(current) && !split.panes.includes(current) ? togglePane(split.panes, current) : split.panes;
     setSplitView({ on: true, panes });
     if (current === 'settings') selectWorkspace(panes[0]);
+  }, [split, selectWorkspace]);
+  // The Event List opens the Matrix & Bala of ANALYSIS: ANALYSIS is shown (or added to the split view) and told what to show.
+  const [analysisRequest, setAnalysisRequest] = useState<AnalysisRequest | null>(null);
+  const showVargaMatrix = useCallback(() => {
+    setAnalysisRequest(current => ({ id: (current?.id ?? 0) + 1, view: 'varga', vargaView: 'table' }));
+    if (!split.on) selectWorkspace('analysis');
+    else if (!split.panes.includes('analysis')) setSplitView({ panes: togglePane(split.panes, 'analysis') });
   }, [split, selectWorkspace]);
   const splitNav = (current: Workspace) => ({
     on: split.on,
@@ -659,17 +666,17 @@ export default function Home() {
   const fullAnalysis = analysisFull && desktopTab === 'grahas';
   const fullPalm = palmFull && desktopTab === 'palm';
   // The chart column is left out when a panel takes the whole width.
-  const fullWidth = desktopTab === 'public' || fullTiming || fullAnalysis || fullPalm;
+  const fullWidth = fullTiming || fullAnalysis || fullPalm;
 
   // The workspace panels of the wide layouts: the one-at-a-time desktop layout and the split view.
   const analysisPanel = (fullControl?: { wide: boolean; onToggleWide: () => void }) => (
     chartData
-      ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} {...fullControl} />
+      ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} request={analysisRequest} {...fullControl} />
       : <EmptyState message="Calculate a chart to see graha positions" />
   );
   const timingPanel = (wideControl?: { wide: boolean; onToggleWide: () => void }) => (
     bcpResult && chartData
-      ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} {...wideControl} />
+      ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={showVargaMatrix} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} {...wideControl} />
       : <EmptyState message="Calculate a chart to see Dasha analysis" />
   );
   const panchangPanel = chartDisplaySettings.showPanchang && chartData && (
@@ -736,14 +743,12 @@ export default function Home() {
       <PrimaryNav
         active={mobileToWorkspace(activeTab)}
         onChange={(ws) => navigate(ws, activeTab === 'settings')}
-        variant="top"
         show="mobile"
         split={splitNav(mobileToWorkspace(activeTab))}
       />
       <PrimaryNav
         active={desktopToWorkspace(desktopTab)}
         onChange={(ws) => navigate(ws, desktopTab === 'settings')}
-        variant="top"
         show="desktop"
         split={splitNav(desktopToWorkspace(desktopTab))}
       />
@@ -788,7 +793,6 @@ export default function Home() {
               )}
               {desktopTab === 'grahas' && analysisPanel({ wide: fullAnalysis, onToggleWide: toggleAnalysisFull })}
               {desktopTab === 'dasha' && timingPanel({ wide: fullTiming, onToggleWide: toggleTimingFull })}
-              {desktopTab === 'public' && <PublicChartsPanel />}
               {desktopTab === 'palm' && <PalmWorkspace wide={fullPalm} onToggleWide={togglePalmFull} />}
               {desktopTab === 'settings' && (
                 <SettingsPanel {...settingsProps} />
@@ -847,7 +851,7 @@ export default function Home() {
             {activeTab === 'grahas' && (
               <Panel>
                 {chartData
-                  ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} />
+                  ? <AnalysisPanel chart={chartData} karakaByPlanet={karakaByPlanet} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} birthDatetime={birthDatetime} dashaLords={chartDashaLords} transitPlanets={transitPlanets} calculationSettings={calculationSettings} request={analysisRequest} />
                   : <EmptyState message="Calculate a chart in Data to see graha positions" />
                 }
               </Panel>
@@ -866,15 +870,11 @@ export default function Home() {
                 )}
                 <Panel>
                   {bcpResult && chartData
-                    ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} />
+                    ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={showVargaMatrix} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} />
                     : <EmptyState message="Calculate a chart in Data to see Dasha analysis" />
                   }
                 </Panel>
               </div>
-            )}
-
-            {activeTab === 'public' && (
-              <Panel><PublicChartsPanel /></Panel>
             )}
 
             {activeTab === 'palm' && (

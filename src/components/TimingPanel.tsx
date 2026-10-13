@@ -37,6 +37,8 @@ interface Props {
   transitDatetime: string;
   onSetTransitDatetime: (value: string) => void;
   onOpenDateInChart: (date: string) => void;
+  /** Shows the Matrix & Bala of the Varga view in ANALYSIS. */
+  onOpenVargaMatrix?: () => void;
   calculationSettings?: CalculationSettings;
   chartDisplaySettings: ChartDisplaySettings;
   nakshatraAdjust?: number;
@@ -63,6 +65,7 @@ export default function TimingPanel({
   transitDatetime,
   onSetTransitDatetime,
   onOpenDateInChart,
+  onOpenVargaMatrix,
   calculationSettings,
   chartDisplaySettings,
   nakshatraAdjust = 0,
@@ -110,6 +113,7 @@ export default function TimingPanel({
           transitDatetime={transitDatetime}
           onSetTransitDatetime={onSetTransitDatetime}
           onOpenDateInChart={onOpenDateInChart}
+          onOpenVargaMatrix={onOpenVargaMatrix}
         />
       )}
 

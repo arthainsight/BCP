@@ -22,6 +22,20 @@ export const DASHA_EVENT_CATEGORY_LABELS: Record<DashaEventCategory, string> = {
   work: 'Work', money: 'Money', relationship: 'Relationship', health: 'Health', home: 'Home / move', family: 'Family', spiritual: 'Spiritual', other: 'Other',
 };
 
+/** An event's day (YYYY-MM-DD) as a Date at noon, or null when it is not a real day. */
+export function parseEventDate(value: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+  const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+/** An event's day (YYYY-MM-DD) as DD.MM.YYYY. */
+export function formatEventDate(value: string): string {
+  const [year, month, day] = value.split('-');
+  return `${day}.${month}.${year}`;
+}
+
 /** Where the events of a chart are kept: one list for each birth moment. */
 export const dashaEventsStorageKey = (birthDatetime: string) => `bhrigu:dasha-events:${birthDatetime.trim()}`;
 
