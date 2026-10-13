@@ -36,7 +36,9 @@ assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: 'Jupiter' }).paraya
 
 assert.equal(migrateChartDisplaySettings({ chartStyle: 'both' }).chartStyle, 'both', 'North + South is a style');
 assert.equal(migrateChartDisplaySettings({ chartStyle: 'south' }).chartStyle, 'south');
-assert.equal(migrateChartDisplaySettings({ chartStyle: 'mixed' }).chartStyle, 'mixed', 'D1 inside and a varga outside is a style');
+assert.equal(migrateChartDisplaySettings({ chartStyle: 'mixedNorth' }).chartStyle, 'mixedNorth', 'two charts in the houses of one, North layout, is a style');
+assert.equal(migrateChartDisplaySettings({ chartStyle: 'mixedSouth' }).chartStyle, 'mixedSouth', 'and so is the South layout');
+assert.equal(migrateChartDisplaySettings({ chartStyle: 'mixed' }).chartStyle, 'mixedNorth', 'the one mixed style of v2.84 becomes the North one');
 
 // The varga outside in the mixed style: the navamsa to begin with, and only a varga there is.
 assert.equal(DEFAULT_CHART_DISPLAY.mixedOuterDivision, 9);

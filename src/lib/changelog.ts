@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.85',
+    date: '2026-10-13',
+    title: 'The mixed chart as two charts in the same houses',
+    changes: [
+      'The mixed chart is made again in the style of the charts that share their houses: a square in the middle, three quarters of the chart, belongs to the D1 chart, and every house is cut by it, so the part of the house inside the square holds the planets of the D1 chart and the part outside it, in the band around, holds those of the varga you choose. The ascendant, the special lagnas and the Āruḍha padas of each chart are in its own part. (The North Indian chart with the South Indian chart around it of v2.84 is gone; the N+S chart is as it was.)',
+      'There are two layouts, MIX N and MIX S beside N, S and N+S. In MIX N, the North Indian layout, the houses are counted from the D1 lagna and the signs are written in them; in MIX S, the South Indian layout, the signs stay in their places and the names of the two charts are in the middle. A planet is always in the sign it is in, in each chart. The list beside the buttons chooses the outer chart, any varga from D2 to D60 (D9 to begin with).',
+      'A graha tapped on either chart is marked on both. The style and the varga are kept with the display settings, Settings → display → chart style has Mixed (North) and Mixed (South), and the client report draws them. A style saved by v2.84 as mixed is read as MIX N.',
+      'Where a single chart is drawn (the grids of vargas, the yearly charts) the mixed styles show it in their own layout, North or South.',
+      'Updated the application version to v2.85.',
+    ],
+  },
+  {
     version: 'v2.84',
     date: '2026-10-13',
     title: 'A mixed chart: D1 inside, any varga outside',

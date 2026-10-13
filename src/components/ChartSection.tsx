@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { BcpResult, ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
-import StyledChart, { MixedChart } from './StyledChart';
+import StyledChart from './StyledChart';
+import NestedChart from './NestedChart';
+import { mixedShape } from '@/lib/chartStyle';
 import ChartExportButtons from './ChartExportButtons';
 import TargetDateBar from './TargetDateBar';
 import ChartDivisionBar from './ChartDivisionBar';
@@ -141,7 +143,7 @@ export default function ChartSection({
   useEffect(() => {
     const handleChartStyleChange = (event: Event) => {
       const customEvent = event as CustomEvent<ChartStyle>;
-      if (customEvent.detail === 'north' || customEvent.detail === 'south' || customEvent.detail === 'both' || customEvent.detail === 'mixed') {
+      if (customEvent.detail === 'north' || customEvent.detail === 'south' || customEvent.detail === 'both' || customEvent.detail === 'mixedNorth' || customEvent.detail === 'mixedSouth') {
         setChartStyle(customEvent.detail);
       }
     };
@@ -308,29 +310,32 @@ export default function ChartSection({
             >
               N+S
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setChartStyle('mixed');
-                onUpdateChartDisplay?.({ chartStyle: 'mixed' });
-              }}
-              aria-pressed={chartStyle === 'mixed'}
-              title={t('The D1 chart inside, any varga chart outside')}
-              className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors border-l border-zinc-200 dark:border-zinc-700 ${
-                chartStyle === 'mixed'
-                  ? 'bg-emerald-600 dark:bg-green-700 text-white'
-                  : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
-              }`}
-            >
-              MIX
-            </button>
+            {(['mixedNorth', 'mixedSouth'] as const).map(style => (
+              <button
+                key={style}
+                type="button"
+                onClick={() => {
+                  setChartStyle(style);
+                  onUpdateChartDisplay?.({ chartStyle: style });
+                }}
+                aria-pressed={chartStyle === style}
+                title={style === 'mixedNorth' ? t('The D1 chart and any varga chart in the same houses, North layout') : t('The D1 chart and any varga chart in the same houses, South layout')}
+                className={`px-1.5 py-1.5 text-[10px] font-mono leading-none transition-colors border-l border-zinc-200 dark:border-zinc-700 ${
+                  chartStyle === style
+                    ? 'bg-emerald-600 dark:bg-green-700 text-white'
+                    : 'bg-white dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-100'
+                }`}
+              >
+                {style === 'mixedNorth' ? 'MIX N' : 'MIX S'}
+              </button>
+            ))}
           </div>
-          {chartStyle === 'mixed' && onUpdateChartDisplay && (
+          {mixedShape(chartStyle) && onUpdateChartDisplay && (
             <select
               value={outerDivision}
               onChange={(event) => onUpdateChartDisplay({ mixedOuterDivision: Number(event.target.value) })}
               aria-label={t('outer chart')}
-              title={t('The varga chart drawn outside the D1 chart')}
+              title={t('The varga chart in the outer part of the houses, with the D1 chart in the inner part')}
               className="shrink-0 rounded-md border border-zinc-200 bg-white px-1.5 py-1.5 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
             >
               {VARGA_DIVISIONS.map(division => <option key={division} value={division}>D{division} {VARGA_NAMES[division]}</option>)}
@@ -509,16 +514,24 @@ export default function ChartSection({
         </div>
       </div>
 
-        {chartStyle !== 'mixed' && <ChartDivisionBar selected={divisions} onChange={setDivisions} />}
+        {!mixedShape(chartStyle) && <ChartDivisionBar selected={divisions} onChange={setDivisions} />}
 
         <div ref={chartRef} className="space-y-2">
-        <ChartExportButtons targetRef={chartRef} fileName={chartStyle === 'mixed' ? `chart-d1-d${outerDivision}` : `chart-${divisions.map(d => `d${d}`).join('-')}`} />
-        {chartStyle === 'mixed' ? (
+        <ChartExportButtons targetRef={chartRef} fileName={mixedShape(chartStyle) ? `chart-d1-d${outerDivision}` : `chart-${divisions.map(d => `d${d}`).join('-')}`} />
+        {mixedShape(chartStyle) ? (
           <div className="space-y-1.5" data-chart="mixed">
             <div className="text-center text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
-              {t('inside')} D1 · {t('outside')} D{outerDivision} {VARGA_NAMES[outerDivision]}
+              {t('outer chart')}: D{outerDivision} {VARGA_NAMES[outerDivision]} · {t('inner chart')}: D1 {VARGA_NAMES[1]}
             </div>
-            <MixedChart inner={d1Props} outer={outerProps} />
+            <NestedChart
+              shape={mixedShape(chartStyle)!}
+              inner={d1Props}
+              outer={outerProps}
+              innerTitle={`D1 ${VARGA_NAMES[1]}`}
+              outerTitle={`D${outerDivision} ${VARGA_NAMES[outerDivision]}`}
+              innerWord={t('inner chart')}
+              outerWord={t('outer chart')}
+            />
           </div>
         ) : !(divisions.length === 1 && divisions[0] === 1) ? (
         <ChartDivisionsView

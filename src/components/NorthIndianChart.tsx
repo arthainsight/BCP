@@ -84,7 +84,7 @@ const NAK_ABBR = [
   'PBh', 'UBh', 'Rev',
 ];
 
-function getNakAbbr(longitude: number): string {
+export function getNakAbbr(longitude: number): string {
   const idx = Math.floor(longitude / (40 / 3));
   return NAK_ABBR[Math.min(idx, 26)] ?? '';
 }

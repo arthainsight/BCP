@@ -114,15 +114,15 @@ export const FAQ_ENTRIES: FaqEntry[] = [
   {
     id: 'mixed-chart',
     section: 'charts',
-    q: { en: 'What is the mixed chart, and how do I choose the varga outside?', fi: 'Mikä on sekoitettu kartta ja miten valitsen ulkopuolisen vargan?' },
+    q: { en: 'What is the mixed chart, and how do I choose the varga in it?', fi: 'Mikä on sekoitettu kartta ja miten valitsen siihen vargan?' },
     a: {
       en: [
-        'The MIX button beside N, S and N+S draws two different charts at once: the D1 chart, with its layers, in the middle in the North style, and a varga chart around it in the South style. The navamsa (D9) is outside to begin with; the list beside the buttons, outer chart, has every varga, from the hora (D2) to the shashtiamsa (D60). A caption above the chart says which two are shown.',
-        'A graha tapped on either chart is marked on both, so you can follow it from the rāśi chart into the varga. The divisional buttons are not used in this style, because the middle is always D1. The style and the varga are kept, and they can also be chosen in Settings → display → chart style. The client report draws the mixed chart as well.',
+        'MIX N and MIX S, beside N, S and N+S, draw two charts in the same houses. A square in the middle, three quarters of the chart, belongs to the D1 chart: the part of every house inside it holds the planets of the D1 chart, and the part outside it, the band around, holds the planets of a varga chart, the navamsa (D9) to begin with. The list beside the buttons, outer chart, has every varga from the hora (D2) to the shashtiamsa (D60). MIX N is in the North Indian layout, where the houses are counted from the D1 lagna, and MIX S in the South Indian one, where the signs stay in their places and the names of the two charts are in the middle.',
+        'A planet is always in the sign it is in, in each of the charts, so the same house shows where it stands in D1 and where in the varga. A graha tapped on either chart is marked on both. The divisional buttons are not used in these styles. The style and the varga are kept, and they can also be chosen in Settings → display → chart style. The client report draws the mixed chart as well.',
       ],
       fi: [
-        'N-, S- ja N+S-painikkeiden vieressä oleva MIX-painike piirtää kaksi eri karttaa yhtä aikaa: D1-kartan kerroksineen keskelle North-tyylillä ja sen ympärille varga-kartan South-tyylillä. Navamsa (D9) on aluksi ulkona; painikkeiden vieressä oleva lista, ulompi kartta, sisältää jokaisen vargan horasta (D2) śaṣṭiaṁśaan (D60). Kartan yläpuolella oleva teksti kertoo, mitkä kaksi näytetään.',
-        'Kummalta tahansa kartalta napautettu graha merkitään molemmille, joten sitä voi seurata rāśi-kartasta vargaan. Jakokarttapainikkeita ei käytetä tässä tyylissä, koska keskellä on aina D1. Tyyli ja varga muistetaan, ja ne voi valita myös kohdasta Asetukset → näyttö → chart style. Asiakasraportti piirtää myös sekoitetun kartan.',
+        'MIX N ja MIX S, N-, S- ja N+S-painikkeiden vieressä, piirtävät kaksi karttaa samoihin taloihin. Keskellä oleva neliö, kolme neljännestä kartasta, kuuluu D1-kartalle: jokaisen talon sen sisään jäävä osa sisältää D1-kartan planeetat, ja sen ulkopuolinen osa, ympärillä oleva kehä, varga-kartan planeetat, aluksi navamsan (D9). Painikkeiden vieressä oleva lista, ulompi kartta, sisältää jokaisen vargan horasta (D2) śaṣṭiaṁśaan (D60). MIX N on North Indian -asettelussa, jossa talot lasketaan D1-lagnasta, ja MIX S South Indian -asettelussa, jossa merkit pysyvät paikoillaan ja kahden kartan nimet ovat keskellä.',
+        'Planeetta on kummassakin kartassa aina siinä merkissä, jossa se on, joten sama talo näyttää, missä se on D1:ssä ja missä vargassa. Kummalta tahansa kartalta napautettu graha merkitään molemmille. Jakokarttapainikkeita ei käytetä näissä tyyleissä. Tyyli ja varga muistetaan, ja ne voi valita myös kohdasta Asetukset → näyttö → chart style. Asiakasraportti piirtää myös sekoitetun kartan.',
       ],
     },
   },
