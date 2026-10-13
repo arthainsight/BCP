@@ -2302,58 +2302,72 @@ test('REPORT puts the chart, the timing summary and the palm photographs on page
   expect(errors).toEqual([]);
 });
 
-test('the mixed chart has D1 inside and any varga outside', async ({ page }, info) => {
+test('the mixed chart has the D1 chart in the inner part of every house and any varga in the outer part', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
-  const mix = visible(page, page.getByRole('button', { name: 'MIX', exact: true }));
-  await mix.click();
+  await visible(page, page.getByRole('button', { name: 'MIX N', exact: true })).click();
   const mixed = visible(page, page.locator('[data-chart="mixed"]'));
   await expect(mixed).toBeVisible();
 
-  // The D1 chart is in the middle, in the North style, with its degrees; the divisional bar has no use and is gone.
-  const inner = mixed.locator('[data-chart="center"] svg[aria-label="North Indian Jyotish chart"]');
-  await expect(inner).toBeVisible();
-  await expect(inner).toContainText(/Asc 12°18'/);
+  // One chart in the North layout: the D1 chart's ascendant, with its degrees, and the divisional bar has no use and is gone.
+  const nested = mixed.locator('[data-chart="nested"]');
+  await expect(nested).toHaveAttribute('data-nested-shape', 'north');
+  await expect(nested).toContainText(/Asc 12°18/);
   await expect(visible(page, page.getByRole('group', { name: 'divisional charts' }))).toHaveCount(0);
 
-  // The navamsa is outside to begin with; any varga can be chosen, and the outside changes while the inside does not.
+  // The navamsa is the outer chart to begin with; any varga can be chosen, and the outer part changes while the inner does not.
   const outer = visible(page, page.getByRole('combobox', { name: 'outer chart' }));
   await expect(outer).toHaveValue('9');
-  await expect(mixed).toContainText('outside D9');
-  const outside = () => mixed.locator('[data-chart="center"]').evaluate(center => [...center.parentElement!.children].filter(cell => !cell.hasAttribute('data-chart')).map(cell => cell.textContent).join('|'));
-  const navamsa = await outside();
+  await expect(mixed).toContainText('outer chart: D9');
+  await expect(mixed).toContainText('inner chart: D1');
+  const navamsa = await nested.innerText();
   await outer.selectOption('10');
-  await expect(mixed).toContainText('outside D10');
-  expect(await outside()).not.toEqual(navamsa);
-  await expect(inner).toContainText(/Asc 12°18'/);
+  await expect(mixed).toContainText('outer chart: D10');
+  expect(await nested.innerText()).not.toEqual(navamsa);
+  await expect(nested).toContainText(/Asc 12°18/);
   await outer.selectOption('1');
-  await expect(mixed).toContainText('outside D1');
+  await expect(mixed).toContainText('outer chart: D1 ');
+
+  // The South layout has the two charts in the cells of the signs, and their names in the middle.
+  await outer.selectOption('16');
+  await visible(page, page.getByRole('button', { name: 'MIX S', exact: true })).click();
+  await expect(nested).toHaveAttribute('data-nested-shape', 'south');
+  await expect(nested).toContainText(/D16/);
+  await expect(nested).toContainText(/D1 /);
+  await expect(nested).toContainText(/Asc 12°18/);
 
   // The style and the varga are kept with the settings.
-  await outer.selectOption('16');
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}'));
-  expect(stored.chartStyle).toBe('mixed');
+  expect(stored.chartStyle).toBe('mixedSouth');
   expect(stored.mixedOuterDivision).toBe(16);
 
   // The report draws it too.
   if (info.project.name === 'phone') await visible(page, page.getByRole('button', { name: 'Chart actions', exact: true })).click();
   await visible(page, page.getByRole('button', { name: 'REPORT', exact: true })).click();
   const report = page.getByRole('dialog', { name: 'Client report' });
-  await expect(report.locator('[data-report-section="chart"] [data-chart="center"]')).toBeVisible();
+  await expect(report.locator('[data-report-section="chart"] [data-chart="nested"]')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(report).toBeHidden();
 
-  // And Settings has it among the chart styles, with the same choice of varga.
+  // And Settings has both among the chart styles, with the same choice of varga.
   await selectWorkspace(page, '⚙');
   await visible(page, page.getByRole('button', { name: /^chart style / })).click();
-  await expect(visible(page, page.getByRole('button', { name: 'Mixed', exact: true }))).toHaveAttribute('class', /emerald/);
+  await expect(visible(page, page.getByRole('button', { name: 'Mixed (South)', exact: true }))).toHaveAttribute('class', /emerald/);
   const settingsOuter = visible(page, page.getByRole('combobox', { name: 'outer chart' }));
   await expect(settingsOuter).toHaveValue('16');
   await settingsOuter.selectOption('7');
+  await visible(page, page.getByRole('button', { name: 'Mixed (North)', exact: true })).click();
+  await expect(visible(page, page.getByRole('button', { name: 'Mixed (North)', exact: true }))).toHaveAttribute('class', /emerald/);
   await visible(page, page.getByRole('button', { name: 'North Indian', exact: true })).click();
   await expect(visible(page, page.getByRole('combobox', { name: 'outer chart' }))).toHaveCount(0);
+
+  // A style stored by v2.84, which had one mixed style, is the North one now.
+  await page.evaluate(() => localStorage.setItem('chartDisplaySettings', JSON.stringify({ chartStyle: 'mixed', mixedOuterDivision: 9 })));
+  await page.reload();
+  await calculateChart(page);
+  await expect(visible(page, page.locator('[data-chart="nested"]'))).toHaveAttribute('data-nested-shape', 'north');
 
   expect(errors).toEqual([]);
 });

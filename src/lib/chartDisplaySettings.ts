@@ -18,7 +18,9 @@ export function migrateChartDisplaySettings(stored: unknown): ChartDisplaySettin
   // The text size stays within what the chart can show.
   result.chartFontScale = clampFontScale(result.chartFontScale);
   // Only the known chart styles are kept.
-  if (!['north', 'south', 'both', 'mixed'].includes(result.chartStyle as string)) result.chartStyle = DEFAULT_CHART_DISPLAY.chartStyle;
+  // v2.84 had one mixed style, which was North and South Indian charts one inside the other; the North layout of v2.85 takes its place.
+  if (parsed.chartStyle === 'mixed') result.chartStyle = 'mixedNorth';
+  if (!['north', 'south', 'both', 'mixedNorth', 'mixedSouth'].includes(result.chartStyle as string)) result.chartStyle = DEFAULT_CHART_DISPLAY.chartStyle;
   // The outer chart of the mixed style is one of the vargas there are.
   if (!(VARGA_DIVISIONS as readonly number[]).includes(result.mixedOuterDivision as number)) result.mixedOuterDivision = DEFAULT_CHART_DISPLAY.mixedOuterDivision;
   // The Paraya grahas that are drawn: only the four known ones are kept, in their order.

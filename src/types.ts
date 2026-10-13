@@ -123,8 +123,11 @@ export interface CharaKaraka {
   degree: number;
 }
 
-/** `both`: the same chart in the North and the South style, one inside the other; `mixed`: the D1 chart inside and any varga outside. */
-export type ChartStyle = 'north' | 'south' | 'both' | 'mixed';
+/**
+ * `both`: the same chart in the North and the South style, one inside the other. `mixedNorth` and `mixedSouth`: two charts in the
+ * houses of one, the D1 chart in the inner part of every house and any varga in the outer part, in the North or the South layout.
+ */
+export type ChartStyle = 'north' | 'south' | 'both' | 'mixedNorth' | 'mixedSouth';
 
 export interface ChartDisplaySettings {
   chartStyle: ChartStyle;

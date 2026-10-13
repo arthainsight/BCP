@@ -7,7 +7,10 @@ import { vargaChartProps } from '@/lib/vargaChartProps';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import { useChartPoints } from '@/hooks/useChartPoints';
 import type { DashaLordMarks } from './chartLayers';
-import StyledChart, { MixedChart } from './StyledChart';
+import StyledChart from './StyledChart';
+import NestedChart from './NestedChart';
+import { mixedShape } from '@/lib/chartStyle';
+import { useT } from '@/lib/i18n';
 
 type Props = {
   chart: ChartData;
@@ -31,6 +34,7 @@ type Props = {
  * alone, with all its layers.
  */
 export default function ChartDivisionsView({ chart, divisions, chartStyle, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, transitPlanets, outerDivision, onFocus }: Props) {
+  const t = useT();
   const [highlight, setHighlight] = useState<string | null>(null);
   const [arudhaPadas] = useArudhaPadas();
   const points = useChartPoints();
@@ -38,12 +42,21 @@ export default function ChartDivisionsView({ chart, divisions, chartStyle, chart
   // A single chart is drawn full size with the display settings, like D1.
   const compact = divisions.length > 1;
 
-  // The mixed style: the D1 chart inside and the chosen varga outside, a planet tapped marked in both.
-  if (chartStyle === 'mixed' && outerDivision !== undefined && !compact) {
+  // The mixed styles: the D1 chart in the inner part of every house and the chosen varga in the outer part, a planet tapped marked in both.
+  const shape = mixedShape(chartStyle);
+  if (shape && outerDivision !== undefined && !compact) {
     const common = { chart, compact: false, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, highlight, onPlanetClick: toggleHighlight, transitPlanets, arudhaPadas, points };
     return (
       <div className="@container">
-        <MixedChart inner={vargaChartProps({ ...common, division: 1 })} outer={vargaChartProps({ ...common, division: outerDivision })} />
+        <NestedChart
+          shape={shape}
+          inner={vargaChartProps({ ...common, division: 1 })}
+          outer={vargaChartProps({ ...common, division: outerDivision })}
+          innerTitle={`D1 ${VARGA_NAMES[1]}`}
+          outerTitle={`D${outerDivision} ${VARGA_NAMES[outerDivision]}`}
+          innerWord={t('inner chart')}
+          outerWord={t('outer chart')}
+        />
       </div>
     );
   }
