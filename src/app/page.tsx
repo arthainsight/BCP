@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { GeoResult, BcpResult, ChartData, PlanetData, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
-import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
+import { localToUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import PrimaryNav, { type Workspace } from '@/components/PrimaryNav';
 import DataPanel from '@/components/DataPanel';
@@ -168,7 +168,7 @@ export default function Home() {
     if (!ianaTimezone || !birthDatetime) return null;
     const date = parseBirthDatetimeForTz(birthDatetime);
     if (!date) return null;
-    return getUtcOffsetHours(ianaTimezone, date);
+    return localToUtcOffsetHours(ianaTimezone, date);
   }, [ianaTimezone, birthDatetime]);
 
   const effectiveTzOffset = useMemo<number | null>(() => {
@@ -479,7 +479,7 @@ export default function Home() {
         if (!isNaN(n)) tzOffset = n;
       } else if (snap.ianaTimezone) {
         const d = parseBirthDatetimeForTz(snap.birthDatetime);
-        if (d) tzOffset = getUtcOffsetHours(snap.ianaTimezone, d);
+        if (d) tzOffset = localToUtcOffsetHours(snap.ianaTimezone, d);
       }
       if (tzOffset === null) return;
 

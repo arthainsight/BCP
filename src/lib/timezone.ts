@@ -25,6 +25,25 @@ export function getUtcOffsetHours(ianaTimezone: string, date: Date): number {
   }
 }
 
+const DAY_MS = 86400000;
+
+/**
+ * The UTC offset in hours that applies to a local wall-clock time, where `wallClock` carries that time in its UTC
+ * fields (as parseBirthDatetimeForTz returns it). Unlike getUtcOffsetHours it is right in the hours around a
+ * change of clock: it takes the offsets in force a day before and a day after, and picks the one that really
+ * puts the wall-clock time at that offset. When the clock was set back and the time occurred twice, the first
+ * occurrence (the earlier offset) is used; a time that never happened (the hour skipped when the clock went
+ * forward) gets the offset in force before the change.
+ */
+export function localToUtcOffsetHours(ianaTimezone: string, wallClock: Date): number {
+  const before = getUtcOffsetHours(ianaTimezone, new Date(wallClock.getTime() - DAY_MS));
+  const after = getUtcOffsetHours(ianaTimezone, new Date(wallClock.getTime() + DAY_MS));
+  for (const candidate of before === after ? [before] : [before, after]) {
+    if (getUtcOffsetHours(ianaTimezone, new Date(wallClock.getTime() - candidate * 3600000)) === candidate) return candidate;
+  }
+  return before;
+}
+
 /** Parses "dd.mm.yyyy hh.mm.ss" into a Date (treating the numbers as UTC for DST lookup). */
 export function parseBirthDatetimeForTz(dt: string): Date | null {
   const match = dt.trim().match(/^(\d{2})\.(\d{2})\.(\d{4})\s(\d{2})\.(\d{2})\.(\d{2})$/);
