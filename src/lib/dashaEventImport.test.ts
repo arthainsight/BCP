@@ -52,4 +52,42 @@ assert.equal(parseDashaEventText('15.6.2015 Move', { category: 'home', varga: 'D
 // A date alone is not an event, and a leap day is only real in a leap year.
 assert.deepEqual(parseDashaEventText('15.6.2015\n29.2.2016 Leap\n29.2.2015 Not a leap year', defaults).events.map(item => item.name), ['Leap']);
 assert.equal(parseDashaEventText('', defaults).events.length, 0);
+
+// v2.88: months and years, periods, a header line, and pasted CSV or JSON.
+const loose = parseDashaEventText([
+  '3/2015 Started the studies',
+  '2016 Bought the house',
+  'Daughter born 2019-03',
+  '15.6.2015 - 20.8.2017 Studied abroad',
+  '2018–2020 The long illness',
+  '1.1.2021 .. 5.1.2020 Backwards',
+  'The year 1500 was long ago',
+].join('\n'), defaults);
+assert.deepEqual(loose.events.map(item => [item.date, item.endDate, item.name]), [
+  ['2015-03-15', undefined, 'Started the studies'],
+  ['2016-07-01', undefined, 'Bought the house'],
+  ['2019-03-15', undefined, 'Daughter born'],
+  ['2015-06-15', '2017-08-20', 'Studied abroad'],
+  ['2018-01-01', '2020-12-31', 'The long illness'],
+]);
+assert.deepEqual(loose.invalid, ['1.1.2021 .. 5.1.2020 Backwards', 'The year 1500 was long ago'], 'a period cannot end before it begins, and only years from 1800 are read');
+assert.deepEqual(loose.events[0].tags, ['approx. date'], 'a date that was not exact is marked');
+assert.deepEqual(loose.events[3].tags, [], 'a period of exact days is not');
+assert.equal('endDate' in loose.events[0], false);
+assert.deepEqual(parseDashaEventText('2015-03 Month\n2015-3-4 Day\n2015-13 Not a month', defaults).events.map(item => item.date), ['2015-03-15', '2015-03-04']);
+assert.equal(parseDashaEventText('1.1.2015 Early\n2015 Late', defaults).events.length, 2);
+assert.deepEqual(parseDashaEventText('2015-06-15 - 2017-08-20 Period', defaults).events[0].endDate, '2017-08-20');
+assert.equal(parseDashaEventText('2015-06-155 Too long', defaults).events.length, 0);
+
+// A first line that names the columns is skipped.
+const withHeader = parseDashaEventText('Date\tEvent\tCategory\n15.6.2015\tMoved\thome', defaults);
+assert.equal(withHeader.format, 'lines'); assert.deepEqual(withHeader.invalid, []); assert.equal(withHeader.events[0].category, 'home');
+
+// CSV with a header (quotes and all) and JSON are read as the files are.
+const pastedCsv = parseDashaEventText('event,date,end_date,category\n"Move, abroad",2015-06-15,2017-08-20,Home\nBroken,not a date,,Work', defaults);
+assert.equal(pastedCsv.format, 'CSV'); assert.equal(pastedCsv.events[0].name, 'Move, abroad'); assert.equal(pastedCsv.events[0].endDate, '2017-08-20'); assert.equal(pastedCsv.events[0].category, 'home');
+assert.deepEqual(pastedCsv.invalid, ['Broken, not a date, , Work']);
+const pastedJson = parseDashaEventText('[{"name":"Move","date":"2015-06-15","endDate":"2014-01-01"},{"name":"No date"}]', defaults);
+assert.equal(pastedJson.format, 'JSON'); assert.equal(pastedJson.events.length, 1); assert.equal(pastedJson.events[0].endDate, undefined, 'an end before the beginning is dropped'); assert.equal(pastedJson.invalid.length, 1);
+assert.deepEqual(parseDashaEventText('{ broken', defaults), { events: [], invalid: ['This is not valid JSON.'], format: 'JSON' });
 console.log('Dasha event import tests passed');

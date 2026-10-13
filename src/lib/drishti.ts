@@ -1,7 +1,5 @@
 import type { PlanetData } from '@/types';
 
-export type DrishtiMode = 'graha' | 'rashi' | 'both';
-
 export type DrishtiChartPlanet = {
   name: string;
   sign: number;

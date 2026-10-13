@@ -1,6 +1,7 @@
 import type { PlanetData } from '@/types';
 import type { YogaResult } from '@/lib/yogas';
 import { getRashiAspectSigns } from '@/lib/drishti';
+import { normalizeDegrees } from '@/lib/angles';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ const NATURAL_BENEFICS = new Set(['Jupiter', 'Venus']);
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function getMoonPhase(moonLon: number, sunLon: number): 'benefic' | 'malefic' | 'neutral' {
-  const diff = ((moonLon - sunLon) + 360) % 360;
+  const diff = normalizeDegrees(moonLon - sunLon);
   if (diff >= 120 && diff <= 240) return 'benefic';
   if (diff <= 60 || diff >= 300) return 'malefic';
   return 'neutral';

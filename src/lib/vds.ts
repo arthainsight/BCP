@@ -3,6 +3,7 @@
 // Sub-dashas reuse the proportional formula from vimshottari.ts.
 
 import { MahadashaEntry } from './vimshottari';
+import { normalizeDegrees } from './angles';
 
 const NAKSHATRA_SIZE = 360 / 27;
 
@@ -118,7 +119,7 @@ export function calculateVds(input: VdsInput): VdsResult | null {
   } = input;
 
   // Step 1: Paksha — Shukla (waxing) if Moon is 0–180° ahead of Sun
-  const moonSunDiff = (moonLongitude - sunLongitude + 360) % 360;
+  const moonSunDiff = normalizeDegrees(moonLongitude - sunLongitude);
   const isShukla = moonSunDiff < 180;
 
   // Step 2: Hora of Lagna

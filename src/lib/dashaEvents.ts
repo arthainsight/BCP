@@ -17,6 +17,9 @@ export interface DashaEventSnapshot {
   mdRange?: { startDate: Date; endDate: Date };
   note?: string;
 }
+
+/** The daśā systems an event is read in, in the order they are shown. Each is also the name of its switch in `DashaSettings.dashas`. */
+export const DASHA_SNAPSHOT_KEYS: readonly DashaEventSnapshot['key'][] = ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', 'kalaChakra', 'narayana', 'moola', 'sthira'];
 interface SnapshotInput {
   eventDate: Date;
   birthDate: Date;

@@ -1,5 +1,5 @@
 // Bhava Bala verification fixture
-// Run: npx ts-node --project tsconfig.json src/lib/bhavaBala.test.ts
+// Run: node --import tsx src/lib/bhavaBala.test.ts (or npm test)
 //
 // Uses a fixed Aries ascendant chart so every component can be manually reproduced.
 // Two houses (H1 and H4) are fully worked through step-by-step in comments below.

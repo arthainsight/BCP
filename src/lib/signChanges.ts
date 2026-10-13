@@ -7,6 +7,7 @@
 // several times.
 
 import type { LongitudeSeries } from './transitHits';
+import { normalizeDegrees } from './angles';
 
 export interface SignChange {
   body: string;
@@ -17,7 +18,7 @@ export interface SignChange {
   retrograde: boolean;
 }
 
-const signOf = (longitude: number) => Math.floor((((longitude % 360) + 360) % 360) / 30) + 1;
+const signOf = (longitude: number) => Math.floor(normalizeDegrees(longitude) / 30) + 1;
 
 /** Signed angle from b to a, in (-180, 180]. */
 function signedDistance(a: number, b: number): number {

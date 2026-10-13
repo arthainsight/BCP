@@ -35,4 +35,9 @@ for (const group of groups) {
 const sunNak = groups.flatMap(g => g.nakshatras).find(n => n.natal.includes('Sun'));
 assert.equal(sunNak?.name, 'Pushya', 'Sun at 100° is in Pushya');
 
+// A longitude exactly on a nakṣatra boundary belongs to the nakṣatra that begins there.
+for (let index = 0; index < 27; index++) {
+  assert.equal(nakshatraIndex(index * (360 / 27)), index, `the cusp of nakshatra ${index}`);
+}
+
 console.log('Nava-Tara tests passed');

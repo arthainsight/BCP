@@ -1,5 +1,6 @@
 import { PlanetData } from '@/types';
 import { getRashiAspectSigns } from '@/lib/drishti';
+import { normalizeDegrees } from '@/lib/angles';
 
 export type YogaStatus = 'active' | 'inactive';
 export type YogaCategory = 'solar' | 'moon' | 'raja' | 'dhana' | 'general' | 'pancha-mahapurusha';
@@ -63,7 +64,7 @@ function dynamicBeneficStatus(name: string, planets: PlanetData[]): true | false
     const sun  = planets.find(p => p.name === 'Sun');
     const moon = planets.find(p => p.name === 'Moon');
     if (sun && moon) {
-      const diff = ((moon.longitude - sun.longitude) + 360) % 360;
+      const diff = normalizeDegrees(moon.longitude - sun.longitude);
       if (diff >= 120 && diff <= 240) return true;
       if (diff <= 60  || diff >= 300) return false;
     }
@@ -475,7 +476,7 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
     if (mercury) {
       const conjunct = sun.sign === mercury.sign;
       const angDist  = (() => {
-        const d = Math.abs(((mercury.longitude - sun.longitude) + 360) % 360);
+        const d = Math.abs(normalizeDegrees(mercury.longitude - sun.longitude));
         return d > 180 ? 360 - d : d;
       })();
       const combust = angDist < 14;

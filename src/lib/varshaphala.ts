@@ -71,10 +71,6 @@ export function tajikaAspect(fromSign: number, toSign: number): TajikaAspect {
   return null;
 }
 
-export function isFriendlyAspect(aspect: TajikaAspect): boolean {
-  return aspect === 'sextile' || aspect === 'trine';
-}
-
 // ── Pañcavargīya Bala ──────────────────────────────────────────────────
 
 export type VargaDignity = 'own' | 'friend' | 'neutral' | 'enemy' | 'debilitated';

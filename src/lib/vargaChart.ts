@@ -13,8 +13,6 @@ import type { ChartData, PlanetData, SpecialLagna } from '@/types';
 import { getVargaSignIndex, getDegreesInSign } from './varga';
 
 export const VARGA_DIVISIONS = [1, 2, 3, 4, 5, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60] as const;
-export type VargaDivision = (typeof VARGA_DIVISIONS)[number];
-
 /** Traditional names, shown next to the Dn label. */
 export const VARGA_NAMES: Record<number, string> = {
   1: 'Rāśi', 2: 'Horā', 3: 'Drekkāṇa', 4: 'Chaturthāṁśa', 5: 'Pañchāṁśa',

@@ -33,15 +33,4 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
 // When a new system is actually implemented, add its row here with a renderer
 // and its key to DashaSettings in the same commit.
 
-export const DASHA_GROUPS = DASHA_REGISTRY.reduce<{ title: string; items: DashaRegistryItem[] }[]>((groups, item) => {
-  const group = groups.find((g) => g.title === item.group);
-  if (group) {
-    group.items.push(item);
-  } else {
-    groups.push({ title: item.group, items: [item] });
-  }
-  return groups;
-}, []);
-
 export const RENDERABLE_DASHAS = DASHA_REGISTRY.filter((item) => Boolean(item.renderer));
-export const RENDERABLE_DASHA_KEYS = RENDERABLE_DASHAS.map((item) => item.key);

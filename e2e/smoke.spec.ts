@@ -832,6 +832,71 @@ test('many events can be pasted into the Event List at once', async ({ page }) =
   expect(errors).toEqual([]);
 });
 
+test('events can be pasted with periods and loose dates, and changed or deleted many at once', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Paste', exact: true })).click();
+  const box = visible(page, page.getByRole('group', { name: 'Paste many events' }));
+  await box.getByRole('textbox', { name: 'Events to add' }).fill([
+    '15.6.2015 Moved abroad',
+    '2.1.2018; New job; work; D10; 5',
+    '2015 - 2017 Studied abroad',
+    '3/2019 Daughter born',
+    '2020-05-05 Surgery',
+  ].join('\n'));
+  await expect(box).toContainText('5 new');
+  await box.getByRole('button', { name: 'Add 5 events' }).click();
+  await expect(visible(page, page.getByText('Added 5 events.'))).toBeVisible();
+  const card = (name: string) => visible(page, page.locator('details').filter({ hasText: name }));
+
+  // A period shows both its days, and a loose date is marked, which the search finds.
+  await expect(card('Studied abroad')).toContainText('01.01.2015 – 31.12.2017');
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('approx');
+  await expect(card('Daughter born')).toBeVisible();
+  await expect(page.locator('details').filter({ hasText: 'Surgery' })).toHaveCount(0);
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('');
+
+  // Choose them all and change them together.
+  const bar = visible(page, page.getByRole('group', { name: 'Bulk editing' }));
+  await bar.getByRole('checkbox', { name: /Select all shown/ }).check();
+  await expect(bar).toContainText('5 selected');
+  await bar.getByLabel('Set category of the selected events').selectOption('health');
+  await expect(visible(page, page.getByText('Changed 5 events.'))).toBeVisible();
+  await expect(card('Surgery')).toContainText('Health');
+  await expect(card('New job')).toContainText('Health');
+  await bar.getByLabel('Tags for the selected events').fill('review, checked');
+  await bar.getByRole('button', { name: 'Add tags' }).click();
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('checked');
+  await expect(card('Surgery')).toBeVisible();
+  await expect(card('Moved abroad')).toBeVisible();
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('');
+
+  // A period becomes a single day again.
+  await bar.getByRole('button', { name: 'Clear end date' }).click();
+  await expect(card('Studied abroad')).not.toContainText('31.12.2017');
+
+  // One event is deleted after a question, and Undo brings it back.
+  await bar.getByRole('checkbox', { name: /Select all shown/ }).uncheck();
+  await expect(bar).not.toContainText('selected');
+  await visible(page, page.getByRole('checkbox', { name: 'Select Surgery' })).check();
+  await bar.getByRole('button', { name: 'Delete selected (1)' }).click();
+  await bar.getByRole('button', { name: 'Yes, delete' }).click();
+  await expect(visible(page, page.getByText('Deleted 1 events.'))).toBeVisible();
+  await expect(page.locator('details').filter({ hasText: 'Surgery' })).toHaveCount(0);
+  await visible(page, page.getByRole('button', { name: 'Undo', exact: true })).click();
+  await expect(card('Surgery')).toBeVisible();
+
+  // The list can be grouped by year.
+  await bar.getByRole('checkbox', { name: 'Group by year' }).check();
+  await expect(visible(page, page.getByRole('heading', { name: '2015 · 2', level: 4 }))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
 test('the timing panel can take the whole width on a wide screen', async ({ page }, info) => {
   test.skip(info.project.name !== 'desktop', 'the wide mode is for a wide screen');
   const errors: string[] = [];

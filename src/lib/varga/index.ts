@@ -30,8 +30,6 @@ export const SIGN_ABBR = [
   'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi',
 ] as const;
 
-export type SignIndex = 0|1|2|3|4|5|6|7|8|9|10|11;
-
 export interface VargaRow {
   D1:  number;
   D2:  number;
@@ -74,16 +72,6 @@ export function calculateVargaMatrix(longitude: number): VargaRow {
     D45: calcD45(longitude),
     D60: calcD60(longitude),
   };
-}
-
-/** Returns abbreviated sign labels (e.g. "Cn") for every supported varga division. */
-export function calculateVargaMatrixAbbr(longitude: number): Record<string, string> {
-  const row = calculateVargaMatrix(longitude);
-  const out: Record<string, string> = {};
-  for (const [key, idx] of Object.entries(row)) {
-    out[key] = SIGN_ABBR[idx as number];
-  }
-  return out;
 }
 
 // Dispatch table — for dynamic lookup by division number

@@ -1,5 +1,5 @@
 // Varga matrix tests
-// Run: npx ts-node --project tsconfig.json src/lib/varga/varga.test.ts
+// Run: node --import tsx src/lib/varga/varga.test.ts (or npm test)
 //
 // Expected output verified against classical Parashara rules.
 // Cross-check D5 against JHora before trusting in production.

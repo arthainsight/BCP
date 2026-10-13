@@ -1,7 +1,5 @@
-import type { CSSProperties, ReactNode } from 'react';
 import type { ChartDisplaySettings } from '@/types';
 import { signDignity } from '@/lib/dignity';
-import { useT } from '@/lib/i18n';
 
 // The coloured chart layers a viewer can switch on and off, from the Settings
 // panel or by clicking their entry in the chart legend.
@@ -103,25 +101,3 @@ export function buildLayerControls(
     }));
 }
 
-/**
- * A legend entry: a button that hides the layer when a control is given, plain
- * text otherwise. A layer that is switched off is left out of the legend; it
- * comes back from Settings → chart layers.
- */
-export function LegendEntry({ control, style, className = '', children }: { control?: ChartLayerControl; style?: CSSProperties; className?: string; children: ReactNode }) {
-  const t = useT();
-  if (control && !control.on) return null;
-  if (!control) return <span style={style} className={`font-semibold ${className}`}>{children}</span>;
-  return (
-    <button
-      type="button"
-      onClick={control.onToggle}
-      aria-pressed={control.on}
-      title={t('Hide this layer')}
-      style={style}
-      className={`font-semibold rounded px-1 -mx-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
