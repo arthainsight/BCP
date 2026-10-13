@@ -152,9 +152,6 @@ export default function SettingsPanel(props: Props) {
       rasiOptions,
     };
     saveDashaSettings(next);
-    if (key === 'bcp' && typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('bcp:dasha-bcp-toggle', { detail: next.dashas.bcp }));
-    }
   };
 
   return (

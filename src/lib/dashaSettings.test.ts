@@ -17,6 +17,5 @@ assert.deepEqual(current.rasiOptions, DEFAULT_DASHA_SETTINGS.rasiOptions);
 
 // Old format: showBcp / showVimshottari / dashaSystem.
 const old = migrateDashaSettings({ showBcp: false, dashaSystem: 'vds' });
-assert.equal(old.dashas.bcp, false);
 assert.equal(old.dashas.vimshottari, true);
 assert.equal(old.dashas.vds, true);

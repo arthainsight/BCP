@@ -444,7 +444,6 @@ export const FI: Record<string, string> = {
   // Legends
   'Transit': 'Transiitti',
   'Special': 'Erityislagnat',
-  'BCP Year': 'BCP-vuosi',
   'Month': 'Kuukausi',
   'Both': 'Molemmat',
   'Hide this layer': 'Piilota kerros',

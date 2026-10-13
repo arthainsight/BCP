@@ -105,8 +105,6 @@ export interface ChartDisplaySettings {
   showNatalPlanets: boolean;
   degreePrecision: DegreePrecision;
   showNakshatra: boolean;
-  showNakshatraPada: boolean;
-  showD108: boolean;
   showCharaKaraka: boolean;
   showOuterPlanets: boolean;
   showSpecialLagnas: boolean;
@@ -143,8 +141,6 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showNatalPlanets: true,
   degreePrecision: 'off',
   showNakshatra: true,
-  showNakshatraPada: true,
-  showD108: false,
   showCharaKaraka: false,
   showOuterPlanets: false,
   showSpecialLagnas: true,
@@ -227,7 +223,6 @@ export interface RasiDashaOptions {
 // migrateDashaSettings keeps the keys below and drops the rest.
 export interface DashaSettings {
   dashas: {
-    bcp: boolean;
     vimshottari: boolean;
     /** Vimśottarī from the Utpanna, Kṣema or Ādhāna nakṣatra of the Moon. */
     vimshottariVariant?: boolean;
@@ -248,7 +243,6 @@ export interface DashaSettings {
 
 export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
   dashas: {
-    bcp: true,
     vimshottari: true,
     vimshottariVariant: true,
     vds: false,

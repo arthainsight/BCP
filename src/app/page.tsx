@@ -619,8 +619,8 @@ export default function Home() {
       : <EmptyState message="Calculate a chart to see graha positions" />
   );
   const timingPanel = (wideControl?: { wide: boolean; onToggleWide: () => void }) => (
-    bcpResult && chartData
-      ? <TimingPanel bcp={bcpResult} chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={showVargaMatrix} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} {...wideControl} />
+    chartData
+      ? <TimingPanel chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={showVargaMatrix} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} {...wideControl} />
       : <EmptyState message="Calculate a chart to see Dasha analysis" />
   );
   const panchangPanel = chartDisplaySettings.showPanchang && chartData && (

@@ -1,11 +1,11 @@
 'use client';
 
-import { ChartData, PlanetData, SpecialLagna } from '@/types';
+import { ChartData } from '@/types';
 import { type DegreePrecision, formatDegree } from '@/lib/formatDegree';
 import { normalizeDegrees } from '@/lib/angles';
 import { grahaCode, grahaCodeFromEnglishCode, grahaName, useGrahaNames } from '@/lib/grahaNames';
-import type { GrahaNameStyle } from '@/types';
 import { SIGN_ABBR } from '@/lib/signs';
+import { NAKSHATRA_SIZE } from '@/lib/nakshatras';
 
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 
@@ -55,44 +55,8 @@ function normalizeLongitude(longitude: number): number {
 }
 
 function getNakshatra(longitude: number) {
-  const normalized = normalizeLongitude(longitude);
-  const nakSize = 13 + 1 / 3;
-  const padaSize = 3 + 1 / 3;
-  const nakIndex = Math.floor(normalized / nakSize);
-  const nak = NAKSHATRAS[Math.min(nakIndex, 26)];
-  const remainder = normalized % nakSize;
-  const pada = Math.floor(remainder / padaSize) + 1;
-  const pada108 = Math.floor(normalized / padaSize) + 1;
-  return { name: nak.name, number: Math.min(nakIndex, 26) + 1, lord: nak.lord, pada, pada108 };
-}
-
-function getD108(longitude: number) {
-  const normalized = normalizeLongitude(longitude);
-  const natalSign = Math.floor(normalized / 30) + 1;
-  const degInSign = normalized % 30;
-  const partSize = 30 / 108;
-  const part = Math.floor(degInSign / partSize) + 1;
-
-  // Experimental Ashtottaramsa mapping. The part is the 1-108 amsa within the natal rashi.
-  // The sign mapping is intentionally separated from Pada108 because these are different 108 grids.
-  const d108Sign = ((natalSign + part - 2) % 12) + 1;
-  return { sign: d108Sign, part };
-}
-
-function buildPlanetRow(planet: PlanetData, karakaByPlanet: Record<string, string>, adjLon: (l: number) => number, precision: DegreePrecision, style: GrahaNameStyle) {
-  const graha = { code: grahaCode(planet.name, style), name: grahaName(planet.name, style) };
-  const nak = getNakshatra(adjLon(planet.longitude));
-  const d108 = getD108(planet.longitude);
-  return {
-    code: graha.code + (planet.isRetrograde ? ' ℞' : ''),
-    name: graha.name,
-    karaka: karakaByPlanet[planet.name] ?? '',
-    position: `${SIGN_ABBR[planet.sign - 1]} ${tableFormatDeg(planet.degree, precision)}`,
-    nakshatra: `${nak.name}(${nak.number}) ${grahaCodeFromEnglishCode(nak.lord, style)}`,
-    pada: nak.pada,
-    pada108: nak.pada108,
-    d108: `${SIGN_ABBR[d108.sign - 1]} (${d108.part})`,
-  };
+  const index = Math.min(Math.floor(normalizeLongitude(longitude) / NAKSHATRA_SIZE), 26);
+  return { name: NAKSHATRAS[index].name, number: index + 1, lord: NAKSHATRAS[index].lord };
 }
 
 interface Props {
@@ -101,12 +65,6 @@ interface Props {
   degreePrecision?: DegreePrecision;
   showOuterPlanets?: boolean;
   showSpecialLagnas?: boolean;
-  /** @deprecated The nakshatra column is always shown: the table does not follow the chart's labels. */
-  showNakshatra?: boolean;
-  /** @deprecated Pada columns removed */
-  showNakshatraPada?: boolean;
-  /** @deprecated D108 removed */
-  showD108?: boolean;
   nakshatraAdjust?: number;
 }
 
@@ -120,22 +78,14 @@ export default function JyotishGrahaTable({
 }: Props) {
   const { style } = useGrahaNames();
   const adjLon = (lon: number) => normalizeDegrees(lon + nakshatraAdjust);
-  const ascNak = getNakshatra(adjLon(chart.ascendant.longitude));
-  const ascD108 = getD108(chart.ascendant.longitude);
 
-  const buildSpecialLagnaRow = (sl: SpecialLagna) => {
-    const nak = getNakshatra(adjLon(sl.longitude));
-    const d108 = getD108(sl.longitude);
+  /** One row: a point of the chart with its sign and degree, and the nakṣatra of its longitude. */
+  const buildRow = (code: string, name: string, karaka: string, sign: number, degree: number, longitude: number, isSpecial: boolean) => {
+    const nak = getNakshatra(adjLon(longitude));
     return {
-      code: sl.name,
-      name: sl.name,
-      karaka: '',
-      position: `${SIGN_ABBR[sl.sign - 1]} ${tableFormatDeg(sl.degree, degreePrecision)}`,
+      code, name, karaka, isSpecial,
+      position: `${SIGN_ABBR[sign - 1]} ${tableFormatDeg(degree, degreePrecision)}`,
       nakshatra: `${nak.name}(${nak.number}) ${grahaCodeFromEnglishCode(nak.lord, style)}`,
-      pada: nak.pada,
-      pada108: nak.pada108,
-      d108: `${SIGN_ABBR[d108.sign - 1]} (${d108.part})`,
-      isSpecial: true,
     };
   };
 
@@ -144,19 +94,9 @@ export default function JyotishGrahaTable({
     : chart.planets.filter((p) => !OUTER_PLANETS.includes(p.name));
 
   const rows = [
-    {
-      code: 'As',
-      name: 'Lagna',
-      karaka: '',
-      position: `${SIGN_ABBR[chart.ascendant.sign - 1]} ${tableFormatDeg(chart.ascendant.degree, degreePrecision)}`,
-      nakshatra: `${ascNak.name}(${ascNak.number}) ${grahaCodeFromEnglishCode(ascNak.lord, style)}`,
-      pada: ascNak.pada,
-      pada108: ascNak.pada108,
-      d108: `${SIGN_ABBR[ascD108.sign - 1]} (${ascD108.part})`,
-      isSpecial: false,
-    },
-    ...filteredPlanets.map((p) => ({ ...buildPlanetRow(p, karakaByPlanet, adjLon, degreePrecision, style), isSpecial: false })),
-    ...(showSpecialLagnas ? (chart.specialLagnas ?? []).map(buildSpecialLagnaRow) : []),
+    buildRow('As', 'Lagna', '', chart.ascendant.sign, chart.ascendant.degree, chart.ascendant.longitude, false),
+    ...filteredPlanets.map((p) => buildRow(grahaCode(p.name, style) + (p.isRetrograde ? ' ℞' : ''), grahaName(p.name, style), karakaByPlanet[p.name] ?? '', p.sign, p.degree, p.longitude, false)),
+    ...(showSpecialLagnas ? (chart.specialLagnas ?? []).map((sl) => buildRow(sl.name, sl.name, '', sl.sign, sl.degree, sl.longitude, true)) : []),
   ];
 
   return (

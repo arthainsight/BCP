@@ -1,4 +1,4 @@
-import { BcpResult, PlanetData, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
+import { PlanetData, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { useMemo } from 'react';
 import { RENDERABLE_DASHAS } from '@/lib/dashaRegistry';
 import { calculateDashaEventSnapshots, type DashaEventSnapshot } from '@/lib/dashaEvents';
@@ -16,7 +16,6 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { pad2 } from '@/lib/dateFormat';
 
 interface Props {
-  bcp: BcpResult;
   planets: PlanetData[];
   ascendant: { longitude: number; sign: number; degree: number };
   birthDatetime: string;
@@ -26,7 +25,7 @@ interface Props {
   targetDate?: string;
 }
 
-export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, dashaSettings, view = 'all', targetDate }: Props) {
+export default function DashaPanel({ planets, ascendant, birthDatetime, dashaSettings, view = 'all', targetDate }: Props) {
   const normalizedDashas = { ...DEFAULT_DASHA_SETTINGS.dashas, ...dashaSettings.dashas };
   const { translate } = useGrahaNames();
   const t = useT();
@@ -66,7 +65,7 @@ export default function DashaPanel({ bcp, planets, ascendant, birthDatetime, das
     );
   }
 
-  const ctx: DashaRendererContext = { bcp, planets, ascendant, birthDatetime, charaOptions, rasiOptions, variantChoice };
+  const ctx: DashaRendererContext = { planets, ascendant, birthDatetime, charaOptions, rasiOptions, variantChoice };
   if (view === 'finder') return <DashaDateFinder planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} dashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} variantChoice={variantChoice} />;
   if (view === 'timeline') return <DashaTimeline planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} normalizedDashas={normalizedDashas} charaOptions={charaOptions} rasiOptions={rasiOptions} variantChoice={variantChoice} />;
 
