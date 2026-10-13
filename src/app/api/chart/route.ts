@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
     getCookie(request, "bcp_nodeMode") ||
     "mean";
 
-  // The sunrise the special lagnas are counted from: the mean-time one (the default) or the true sunrise.
-  const sunriseMode = searchParams.get("sunrise") === "true" ? "true" : "mean";
+  // The sunrise the special lagnas are counted from: the true sunrise (the default) or the mean-time one.
+  const sunriseMode = searchParams.get("sunrise") === "mean" ? "mean" : "true";
 
   if (!year || !month || !day) {
     return NextResponse.json({ error: "Missing required parameters: year, month, day" }, { status: 400 });

@@ -215,7 +215,7 @@ export interface CalculationSettings {
   parayaSaturn: ParayaSpeed;
   /** Paraya Rahu and Ketu: 2 / 1 years alternating, or 1.5 years in every sign. */
   parayaRahu: ParayaSpeed;
-  /** The sunrise the special lagnas count from: true, or mean-time (true sunrise plus the equation of time). */
+  /** The sunrise the special lagnas count from: true (the default), or mean-time (true sunrise plus the equation of time). */
   sunriseMode: 'true' | 'mean';
 }
 
@@ -228,7 +228,7 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   charaKarakaCount: 8,
   parayaSaturn: 'alternating',
   parayaRahu: 'alternating',
-  sunriseMode: 'mean',
+  sunriseMode: 'true',
 };
 
 export interface CharaOptions {

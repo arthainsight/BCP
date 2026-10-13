@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v2.87',
+    date: '2026-10-13',
+    title: 'The true sunrise is the default',
+    changes: [
+      'The special lagnas (Bhava, Hora, Ghati, Vighati and Prana) and the other sphutas that run on the time since sunrise now count from the true sunrise, the one an almanac gives, instead of the mean-time sunrise. Checked for Porvoo on 13 October 2026: the app gives 07:52:16 and 18:13:46, Deva Guru 07:52:11 and 18:13:37.',
+      'The mean-time sunrise (the true sunrise plus the equation of time) is still in Settings → calculations → sunrise for the special lagnas, where the true sunrise is now listed first. A choice already made in this browser is kept; a browser that has not chosen yet, and the chart address of the app (/api/chart without the sunrise parameter), take the new default.',
+      'Updated the application version to v2.87.',
+    ],
+  },
+  {
     version: 'v2.86',
     date: '2026-10-13',
     title: 'Many events into the Event List at once',

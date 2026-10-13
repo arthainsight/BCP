@@ -98,7 +98,7 @@ export async function calculateChart(
   ayanamsaSetting: string = 'lahiri',
   nodeModeSetting: string = 'mean',
   ayanamsaOffsetDegrees: number = 0,
-  sunriseMode: SunriseMode = 'mean',
+  sunriseMode: SunriseMode = 'true',
 ): Promise<ChartData> {
   const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
   const nodeMode = resolveNodeMode(nodeModeSetting);

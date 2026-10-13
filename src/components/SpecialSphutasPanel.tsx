@@ -52,7 +52,7 @@ const clock = (hours: number) => {
  */
 export default function SpecialSphutasPanel({ chart, calculationSettings, nakshatraAdjust = 0 }: Props) {
   const t = useT();
-  const mode = calculationSettings?.sunriseMode ?? 'mean';
+  const mode = calculationSettings?.sunriseMode ?? 'true';
   // A sunrise typed in (for example the one another program shows) replaces the calculated one in this table.
   const [manualText, setManualText] = useState('');
   const manual = parseClock(manualText);
