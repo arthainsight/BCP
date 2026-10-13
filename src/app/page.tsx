@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { GeoResult, BcpResult, ChartData, PlanetData, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
@@ -7,17 +8,12 @@ import { localToUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import PrimaryNav, { type Workspace } from '@/components/PrimaryNav';
 import DataPanel from '@/components/DataPanel';
-import SettingsPanel from '@/components/SettingsPanel';
-import AnalysisPanel, { type AnalysisRequest } from '@/components/AnalysisPanel';
-import TimingPanel from '@/components/TimingPanel';
+import type { AnalysisRequest } from '@/components/AnalysisPanel';
 import ChartSection from '@/components/ChartSection';
-import PanchangPanel from '@/components/PanchangPanel';
 import type { ChartSnapshot } from '@/components/FileActions';
-import PalmWorkspace from '@/components/palm/PalmWorkspace';
 import { DataLine, DataSummary, EmptyState, Panel, SplitPane } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
 import { RecordingPanel } from '@/components/ScreenRecorder';
-import ClientReport from '@/components/ClientReport';
 import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
@@ -33,6 +29,16 @@ import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitR
 import { saveFile } from '@/lib/download';
 import { exportSavedCharts, importSavedCharts } from '@/lib/savedCharts';
 import { calculationParams } from '@/lib/apiParams';
+
+// The panels that are not on the first screen load when they are opened, which keeps the first load small.
+// The calculation panels render on the server as well, so the first paint of each is the same as before.
+const SettingsPanel = dynamic(() => import('@/components/SettingsPanel'));
+const AnalysisPanel = dynamic(() => import('@/components/AnalysisPanel'));
+const TimingPanel = dynamic(() => import('@/components/TimingPanel'));
+const PanchangPanel = dynamic(() => import('@/components/PanchangPanel'));
+// The palm photographs and the report need the browser (its database, the print dialog) and are never part of a first paint.
+const PalmWorkspace = dynamic(() => import('@/components/palm/PalmWorkspace'), { ssr: false });
+const ClientReport = dynamic(() => import('@/components/ClientReport'), { ssr: false });
 
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'settings';
