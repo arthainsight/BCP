@@ -1,5 +1,6 @@
 'use client';
 
+import { parseClock } from '@/lib/specialSphutas';
 import { useState } from 'react';
 import { readNakshatraMode } from '@/lib/nakshatraZodiac';
 import { ChartDisplaySettings, ChartStyle, CalculationSettings, CharaOptions, DashaSettings, DEFAULT_DASHA_SETTINGS, RasiDashaOptions } from '@/types';
@@ -287,7 +288,7 @@ export default function SettingsPanel(props: Props) {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('sunrise for the special lagnas')}</label>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('sunrise for the special sphutas')}</label>
               <select
                 className={SELECT}
                 value={calculationSettings.sunriseMode ?? 'true'}
@@ -297,7 +298,24 @@ export default function SettingsPanel(props: Props) {
                 <option value="mean">{t('Mean-time sunrise (true sunrise + equation of time)')}</option>
               </select>
               <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-                {t('The Bhava, Hora, Ghati, Vighati and Prana lagnas run on the time since sunrise. Mean-time reckoning adds the equation of time to the true sunrise, about 12 minutes in October.')}
+                {t('The Bhava, Hora, Ghati, Vighati and Prana lagnas and the other special sphutas run on the time since sunrise. Mean-time reckoning adds the equation of time to the true sunrise, about 12 minutes in October.')}
+              </div>
+              <label className="mt-2 flex flex-wrap items-center gap-2 text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                <span>{t('Use another sunrise (HH:MM:SS)')}</span>
+                <input
+                  value={calculationSettings.sunriseManual ?? ''}
+                  onChange={(e) => onUpdateCalculationSettings({ sunriseManual: e.target.value })}
+                  aria-label={t('manual sunrise')}
+                  placeholder="06:28:31"
+                  inputMode="numeric"
+                  className="w-24 rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs dark:border-zinc-600 dark:bg-zinc-800"
+                />
+                {(calculationSettings.sunriseManual ?? '').trim() !== '' && parseClock(calculationSettings.sunriseManual) === null && (
+                  <span className="text-rose-500">{t('Not a time of day')}</span>
+                )}
+              </label>
+              <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                {t('For example the sunrise another program or a book uses. It replaces the calculated sunrise in the charts, the graha table and the Special Sphutas; leave it empty to use the choice above.')}
               </div>
             </div>
           </div>

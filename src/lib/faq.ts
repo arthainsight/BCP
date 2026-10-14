@@ -301,13 +301,13 @@ export const FAQ_ENTRIES: FaqEntry[] = [
   {
     id: 'sunrise',
     section: 'analysis',
-    q: { en: 'Which sunrise do the special lagnas use?', fi: 'Mitä auringonnousua erikoislagnat käyttävät?' },
+    q: { en: 'Which sunrise do the special lagnas and sphutas use?', fi: 'Mitä auringonnousua erikoislagnat ja sphuṭat käyttävät?' },
     a: {
       en: [
-        'The Bhava, Hora, Ghati, Vighati and Prana lagnas and the other sphutas run on the time since sunrise. Settings → calculations → sunrise for the special lagnas chooses between the true sunrise (the default, the one an almanac gives) and the mean-time sunrise (the true sunrise plus the equation of time, which is about 12 minutes in October). If another program or a book uses a sunrise of its own, type it in the manual sunrise field of Special Sphutas (HH:MM:SS).',
+        'The Bhava, Hora, Ghati, Vighati and Prana lagnas and the other sphutas run on the time since sunrise. Settings → calculations → sunrise for the special sphutas chooses between the true sunrise (the default, the one an almanac gives) and the mean-time sunrise (the true sunrise plus the equation of time, which is about 12 minutes in October). If another program or a book uses a sunrise of its own, type it in the field below the choice, Use another sunrise (HH:MM:SS). It replaces the calculated sunrise everywhere at once: in the charts, the graha table and ANALYSIS → Special Sphutas, which show the same values. The special lagnas on the charts (HL, BL, GL, SL, PP, ViL) are six of the twelve special sphutas; the Special Sphutas table also has Bhrigu Bindu, Arudha, Indu, Varnada and the 22nd Drekkana and 64th Navamsa.',
       ],
       fi: [
-        'Bhava-, Hora-, Ghati-, Vighati- ja Prana-lagnat sekä muut sphuṭat kulkevat auringonnoususta kuluvan ajan mukaan. Asetukset → laskenta → auringonnousu erikoislagnoille valitsee todellisen auringonnousun (oletus, almanakan antama) ja keskiaikaisen auringonnousun (todellinen auringonnousu plus aikayhtälö, noin 12 minuuttia lokakuussa) välillä. Jos toinen ohjelma tai kirja käyttää omaa auringonnousuaan, kirjoita se Special Sphutasin oma auringonnousu -kenttään (HH:MM:SS).',
+        'Bhava-, Hora-, Ghati-, Vighati- ja Prana-lagnat sekä muut sphuṭat kulkevat auringonnoususta kuluvan ajan mukaan. Asetukset → laskenta → auringonnousu erikoissphuṭoille valitsee todellisen auringonnousun (oletus, almanakan antama) ja keskiaikaisen auringonnousun (todellinen auringonnousu plus aikayhtälö, noin 12 minuuttia lokakuussa) välillä. Jos toinen ohjelma tai kirja käyttää omaa auringonnousuaan, kirjoita se valinnan alla olevaan kenttään Käytä toista auringonnousua (HH:MM:SS). Se korvaa lasketun auringonnousun kaikkialla yhtä aikaa: kartoissa, graha-taulukossa ja välilehdellä ANALYSIS → Special Sphutas, jotka näyttävät samat arvot. Kartoilla näkyvät erikoislagnat (HL, BL, GL, SL, PP, ViL) ovat kuusi kahdestatoista erikoissphuṭasta; Special Sphutas -taulukossa on lisäksi Bhrigu Bindu, Arudha, Indu, Varnada sekä 22. drekkana ja 64. navamsa.',
       ],
     },
   },

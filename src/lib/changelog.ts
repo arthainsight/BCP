@@ -2,9 +2,10 @@ export const CHANGELOG = [
   {
     version: 'v2.93',
     date: '2026-10-14',
-    title: 'The outer planets after Rahu and Ketu, and a steadier palm test',
+    title: 'Special lagnas and sphutas from one calculation, the outer planets after Rahu and Ketu, and a steadier palm test',
     changes: [
       'The outer planets (Uranus, Neptune and Pluto) are listed after Rahu and Ketu, not before them: in the graha table, in the planet tables of Tithi Praveśa and Varṣaphala, and wherever the bodies of a chart are listed. The order is set once, where the chart is calculated (grahaOrder.ts), and a test checks it on a real chart.',
+      'The special lagnas of the charts and the graha table (HL, BL, GL, SL, PP, ViL) and ANALYSIS → Special Sphutas now show the same numbers: the chart is calculated with all twelve special sphuṭas and the time they run on, and the table reads them from the chart instead of calculating them a second time. The sunrise typed in by hand moved from the Special Sphutas table to Settings → calculations (Use another sunrise), so it moves the charts and the graha table too; before, it changed the table only. The setting is called "sunrise for the special sphutas", and the user guide tells which six of the twelve the charts mark.',
       'The browser test of the palm client view (zoom and "Whole palm") failed now and then on a slow machine: it read the zoom before the photograph had been measured, when the label is still empty. It waits for the zoom first now.',
       'Updated the application version to v2.93.',
     ],

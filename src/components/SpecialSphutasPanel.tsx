@@ -1,10 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
-import {
-  calculateSpecialSphutas, equationOfTimeMinutes, formatDms, ishtaGhatis, nakshatraAndPada,
-} from '@/lib/specialSphutas';
+import { formatClock, formatDms, nakshatraAndPada } from '@/lib/specialSphutas';
 import { calculateArudhaPadas } from '@/lib/arudhaPadas';
 import { calculateCharaKarakas } from '@/lib/karakas';
 import { karakamsa as karakamsaOf, upagrahaPoints } from '@/lib/chartPoints';
@@ -13,7 +11,6 @@ import { SATURN_PORTION_MOMENTS, type SaturnPortionMoment } from '@/lib/upagraha
 import { getVargaSignIndex } from '@/lib/varga';
 import { useT } from '@/lib/i18n';
 import { SIGN_NAMES } from '@/lib/signs';
-import { pad2 } from '@/lib/dateFormat';
 
 type Props = {
   chart: ChartData;
@@ -33,18 +30,6 @@ const MOMENT_LABELS: Record<SaturnPortionMoment, string> = {
 const houseFrom = (lagnaSign: number, sign: number) => ((sign - lagnaSign + 12) % 12) + 1;
 
 
-/** "06:28:31" or "6:28" as decimal hours, or null when it is not a time of day. */
-function parseClock(text: string): number | null {
-  const match = /^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/.exec(text);
-  if (!match) return null;
-  const [hours, minutes, seconds] = [Number(match[1]), Number(match[2]), Number(match[3] ?? 0)];
-  return hours < 24 && minutes < 60 && seconds < 60 ? hours + minutes / 60 + seconds / 3600 : null;
-}
-const clock = (hours: number) => {
-  const total = Math.round((((hours % 24) + 24) % 24) * 3600);
-  return `${pad2(Math.floor(total / 3600))}:${pad2(Math.floor((total % 3600) / 60))}:${pad2(total % 60)}`;
-};
-
 /**
  * The special sphuṭas of the natal chart: the lagnas that run on the time since
  * sunrise, Śrī Lagna, Bhṛgu Bindu, Āruḍha, Indu, Varṇada and the 22nd Drekkana
@@ -52,37 +37,11 @@ const clock = (hours: number) => {
  */
 export default function SpecialSphutasPanel({ chart, calculationSettings, nakshatraAdjust = 0 }: Props) {
   const t = useT();
-  const mode = calculationSettings?.sunriseMode ?? 'true';
-  // A sunrise typed in (for example the one another program shows) replaces the calculated one in this table.
-  const [manualText, setManualText] = useState('');
-  const manual = parseClock(manualText);
+  // The sphuṭas and the time they run on are calculated with the chart, the same ones the charts and the graha table show.
+  const sphutas = chart.specialSphutas;
+  const timing = chart.specialSphutaTiming;
   // Traditions take the Lagna at different moments of Saturn's part for Gulika and Maandi; the charts follow the same choice.
   const { gulikaAt, maandiAt } = useChartPoints();
-
-  const result = useMemo(() => {
-    const debug = chart.debug;
-    const match = debug?.inputDateTime ? /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(debug.inputDateTime) : null;
-    const sun = chart.planets.find(planet => planet.name === 'Sun');
-    const moon = chart.planets.find(planet => planet.name === 'Moon');
-    const rahu = chart.planets.find(planet => planet.name === 'Rahu');
-    if (!debug || !match || !sun || !moon || !rahu) return null;
-
-    const [, year, month, day, hour, minute, second] = match.map(Number);
-    const localHours = hour + minute / 60 + second / 3600;
-    const utc = new Date(Date.UTC(year, month - 1, day, hour, minute, second) - debug.utcOffset * 3600000);
-    const eot = equationOfTimeMinutes(utc.getUTCFullYear(), utc.getUTCMonth() + 1, utc.getUTCDate(), utc.getUTCHours() + utc.getUTCMinutes() / 60 + utc.getUTCSeconds() / 3600);
-    const sunrise = debug.sunriseLocalHours ?? 6;
-    const ishta = manual !== null ? ishtaGhatis(localHours, manual, 'true', 0) : ishtaGhatis(localHours, sunrise, mode, eot);
-    const sphutas = calculateSpecialSphutas({
-      ascendantLongitude: chart.ascendant.longitude,
-      sunLongitude: sun.longitude,
-      moonLongitude: moon.longitude,
-      rahuLongitude: rahu.longitude,
-      planets: chart.planets.map(planet => ({ name: planet.name, sign: planet.sign, degree: planet.degree })),
-      ishta,
-    });
-    return { sphutas, ishta, sunriseUsed: manual !== null ? manual : sunrise + (mode === 'mean' ? eot / 60 : 0), calculated: sunrise + (mode === 'mean' ? eot / 60 : 0) };
-  }, [chart, mode, manual]);
 
   // Gulika, Maandi and the Sun-based upagrahas.
   const upagrahas = useMemo(
@@ -111,7 +70,7 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
     [chart],
   );
 
-  if (!result) return <p className="text-xs font-mono text-zinc-400">{t('Calculate a chart to see the special sphutas.')}</p>;
+  if (!sphutas || !timing) return <p className="text-xs font-mono text-zinc-400">{t('Calculate a chart to see the special sphutas.')}</p>;
 
   return (
     <div className="space-y-3">
@@ -134,7 +93,7 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
             </tr>
           </thead>
           <tbody>
-            {result.sphutas.map(sphuta => {
+            {sphutas.map(sphuta => {
               const { nakshatra, pada } = nakshatraAndPada(sphuta.longitude, nakshatraAdjust);
               return (
                 <tr key={sphuta.key} className="border-b border-zinc-100 dark:border-zinc-800">
@@ -152,21 +111,10 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
 
       <div className="space-y-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
         <div>
-          {t('Time since sunrise')}: {result.ishta.toFixed(3)} {t('ghatis')} · {manual !== null ? t('manual sunrise') : mode === 'mean' ? t('mean-time sunrise') : t('true sunrise')} {clock(result.sunriseUsed)}
+          {t('Time since sunrise')}: {timing.ishta.toFixed(3)} {t('ghatis')} · {timing.source === 'manual' ? t('manual sunrise') : timing.source === 'mean' ? t('mean-time sunrise') : t('true sunrise')} {formatClock(timing.sunriseUsed)}
         </div>
-        <label className="flex flex-wrap items-center gap-2">
-          <span>{t('Use another sunrise (HH:MM:SS)')}</span>
-          <input
-            value={manualText}
-            onChange={event => setManualText(event.target.value)}
-            placeholder={clock(result.calculated)}
-            aria-label={t('manual sunrise')}
-            inputMode="numeric"
-            className="w-24 rounded border border-zinc-300 bg-white px-1.5 py-1 text-[10px] dark:border-zinc-700 dark:bg-zinc-900"
-          />
-          {manualText.trim() !== '' && manual === null && <span className="text-rose-500">{t('Not a time of day')}</span>}
-        </label>
-        {result.sphutas.some(sphuta => KHARA_KEYS.includes(sphuta.key)) && (
+        <div>{t('Another sunrise, for example the one another program shows, can be typed in Settings → calculations → sunrise for the special sphutas. The charts and the tables follow it.')}</div>
+        {sphutas.some(sphuta => KHARA_KEYS.includes(sphuta.key)) && (
           <div>{t('The 22nd Drekkana and the 64th Navamsa are the Lagna turned 210°: the sign is the D3 / D9 sign of that point, and its nakshatra and pada are those of the point in the zodiac.')}</div>
         )}
       </div>

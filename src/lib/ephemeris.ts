@@ -1,4 +1,4 @@
-import { ChartData, DebugInfo, PlanetData, SpecialLagna } from "@/types";
+import { ChartData, DebugInfo, PlanetData, SpecialLagna, SpecialSphutaTiming } from "@/types";
 import {
   SE_SUN, SE_MOON, SE_MARS, SE_MERCURY, SE_JUPITER, SE_VENUS, SE_SATURN,
   SE_URANUS, SE_NEPTUNE, SE_PLUTO,
@@ -101,6 +101,8 @@ export async function calculateChart(
   nodeModeSetting: string = 'mean',
   ayanamsaOffsetDegrees: number = 0,
   sunriseMode: SunriseMode = 'true',
+  /** A sunrise given by hand, in local decimal hours; it replaces the calculated one for the special sphuṭas. */
+  sunriseManualHours: number | null = null,
 ): Promise<ChartData> {
   const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
   const nodeMode = resolveNodeMode(nodeModeSetting);
@@ -146,7 +148,17 @@ export async function calculateChart(
   // The special lagnas run on the ishṭa, the time from sunrise to birth.
   const rahu = planets.find((p) => p.name === 'Rahu')!;
   const sunriseForLagnas = sunTimes.sunrise ?? 6;
-  const ishta = ishtaGhatis(localHours, sunriseForLagnas, sunriseMode, equationOfTimeMinutes(utc.year, utc.month, utc.day, utc.totalHours));
+  const eotMinutes = equationOfTimeMinutes(utc.year, utc.month, utc.day, utc.totalHours);
+  const sunriseCalculated = sunriseForLagnas + (sunriseMode === 'mean' ? eotMinutes / 60 : 0);
+  const ishta = sunriseManualHours !== null
+    ? ishtaGhatis(localHours, sunriseManualHours, 'true', 0)
+    : ishtaGhatis(localHours, sunriseForLagnas, sunriseMode, eotMinutes);
+  const specialSphutaTiming: SpecialSphutaTiming = {
+    ishta,
+    sunriseUsed: sunriseManualHours ?? sunriseCalculated,
+    sunriseCalculated,
+    source: sunriseManualHours !== null ? 'manual' : sunriseMode,
+  };
   const sphutas = calculateSpecialSphutas({
     ascendantLongitude: ascLon,
     sunLongitude: sun.longitude,
@@ -207,6 +219,8 @@ export async function calculateChart(
     },
     planets,
     specialLagnas,
+    specialSphutas: sphutas,
+    specialSphutaTiming,
     saturnPortion: saturnPortionLagnas,
     midheaven,
     lunarMonth: { masaIndex: lunarMonth.masaIndex, adhika: lunarMonth.adhika },
