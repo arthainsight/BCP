@@ -102,8 +102,8 @@ export default function PraveshaPanel({
       <div className="flex flex-wrap items-center gap-2">
         <YearStepper shownYear={shownYear} year={year} onChange={setYear} />
         <div className="inline-flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50">
-          <button type="button" className={toggleClass(method === 'lunar-month')} onClick={() => setMethod('lunar-month')}>{t('Lunar month')}</button>
-          <button type="button" className={toggleClass(method === 'before-birthday')} onClick={() => setMethod('before-birthday')}>{t('Before birthday')}</button>
+          <button type="button" className={toggleClass(method === 'lunar-month')} aria-pressed={method === 'lunar-month'} title={t('The return inside the lunar month of birth, the last one at or before the Tithi Praveśa')} onClick={() => setMethod('lunar-month')}>{t('Same month')}</button>
+          <button type="button" className={toggleClass(method === 'before-birthday')} aria-pressed={method === 'before-birthday'} title={t('The last return at or before the birthday')} onClick={() => setMethod('before-birthday')}>{t('Before birthday')}</button>
         </div>
         <label className="inline-flex items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
           <input type="checkbox" checked={showNatal} onChange={(e) => setShowNatal(e.target.checked)} />
