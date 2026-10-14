@@ -77,7 +77,7 @@ Overlap and Systems), among them:
 * Ṣaḍbala (beta)
 * Bhāva Bala (beta)
 * Graha dṛṣṭi and rāśi dṛṣṭi (Jaimini)
-* Sarvatobhadra chakra: the 9 × 9 chart of the nakṣatras (with Abhijit), vowels, consonants, signs, tithi groups and weekdays, with the grahas in their squares
+* Sarvatobhadra chakra: the 9 × 9 chart of the nakṣatras (with Abhijit), vowels, consonants, signs, tithi groups and weekdays, with the grahas in their squares and their vedha (across the chart and on the two diagonals)
 * Avasthās, sahams, panchanga
 
 ### Research tools

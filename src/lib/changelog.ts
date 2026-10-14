@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.96',
+    date: '2026-10-14',
+    title: 'Vedha in the Sarvatobhadra chakra',
+    changes: [
+      'A graha has vedha on the nakṣatra straight across the chart from its own and on the two nakṣatras on the diagonals from it. In ANALYSIS → Sarvatobhadra a Vedha row (natal, and transit when Transit is on) chooses a graha: its three lines are drawn from its square and the nakṣatras they end on are marked. Choosing the same graha again takes the lines away.',
+      'The Vedha list under the chart gives the three nakṣatras of every graha, with the grahas that stand in them in brackets (a transiting graha with ↗), so a nakṣatra that holds grahas — the Moon\'s, for one — can be seen to be pierced.',
+      'sbcVedha finds the lines for any nakṣatra square: one straight and two at 45° into the chart, each ending on the nakṣatra at the edge. Tests check all 28 nakṣatras (three different ones each, none itself, and the vedha goes both ways), examples worked by hand, and a browser test draws the vedha of Jupiter in the chart of 15.08.1947.',
+      'Updated the application version to v2.96.',
+    ],
+  },
+  {
     version: 'v2.95',
     date: '2026-10-14',
     title: 'The Sarvatobhadra chakra',

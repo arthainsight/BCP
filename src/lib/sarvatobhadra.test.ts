@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
 import {
   ABHIJIT_END, ABHIJIT_START, SBC_GRID, SBC_NAKSHATRA_CELLS, SBC_SIGN_CELLS, SBC_TITHI_CELLS, TITHI_GROUPS,
-  sbcCellOf, sbcMarkLayout, sbcNakshatra, tithiOf, vedicWeekday, weekdayGroup,
+  sbcCellOf, sbcMarkLayout, sbcNakshatra, sbcVedha, tithiOf, vedicWeekday, weekdayGroup,
 } from './sarvatobhadra';
 
 const cells = SBC_GRID.flat();
@@ -95,5 +95,52 @@ for (const longest of [2, 3, 4]) {
   }
 }
 assert.equal(sbcMarkLayout(1, 2).size, 26, 'a graha alone is large');
+
+// --- Vedha: across the chart and on the two diagonals -----------------------------------------------------------
+const nameAt = ([r, col]: readonly [number, number]) => SBC_GRID[r][col].nakshatra;
+const across = (name: string) => nameAt(sbcVedha(SBC_NAKSHATRA_CELLS[name])!.find(line => line.direction === 'across')!.target);
+const diagonals = (name: string) => sbcVedha(SBC_NAKSHATRA_CELLS[name])!.filter(line => line.direction === 'diagonal').map(line => nameAt(line.target)).sort();
+
+// Ashwini (top edge): straight down to Purva Phalguni, and the diagonals to Jyeshtha and Rohini.
+assert.equal(across('Ashwini'), 'Purva Phalguni');
+assert.deepEqual(diagonals('Ashwini'), ['Jyeshtha', 'Rohini']);
+// Dhanishtha (first on the top edge): across to Vishakha, the diagonals to Ashlesha and, next door, Shravana.
+assert.equal(across('Dhanishtha'), 'Vishakha');
+assert.deepEqual(diagonals('Dhanishtha'), ['Ashlesha', 'Shravana']);
+// An edge on the left looks right, one on the right looks left, and one at the bottom looks up.
+assert.equal(across('Mula'), 'Punarvasu');
+assert.equal(across('Punarvasu'), 'Mula');
+assert.equal(across('Hasta'), 'Uttara Bhadrapada');
+assert.equal(across('Uttara Bhadrapada'), 'Hasta');
+assert.deepEqual(diagonals('Mula'), ['Chitra', 'Revati']);
+// Every graha has exactly one nakshatra across and two on the diagonals.
+for (const name of [...NAKSHATRA_NAMES, 'Abhijit']) {
+  assert.equal(sbcVedha(SBC_NAKSHATRA_CELLS[name])!.filter(line => line.direction === 'across').length, 1);
+  assert.equal(diagonals(name).length, 2);
+}
+
+for (const name of [...NAKSHATRA_NAMES, 'Abhijit']) {
+  const from = SBC_NAKSHATRA_CELLS[name];
+  const lines = sbcVedha(from)!;
+  assert.equal(lines.length, 3, `${name} has three lines`);
+  const targets = lines.map(line => nameAt(line.target)!);
+  assert.equal(new Set(targets).size, 3, `${name}: three different nakshatras`);
+  assert.ok(!targets.includes(name), `${name} does not pierce itself`);
+  for (const line of lines) {
+    // Every line ends on a nakṣatra at the edge and runs in a straight line, square by square.
+    const [r, col] = line.target;
+    assert.ok(r === 0 || r === 8 || col === 0 || col === 8, `${name}: the line ends at the edge`);
+    assert.ok(SBC_GRID[r][col].nakshatra, `${name}: the line ends on a nakshatra`);
+    assert.deepEqual(line.path.at(-1), line.target);
+    const step = [line.path[0][0] - from[0], line.path[0][1] - from[1]];
+    assert.ok(Math.abs(step[0]) <= 1 && Math.abs(step[1]) <= 1 && (step[0] !== 0 || step[1] !== 0));
+    line.path.forEach((square, index) => assert.deepEqual(square, [from[0] + step[0] * (index + 1), from[1] + step[1] * (index + 1)]));
+    // The vedha goes both ways: the nakṣatra at the end has it on this one.
+    assert.ok(sbcVedha(line.target)!.some(back => nameAt(back.target) === name), `${name} and ${nameAt(line.target)} pierce each other`);
+  }
+}
+// Squares that are not a nakṣatra's have no vedha of their own.
+assert.equal(sbcVedha([4, 4]), null);
+assert.equal(sbcVedha([0, 0]), null);
 
 console.log('sarvatobhadra tests passed');
