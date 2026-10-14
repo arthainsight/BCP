@@ -999,6 +999,8 @@ export const FI: Record<string, string> = {
 
   // Toggle
   // Nakshatra and Yoga Pravesa
+  'Vimśottarī’s 120 years compressed into this year. The Moon stands where it did at birth, so the daśā of birth begins again: the lord of the birth nakshatra, with the same part of its period spent. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted.': 'Vimśottarīn 120 vuotta puristettuna tähän vuoteen. Kuu on siellä, missä se oli syntymässä, joten syntymän daśā alkaa uudelleen: syntymän nakshatran herra, ja sen jaksosta on kulunut sama osa. Antardaśāt alkavat mahādaśān herrasta. Käynnissä oleva jakso valittuna ajankohtana on korostettu.',
+  'Vimśottarī’s 120 years compressed into this year, entered by the yoga of birth counted like a nakshatra (the 1st yoga as Ashwini, and so on round the nine lords), with the part of the yoga spent as the part of the period spent. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted.': 'Vimśottarīn 120 vuotta puristettuna tähän vuoteen, aloitus syntymän yogasta laskettuna kuten nakshatra (1. yoga kuten Ashwini, ja niin edelleen yhdeksän herran kierros), ja yogasta kulunut osa on jaksosta kulunut osa. Antardaśāt alkavat mahādaśān herrasta. Käynnissä oleva jakso valittuna ajankohtana on korostettu.',
   'Nakṣatra Praveśa — annual chart': 'Nakṣatra Praveśa — vuosikartta',
   'Yoga Praveśa — annual chart': 'Yoga Praveśa — vuosikartta',
   'Birth date and place are needed for Nakṣatra Praveśa.': 'Nakṣatra Praveśa tarvitsee syntymäajan ja -paikan.',

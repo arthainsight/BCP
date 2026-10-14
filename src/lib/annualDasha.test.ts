@@ -2,10 +2,12 @@ import assert from 'node:assert/strict';
 import {
   ASHTOTTARI_CYCLE,
   MUDDA_CYCLE,
+  VIMSHOTTARI_CYCLE,
   buildAnnualDasha,
   muddaFirstLord,
   tithiAshtottariFirstLord,
   tithiLord,
+  vimshottariFirstLord,
 } from './annualDasha';
 
 const close = (a: number, b: number, tolerance: number, label: string) =>
@@ -62,5 +64,26 @@ book.forEach(([lord, days], i) => {
   assert.equal(example[i].lord, lord, `Example 122 period ${i + 1}`);
   close(example[i].endJd - example[i].startJd, days, 0.01, `${lord} length`);
 });
+
+// --- Vimśottarī in the year (Nakṣatra Praveśa and Yoga Praveśa) -------------------------------------------------
+assert.deepEqual(VIMSHOTTARI_CYCLE.map((lord) => lord.name), ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury']);
+assert.equal(VIMSHOTTARI_CYCLE.reduce((sum, lord) => sum + lord.units, 0), 120, 'Vimśottarī has 120 years');
+assert.deepEqual(VIMSHOTTARI_CYCLE.map((lord) => lord.units), [7, 20, 6, 10, 7, 18, 16, 19, 17]);
+// The lord of nakṣatra (or yoga) 1–27: the nine lords three times over.
+assert.equal(VIMSHOTTARI_CYCLE[vimshottariFirstLord(1)].name, 'Ketu', 'Ashwini: Ketu');
+assert.equal(VIMSHOTTARI_CYCLE[vimshottariFirstLord(8)].name, 'Saturn', 'Pushya: Saturn');
+assert.equal(VIMSHOTTARI_CYCLE[vimshottariFirstLord(10)].name, 'Ketu', 'Magha: Ketu');
+assert.equal(VIMSHOTTARI_CYCLE[vimshottariFirstLord(27)].name, 'Mercury', 'Revati: Mercury');
+for (let n = 1; n <= 27; n++) assert.equal(vimshottariFirstLord(n), vimshottariFirstLord(n + 9), `the lords repeat every nine (${n})`);
+
+// Pushya, 36 % spent: Saturn first, with 19 of 120 of the year, 36 % of which was spent before the year began.
+const pushya = buildAnnualDasha(VIMSHOTTARI_CYCLE, vimshottariFirstLord(8), 0.36, yearStart, yearLength);
+assert.equal(pushya.length, 9);
+assert.deepEqual(pushya.map((md) => md.lord), ['Saturn', 'Mercury', 'Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter']);
+close(pushya[0].endJd - pushya[0].startJd, 19 * yearLength / 120, 1e-9, 'Saturn takes 19/120 of the year');
+close(yearStart - pushya[0].startJd, 0.36 * 19 * yearLength / 120, 1e-9, 'a third of it was spent before the year began');
+close(pushya[8].endJd - pushya[0].startJd, yearLength, 1e-9, 'the cycle spans exactly one year');
+for (let i = 1; i < pushya.length; i++) close(pushya[i].startJd, pushya[i - 1].endJd, 1e-9, 'mahādaśās are contiguous');
+assert.deepEqual(pushya[1].antardashas.map((ad) => ad.lord), ['Mercury', 'Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn'], 'antardaśās open with the mahādaśā lord');
 
 console.log('Annual dasha tests passed');

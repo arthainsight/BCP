@@ -102,7 +102,7 @@ test('the panels and the sentences the calculations write are in Finnish', async
   // ANALYSIS: the yoga table's reasons are written by the engine in English and shown in Finnish.
   await selectWorkspace(page, 'ANALYYSI');
   await visible(page, page.getByRole('button', { name: 'Grahat', exact: true })).click();
-  await visible(page, page.getByRole('button', { name: /yoga\.detection/ })).click();
+  // The yoga table is open at first.
   await expect(visible(page, page.getByText('Mars 12. merkissä Auringosta'))).toBeVisible();
   await expect(visible(page, page.getByText('Kendra-/Trikona-herrat').first())).toBeVisible();
 

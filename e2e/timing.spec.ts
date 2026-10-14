@@ -319,6 +319,14 @@ test('TIMING Nakṣatra Praveśa and Yoga Praveśa give the annual chart for the
   await expect(rows).toContainText('Cn');
   await expect(nakshatra).toContainText('in the lunar month of birth, the last return at or before the Tithi Praveśa.');
 
+  // The daśā of the year: the Vimśottarī of birth begins again, from the lord of Pushya (Saturn), nine periods in all.
+  const nakshatraDasha = nakshatra.locator('button', { hasText: /^(Saturn|Mercury|Ketu|Venus|Sun|Moon|Mars|Rahu|Jupiter)\s*\d{2}\.\d{2}\.\d{4} → \d{2}\.\d{2}\.\d{4}$/ });
+  await expect(nakshatra).toContainText('Vimśottarī daśā (beta)');
+  await expect(nakshatraDasha).toHaveCount(9);
+  await expect(nakshatraDasha.first()).toContainText('Saturn');
+  await expect(nakshatraDasha.nth(1)).toContainText('Mercury');
+  await expect(nakshatraDasha.last()).toContainText('Jupiter');
+
   // The other rule: the last return before the birthday; the same month is the one chosen at first.
   const sameMonth = visible(page, page.getByRole('button', { name: 'Same month', exact: true }));
   const beforeBirthday = visible(page, page.getByRole('button', { name: 'Before birthday', exact: true }));
@@ -349,6 +357,11 @@ test('TIMING Nakṣatra Praveśa and Yoga Praveśa give the annual chart for the
   await expect(yoga).toBeVisible();
   await expect(yoga.locator('[data-pravesha-rows]')).toContainText('Vyatipata (17) · 36.2 % spent', { timeout: 30_000 });
   await expect(yoga).toContainText('depends on the ayanamsa twice');
+  // Its daśā counts the yoga like a nakshatra: Vyatipata is the 17th, which has the lord Saturn.
+  await expect(yoga).toContainText('Yoga Vimśottarī daśā (beta)');
+  const yogaDasha = yoga.locator('button', { hasText: /^(Saturn|Mercury|Ketu|Venus|Sun|Moon|Mars|Rahu|Jupiter)\s*\d{2}\.\d{2}\.\d{4} → \d{2}\.\d{2}\.\d{4}$/ });
+  await expect(yogaDasha).toHaveCount(9);
+  await expect(yogaDasha.first()).toContainText('Saturn');
   await expect(yoga.locator('[data-pravesha-rows]')).toContainText(/begins\s*\d{2}\.\d{2}\.\d{4}/);
 
   expect(errors).toEqual([]);
