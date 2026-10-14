@@ -20,6 +20,8 @@ export interface SavedChartData {
 export interface SavedChart {
   id: string;
   name: string;
+  /** Who the chart belongs to when the charts are kept by client (a person with several charts, a family); empty for none. */
+  client?: string;
   createdAt: string;
   updatedAt: string;
   chartData: SavedChartData;
@@ -53,12 +55,13 @@ export function deleteSavedChart(id: string): SavedChart[] {
   return charts;
 }
 
-export function saveChartAsNew(name: string, chartData: SavedChartData): SavedChart {
+export function saveChartAsNew(name: string, chartData: SavedChartData, client = ''): SavedChart {
   const charts = loadSavedCharts();
   const now = new Date().toISOString();
   const newChart: SavedChart = {
     id: newId(),
     name,
+    ...(client.trim() ? { client: client.trim() } : {}),
     createdAt: now,
     updatedAt: now,
     chartData,
@@ -79,6 +82,19 @@ export function updateSavedChart(id: string, chartData: SavedChartData): SavedCh
   };
   persist(charts);
   return charts[idx];
+}
+
+/** Puts a saved chart under a client (an empty text takes it out of any client); the date of the chart is not changed. */
+export function setSavedChartClient(id: string, client: string): SavedChart[] {
+  const charts = loadSavedCharts().map(chart => {
+    if (chart.id !== id) return chart;
+    const next: SavedChart = { ...chart };
+    if (client.trim()) next.client = client.trim();
+    else delete next.client;
+    return next;
+  });
+  persist(charts);
+  return charts;
 }
 
 export function getActiveSavedChartId(): string | null {
@@ -118,6 +134,7 @@ function readSavedChart(value: unknown, takenIds: Set<string>): SavedChart | nul
   return {
     id,
     name: text(value.name),
+    ...(text(value.client).trim() ? { client: text(value.client).trim() } : {}),
     createdAt: text(value.createdAt) || now,
     updatedAt: text(value.updatedAt) || now,
     chartData: {
@@ -154,16 +171,39 @@ export function importSavedCharts(fileText: string): number {
 export type SavedChartSort = 'updated' | 'name';
 
 /**
- * The saved charts that match a search (name, place or birth date, without regard to case) in the chosen order:
+ * The saved charts that match a search (name, client, place or birth date, without regard to case) in the chosen order:
  * the most recently changed first, or by name. A search with several words needs every word to be found.
  */
 export function filterSavedCharts(charts: readonly SavedChart[], query: string, sort: SavedChartSort = 'updated'): SavedChart[] {
   const words = query.toLocaleLowerCase().split(/\s+/).filter(Boolean);
   const matching = charts.filter(chart => {
-    const text = `${chart.name} ${chart.chartData.city} ${chart.chartData.birthDatetime}`.toLocaleLowerCase();
+    const text = `${chart.name} ${chart.client ?? ''} ${chart.chartData.city} ${chart.chartData.birthDatetime}`.toLocaleLowerCase();
     return words.every(word => text.includes(word));
   });
   return [...matching].sort(sort === 'name'
     ? (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
     : (a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
+
+/** The clients of the saved charts, in alphabetical order. */
+export function listClients(charts: readonly SavedChart[]): string[] {
+  return [...new Set(charts.map(chart => chart.client?.trim() ?? '').filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+}
+
+export interface SavedChartGroup {
+  /** The client, or '' for the charts that belong to none. */
+  client: string;
+  charts: SavedChart[];
+}
+
+/**
+ * The saved charts that match a search, in groups by client: the clients in alphabetical order, the charts of
+ * no client last, each group in the chosen order. With no client on any chart there is one group, of none.
+ */
+export function groupSavedCharts(charts: readonly SavedChart[], query: string, sort: SavedChartSort = 'updated'): SavedChartGroup[] {
+  const matching = filterSavedCharts(charts, query, sort);
+  const groups: SavedChartGroup[] = listClients(matching).map(client => ({ client, charts: matching.filter(chart => chart.client === client) }));
+  const unassigned = matching.filter(chart => !chart.client);
+  if (unassigned.length > 0) groups.push({ client: '', charts: unassigned });
+  return groups;
 }

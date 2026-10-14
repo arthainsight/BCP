@@ -353,3 +353,51 @@ test('ANALYSIS Dṛṣṭi shows the graha and the rāśi aspects without any se
 
   expect(errors).toEqual([]);
 });
+
+test('the outer planets come after Rahu and Ketu in the graha table', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('chartDisplaySettings')) localStorage.setItem('chartDisplaySettings', JSON.stringify({ showOuterPlanets: true }));
+  });
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  const table = visible(page, page.locator('table', { has: page.locator('th', { hasText: 'Kāraka' }) }));
+  await expect(table.locator('tr', { hasText: 'Pluto' })).toBeVisible();
+  const names = await table.locator('tbody tr td:nth-child(2)').allInnerTexts();
+  const at = (name: string) => names.findIndex(text => text.includes(name));
+  expect(at('Saturn')).toBeGreaterThan(-1);
+  expect(at('Rahu')).toBe(at('Saturn') + 1);
+  expect(at('Ketu')).toBe(at('Rahu') + 1);
+  expect(at('Uranus')).toBeGreaterThan(at('Ketu'));
+  expect(at('Neptune')).toBe(at('Uranus') + 1);
+  expect(at('Pluto')).toBe(at('Neptune') + 1);
+
+  expect(errors).toEqual([]);
+});
+
+test('a sunrise typed in Settings moves the special lagnas of the graha table too', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  const table = visible(page, page.locator('table', { has: page.locator('th', { hasText: 'Kāraka' }) }));
+  const hora = async () => (await table.locator('tr', { has: page.locator('td', { hasText: /^HL$/ }) }).innerText()).replace(/\s+/g, ' ');
+  const before = await hora();
+  expect(before).toMatch(/HL/);
+
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('textbox', { name: 'manual sunrise' })).fill('05:00:00');
+  await selectWorkspace(page, 'ANALYSIS');
+  await expect.poll(hora).not.toEqual(before);
+
+  // Emptying the field goes back to the calculated sunrise and the same lagna.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('textbox', { name: 'manual sunrise' })).fill('');
+  await selectWorkspace(page, 'ANALYSIS');
+  await expect.poll(hora).toEqual(before);
+
+  expect(errors).toEqual([]);
+});
