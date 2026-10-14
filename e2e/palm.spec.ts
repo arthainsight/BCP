@@ -157,6 +157,8 @@ test('PALM: upload a palm photograph, draw on it, number the notes, show it to t
   const client = visible(page, page.getByRole('dialog', { name: 'Client view' }));
   await expect(client).toBeVisible();
   const zoom = () => client.locator('[data-palm="zoom"]').innerText();
+  // The zoom reads empty until the photograph has been measured, which takes longer on a slow machine.
+  await expect(client.locator('[data-palm="zoom"]')).toHaveText(/^\d+%/);
   const overview = await zoom();
   await client.locator('[data-client-note="1"]').click();
   await expect.poll(zoom).not.toEqual(overview);

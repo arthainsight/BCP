@@ -12,6 +12,7 @@ import { lunarMonthAt } from './lunisolar';
 import { SATURN_PORTION_MOMENTS, saturnPortion, saturnPortionHour } from './upagrahas';
 import { calculateSpecialSphutas, equationOfTimeMinutes, ishtaGhatis, type SunriseMode } from './specialSphutas';
 import { pad2 } from './dateFormat';
+import { orderGrahas } from './grahaOrder';
 
 const PLANET_NAMES: Record<number, string> = {
   [SE_SUN]: "Sun",
@@ -111,8 +112,10 @@ export async function calculateChart(
   const siderealAyanamsa = ayanamsaMode === 'lahiri' ? ayanamsa : await sweGetAyanamsa(jd, 'lahiri');
   const useTropical = ayanamsaMode === 'tropical';
 
-  const planets = await calculatePlanetPositions(jd, ayanamsa, useTropical);
-  await addNodes(planets, jd, ayanamsa, useTropical, nodeMode);
+  const bodies = await calculatePlanetPositions(jd, ayanamsa, useTropical);
+  await addNodes(bodies, jd, ayanamsa, useTropical, nodeMode);
+  // The grahas, Rahu and Ketu, and then the outer planets: every list of the app follows this order.
+  const planets = orderGrahas(bodies);
 
   const { ascendant: ascTropical, midheaven: mcTropical } = await sweGetAngles(jd, lat, lng);
   const ascLon = useTropical ? normalize(ascTropical) : normalize(ascTropical - ayanamsa);
