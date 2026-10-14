@@ -250,10 +250,10 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'What is in ANALYSIS?', fi: 'Mitä ANALYYSI sisältää?' },
     a: {
       en: [
-        'Grahas: the table of the grahas with their positions, karakas and nakshatras, and the yogas. Varga: the divisional charts in a grid. Nāḍī: the Nadi amsas. Aṣṭakavarga: the bindu tables. Gochara: the transits by the Moon. Dṛṣṭi: the aspects. Argala: argala and virodhargala. Bhava Chalit: the Śrīpati chart. Nava-Tara: the nine-star wheel. Directions: the directional chart. Special Sphutas: the lagnas and sphutas that run on the time since sunrise.',
+        'Grahas: the table of the grahas with their positions, karakas and nakshatras, and the yogas. Varga: the divisional charts in a grid. Nāḍī: the Nadi amsas. Aṣṭakavarga: the bindu tables. Gochara: the transits by the Moon. Dṛṣṭi: the aspects. Argala: argala and virodhargala. Bhava Chalit: the Śrīpati chart. Nava-Tara: the nine-star wheel. Directions: the directional chart. Special Sphutas: the lagnas and sphutas that run on the time since sunrise. Sarvatobhadra: the Sarvatobhadra chakra.',
       ],
       fi: [
-        'Grahas: grahojen taulukko sijainteineen, karakoineen ja nakshatroineen sekä yogat. Varga: jakokartat ruudukossa. Nāḍī: Nadi-amsat. Aṣṭakavarga: bindu-taulukot. Gochara: transiitit Kuusta lukien. Dṛṣṭi: aspektit. Argala: argala ja virodhargala. Bhava Chalit: Śrīpati-kartta. Nava-Tara: yhdeksän tähden kehä. Directions: suuntakartta. Special Sphutas: auringonnoususta kuluvan ajan mukaan kulkevat lagnat ja sphuṭat.',
+        'Grahas: grahojen taulukko sijainteineen, karakoineen ja nakshatroineen sekä yogat. Varga: jakokartat ruudukossa. Nāḍī: Nadi-amsat. Aṣṭakavarga: bindu-taulukot. Gochara: transiitit Kuusta lukien. Dṛṣṭi: aspektit. Argala: argala ja virodhargala. Bhava Chalit: Śrīpati-kartta. Nava-Tara: yhdeksän tähden kehä. Directions: suuntakartta. Special Sphutas: auringonnoususta kuluvan ajan mukaan kulkevat lagnat ja sphuṭat. Sarvatobhadra: Sarvatobhadra-chakra.',
       ],
     },
   },
@@ -295,6 +295,21 @@ export const FAQ_ENTRIES: FaqEntry[] = [
       ],
       fi: [
         'Oletuksena samassa ayanamsassa kuin grahat. Asetukset → laskenta → nakṣatrojen zodiakki voi vaihtaa sen valintaan Sidereal (Lahiri) tai Tropical, esimerkiksi nähdäksesi nakshatrat tropiikkisessa zodiakissa. Valinta koskee nakshatroja kaikkialla: kartoissa, taulukossa, panchangassa, Nava-Tarassa ja erikoissphuṭissa.',
+      ],
+    },
+  },
+  {
+    id: 'sarvatobhadra',
+    section: 'analysis',
+    q: { en: 'What is the Sarvatobhadra chakra and how do I read it?', fi: 'Mikä on Sarvatobhadra-chakra ja miten sitä luetaan?' },
+    a: {
+      en: [
+        'ANALYSIS → Sarvatobhadra draws the chakra as nine rows of nine squares: the 28 nakshatras (Abhijit included) round the edge, the vowels and consonants and the twelve signs inside, and the five groups of tithis (Nanda, Bhadra, Jaya, Rikta, Poorna) with their weekdays in the middle. Every graha, and the Lagna as Asc, stands in the square of its nakshatra; a retrograde graha is in italics with ℞. Transit adds the transiting grahas in violet.',
+        'The Moon\'s nakshatra (Janma nakshatra), the squares of the Moon\'s sign and of the Lagna\'s sign and the squares of the birth tithi and of the birth weekday are marked, and the list below the chart names them. The birth day counts from sunrise, so a birth before sunrise belongs to the day before. Abhijit is the stretch from 6°40′ to 10°53′20″ of Capricorn, cut from Uttara Ashadha and Shravana, and the nakshatras follow the nakshatra zodiac of Settings.',
+      ],
+      fi: [
+        'ANALYSIS → Sarvatobhadra piirtää chakran yhdeksänä rivinä, joissa on yhdeksän ruutua: reunalla 28 nakshatraa (Abhijit mukana), sisällä vokaalit ja konsonantit sekä kaksitoista rāśia ja keskellä viisi tithi-ryhmää (Nanda, Bhadra, Jaya, Rikta, Poorna) viikonpäivineen. Jokainen graha ja Lagna (Asc) on oman nakshatransa ruudussa; retrogradinen graha on kursiivilla ja merkillä ℞. Transiitti lisää liikkuvat grahat violettina.',
+        'Kuun nakshatra (Janma-nakshatra), Kuun rāśin ja Lagnan rāśin ruudut sekä syntymän tithin ja syntymäviikonpäivän ruudut on merkitty, ja kartan alla oleva lista nimeää ne. Syntymäpäivä lasketaan auringonnoususta, joten ennen auringonnousua syntynyt kuuluu edelliselle päivälle. Abhijit on Kauriin 6°40′:n ja 10°53′20″:n välinen jakso, joka on otettu Uttara Ashadhasta ja Shravanasta, ja nakshatrat noudattavat Asetusten nakshatra-zodiakkia.',
       ],
     },
   },

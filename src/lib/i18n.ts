@@ -998,6 +998,14 @@ export const FI: Record<string, string> = {
   '2nd and 11th lords': '2. ja 11. herra',
 
   // Toggle
+  // Sarvatobhadra chakra
+  'Sarvatobhadra chakra': 'Sarvatobhadra-chakra',
+  'The 28 nakshatras (with Abhijit) round the edge, the vowels, consonants and signs inside and the tithi groups with the weekdays in the middle. Every graha stands in the square of its nakshatra.': 'Reunalla 28 nakshatraa (Abhijit mukana), sisällä vokaalit, konsonantit ja rāśit sekä keskellä tithi-ryhmät viikonpäivineen. Jokainen graha on oman nakshatransa ruudussa.',
+  'Moon sign': 'Kuun rāśi',
+  'Lagna sign': 'Lagnan rāśi',
+  'Birth tithi': 'Syntymän tithi',
+  'Birth day': 'Syntymäpäivä',
+  'Abhijit is the stretch from 6°40′ to 10°53′20″ of Capricorn; the nakshatras follow the nakshatra zodiac of Settings. The weekday counts from sunrise.': 'Abhijit on Kauriin 6°40′:n ja 10°53′20″:n välinen jakso; nakshatrat noudattavat Asetusten nakṣatrojen zodiakkia. Viikonpäivä lasketaan auringonnoususta.',
   // Saved charts: clients
   'no client': 'ei asiakasta',
   'client': 'asiakas',
