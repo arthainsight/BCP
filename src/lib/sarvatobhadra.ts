@@ -167,3 +167,41 @@ export function sbcVedha(from: SbcPosition): VedhaLine[] | null {
     return { direction, path, target: path[path.length - 1] };
   });
 }
+
+// --- The name, and what a graha pierces ---------------------------------------------------------------------------
+
+/** The squares of the chart that a letter or syllable of a name stands for (vowels and consonants), ignoring case: 'ch' is one square, 'd' two. */
+export function sbcLetterSquares(text: string): SbcPosition[] {
+  const wanted = text.trim().toLowerCase();
+  if (!wanted) return [];
+  return SBC_GRID.flatMap((row, r) => row.flatMap((cell, column) => ((cell.kind === 'vowel' || cell.kind === 'consonant') && cell.label.toLowerCase() === wanted ? [[r, column] as SbcPosition] : [])));
+}
+
+/** The points of a birth that the chakra is read for. */
+export type SbcPointId = 'janma' | 'moonSign' | 'lagnaSign' | 'tithi' | 'vara' | 'name';
+
+export interface SbcPoint {
+  id: SbcPointId;
+  position: SbcPosition;
+}
+
+export interface SbcPierce {
+  point: SbcPoint;
+  direction: VedhaDirection;
+  /** 'end' when the point is the nakṣatra a line ends on, 'line' when the line only crosses its square. */
+  at: 'end' | 'line';
+}
+
+/** Which of the points a graha's lines reach: the points whose square lies on one of its three lines, in the order of `points`. */
+export function sbcPierces(lines: readonly VedhaLine[], points: readonly SbcPoint[]): SbcPierce[] {
+  const hits: SbcPierce[] = [];
+  for (const point of points) {
+    for (const line of lines) {
+      if (line.path.some(([r, column]) => r === point.position[0] && column === point.position[1])) {
+        hits.push({ point, direction: line.direction, at: line.target[0] === point.position[0] && line.target[1] === point.position[1] ? 'end' : 'line' });
+        break;
+      }
+    }
+  }
+  return hits;
+}
