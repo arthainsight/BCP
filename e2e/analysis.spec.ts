@@ -401,3 +401,64 @@ test('a sunrise typed in Settings moves the special lagnas of the graha table to
 
   expect(errors).toEqual([]);
 });
+
+test('ANALYSIS Sarvatobhadra puts the grahas in the squares of their nakshatras, all inside the boxes', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Sarvatobhadra', exact: true })).click();
+  const chart = visible(page, page.locator('[data-sbc="chart"]'));
+  await expect(chart).toBeVisible();
+
+  // 9 × 9 squares: 28 nakshatras on the edge, 12 signs, the 5 tithi groups.
+  await expect(chart.locator('[data-sbc-cell]')).toHaveCount(81);
+  await expect(chart.locator('[data-sbc-kind="nakshatra"]')).toHaveCount(28);
+  await expect(chart.locator('[data-sbc-kind="sign"]')).toHaveCount(12);
+  await expect(chart.locator('[data-sbc-kind="tithi"]')).toHaveCount(5);
+  await expect(chart.locator('[data-sbc-label="Abhi"]')).toHaveCount(1);
+
+  // The chart of 15.08.1947 09.15 in New Delhi: the Moon is in Pushya, the Lagna (Virgo 12°) in Hasta.
+  const cellOf = (label: string) => chart.locator(`[data-sbc-kind="nakshatra"][data-sbc-label="${label}"]`);
+  await expect(cellOf('Push').locator('[data-sbc-planet="Moon"]')).toHaveCount(1);
+  await expect(cellOf('Hast').locator('[data-sbc-planet="Asc"]')).toHaveCount(1);
+  const legend = visible(page, page.locator('[data-sbc="legend"]'));
+  await expect(legend).toContainText('Janma nakshatra: Pushya');
+  await expect(legend).toContainText('Moon sign: Cn');
+  await expect(legend).toContainText('Lagna sign: Vi');
+  await expect(legend).toContainText('Birth day: Friday · Rikta');
+  await expect(legend).toContainText('Birth tithi: Krishna 14 · Rikta');
+
+  // Every text stays inside its own square, however many grahas stand in it.
+  const outside = await chart.evaluate((svg) => {
+    const bad: string[] = [];
+    for (const group of Array.from(svg.querySelectorAll('[data-sbc-cell]'))) {
+      const box = (group.querySelector('rect') as SVGRectElement).getBBox();
+      for (const text of Array.from(group.querySelectorAll('text'))) {
+        const b = (text as SVGTextElement).getBBox();
+        if (b.x < box.x - 0.5 || b.y < box.y - 0.5 || b.x + b.width > box.x + box.width + 0.5 || b.y + b.height > box.y + box.height + 0.5) {
+          bad.push(`${group.getAttribute('data-sbc-cell')}: ${text.textContent}`);
+        }
+      }
+    }
+    return bad;
+  });
+  expect(outside).toEqual([]);
+
+  // The transiting grahas can be added, in a colour of their own.
+  const transit = visible(page, page.getByRole('button', { name: 'Transit', exact: true }));
+  if (await transit.isEnabled()) {
+    await transit.click();
+    await expect(chart.locator('[data-sbc-transit="true"]').first()).toBeVisible();
+    expect(await chart.evaluate((svg) => Array.from(svg.querySelectorAll('[data-sbc-cell]')).flatMap((group) => {
+      const box = (group.querySelector('rect') as SVGRectElement).getBBox();
+      return Array.from(group.querySelectorAll('text')).filter((text) => {
+        const b = (text as SVGTextElement).getBBox();
+        return b.x < box.x - 0.5 || b.y < box.y - 0.5 || b.x + b.width > box.x + box.width + 0.5 || b.y + b.height > box.y + box.height + 0.5;
+      }).map((text) => text.textContent);
+    }))).toEqual([]);
+  }
+
+  expect(errors).toEqual([]);
+});

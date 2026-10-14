@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.95',
+    date: '2026-10-14',
+    title: 'The Sarvatobhadra chakra',
+    changes: [
+      'ANALYSIS → Sarvatobhadra: the chakra of nine rows of nine squares as JHora draws it — the 28 nakṣatras (Abhijit included) round the edge, the vowels, consonants and the twelve signs inside, and the five groups of tithis (Nanda, Bhadra, Jaya, Rikta, Poorna) with their weekdays in the middle. Every graha and the Lagna stand in the square of their nakṣatra, all inside the squares however many stand together (the letters shrink and the rows wrap); a retrograde graha is in italics with ℞, and Transit adds the transiting grahas in violet.',
+      'The Janma nakṣatra, the squares of the Moon\'s sign and the Lagna\'s sign and those of the birth tithi and the birth weekday (counted from sunrise) are marked and listed under the chart. Abhijit is 6°40′ to 10°53′20″ of Capricorn, cut from Uttara Ashadha and Shravana; the nakṣatras follow the nakṣatra zodiac of Settings.',
+      'Tests: the chart has 81 squares with every nakṣatra and sign once; the nakṣatra of a longitude with Abhijit, the tithi groups, the weekday groups and the layout of the grahas in a square are unit tests, and a browser test checks the chart of 15.08.1947 (the Moon in Pushya) and that no text leaves its square.',
+      'Updated the application version to v2.95.',
+    ],
+  },
+  {
     version: 'v2.94',
     date: '2026-10-14',
     title: 'Saved charts kept by client, Next.js 16.4.0, and browser tests for the new features',

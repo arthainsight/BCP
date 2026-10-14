@@ -12,13 +12,14 @@ import DrishtiPanel from './DrishtiPanel';
 import NavataraPanel from './NavataraPanel';
 import DirectionChartPanel from './DirectionChartPanel';
 import SpecialSphutasPanel from './SpecialSphutasPanel';
+import SarvatobhadraPanel from './SarvatobhadraPanel';
 import GocharaPanel from './GocharaPanel';
 import ArgalaPanel from './ArgalaPanel';
 import BhavaChalitPanel from './BhavaChalitPanel';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 
-export type AnalysisView = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas';
+export type AnalysisView = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra';
 
 const VIEWS: { key: AnalysisView; label: string }[] = [
   { key: 'grahas', label: 'Grahas' },
@@ -32,6 +33,7 @@ const VIEWS: { key: AnalysisView; label: string }[] = [
   { key: 'tara', label: 'Nava-Tara' },
   { key: 'dik', label: 'Directions' },
   { key: 'sphutas', label: 'Special Sphutas' },
+  { key: 'sarvatobhadra', label: 'Sarvatobhadra' },
 ];
 
 /** A request from elsewhere in the app to show one view, for example the Matrix & Bala of the Varga view. A new id is a new request. */
@@ -179,6 +181,10 @@ export default function AnalysisPanel({
 
       {view === 'dik' && (
         <DirectionChartPanel chart={chart} />
+      )}
+
+      {view === 'sarvatobhadra' && (
+        <SarvatobhadraPanel chart={chart} transitPlanets={transitPlanets} nakshatraAdjust={nakshatraAdjust} />
       )}
 
       {view === 'sphutas' && (
