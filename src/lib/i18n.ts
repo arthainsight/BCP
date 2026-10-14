@@ -513,8 +513,6 @@ export const FI: Record<string, string> = {
   'outer planets': 'ulkoplaneetat',
   'special lagnas': 'erityislagnat',
   'panchang': 'pañcāṅga',
-  'graha dṛṣṭi': 'graha dṛṣṭi',
-  'rāśi dṛṣṭi': 'rāśi dṛṣṭi',
   'BCP year/month': 'BCP vuosi/kuukausi',
   'dasha lords': 'daśā-herrat',
   'transit': 'transiitti',

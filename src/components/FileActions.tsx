@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { useT } from '@/lib/i18n';
+import { fill, useT } from '@/lib/i18n';
+import { saveFile } from '@/lib/download';
 import { decodeShare, encodeShare, shareUrl } from '@/lib/shareLink';
 import {
   SavedChart,
@@ -15,6 +16,8 @@ import {
   getActiveSavedChartId,
   setActiveSavedChartId,
   clearActiveSavedChartId,
+  exportSavedCharts,
+  importSavedCharts,
 } from "@/lib/savedCharts";
 
 export type ChartSnapshot = SavedChartData;
@@ -24,8 +27,6 @@ interface Props {
   hasChart: boolean;
   onNew: () => void;
   onLoad: (snapshot: ChartSnapshot, id: string) => void;
-  onExport: () => void;
-  onImport: () => void;
   /** Opens the client report. */
   onReport?: () => void;
   onActiveNameChange?: (name: string | null) => void;
@@ -42,7 +43,7 @@ const MENU_ITEM =
   "border-b border-zinc-100 dark:border-zinc-700/70 last:border-b-0 " +
   "hover:bg-zinc-100 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed";
 
-export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExport, onImport, onReport, onActiveNameChange, compact }: Props) {
+export default function FileActions({ snapshot, hasChart, onNew, onLoad, onReport, onActiveNameChange, compact }: Props) {
   const t = useT();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [showLoad, setShowLoad] = useState(false);
@@ -55,7 +56,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
   const [confirmNew, setConfirmNew] = useState(false);
   const [notice, setNotice] = useState("");
 
-  // The notice of a copied link goes away by itself.
+  // A notice (a copied link, a number of imported charts, a refusal) goes away by itself.
   useEffect(() => {
     if (!notice) return;
     const timer = setTimeout(() => setNotice(""), 4000);
@@ -117,7 +118,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
   const openLoad = () => {
     const list = loadSavedCharts();
     if (list.length === 0) {
-      alert(t('No saved charts yet. Use SAVE AS to save the current chart.'));
+      setShowMenu(false);
+      setNotice(t("No saved charts yet. Use SAVE AS to save the current chart."));
       return;
     }
     setSavedList(list);
@@ -171,12 +173,32 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onExpor
 
   const handleExport = () => {
     setShowMenu(false);
-    onExport();
+    const exported = exportSavedCharts();
+    if (exported === null) setNotice(t("No saved charts to export."));
+    else saveFile("bcp-charts-export.json", exported, "application/json");
   };
 
+  // The charts of the file are added to the saved ones; a backup restored in Settings replaces everything instead.
   const handleImport = () => {
     setShowMenu(false);
-    onImport();
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = importSavedCharts(reader.result as string);
+          setNotice(fill(t(imported === 1 ? "Imported {count} chart." : "Imported {count} charts."), { count: imported }));
+        } catch {
+          setNotice(t("Failed to read file. Make sure it is a valid export file."));
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
   };
 
   const handleReport = () => {

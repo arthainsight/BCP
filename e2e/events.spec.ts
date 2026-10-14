@@ -1,0 +1,203 @@
+import { expect, test } from '@playwright/test';
+import { calculateChart, selectWorkspace, visible } from './helpers';
+
+// The Event List: pasting, bulk editing, the transits of an event day.
+
+test('an event shows the transits of its day on the charts', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('textbox', { name: 'Event name' })).fill('Moved abroad');
+  await visible(page, page.getByLabel('Event date')).fill('2015-06-15');
+  await visible(page, page.getByRole('button', { name: 'Add', exact: true })).click();
+
+  // The Transits button keeps the preview open: the natal chart with the transits of that day.
+  await visible(page, page.getByRole('button', { name: 'Transits on the charts' })).click();
+  const preview = visible(page, page.getByRole('region', { name: 'event transits' }));
+  await expect(preview).toContainText('15.06.2015 12:00');
+  await expect(preview.locator('svg[aria-label="North Indian Jyotish chart"]')).toBeVisible({ timeout: 15_000 });
+  // The transiting grahas are drawn in the transit colour.
+  await expect(preview.locator('svg tspan[fill="#f43f5e"]').first()).toBeVisible();
+
+  // It follows the divisional charts: D9 next to D1.
+  await preview.getByRole('group', { name: 'divisional charts' }).getByRole('button', { name: 'D9', exact: true }).click();
+  await expect(preview.locator('svg[aria-label="North Indian Jyotish chart"]')).toHaveCount(2);
+
+  // With a pointer (the desktop), resting on the event is enough; unpinned, it closes again.
+  if (info.project.name === 'desktop') {
+    await visible(page, page.getByRole('button', { name: 'Transits on the charts' })).click();
+    // The pointer is still over the event, so move it away before it can close.
+    await page.mouse.move(2, 2);
+    await expect(page.getByRole('region', { name: 'event transits' })).toHaveCount(0);
+    await visible(page, page.locator('details').filter({ hasText: 'Moved abroad' })).hover();
+    await expect(visible(page, page.getByRole('region', { name: 'event transits' }))).toBeVisible({ timeout: 5_000 });
+  }
+
+  expect(errors).toEqual([]);
+});
+
+test('many events can be pasted into the Event List at once', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Paste', exact: true })).click();
+
+  const box = visible(page, page.getByRole('group', { name: 'Paste many events' }));
+  await box.getByRole('textbox', { name: 'Events to add' }).fill([
+    '15.6.2015 Moved abroad',
+    '2.1.2018; New job; työ; D10; 5; started at the bank',
+    '2019-03-04 Daughter born',
+    'Surgery 7/11/2020',
+    '31.2.2016 Not a day',
+  ].join('\n'));
+
+  // It tells what it understood before anything is added.
+  await expect(box).toContainText('4 new');
+  await expect(box).toContainText('1 lines not understood');
+  await expect(box.getByRole('list', { name: 'Lines not understood' })).toContainText('31.2.2016 Not a day');
+  await box.getByRole('button', { name: 'Add 4 events' }).click();
+
+  // The box closes and the four events are in the list, in date order.
+  await expect(page.getByRole('group', { name: 'Paste many events' })).toHaveCount(0);
+  await expect(visible(page, page.getByText('Added 4 events.'))).toBeVisible();
+  const names = ['Moved abroad', 'New job', 'Daughter born', 'Surgery'];
+  for (const name of names) await expect(visible(page, page.locator('details').filter({ hasText: name }))).toBeVisible();
+
+  // The same lines again add nothing: they are in the list already.
+  await visible(page, page.getByRole('button', { name: 'Paste', exact: true })).click();
+  await visible(page, page.getByRole('textbox', { name: 'Events to add' })).fill('15.6.2015 Moved abroad');
+  await expect(visible(page, page.getByRole('group', { name: 'Paste many events' }))).toContainText('0 new · 1 already in the list');
+  await expect(visible(page, page.getByRole('button', { name: /^Add\s*events$/ }))).toBeDisabled();
+
+  expect(errors).toEqual([]);
+});
+
+test('events can be pasted with periods and loose dates, and changed or deleted many at once', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Paste', exact: true })).click();
+  const box = visible(page, page.getByRole('group', { name: 'Paste many events' }));
+  await box.getByRole('textbox', { name: 'Events to add' }).fill([
+    '15.6.2015 Moved abroad',
+    '2.1.2018; New job; work; D10; 5',
+    '2015 - 2017 Studied abroad',
+    '3/2019 Daughter born',
+    '2020-05-05 Surgery',
+  ].join('\n'));
+  await expect(box).toContainText('5 new');
+  await box.getByRole('button', { name: 'Add 5 events' }).click();
+  await expect(visible(page, page.getByText('Added 5 events.'))).toBeVisible();
+  const card = (name: string) => visible(page, page.locator('details').filter({ hasText: name }));
+
+  // A period shows both its days, and a loose date is marked, which the search finds.
+  await expect(card('Studied abroad')).toContainText('01.01.2015 – 31.12.2017');
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('approx');
+  await expect(card('Daughter born')).toBeVisible();
+  await expect(page.locator('details').filter({ hasText: 'Surgery' })).toHaveCount(0);
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('');
+
+  // Choose them all and change them together.
+  const bar = visible(page, page.getByRole('group', { name: 'Bulk editing' }));
+  await bar.getByRole('checkbox', { name: /Select all shown/ }).check();
+  await expect(bar).toContainText('5 selected');
+  await bar.getByLabel('Set category of the selected events').selectOption('health');
+  await expect(visible(page, page.getByText('Changed 5 events.'))).toBeVisible();
+  await expect(card('Surgery')).toContainText('Health');
+  await expect(card('New job')).toContainText('Health');
+  await bar.getByLabel('Tags for the selected events').fill('review, checked');
+  await bar.getByRole('button', { name: 'Add tags' }).click();
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('checked');
+  await expect(card('Surgery')).toBeVisible();
+  await expect(card('Moved abroad')).toBeVisible();
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('');
+
+  // A period becomes a single day again.
+  await bar.getByRole('button', { name: 'Clear end date' }).click();
+  await expect(card('Studied abroad')).not.toContainText('31.12.2017');
+
+  // One event is deleted after a question, and Undo brings it back.
+  await bar.getByRole('checkbox', { name: /Select all shown/ }).uncheck();
+  await expect(bar).not.toContainText('selected');
+  await visible(page, page.getByRole('checkbox', { name: 'Select Surgery' })).check();
+  await bar.getByRole('button', { name: 'Delete selected (1)' }).click();
+  await bar.getByRole('button', { name: 'Yes, delete' }).click();
+  await expect(visible(page, page.getByText('Deleted 1 events.'))).toBeVisible();
+  await expect(page.locator('details').filter({ hasText: 'Surgery' })).toHaveCount(0);
+  await visible(page, page.getByRole('button', { name: 'Undo', exact: true })).click();
+  await expect(card('Surgery')).toBeVisible();
+
+  // The list can be grouped by year.
+  await bar.getByRole('checkbox', { name: 'Group by year' }).check();
+  await expect(visible(page, page.getByRole('heading', { name: '2015 · 2', level: 4 }))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
+test('an event opens the Matrix & Bala of the Varga view in ANALYSIS', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('textbox', { name: 'Event name' })).fill('Moved abroad');
+  await visible(page, page.getByRole('button', { name: 'Add', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Open Varga Matrix' })).click();
+
+  // ANALYSIS is on screen, on the Varga view, showing the matrix and not the charts.
+  await expect(visible(page, page.getByText('varga.matrix'))).toBeVisible();
+  await expect(visible(page, page.getByRole('button', { name: 'Matrix & Bala' }))).toBeVisible();
+
+  // And it works again after going elsewhere and back to the events.
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Open Varga Matrix' })).click();
+  await expect(visible(page, page.getByText('varga.matrix'))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
+test('the Event List is in Finnish, with its messages and Undo', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.locator('select').filter({ hasText: 'Suomi' })).selectOption('fi');
+  await selectWorkspace(page, 'AJANKOHTA');
+  await visible(page, page.getByRole('button', { name: 'Tapahtumat', exact: true })).click();
+
+  // The form, the paste box and the messages are Finnish.
+  await expect(visible(page, page.getByText('Tapahtumalista 2.0'))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Liitä', exact: true })).click();
+  const box = visible(page, page.getByRole('group', { name: 'Liitä monta tapahtumaa' }));
+  await box.getByRole('textbox', { name: 'Lisättävät tapahtumat' }).fill('15.6.2015 Muutto ulkomaille\n2015 - 2017 Opiskelu\nei päivää');
+  await expect(box).toContainText('2 uutta');
+  await expect(box).toContainText('1 riviä ei ymmärretty');
+  await box.getByRole('button', { name: 'Lisää 2 tapahtumaa' }).click();
+  await expect(visible(page, page.getByText('Lisätty tapahtumia: 2.'))).toBeVisible();
+  await expect(visible(page, page.locator('details').filter({ hasText: 'Opiskelu' }))).toContainText('Muu');
+
+  // Bulk editing and its Undo.
+  const bar = visible(page, page.getByRole('group', { name: 'Massamuokkaus' }));
+  await bar.getByRole('checkbox', { name: /Valitse kaikki näkyvät/ }).check();
+  await expect(bar).toContainText('2 valittu');
+  await bar.getByLabel('Aseta valittujen tapahtumien luokka').selectOption('health');
+  await expect(visible(page, page.getByText('Muutettu tapahtumia: 2.'))).toBeVisible();
+  await expect(visible(page, page.locator('details').filter({ hasText: 'Opiskelu' }))).toContainText('Terveys');
+  await visible(page, page.getByRole('button', { name: 'Kumoa', exact: true })).click();
+  await expect(visible(page, page.getByText('Peruttu.'))).toBeVisible();
+  await expect(visible(page, page.locator('details').filter({ hasText: 'Opiskelu' }))).toContainText('Muu');
+
+  expect(errors).toEqual([]);
+});

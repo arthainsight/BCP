@@ -19,15 +19,13 @@ import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentTo
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
 import { withDashaLayers } from '@/components/chartLayers';
-import { LanguageContext, fill, translate, type Language } from '@/lib/i18n';
+import { LanguageContext, type Language } from '@/lib/i18n';
 import { decodeShare } from '@/lib/shareLink';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
-import { saveFile } from '@/lib/download';
-import { exportSavedCharts, importSavedCharts } from '@/lib/savedCharts';
 import { calculationParams } from '@/lib/apiParams';
 
 // The panels that are not on the first screen load when they are opened, which keeps the first load small.
@@ -428,34 +426,6 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [chartData, transitDatetime, handleCalculateTransit]);
 
-  const uiLanguage: Language = chartDisplaySettings.language === 'fi' ? 'fi' : 'en';
-  const handleExportCharts = useCallback(() => {
-    const exported = exportSavedCharts();
-    if (exported === null) alert(translate(uiLanguage, 'No saved charts to export.'));
-    else saveFile('bcp-charts-export.json', exported, 'application/json');
-  }, [uiLanguage]);
-
-  const handleImportCharts = useCallback(() => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const imported = importSavedCharts(reader.result as string);
-          alert(fill(translate(uiLanguage, imported === 1 ? 'Imported {count} chart.' : 'Imported {count} charts.'), { count: imported }));
-        } catch {
-          alert(translate(uiLanguage, 'Failed to read file. Make sure it is a valid export file.'));
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
-  }, [uiLanguage]);
-
   const handleLoadChartSnapshot = useCallback(
     async (snap: ChartSnapshot) => {
       setBirthDatetime(snap.birthDatetime);
@@ -683,8 +653,6 @@ export default function Home() {
           hasChart,
           onNew: handleNewChart,
           onLoad: handleLoadChartSnapshot,
-          onExport: handleExportCharts,
-          onImport: handleImportCharts,
           onReport: () => setReporting(true),
           onActiveNameChange: setActiveChartName,
         }}

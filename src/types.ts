@@ -109,8 +109,6 @@ export interface ChartDisplaySettings {
   showOuterPlanets: boolean;
   showSpecialLagnas: boolean;
   showPanchang: boolean;
-  showGrahaDrishti: boolean;
-  showRashiDrishti: boolean;
   showBnnMajorHighlight: boolean;
   showBnnMinorHighlight: boolean;
   showTransitOverlay: boolean;
@@ -145,8 +143,6 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showOuterPlanets: false,
   showSpecialLagnas: true,
   showPanchang: false,
-  showGrahaDrishti: false,
-  showRashiDrishti: false,
   showBnnMajorHighlight: true,
   showBnnMinorHighlight: true,
   showTransitOverlay: false,

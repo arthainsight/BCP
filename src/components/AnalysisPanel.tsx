@@ -5,7 +5,7 @@ import type { CalculationSettings, ChartData, ChartDisplaySettings, PlanetData }
 import type { DashaLordMarks } from './chartLayers';
 import GrahasPanel from './GrahasPanel';
 import VargaGridPanel from './VargaGridPanel';
-import VargaMatrix from '@/pages/VargaMatrix';
+import VargaMatrix from './VargaMatrix';
 import NadiAmsaPanel from './NadiAmsaPanel';
 import AshtakavargaPanel from './AshtakavargaPanel';
 import DrishtiPanel from './DrishtiPanel';
@@ -162,7 +162,7 @@ export default function AnalysisPanel({
       )}
 
       {view === 'drishti' && (
-        <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} showGrahaDrishti={chartDisplaySettings.showGrahaDrishti ?? true} showRashiDrishti={chartDisplaySettings.showRashiDrishti ?? true} /></div>
+        <div className="min-w-0 overflow-x-auto"><DrishtiPanel chart={chart} /></div>
       )}
 
       {view === 'argala' && (

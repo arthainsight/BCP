@@ -1,5 +1,20 @@
 export const CHANGELOG = [
   {
+    version: 'v2.92',
+    date: '2026-10-14',
+    title: 'One place for each thing: aspects, chart settings, varga cards, and a lighter repository',
+    changes: [
+      'Fixed: ANALYSIS → Dṛṣṭi showed nothing unless two display settings had been switched on first (they were off by default). The tab now shows the graha dṛṣṭi, the rāśi dṛṣṭi and the house summary; the same tables are no longer repeated under the Grahas view, and the two settings (graha dṛṣṭi, rāśi dṛṣṭi) are gone from Settings.',
+      'The degrees, the "dasha lords from" choice and the text size of the charts are the same three components in the ··· menu of the chart and in Settings, instead of two copies of each; the chart menu now says "pois" for the degrees in Finnish too.',
+      'The divisional charts of the chart workspace and of ANALYSIS → Varga share one grid of cards (title, chart, how many to a row); the card titles are translated in both.',
+      'EXPORT, IMPORT and LOAD tell what they did in the note on the screen instead of a pop-up (alert): how many charts were imported, that there is nothing to export or to load, or that the file is not an export. IMPORT adds the charts to the saved ones, a restored backup replaces everything; the user guide says so.',
+      'The Matrix & Bala view (VargaMatrix) is a typed component of ANALYSIS and no longer a page of its own at /VargaMatrix; it is written out in readable code instead of long lines.',
+      'Removed the Jupiterian-round activation string builder (about 250 lines nothing called) and the LiteLLM model router under tools/ that did not belong to the app. .claude/settings.local.json, with the permissions of one machine, is no longer in the repository and is ignored.',
+      'The 2,600-line browser test file is seven files by subject (navigation, charts, analysis, timing, events, palm, app) with the shared helpers in one place; new tests for the Dṛṣṭi tab and for the notes of EXPORT and IMPORT.',
+      'Updated the application version to v2.92.',
+    ],
+  },
+  {
     version: 'v2.91',
     date: '2026-10-13',
     title: 'Encrypted backups, DST-safe birth times, a lighter first load and a search for saved charts',

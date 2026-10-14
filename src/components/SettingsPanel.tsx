@@ -3,15 +3,12 @@
 import { useState } from 'react';
 import { readNakshatraMode } from '@/lib/nakshatraZodiac';
 import { ChartDisplaySettings, ChartStyle, CalculationSettings, CharaOptions, DashaSettings, DEFAULT_DASHA_SETTINGS, RasiDashaOptions } from '@/types';
-import { type DegreePrecision } from '@/lib/formatDegree';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
-import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
 import { PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
 import ParayaChips from './ParayaChips';
-import RangeField from './RangeField';
+import { ChartFontScaleField, DashaMarkSelect, DegreePrecisionPicker } from './ChartDisplayControls';
 import { VARGA_DIVISIONS, VARGA_NAMES } from '@/lib/vargaChart';
-import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP, clampFontScale, fontScaleLabel } from '@/lib/chartFont';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
@@ -39,8 +36,6 @@ const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showOuterPlanets', label: 'outer planets' },
   { key: 'showSpecialLagnas', label: 'special lagnas' },
   { key: 'showPanchang', label: 'panchang' },
-  { key: 'showGrahaDrishti', label: 'graha dṛṣṭi' },
-  { key: 'showRashiDrishti', label: 'rāśi dṛṣṭi' },
 ];
 
 // The coloured layers listed in the chart legend.
@@ -48,13 +43,6 @@ const LAYER_TOGGLES = (Object.keys(CHART_LAYER_SETTINGS) as ChartLayerKey[]).map
   key: CHART_LAYER_SETTINGS[layer],
   label: CHART_LAYER_LABELS[layer],
 }));
-
-const PRECISION_OPTIONS: [DegreePrecision, string][] = [
-  ['off', 'Off'],
-  ['degree', '12°'],
-  ['minute', "12°34'"],
-  ['second', "12°34'56\""],
-];
 
 const CORE_DASHAS = DASHA_REGISTRY.filter(d => d.group === 'Core');
 
@@ -350,18 +338,11 @@ export default function SettingsPanel(props: Props) {
                 <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">{t('The D1 chart is drawn in the inner part of every house, and this varga chart in the outer part.')}</span>
               </label>
             )}
-            <RangeField
+            <ChartFontScaleField
               className="mt-3"
               label={t('text size of the charts')}
               value={chartDisplaySettings.chartFontScale}
-              min={FONT_SCALE_MIN}
-              max={FONT_SCALE_MAX}
-              step={FONT_SCALE_STEP}
-              format={fontScaleLabel}
-              onChange={(value) => onUpdateChartDisplay?.({ chartFontScale: clampFontScale(value) })}
-              onReset={() => onUpdateChartDisplay?.({ chartFontScale: 1 })}
-              resetLabel={t('reset')}
-              resetDisabled={chartDisplaySettings.chartFontScale === 1}
+              onChange={chartFontScale => onUpdateChartDisplay?.({ chartFontScale })}
             />
             <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
               {t('The text of the full-size charts. In North + South both charts are drawn with the same size of text.')}
@@ -377,24 +358,8 @@ export default function SettingsPanel(props: Props) {
                 </div>
               ))}
             </div>
-            <div className="mt-2 flex items-center justify-between gap-2">
-              <span className="text-xs font-mono text-zinc-600 dark:text-zinc-300 shrink-0">{t('degrees')}</span>
-              <div className="flex gap-0.5">
-                {PRECISION_OPTIONS.map(([val, lbl]) => (
-                  <button
-                    key={val}
-                    type="button"
-                    onClick={() => onUpdateChartDisplay?.({ degreePrecision: val })}
-                    className={`px-1.5 py-0.5 text-[9px] font-mono rounded-sm border transition-colors ${
-                      (chartDisplaySettings.degreePrecision ?? 'off') === val
-                        ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
-                        : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200'
-                    }`}
-                  >
-                    {t(lbl)}
-                  </button>
-                ))}
-              </div>
+            <div className="mt-2">
+              <DegreePrecisionPicker value={chartDisplaySettings.degreePrecision} onChange={degreePrecision => onUpdateChartDisplay?.({ degreePrecision })} />
             </div>
           </SubSection>
 
@@ -416,19 +381,11 @@ export default function SettingsPanel(props: Props) {
             <div className="mt-2 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
               {t('RSN is the Rao Sir System of Nadi: the major (Jupiterian round) and minor progressions, and the Paraya.')}
             </div>
-            <label className="mt-3 block text-xs font-mono text-zinc-500 dark:text-zinc-400">
-              {t('dasha lords from')}
-              <select
-                className={`${SELECT} mt-1`}
-                value={chartDisplaySettings.dashaMarkSystem ?? 'vimshottari'}
-                onChange={e => onUpdateChartDisplay?.({ dashaMarkSystem: e.target.value as ChartDisplaySettings['dashaMarkSystem'] })}
-              >
-                {GRAHA_DASHA_SYSTEMS.map(system => <option key={system.key} value={system.key}>{system.label}</option>)}
-              </select>
-              <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">
-                {t('ᴹ marks the mahādaśā lord, ᴬ the antardaśā lord, at the target date. Rāśi daśās run by signs, so they are not offered.')}
-              </span>
-            </label>
+            <DashaMarkSelect
+              value={chartDisplaySettings.dashaMarkSystem}
+              onChange={dashaMarkSystem => onUpdateChartDisplay?.({ dashaMarkSystem })}
+              note={t('ᴹ marks the mahādaśā lord, ᴬ the antardaśā lord, at the target date. Rāśi daśās run by signs, so they are not offered.')}
+            />
           </SubSection>
 
           <SubSection label="dasha systems">

@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import type { ChartData, ChartDisplaySettings, ChartStyle, PlanetData } from '@/types';
-import { VARGA_NAMES, VARGA_SIGNIFICATIONS } from '@/lib/vargaChart';
+import { VARGA_NAMES } from '@/lib/vargaChart';
 import { vargaChartProps } from '@/lib/vargaChartProps';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import { useChartPoints } from '@/hooks/useChartPoints';
 import type { DashaLordMarks } from './chartLayers';
 import StyledChart from './StyledChart';
 import NestedChart from './NestedChart';
+import VargaChartGrid from './VargaChartGrid';
 import { mixedShape } from '@/lib/chartStyle';
 import { useT } from '@/lib/i18n';
 
@@ -62,23 +63,14 @@ export default function ChartDivisionsView({ chart, divisions, chartStyle, chart
   }
 
   return (
-    <div className="@container">
-      <div className={`grid gap-2 ${!compact ? 'grid-cols-1' : chartStyle !== 'north' ? 'grid-cols-1 @xl:grid-cols-2' : 'grid-cols-2 @3xl:grid-cols-3'}`}>
-        {divisions.map(division => (
-          <div key={division} className="min-w-0 rounded-lg border border-zinc-200 p-1.5 dark:border-zinc-700">
-            <button
-              type="button"
-              onClick={() => onFocus(division)}
-              title={VARGA_SIGNIFICATIONS[division]}
-              className="mb-1 flex w-full min-w-0 items-baseline gap-1 text-left font-mono"
-            >
-              <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-200">D{division}</span>
-              <span className="truncate text-[9px] text-zinc-400 dark:text-zinc-500">{VARGA_NAMES[division]}</span>
-            </button>
-            <StyledChart style={chartStyle} {...vargaChartProps({ chart, division, compact, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, highlight, onPlanetClick: toggleHighlight, transitPlanets, arudhaPadas, points })} />
-          </div>
-        ))}
-      </div>
-    </div>
+    <VargaChartGrid
+      divisions={divisions}
+      chartStyle={chartStyle}
+      width={compact ? 'narrow' : 'single'}
+      onSelect={onFocus}
+      renderChart={division => (
+        <StyledChart style={chartStyle} {...vargaChartProps({ chart, division, compact, chartDisplaySettings, karakaByPlanet, nakshatraAdjust, dashaLords, highlight, onPlanetClick: toggleHighlight, transitPlanets, arudhaPadas, points })} />
+      )}
+    />
   );
 }

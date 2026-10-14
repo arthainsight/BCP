@@ -24,6 +24,7 @@ import StyledChart from './StyledChart';
 import { fill, useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_ABBR } from '@/lib/signs';
+import VargaChartGrid from './VargaChartGrid';
 
 const STORAGE_KEY = 'vargaGrid';
 const PLANET_ORDER = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
@@ -199,33 +200,14 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
         {t('Planet colours:')} <span className="font-bold text-green-700 dark:text-green-400">{t('exalted')}</span> · <span className="font-bold text-sky-700 dark:text-sky-300">{t('own sign')}</span> · <span className="font-bold text-rose-700 dark:text-rose-400">{t('debilitated')}</span>
       </div>
 
-      <div className="@container">
-        <div className={`grid gap-2 ${chartStyle !== 'north'
-          // South Indian cells are a quarter of the chart wide, so small South
-          // charts need a full phone width to stay readable.
-          ? 'grid-cols-1 @md:grid-cols-2 @3xl:grid-cols-3 @5xl:grid-cols-4 @7xl:grid-cols-5'
-          : 'grid-cols-2 @xl:grid-cols-3 @3xl:grid-cols-4 @5xl:grid-cols-5 @7xl:grid-cols-6'}`}>
-          {divisions.map(division => (
-            <div
-              key={division}
-              className={`min-w-0 rounded-lg border p-1.5 ${expanded === division
-                ? 'border-emerald-500 dark:border-green-600'
-                : 'border-zinc-200 dark:border-zinc-700'}`}
-            >
-              <button
-                type="button"
-                onClick={() => setExpanded(current => (current === division ? null : division))}
-                title={t(VARGA_SIGNIFICATIONS[division])}
-                className="mb-1 flex w-full min-w-0 items-baseline gap-1 text-left font-mono"
-              >
-                <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-200">D{division}</span>
-                <span className="truncate text-[9px] text-zinc-400 dark:text-zinc-500">{VARGA_NAMES[division]}</span>
-              </button>
-              {renderChart(division, true)}
-            </div>
-          ))}
-        </div>
-      </div>
+      <VargaChartGrid
+        divisions={divisions}
+        chartStyle={chartStyle}
+        width="wide"
+        active={expanded}
+        onSelect={division => setExpanded(current => (current === division ? null : division))}
+        renderChart={division => renderChart(division, true)}
+      />
     </div>
   );
 }
