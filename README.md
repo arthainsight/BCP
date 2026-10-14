@@ -44,6 +44,7 @@ This is not meant to replace traditional study — it's meant to **accelerate it
 * Selectable ayanamsa, including a signed custom offset from Lahiri
 * Transits with automatic recalculation
 * Tithi Praveśa annual chart with Tithi Aṣṭottarī daśā
+* Nakṣatra Praveśa and Yoga Praveśa annual charts (the Moon's return to its natal longitude, and the return of the Sun-and-Moon sum), with two rules for the year's start
 * Tājika Varṣaphala: Muntha, year lord, Pañcavargīya Bala and Mudda daśā
 
 ### Daśā

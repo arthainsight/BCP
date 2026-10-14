@@ -998,6 +998,22 @@ export const FI: Record<string, string> = {
   '2nd and 11th lords': '2. ja 11. herra',
 
   // Toggle
+  // Nakshatra and Yoga Pravesa
+  'Nakṣatra Praveśa — annual chart': 'Nakṣatra Praveśa — vuosikartta',
+  'Yoga Praveśa — annual chart': 'Yoga Praveśa — vuosikartta',
+  'Birth date and place are needed for Nakṣatra Praveśa.': 'Nakṣatra Praveśa tarvitsee syntymäajan ja -paikan.',
+  'Birth date and place are needed for Yoga Praveśa.': 'Yoga Praveśa tarvitsee syntymäajan ja -paikan.',
+  'Cast for the moment the Moon returns to exactly its natal longitude — the same nakshatra, pada and place in it, to the arc-second —': 'Laskettu hetkelle, jolloin Kuu palaa täsmälleen syntymän pituuteensa — sama nakshatra, pada ja kohta siinä, kaarisekuntiin asti —',
+  'Cast for the moment the sum of the longitudes of the Sun and the Moon returns to its natal value — the same yoga and the same part of it spent, to the arc-second —': 'Laskettu hetkelle, jolloin Auringon ja Kuun pituuksien summa palaa syntymän arvoonsa — sama yoga ja sama osa siitä kulunut, kaarisekuntiin asti —',
+  ' in the lunar month of birth, the last return at or before the Tithi Praveśa.': ' syntymän kuukaudessa, viimeinen paluu Tithi Praveśaa edeltävänä tai sen hetkenä.',
+  ' the last one at or before the birthday.': ' viimeinen paluu syntymäpäivää edeltävänä tai sen hetkenä.',
+  'Before birthday': 'Ennen syntymäpäivää',
+  '{percent} % spent': '{percent} % kulunut',
+  'Sun + Moon': 'Aurinko + Kuu',
+  'pada': 'pada',
+  'Moon': 'Kuu',
+  'tithi praveśa': 'tithi praveśa',
+  'The sum of two sidereal longitudes depends on the ayanamsa twice, so the moment moves with the ayanamsa of Settings.': 'Kahden sideerisen pituuden summa riippuu ayanamsasta kahdesti, joten hetki siirtyy Asetusten ayanamsan mukana.',
   // Sarvatobhadra chakra
   'Vedha': 'Vedha',
   'A graha has vedha on the nakshatra straight across the chart from its own and on the two nakshatras on the diagonals from it. Choose a graha above to draw its lines; a nakshatra with grahas in it is pierced.': 'Grahalla on vedha nakshatraan, joka on suoraan vastapäätä sen omaa kartan toisella puolella, sekä kahteen nakshatraan sen viistoilla. Valitse graha yltä, niin sen viivat piirtyvät; nakshatra, jossa on grahoja, on lävistetty.',

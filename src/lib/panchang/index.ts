@@ -11,7 +11,7 @@ const TITHI_NAMES = [
 
 const MOVABLE_KARANAS = ['Bava', 'Balava', 'Kaulava', 'Taitila', 'Gara', 'Vanija', 'Vishti'];
 
-const YOGA_NAMES = [
+export const YOGA_NAMES = [
   'Vishkambha', 'Priti', 'Ayushman', 'Saubhagya', 'Shobhana',
   'Atiganda', 'Sukarma', 'Dhriti', 'Shula', 'Ganda',
   'Vriddhi', 'Dhruva', 'Vyaghata', 'Harshana', 'Vajra',

@@ -298,3 +298,45 @@ test('TIMING Systems lists the daśā systems closed and opens one on click', as
 
   expect(errors).toEqual([]);
 });
+
+test('TIMING Nakṣatra Praveśa and Yoga Praveśa give the annual chart for the return of the Moon and of the Sun-and-Moon sum', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+
+  // Nakṣatra Praveśa: the Moon of 15.08.1947 is in Pushya, pada 2, and the year starts when it comes back.
+  await visible(page, page.getByRole('button', { name: 'Nakṣatra Praveśa', exact: true })).click();
+  const nakshatra = visible(page, page.locator('[data-pravesha="nakshatra"]'));
+  await expect(nakshatra).toBeVisible();
+  const rows = nakshatra.locator('[data-pravesha-rows]');
+  await expect(rows).toContainText('Pushya (8) · pada 2', { timeout: 30_000 });
+  await expect(rows).toContainText(/begins\s*\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2}/);
+  await expect(rows).toContainText(/ends\s*\d{2}\.\d{2}\.\d{4}/);
+  await expect(rows).toContainText(/year\s*\d+ completed/);
+  await expect(rows).toContainText(/tithi praveśa\s*\d{2}\.\d{2}\.\d{4}/i);
+  await expect(rows).toContainText('Cn');
+  await expect(nakshatra).toContainText('in the lunar month of birth, the last return at or before the Tithi Praveśa.');
+
+  // The other rule: the last return before the birthday.
+  await visible(page, page.getByRole('button', { name: 'Before birthday', exact: true })).click();
+  await expect(nakshatra).toContainText('the last one at or before the birthday.');
+  await expect(rows).toContainText('Pushya (8) · pada 2');
+  await expect(rows).toContainText(/begins\s*\d{2}\.\d{2}\.\d{4}/);
+
+  // A year back.
+  const yearBefore = (await visible(page, page.locator('[data-pravesha="nakshatra"]').getByText(/^\d{4}$/)).innerText()).trim();
+  await visible(page, page.getByRole('button', { name: 'Previous year', exact: true })).click();
+  await expect(visible(page, page.locator('[data-pravesha="nakshatra"]').getByText(String(Number(yearBefore) - 1), { exact: true }))).toBeVisible();
+
+  // Yoga Praveśa: the yoga of 15.08.1947 is Vyatipata, 36 % spent.
+  await visible(page, page.getByRole('button', { name: 'Yoga Praveśa', exact: true })).click();
+  const yoga = visible(page, page.locator('[data-pravesha="yoga"]'));
+  await expect(yoga).toBeVisible();
+  await expect(yoga.locator('[data-pravesha-rows]')).toContainText('Vyatipata (17) · 36.2 % spent', { timeout: 30_000 });
+  await expect(yoga).toContainText('depends on the ayanamsa twice');
+  await expect(yoga.locator('[data-pravesha-rows]')).toContainText(/begins\s*\d{2}\.\d{2}\.\d{4}/);
+
+  expect(errors).toEqual([]);
+});
