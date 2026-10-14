@@ -1,6 +1,5 @@
 import { ChartData, ChartDisplaySettings, DEFAULT_CHART_DISPLAY } from '@/types';
 import JyotishGrahaTable from './JyotishGrahaTable';
-import DrishtiPanel from './DrishtiPanel';
 import YogaTable from './YogaTable';
 import AvasthaPanel from './AvasthaPanel';
 import SahamPanel from './SahamPanel';
@@ -27,14 +26,6 @@ export default function GrahasPanel({ chart, karakaByPlanet, chartDisplaySetting
         showSpecialLagnas={settings.showSpecialLagnas}
         nakshatraAdjust={nakshatraAdjust}
       />
-      {(settings.showGrahaDrishti || settings.showRashiDrishti) && (
-        <DrishtiPanel
-          planets={chart.planets}
-          ascendantSign={chart.ascendant.sign}
-          showGrahaDrishti={settings.showGrahaDrishti}
-          showRashiDrishti={settings.showRashiDrishti}
-        />
-      )}
       <AvasthaPanel chart={chart} birthDatetime={birthDatetime} />
       <SahamPanel chart={chart} birthDatetime={birthDatetime} />
       <div className="border-t border-zinc-100 dark:border-zinc-800 pt-3">

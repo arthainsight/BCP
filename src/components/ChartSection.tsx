@@ -17,11 +17,9 @@ import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import { setChartPointKeys, useChartPoints } from '@/hooks/useChartPoints';
 import { atmakarakaOf, POINT_KEYS, POINT_NAMES, selectedChartPoints } from '@/lib/chartPoints';
 import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPadas';
-import { GRAHA_DASHA_SYSTEMS } from '@/lib/dashaEvents';
 import { PARAYA_BODIES, type ParayaBody } from '@/lib/bnn/nadiParaya';
 import ParayaChips from './ParayaChips';
-import RangeField from './RangeField';
-import { FONT_SCALE_MAX, FONT_SCALE_MIN, FONT_SCALE_STEP, clampFontScale, fontScaleLabel } from '@/lib/chartFont';
+import { ChartFontScaleField, DashaMarkSelect, DegreePrecisionPicker } from './ChartDisplayControls';
 import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
@@ -329,19 +327,12 @@ export default function ChartSection({
                     <ParayaChips bodies={parayaBodies} onChange={chooseParaya} />
                   )}
                   {onUpdateChartDisplay && (
-                    <label className="block text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
-                      {t('dasha lords from')}
-                      <select
-                        value={chartDisplaySettings.dashaMarkSystem ?? 'vimshottari'}
-                        onChange={(e) => onUpdateChartDisplay({ dashaMarkSystem: e.target.value as ChartDisplaySettings['dashaMarkSystem'] })}
-                        className="mt-1 w-full rounded border border-zinc-200 bg-white px-1.5 py-1 text-[10px] dark:border-zinc-700 dark:bg-zinc-900"
-                      >
-                        {GRAHA_DASHA_SYSTEMS.map((system) => <option key={system.key} value={system.key}>{system.label}</option>)}
-                      </select>
-                      {dashaLordsFromParent === null && (
-                        <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">{t('not applicable for this chart')}</span>
-                      )}
-                    </label>
+                    <DashaMarkSelect
+                      compact
+                      value={chartDisplaySettings.dashaMarkSystem}
+                      onChange={dashaMarkSystem => onUpdateChartDisplay({ dashaMarkSystem })}
+                      note={dashaLordsFromParent === null ? t('not applicable for this chart') : undefined}
+                    />
                   )}
                   <div className="border-t border-zinc-200 dark:border-zinc-700" />
                   <ChipPicker title={t('arudha padas')} items={ARUDHA_PADAS} selected={arudhaPadas} onChange={setArudhaPadas} label={arudhaName} colour="amber" />
@@ -353,38 +344,9 @@ export default function ChartSection({
                   <ChartDisplayToggle label={t('karaka')} value={chartDisplaySettings.showCharaKaraka} onToggle={() => onToggleChartDisplay?.('showCharaKaraka')} />
                   <ChartDisplayToggle label={t('outer planets')} value={chartDisplaySettings.showOuterPlanets} onToggle={() => onToggleChartDisplay?.('showOuterPlanets')} />
                   <ChartDisplayToggle label={t('special lagnas')} value={chartDisplaySettings.showSpecialLagnas} onToggle={() => onToggleChartDisplay?.('showSpecialLagnas')} />
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-mono text-zinc-600 dark:text-zinc-300">{t('degrees')}</span>
-                    <div className="flex gap-0.5">
-                      {(['off', 'degree', 'minute', 'second'] as const).map((val) => (
-                        <button
-                          key={val}
-                          type="button"
-                          onClick={() => onUpdateChartDisplay?.({ degreePrecision: val })}
-                          className={`rounded-sm border px-2 py-1.5 text-[10px] font-mono sm:px-1 sm:py-0.5 sm:text-[9px] ${
-                            (chartDisplaySettings.degreePrecision ?? 'off') === val
-                              ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
-                              : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'
-                          }`}
-                        >
-                          {val === 'off' ? 'off' : val.slice(0, 1)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <DegreePrecisionPicker compact value={chartDisplaySettings.degreePrecision} onChange={degreePrecision => onUpdateChartDisplay?.({ degreePrecision })} />
                   {onUpdateChartDisplay && (
-                    <RangeField
-                      label={t('text size')}
-                      value={chartDisplaySettings.chartFontScale}
-                      min={FONT_SCALE_MIN}
-                      max={FONT_SCALE_MAX}
-                      step={FONT_SCALE_STEP}
-                      format={fontScaleLabel}
-                      onChange={(value) => onUpdateChartDisplay({ chartFontScale: clampFontScale(value) })}
-                      onReset={() => onUpdateChartDisplay({ chartFontScale: 1 })}
-                      resetLabel={t('reset')}
-                      resetDisabled={chartDisplaySettings.chartFontScale === 1}
-                    />
+                    <ChartFontScaleField label={t('text size')} value={chartDisplaySettings.chartFontScale} onChange={chartFontScale => onUpdateChartDisplay({ chartFontScale })} />
                   )}
                 </div>
               </>

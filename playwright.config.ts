@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Browser smoke test: runs the production build and walks the main views.
+// Browser tests (e2e/*.spec.ts): run the production build and walk the main views.
 // `npm run build` first, then `npm run test:e2e`.
 export default defineConfig({
   testDir: './e2e',

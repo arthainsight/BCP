@@ -30,8 +30,6 @@ import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
-import { saveFile } from '@/lib/download';
-import { exportSavedCharts, importSavedCharts } from '@/lib/savedCharts';
 import { calculationParams } from '@/lib/apiParams';
 
 
@@ -422,33 +420,6 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [chartData, transitDatetime, handleCalculateTransit]);
 
-  const handleExportCharts = useCallback(() => {
-    const exported = exportSavedCharts();
-    if (exported === null) alert('No saved charts to export.');
-    else saveFile('bcp-charts-export.json', exported, 'application/json');
-  }, []);
-
-  const handleImportCharts = useCallback(() => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        try {
-          const imported = importSavedCharts(reader.result as string);
-          alert(`Imported ${imported} chart${imported !== 1 ? 's' : ''}.`);
-        } catch {
-          alert('Failed to read file. Make sure it is a valid export file.');
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
-  }, []);
-
   const handleLoadChartSnapshot = useCallback(
     async (snap: ChartSnapshot) => {
       setBirthDatetime(snap.birthDatetime);
@@ -676,8 +647,6 @@ export default function Home() {
           hasChart,
           onNew: handleNewChart,
           onLoad: handleLoadChartSnapshot,
-          onExport: handleExportCharts,
-          onImport: handleImportCharts,
           onReport: () => setReporting(true),
           onActiveNameChange: setActiveChartName,
         }}

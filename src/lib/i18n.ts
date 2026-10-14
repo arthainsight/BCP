@@ -513,8 +513,6 @@ export const FI: Record<string, string> = {
   'outer planets': 'ulkoplaneetat',
   'special lagnas': 'erityislagnat',
   'panchang': 'pañcāṅga',
-  'graha dṛṣṭi': 'graha dṛṣṭi',
-  'rāśi dṛṣṭi': 'rāśi dṛṣṭi',
   'BCP year/month': 'BCP vuosi/kuukausi',
   'dasha lords': 'daśā-herrat',
   'transit': 'transiitti',
@@ -1000,6 +998,13 @@ export const FI: Record<string, string> = {
   // Toggle
   'on': 'päällä',
   'off': 'pois',
+
+  // Saved charts export and import
+  'No saved charts yet. Use SAVE AS to save the current chart.': 'Ei vielä tallennettuja karttoja. Tallenna nykyinen kartta SAVE AS -painikkeella.',
+  'No saved charts to export.': 'Ei tallennettuja karttoja vietäväksi.',
+  'Imported {count} chart.': 'Tuotu {count} kartta.',
+  'Imported {count} charts.': 'Tuotu {count} karttaa.',
+  'Failed to read file. Make sure it is a valid export file.': 'Tiedoston lukeminen epäonnistui. Varmista, että se on kelvollinen vientitiedosto.',
 };
 
 /** Translates English interface text; anything without a Finnish entry stays in English. */
