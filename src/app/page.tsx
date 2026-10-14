@@ -1,29 +1,25 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { GeoResult, BcpResult, ChartData, PlanetData, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { calculateBcp, parseDateTime } from '@/lib/bcp';
-import { getUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
+import { localToUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
 import { APP_NAME, APP_VERSION } from '@/lib/config';
 import PrimaryNav, { type Workspace } from '@/components/PrimaryNav';
 import DataPanel from '@/components/DataPanel';
-import SettingsPanel from '@/components/SettingsPanel';
-import AnalysisPanel, { type AnalysisRequest } from '@/components/AnalysisPanel';
-import TimingPanel from '@/components/TimingPanel';
+import type { AnalysisRequest } from '@/components/AnalysisPanel';
 import ChartSection from '@/components/ChartSection';
-import PanchangPanel from '@/components/PanchangPanel';
 import type { ChartSnapshot } from '@/components/FileActions';
-import PalmWorkspace from '@/components/palm/PalmWorkspace';
 import { DataLine, DataSummary, EmptyState, Panel, SplitPane } from '@/components/PageParts';
 import AppHeader from '@/components/AppHeader';
 import { RecordingPanel } from '@/components/ScreenRecorder';
-import ClientReport from '@/components/ClientReport';
 import PinnedChart from '@/components/PinnedChart';
 import { getNowTimeString, getTodayString, parseTargetDateString, targetMomentToTransit, transitToTargetMoment } from '@/lib/dateInput';
 import { useStoredSettings } from '@/hooks/useStoredSettings';
 import { useChartDerived } from '@/hooks/useChartDerived';
 import { withDashaLayers } from '@/components/chartLayers';
-import { LanguageContext, type Language } from '@/lib/i18n';
+import { LanguageContext, fill, translate, type Language } from '@/lib/i18n';
 import { decodeShare } from '@/lib/shareLink';
 import { GrahaNamesContext } from '@/lib/grahaNames';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
@@ -33,6 +29,16 @@ import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitR
 import { saveFile } from '@/lib/download';
 import { exportSavedCharts, importSavedCharts } from '@/lib/savedCharts';
 import { calculationParams } from '@/lib/apiParams';
+
+// The panels that are not on the first screen load when they are opened, which keeps the first load small.
+// The calculation panels render on the server as well, so the first paint of each is the same as before.
+const SettingsPanel = dynamic(() => import('@/components/SettingsPanel'));
+const AnalysisPanel = dynamic(() => import('@/components/AnalysisPanel'));
+const TimingPanel = dynamic(() => import('@/components/TimingPanel'));
+const PanchangPanel = dynamic(() => import('@/components/PanchangPanel'));
+// The palm photographs and the report need the browser (its database, the print dialog) and are never part of a first paint.
+const PalmWorkspace = dynamic(() => import('@/components/palm/PalmWorkspace'), { ssr: false });
+const ClientReport = dynamic(() => import('@/components/ClientReport'), { ssr: false });
 
 
 type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'settings';
@@ -168,7 +174,7 @@ export default function Home() {
     if (!ianaTimezone || !birthDatetime) return null;
     const date = parseBirthDatetimeForTz(birthDatetime);
     if (!date) return null;
-    return getUtcOffsetHours(ianaTimezone, date);
+    return localToUtcOffsetHours(ianaTimezone, date);
   }, [ianaTimezone, birthDatetime]);
 
   const effectiveTzOffset = useMemo<number | null>(() => {
@@ -422,11 +428,12 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [chartData, transitDatetime, handleCalculateTransit]);
 
+  const uiLanguage: Language = chartDisplaySettings.language === 'fi' ? 'fi' : 'en';
   const handleExportCharts = useCallback(() => {
     const exported = exportSavedCharts();
-    if (exported === null) alert('No saved charts to export.');
+    if (exported === null) alert(translate(uiLanguage, 'No saved charts to export.'));
     else saveFile('bcp-charts-export.json', exported, 'application/json');
-  }, []);
+  }, [uiLanguage]);
 
   const handleImportCharts = useCallback(() => {
     const input = document.createElement('input');
@@ -439,15 +446,15 @@ export default function Home() {
       reader.onload = () => {
         try {
           const imported = importSavedCharts(reader.result as string);
-          alert(`Imported ${imported} chart${imported !== 1 ? 's' : ''}.`);
+          alert(fill(translate(uiLanguage, imported === 1 ? 'Imported {count} chart.' : 'Imported {count} charts.'), { count: imported }));
         } catch {
-          alert('Failed to read file. Make sure it is a valid export file.');
+          alert(translate(uiLanguage, 'Failed to read file. Make sure it is a valid export file.'));
         }
       };
       reader.readAsText(file);
     };
     input.click();
-  }, []);
+  }, [uiLanguage]);
 
   const handleLoadChartSnapshot = useCallback(
     async (snap: ChartSnapshot) => {
@@ -478,7 +485,7 @@ export default function Home() {
         if (!isNaN(n)) tzOffset = n;
       } else if (snap.ianaTimezone) {
         const d = parseBirthDatetimeForTz(snap.birthDatetime);
-        if (d) tzOffset = getUtcOffsetHours(snap.ianaTimezone, d);
+        if (d) tzOffset = localToUtcOffsetHours(snap.ianaTimezone, d);
       }
       if (tzOffset === null) return;
 

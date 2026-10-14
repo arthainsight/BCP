@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readSavedChartsExport } from './savedCharts';
+import { filterSavedCharts, readSavedChartsExport, type SavedChart } from './savedCharts';
 
 const chart = (extra: Record<string, unknown> = {}) => ({
   id: 'a', name: 'Test', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-02T00:00:00.000Z',
@@ -28,3 +28,20 @@ assert.throws(() => readSavedChartsExport('{'));
 assert.throws(() => readSavedChartsExport('{"charts": 3}'));
 assert.throws(() => readSavedChartsExport('[]'));
 console.log('Saved chart export tests passed');
+
+// --- Searching and ordering the saved charts ----------------------------------------
+{
+  const make = (id: string, name: string, city: string, birth: string, updatedAt: string) => chart({ id, name, updatedAt, chartData: { ...chart().chartData, city, birthDatetime: birth } }) as unknown as SavedChart;
+  const list = [
+    make('1', 'Äiti', 'Helsinki', '01.02.1960 10.00.00', '2026-03-01T00:00:00.000Z'),
+    make('2', 'anna', 'Tampere', '15.08.1947 09.15.00', '2026-05-01T00:00:00.000Z'),
+    make('3', 'Bertta', 'Helsinki', '20.12.1985 23.30.00', '2026-04-01T00:00:00.000Z'),
+  ];
+  assert.deepEqual(filterSavedCharts(list, '').map(c => c.id), ['2', '3', '1'], 'newest first');
+  assert.deepEqual(filterSavedCharts(list, '', 'name').map(c => c.id), ['1', '2', '3'], 'by name, ignoring case and accents (Äiti, anna, Bertta)');
+  assert.deepEqual(filterSavedCharts(list, 'HELSINKI').map(c => c.id), ['3', '1'], 'by place, any case');
+  assert.deepEqual(filterSavedCharts(list, '1947').map(c => c.id), ['2'], 'by birth year');
+  assert.deepEqual(filterSavedCharts(list, 'helsinki 1985').map(c => c.id), ['3'], 'every word has to be found');
+  assert.deepEqual(filterSavedCharts(list, 'nothing'), []);
+  assert.equal(list.length, 3, 'the list itself is not changed');
+}
