@@ -8,6 +8,7 @@ import SignChangesPanel from './SignChangesPanel';
 import ParayaHitsPanel from './ParayaHitsPanel';
 import TimingSummary from './TimingSummary';
 import TithiPravesaPanel from './TithiPravesaPanel';
+import PraveshaPanel from './PraveshaPanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
 import MuhurtaPanel from './MuhurtaPanel';
 import type { AnnualPlace } from './annualShared';
@@ -15,7 +16,7 @@ import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
-type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'muhurta' | 'tithi' | 'varsha';
+type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'dasha', label: 'Dasha' },
@@ -24,6 +25,8 @@ const VIEWS: { key: View; label: string }[] = [
   { key: 'signs', label: 'Sign changes' },
   { key: 'muhurta', label: 'Muhurta' },
   { key: 'tithi', label: 'Tithi Praveśa' },
+  { key: 'nakshatra', label: 'Nakṣatra Praveśa' },
+  { key: 'yoga', label: 'Yoga Praveśa' },
   { key: 'varsha', label: 'Varṣaphala' },
 ];
 
@@ -159,6 +162,22 @@ export default function TimingPanel({
 
       {view === 'tithi' && (
         <TithiPravesaPanel
+          chart={chart}
+          birthDatetime={birthDatetime}
+          targetDate={targetDate}
+          ianaTimezone={ianaTimezone}
+          calculationSettings={calculationSettings}
+          chartStyle={chartStyle}
+          chartDisplaySettings={chartDisplaySettings}
+          nakshatraAdjust={nakshatraAdjust}
+          place={annualPlace}
+          onPlaceChange={setAnnualPlace}
+        />
+      )}
+
+      {(view === 'nakshatra' || view === 'yoga') && (
+        <PraveshaPanel
+          kind={view}
           chart={chart}
           birthDatetime={birthDatetime}
           targetDate={targetDate}

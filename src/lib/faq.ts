@@ -175,11 +175,11 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'What is in TIMING?', fi: 'Mitä AJANKOHTA sisältää?' },
     a: {
       en: [
-        'Dasha: the daśā periods of the systems you have chosen. Summary: the running periods at a glance. Transit Hits: when the transiting and Paraya grahas reach points of the chart. Sign changes: when the grahas move to another sign. Muhurta: Rahu Kala, Yamaganda, Gulika Kala, Abhijit and the Choghadiya of a day. Tithi Praveśa and Varṣaphala: the yearly charts.',
+        'Dasha: the daśā periods of the systems you have chosen. Summary: the running periods at a glance. Transit Hits: when the transiting and Paraya grahas reach points of the chart. Sign changes: when the grahas move to another sign. Muhurta: Rahu Kala, Yamaganda, Gulika Kala, Abhijit and the Choghadiya of a day. Tithi Praveśa, Nakṣatra Praveśa, Yoga Praveśa and Varṣaphala: the yearly charts.',
         'All of them work for the target date, which is set in the target bar (the date, the time and now).',
       ],
       fi: [
-        'Dasha: valitsemiesi järjestelmien daśā-jaksot. Summary: käynnissä olevat jaksot yhdellä silmäyksellä. Transit Hits: milloin transiittigrahat ja Paraya-grahat saavuttavat kartan pisteitä. Sign changes: milloin grahat siirtyvät toiseen merkkiin. Muhurta: päivän Rahu Kala, Yamaganda, Gulika Kala, Abhijit ja Choghadiya. Tithi Praveśa ja Varṣaphala: vuosikartat.',
+        'Dasha: valitsemiesi järjestelmien daśā-jaksot. Summary: käynnissä olevat jaksot yhdellä silmäyksellä. Transit Hits: milloin transiittigrahat ja Paraya-grahat saavuttavat kartan pisteitä. Sign changes: milloin grahat siirtyvät toiseen merkkiin. Muhurta: päivän Rahu Kala, Yamaganda, Gulika Kala, Abhijit ja Choghadiya. Tithi Praveśa, Nakṣatra Praveśa, Yoga Praveśa ja Varṣaphala: vuosikartat.',
         'Kaikki toimivat tavoitepäivälle, joka asetetaan tavoitepalkista (päivä, kellonaika ja now).',
       ],
     },
@@ -312,6 +312,21 @@ export const FAQ_ENTRIES: FaqEntry[] = [
         'ANALYSIS → Sarvatobhadra piirtää chakran yhdeksänä rivinä, joissa on yhdeksän ruutua: reunalla 28 nakshatraa (Abhijit mukana), sisällä vokaalit ja konsonantit sekä kaksitoista rāśia ja keskellä viisi tithi-ryhmää (Nanda, Bhadra, Jaya, Rikta, Poorna) viikonpäivineen. Jokainen graha ja Lagna (Asc) on oman nakshatransa ruudussa; retrogradinen graha on kursiivilla ja merkillä ℞. Transiitti lisää liikkuvat grahat violettina.',
         'Kuun nakshatra (Janma-nakshatra), Kuun rāśin ja Lagnan rāśin ruudut sekä syntymän tithin ja syntymäviikonpäivän ruudut on merkitty, ja kartan alla oleva lista nimeää ne. Syntymäpäivä lasketaan auringonnoususta, joten ennen auringonnousua syntynyt kuuluu edelliselle päivälle. Abhijit on Kauriin 6°40′:n ja 10°53′20″:n välinen jakso, joka on otettu Uttara Ashadhasta ja Shravanasta, ja nakshatrat noudattavat Asetusten nakshatra-zodiakkia.',
         'Vedha: grahalla on vedha nakshatraan, joka on suoraan vastapäätä sen omaa kartan toisella puolella, sekä kahteen nakshatraan sen viistoilla. Valitse graha Vedha-riviltä (natal, ja transiitti kun Transit on päällä), niin sen kolme viivaa piirtyvät ja nakshatrat, joihin ne päättyvät, merkitään; kartan alla oleva Vedha-lista näyttää ne jokaiselle grahalle, ja niissä olevat grahat ovat hakasulkeissa (transiittigraha merkillä ↗). Nakshatra, jossa on grahoja, on sen grahan lävistämä, jolla on siihen vedha.',
+      ],
+    },
+  },
+  {
+    id: 'pravesha',
+    section: 'timing',
+    q: { en: 'What are Nakṣatra Praveśa and Yoga Praveśa, and which return begins the year?', fi: 'Mitä ovat Nakṣatra Praveśa ja Yoga Praveśa, ja mikä paluu aloittaa vuoden?' },
+    a: {
+      en: [
+        'They are yearly charts counted like Tithi Praveśa, which repeats the Sun–Moon distance of birth. Nakṣatra Praveśa is cast when the Moon returns to exactly its natal longitude (the same nakshatra, pada and place in it, to the arc-second); Yoga Praveśa when the sum of the sidereal longitudes of the Sun and the Moon returns to its natal value (the same yoga, with the same part of it spent). TIMING → Nakṣatra Praveśa and Yoga Praveśa give the chart, the moment, the end of the year, the vāra lord of the year, the lagna and the planets, with the year stepper, the place of residence and the natal overlay of Tithi Praveśa.',
+        'The Moon is back at its place every 27.3 days and the sum every 25.4, about thirteen times a year, so a rule chooses the one that begins the year. Lunar month (the default): the return inside the lunar month of birth, the last one at or before the Tithi Praveśa (the lunar birthday), or the first one when both come after it. Before birthday: the last return at or before the birthday, the birth date and time of day carried to the year. The sum of two sidereal longitudes depends on the ayanamsa twice, so the moment of Yoga Praveśa moves with the ayanamsa of Settings. There is no daśā for these years yet.',
+      ],
+      fi: [
+        'Ne ovat vuosikarttoja, jotka lasketaan kuten Tithi Praveśa, joka toistaa syntymän Auringon ja Kuun välisen etäisyyden. Nakṣatra Praveśa lasketaan hetkelle, jolloin Kuu palaa täsmälleen syntymän pituuteensa (sama nakshatra, pada ja kohta siinä, kaarisekuntiin asti); Yoga Praveśa hetkelle, jolloin Auringon ja Kuun sideeristen pituuksien summa palaa syntymän arvoonsa (sama yoga ja sama osa siitä kulunut). AJANKOHTA → Nakṣatra Praveśa ja Yoga Praveśa näyttävät kartan, hetken, vuoden lopun, vuoden vāra-herran, lagnan ja planeetat sekä vuosivalitsimen, asuinpaikan ja natal-peiton kuten Tithi Praveśa.',
+        'Kuu on takaisin paikallaan 27,3 vuorokauden välein ja summa 25,4:n, eli noin kolmetoista kertaa vuodessa, joten sääntö valitsee sen, joka aloittaa vuoden. Kuukausi (oletus): syntymän kuukauden sisällä oleva paluu, viimeinen Tithi Praveśaa (kuun syntymäpäivää) edeltävä tai sen hetkellä, tai ensimmäinen, jos molemmat ovat sen jälkeen. Ennen syntymäpäivää: viimeinen paluu syntymäpäivää edeltävänä tai sen hetkenä, kun syntymäaika ja kellonaika siirretään vuoteen. Kahden sideerisen pituuden summa riippuu ayanamsasta kahdesti, joten Yoga Praveśan hetki siirtyy Asetusten ayanamsan mukana. Näille vuosille ei vielä ole daśāa.',
       ],
     },
   },

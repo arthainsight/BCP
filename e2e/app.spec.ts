@@ -118,6 +118,12 @@ test('the panels and the sentences the calculations write are in Finnish', async
   await visible(page, page.getByRole('button', { name: 'Tithi Praveśa', exact: true })).click();
   await expect(visible(page, page.getByText('Tithi Praveśa — vuosikartta'))).toBeVisible();
   await expect(visible(page, page.getByText(/täyttä vuotta · \d+\. vuosi käynnissä/))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Nakṣatra Praveśa', exact: true })).click();
+  await expect(visible(page, page.getByText('Nakṣatra Praveśa — vuosikartta'))).toBeVisible();
+  await expect(visible(page, page.getByText(/Kuu · pada|nakshatra/).first())).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Yoga Praveśa', exact: true })).click();
+  await expect(visible(page, page.getByText('Yoga Praveśa — vuosikartta'))).toBeVisible();
+  await expect(visible(page, page.getByText(/% kulunut/))).toBeVisible();
   await visible(page, page.getByRole('button', { name: 'Varṣaphala', exact: true })).click();
   await expect(visible(page, page.getByText('Pañcādhikārī — viisi virkamiestä'))).toBeVisible();
   await visible(page, page.getByRole('button', { name: 'Daśā', exact: true })).click();

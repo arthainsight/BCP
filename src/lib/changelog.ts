@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.97',
+    date: '2026-10-14',
+    title: 'Nakṣatra Praveśa and Yoga Praveśa',
+    changes: [
+      'TIMING → Nakṣatra Praveśa and Yoga Praveśa: yearly charts counted like Tithi Praveśa. Nakṣatra Praveśa is cast when the Moon returns to exactly its natal longitude (same nakṣatra, pada and place in it, to the arc-second); Yoga Praveśa when the sum of the sidereal longitudes of the Sun and the Moon returns to its natal value (same yoga, same part of it spent). Each gives the chart at the place of birth or of residence, the moment and the end of the year, the year\'s lord (the vāra), the horā, the lagna, the planets and the natal overlay, with the year stepper.',
+      'The Moon\'s round takes 27.3 days and the sum\'s 25.4, about thirteen returns a year, so a rule chooses the one that begins the year. Lunar month (the default): the return inside the lunar month of birth, the last one at or before the Tithi Praveśa, or the first when both come after it. Before birthday: the last return at or before the birthday, the birth date and time of day carried to the year. The Yoga Praveśa moves with the ayanamsa of Settings, as a sum of two sidereal longitudes does. No daśā for these years yet.',
+      'pravesha.ts finds the returns by Newton iteration, as Tithi Praveśa finds its moment, and /api/pravesha serves them. Tests check thirteen years of both rules for both kinds: the quantity repeats to a hundredth of an arc-second and is verified against the ephemeris separately, the rule picks the right return, the years are a year long, the year in force holds the target date and the tropical zodiac repeats the tropical Moon; a browser test walks both panels in the chart of 15.08.1947 (the Moon in Pushya, pada 2; the yoga Vyatipata, 36 % spent).',
+      'Updated the application version to v2.97.',
+    ],
+  },
+  {
     version: 'v2.96',
     date: '2026-10-14',
     title: 'Vedha in the Sarvatobhadra chakra',
