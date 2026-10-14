@@ -998,8 +998,13 @@ export const FI: Record<string, string> = {
   '2nd and 11th lords': '2. ja 11. herra',
 
   // Toggle
+  // Saved charts: clients
+  'no client': 'ei asiakasta',
+  'client': 'asiakas',
+  'Client (optional)': 'Asiakas (valinnainen)',
+  'Client (empty for none)': 'Asiakas (tyhjä = ei asiakasta)',
   // Saved charts: search and order
-  'Search name, place or birth year': 'Hae nimeä, paikkaa tai syntymävuotta',
+  'Search name, client, place or birth year': 'Hae nimeä, asiakasta, paikkaa tai syntymävuotta',
   'Search saved charts': 'Hae tallennetuista kartoista',
   'Order': 'Järjestys',
   'latest first': 'uusin ensin',

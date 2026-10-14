@@ -86,7 +86,7 @@ Overlap and Systems), among them:
 * Local backup and restore of every saved chart, event list, setting and,
   optionally, palm photograph; a backup can be encrypted with a password
   (AES-GCM, in the browser)
-* Search and ordering of the saved charts
+* Saved charts kept by client, with search and ordering
 
 ### Palmistry, sharing and reports
 
@@ -143,6 +143,8 @@ npm run dev
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
 
+`npm audit --omit=dev` reports no vulnerabilities in what the app ships; the remaining findings of `npm audit` are in the lint tooling (`eslint-config-next` → `braces`) and have no fix that is not a downgrade.
+
 CI runs lint (`--max-warnings=0`), typecheck, tests and a production build on
 every push and pull request.
 
@@ -174,7 +176,6 @@ Panchang, the palm workspace and the report load when they are opened, and
   (they stay Beta until then)
 * Yoga detection is shut until it is opened; open it by default once its
   coverage is validated
-* Group saved charts and event lists by client
 
 ---
 

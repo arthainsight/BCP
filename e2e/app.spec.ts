@@ -420,10 +420,13 @@ test('EXPORT and IMPORT of the saved charts answer in a note on the screen, not 
   // Save the chart, take the export file, and read it back: the charts are added to the saved ones.
   await action('SAVE AS');
   await visible(page, page.getByPlaceholder('Chart name')).fill('Test chart');
+  await visible(page, page.getByRole('combobox', { name: 'Client (optional)' })).fill('Testiasiakas');
   await visible(page, page.getByRole('button', { name: 'Save', exact: true })).click();
   const download = page.waitForEvent('download');
   await action('EXPORT');
   const file = await (await download).path();
+  // The client goes into the export file with the chart.
+  expect(JSON.parse(readFileSync(file, 'utf8')).charts[0].client).toBe('Testiasiakas');
 
   const chooser = page.waitForEvent('filechooser');
   await action('IMPORT');
@@ -437,5 +440,118 @@ test('EXPORT and IMPORT of the saved charts answer in a note on the screen, not 
   await expect(notice()).toContainText('Failed to read file.');
 
   expect(dialogs).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test('a backup can be locked with a password, which is asked for when it is opened', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // A saved chart with a name that must not be readable in the file.
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('bcp_saved_charts')) {
+      localStorage.setItem('bcp_saved_charts', JSON.stringify([{
+        id: 'secret-1', name: 'Hemmetty Asiakas', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-02T00:00:00.000Z',
+        chartData: { birthDatetime: '15.08.1947 09.15.00', city: 'New Delhi', manualLat: '28.6', manualLng: '77.2', ianaTimezone: 'Asia/Kolkata', tzOverride: '', targetDate: '2026-10-13', showCoords: true },
+      }]));
+    }
+  });
+  await page.goto('/');
+  await selectWorkspace(page, '⚙');
+
+  // Without a password the file is plain; with one it is encrypted and holds nothing readable.
+  const plainDownload = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download backup', exact: true })).click();
+  const plain = readFileSync(await (await plainDownload).path(), 'utf8');
+  expect(JSON.parse(plain).format).toBe('bhrigu-code-backup');
+  expect(plain).toContain('Hemmetty Asiakas');
+
+  await visible(page, page.locator('label', { hasText: 'password (optional)' })).locator('input').fill('salasana-ÄÖ');
+  await expect(visible(page, page.getByText('A lost password cannot be recovered.'))).toBeVisible();
+  const lockedDownload = page.waitForEvent('download');
+  await visible(page, page.getByRole('button', { name: 'Download backup', exact: true })).click();
+  const lockedPath = await (await lockedDownload).path();
+  const locked = readFileSync(lockedPath, 'utf8');
+  expect(JSON.parse(locked).format).toBe('bhrigu-code-backup-encrypted');
+  expect(locked).not.toContain('Hemmetty');
+
+  // Choosing it asks for the password: a wrong one is refused, the right one shows what is in the backup.
+  const choose = () => visible(page, page.locator('label', { hasText: 'Choose backup' })).locator('input[type="file"]').setInputFiles(lockedPath);
+  await choose();
+  await expect(visible(page, page.getByText('This backup is encrypted. Enter its password.'))).toBeVisible();
+  const field = visible(page, page.locator('input[autocomplete="current-password"]'));
+  await field.fill('väärä');
+  await visible(page, page.getByRole('button', { name: 'Open', exact: true })).click();
+  await expect(visible(page, page.getByText('Wrong password, or the file has been changed.'))).toBeVisible();
+  await field.fill('salasana-ÄÖ');
+  await visible(page, page.getByRole('button', { name: 'Open', exact: true })).click();
+  await expect(visible(page, page.getByText('Restoring replaces all current BCP local data on this device.'))).toBeVisible();
+
+  // A file that has been changed is refused, not read as nonsense.
+  const changed = JSON.parse(locked);
+  changed.data = changed.data.slice(0, -8) + 'AAAAAAAA';
+  await visible(page, page.getByRole('button', { name: 'Cancel', exact: true })).click();
+  await visible(page, page.locator('label', { hasText: 'Choose backup' })).locator('input[type="file"]').setInputFiles({ name: 'changed.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(changed)) });
+  await visible(page, page.locator('input[autocomplete="current-password"]')).fill('salasana-ÄÖ');
+  await visible(page, page.getByRole('button', { name: 'Open', exact: true })).click();
+  await expect(visible(page, page.getByText('Wrong password, or the file has been changed.'))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
+test('the saved charts can be searched, kept by client and moved to another client', async ({ page }, info) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // Six saved charts, some of them with a client.
+  await page.addInitScript(() => {
+    if (localStorage.getItem('bcp_saved_charts')) return;
+    const data = (birth: string, city: string) => ({ birthDatetime: birth, city, manualLat: '60.17', manualLng: '24.94', ianaTimezone: 'Europe/Helsinki', tzOverride: '', targetDate: '2026-10-13', showCoords: true });
+    const make = (id: string, name: string, client: string | undefined, birth: string, city: string, updatedAt: string) => ({ id, name, ...(client ? { client } : {}), createdAt: updatedAt, updatedAt, chartData: data(birth, city) });
+    localStorage.setItem('bcp_saved_charts', JSON.stringify([
+      make('1', 'Anna', 'Virtanen', '01.02.1960 10.00.00', 'Helsinki', '2026-03-01T00:00:00.000Z'),
+      make('2', 'Mikko', 'Virtanen', '15.08.1947 09.15.00', 'Tampere', '2026-05-01T00:00:00.000Z'),
+      make('3', 'Eero', undefined, '20.12.1985 23.30.00', 'Oulu', '2026-04-01T00:00:00.000Z'),
+      make('4', 'Liisa', 'Korhonen', '03.03.1990 03.03.00', 'Turku', '2026-02-01T00:00:00.000Z'),
+      make('5', 'Olli', undefined, '04.04.1970 12.00.00', 'Vaasa', '2026-01-01T00:00:00.000Z'),
+      make('6', 'Sari', 'Korhonen', '05.05.1975 05.05.00', 'Pori', '2026-01-15T00:00:00.000Z'),
+    ]));
+  });
+  await page.goto('/');
+  const action = async (name: string) => {
+    if (info.project.name === 'phone') await visible(page, page.getByRole('button', { name: 'Chart actions', exact: true })).click();
+    await visible(page, page.getByRole('button', { name, exact: true })).click();
+  };
+  await action('LOAD');
+
+  // The charts are in groups by client, the clients in alphabetical order and the charts of none last.
+  const groups = page.locator('[data-client-group]');
+  await expect(groups).toHaveCount(3);
+  expect(await groups.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-client-group')))).toEqual(['Korhonen', 'Virtanen', '']);
+  await expect(groups.nth(1)).toContainText('Mikko');
+  await expect(groups.nth(1)).toContainText('Anna');
+
+  // A search finds a client by name and leaves out the groups that are empty.
+  const search = visible(page, page.getByRole('searchbox', { name: 'Search saved charts' }));
+  await search.fill('virtanen');
+  await expect(groups).toHaveCount(1);
+  await expect(groups.first()).toContainText('Anna');
+  await search.fill('oulu');
+  await expect(groups).toHaveCount(1);
+  await expect(groups.first()).toContainText('Eero');
+  await search.fill('');
+
+  // A chart is moved to another client from the list, and the clients are suggested.
+  await visible(page, page.getByRole('button', { name: /^client: Eero$/ })).click();
+  await visible(page, page.getByRole('combobox', { name: 'Client (empty for none)' })).fill('Korhonen');
+  await page.keyboard.press('Enter');
+  await expect(groups.first()).toContainText('Eero');
+  expect(await groups.evaluateAll(nodes => nodes.map(node => node.getAttribute('data-client-group')))).toEqual(['Korhonen', 'Virtanen', '']);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('bcp_saved_charts') ?? '[]').find((c: { id: string }) => c.id === '3').client)).toBe('Korhonen');
+
+  // Picking a chart still loads it.
+  await visible(page, page.locator('[data-client-group="Virtanen"]').getByText('Mikko', { exact: true })).click();
+  await expect(visible(page, page.getByPlaceholder('15.08.1947 09.15.00'))).toHaveValue('15.08.1947 09.15.00');
+
   expect(errors).toEqual([]);
 });

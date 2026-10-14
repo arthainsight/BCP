@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { filterSavedCharts, readSavedChartsExport, type SavedChart } from './savedCharts';
+import { filterSavedCharts, groupSavedCharts, listClients, readSavedChartsExport, type SavedChart } from './savedCharts';
 
 const chart = (extra: Record<string, unknown> = {}) => ({
   id: 'a', name: 'Test', createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-02T00:00:00.000Z',
@@ -44,4 +44,38 @@ console.log('Saved chart export tests passed');
   assert.deepEqual(filterSavedCharts(list, 'helsinki 1985').map(c => c.id), ['3'], 'every word has to be found');
   assert.deepEqual(filterSavedCharts(list, 'nothing'), []);
   assert.equal(list.length, 3, 'the list itself is not changed');
+}
+
+// --- Clients -------------------------------------------------------------------------------
+{
+  const make = (id: string, name: string, client: string | undefined, updatedAt: string) => chart({ id, name, updatedAt, ...(client ? { client } : {}) }) as unknown as SavedChart;
+  const list = [
+    make('1', 'Anna', 'Virtanen', '2026-03-01T00:00:00.000Z'),
+    make('2', 'Mikko', 'Virtanen', '2026-05-01T00:00:00.000Z'),
+    make('3', 'Eero', undefined, '2026-04-01T00:00:00.000Z'),
+    make('4', 'Liisa', 'Äikäs', '2026-02-01T00:00:00.000Z'),
+    make('5', 'Olli', 'korhonen', '2026-01-01T00:00:00.000Z'),
+  ];
+  assert.deepEqual(listClients(list), ['Äikäs', 'korhonen', 'Virtanen'], 'alphabetical, ignoring case and accents');
+  assert.deepEqual(listClients([make('9', 'x', undefined, '2026-01-01T00:00:00.000Z')]), []);
+
+  // The clients in order, the charts of none last, each group newest first.
+  const groups = groupSavedCharts(list, '');
+  assert.deepEqual(groups.map(group => group.client), ['Äikäs', 'korhonen', 'Virtanen', '']);
+  assert.deepEqual(groups.find(group => group.client === 'Virtanen')!.charts.map(c => c.id), ['2', '1']);
+  assert.deepEqual(groups.at(-1)!.charts.map(c => c.id), ['3']);
+
+  // By name inside the groups; a search finds a client by its name and drops the groups that are left empty.
+  assert.deepEqual(groupSavedCharts(list, '', 'name').find(group => group.client === 'Virtanen')!.charts.map(c => c.id), ['1', '2']);
+  assert.deepEqual(groupSavedCharts(list, 'virtanen').map(group => [group.client, group.charts.length]), [['Virtanen', 2]]);
+  assert.deepEqual(groupSavedCharts(list, 'nobody'), []);
+
+  // With no client anywhere there is one group of none, so the list looks as it did before.
+  const plain = [make('1', 'Anna', undefined, '2026-03-01T00:00:00.000Z'), make('2', 'Mikko', undefined, '2026-05-01T00:00:00.000Z')];
+  assert.deepEqual(groupSavedCharts(plain, '').map(group => [group.client, group.charts.map(c => c.id)]), [['', ['2', '1']]]);
+
+  // The client is kept in an export and read back, trimmed; a client that is not text is dropped.
+  const read = readSavedChartsExport(file([chart({ id: 'a', client: '  Virtanen ' }), chart({ id: 'b', client: 42 })]));
+  assert.equal(read[0].client, 'Virtanen');
+  assert.equal(read[1].client, undefined);
 }

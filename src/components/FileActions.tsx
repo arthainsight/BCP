@@ -8,7 +8,9 @@ import {
   SavedChart,
   SavedChartData,
   SavedChartSort,
-  filterSavedCharts,
+  groupSavedCharts,
+  listClients,
+  setSavedChartClient,
   loadSavedCharts,
   deleteSavedChart,
   saveChartAsNew,
@@ -53,6 +55,10 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onRepor
   const [showMenu, setShowMenu] = useState(false);
   const [showSaveAs, setShowSaveAs] = useState(false);
   const [saveAsName, setSaveAsName] = useState("");
+  const [saveAsClient, setSaveAsClient] = useState("");
+  // The chart whose client is being changed in the list of saved charts, and the text typed for it.
+  const [clientEditId, setClientEditId] = useState<string | null>(null);
+  const [clientDraft, setClientDraft] = useState("");
   const [confirmNew, setConfirmNew] = useState(false);
   const [notice, setNotice] = useState("");
 
@@ -156,6 +162,8 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onRepor
 
   const openSaveAs = () => {
     setSaveAsName("");
+    // A new chart of the client whose chart is open is most often another chart of the same client.
+    setSaveAsClient(loadSavedCharts().find(chart => chart.id === activeId)?.client ?? "");
     setShowMenu(false);
     setShowSaveAs(true);
   };
@@ -163,12 +171,18 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onRepor
   const handleSaveAs = () => {
     const name = saveAsName.trim();
     if (!name || !hasSnapshotData) return;
-    const created = saveChartAsNew(name, normalizeSnapshot(snapshot));
+    const created = saveChartAsNew(name, normalizeSnapshot(snapshot), saveAsClient);
     setActiveSavedChartId(created.id);
     setActiveId(created.id);
     onActiveNameChange?.(created.name);
     setShowSaveAs(false);
     setSaveAsName("");
+    setSaveAsClient("");
+  };
+
+  const handleSetClient = (id: string) => {
+    setSavedList(setSavedChartClient(id, clientDraft));
+    setClientEditId(null);
   };
 
   const handleExport = () => {
@@ -302,7 +316,7 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onRepor
                   type="search"
                   value={chartQuery}
                   onChange={(e) => setChartQuery(e.target.value)}
-                  placeholder={t('Search name, place or birth year')}
+                  placeholder={t('Search name, client, place or birth year')}
                   aria-label={t('Search saved charts')}
                   className="min-w-0 flex-1 rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-mono dark:border-zinc-600 dark:bg-zinc-800"
                 />
@@ -312,33 +326,74 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onRepor
                 </select>
               </div>
             )}
-            {filterSavedCharts(savedList, chartQuery, chartSort).map((chart) => (
-              <div
-                key={chart.id}
-                onClick={() => handlePickChart(chart)}
-                className={`px-4 py-3 border-b border-zinc-100 dark:border-zinc-700/60 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 ${
-                  activeId === chart.id ? "bg-zinc-50 dark:bg-zinc-700/40" : ""
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-200 truncate">{chart.name}</div>
-                    <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 mt-0.5 truncate">
-                      {chart.chartData.city || chart.chartData.birthDatetime || "saved chart"}
+            {(() => {
+              const groups = groupSavedCharts(savedList, chartQuery, chartSort);
+              const showHeadings = groups.some((group) => group.client !== "");
+              return groups.map((group) => (
+                <div key={group.client || "(none)"} data-client-group={group.client || ""}>
+                  {showHeadings && (
+                    <div className="sticky top-0 z-10 flex items-center justify-between bg-zinc-100 px-4 py-1 text-[10px] font-mono uppercase tracking-widest text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                      <span>{group.client || t('no client')}</span>
+                      <span>{group.charts.length}</span>
                     </div>
-                    <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-                      {new Date(chart.updatedAt).toLocaleDateString()}
+                  )}
+                  {group.charts.map((chart) => (
+                    <div
+                      key={chart.id}
+                      onClick={() => handlePickChart(chart)}
+                      className={`px-4 py-3 border-b border-zinc-100 dark:border-zinc-700/60 cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700 ${
+                        activeId === chart.id ? "bg-zinc-50 dark:bg-zinc-700/40" : ""
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-200 truncate">{chart.name}</div>
+                          <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500 mt-0.5 truncate">
+                            {chart.chartData.city || chart.chartData.birthDatetime || "saved chart"}
+                          </div>
+                          <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
+                            {new Date(chart.updatedAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <div className="flex shrink-0 gap-1">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setClientEditId(chart.id); setClientDraft(chart.client ?? ""); }}
+                            aria-label={`${t('client')}: ${chart.name}`}
+                            className="px-2 py-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-500 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded transition-colors"
+                          >
+                            {t('client')}
+                          </button>
+                          <button
+                            onClick={(e) => handleDelete(e, chart.id)}
+                            className="px-2 py-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
+                          >
+                            {t('del')}
+                          </button>
+                        </div>
+                      </div>
+                      {clientEditId === chart.id && (
+                        <div className="mt-2 flex gap-2" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            value={clientDraft}
+                            onChange={(e) => setClientDraft(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === "Enter") handleSetClient(chart.id); if (e.key === "Escape") setClientEditId(null); }}
+                            list="bcp-clients"
+                            placeholder={t('Client (empty for none)')}
+                            aria-label={t('Client (empty for none)')}
+                            className="min-w-0 flex-1 rounded border border-zinc-300 bg-white px-2 py-1 text-xs font-mono dark:border-zinc-600 dark:bg-zinc-800"
+                            autoFocus
+                          />
+                          <button onClick={() => handleSetClient(chart.id)} className="rounded bg-emerald-600 px-2 py-1 text-xs font-mono text-white dark:bg-green-700">{t('Save')}</button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <button
-                    onClick={(e) => handleDelete(e, chart.id)}
-                    className="shrink-0 px-2 py-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
-                  >
-                    {t('del')}
-                  </button>
+                  ))}
                 </div>
-              </div>
-            ))}
+              ));
+            })()}
+            <datalist id="bcp-clients">
+              {listClients(savedList).map((client) => <option key={client} value={client} />)}
+            </datalist>
           </div>
         </>
       )}
@@ -357,6 +412,19 @@ export default function FileActions({ snapshot, hasChart, onNew, onLoad, onRepor
               className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm font-mono text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500 mb-2"
               autoFocus
             />
+            <input
+              type="text"
+              value={saveAsClient}
+              onChange={(e) => setSaveAsClient(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSaveAs(); }}
+              list="bcp-clients-save"
+              placeholder={t('Client (optional)')}
+              aria-label={t('Client (optional)')}
+              className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-sm font-mono text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-green-500 mb-2"
+            />
+            <datalist id="bcp-clients-save">
+              {listClients(loadSavedCharts()).map((client) => <option key={client} value={client} />)}
+            </datalist>
             <div className="flex gap-2 justify-end">
               <button onClick={() => setShowSaveAs(false)} className="px-3 py-1.5 text-xs font-mono text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors">{t('Cancel')}</button>
               <button onClick={handleSaveAs} disabled={!saveAsName.trim()} className="px-3 py-1.5 text-xs font-mono rounded bg-emerald-600 hover:bg-emerald-700 dark:bg-green-700 dark:hover:bg-green-600 text-white disabled:opacity-30 transition-colors">{t('Save')}</button>

@@ -449,10 +449,12 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     a: {
       en: [
         'The chart actions in the top bar are NEW, LOAD, SAVE, SAVE AS, EXPORT and IMPORT. SAVE AS gives the chart a name and keeps it in this browser; LOAD opens a saved chart; SAVE stores new changes to the open one. NEW starts again (it asks first, so a chart is not lost by mistake).',
+        'SAVE AS also asks for a client (optional). A client can be a person with several charts or a family. LOAD shows the charts in groups by client, the clients in alphabetical order and the charts of no client last; the client button on a chart moves it to another client, and the search finds a client by name too. The event list of a chart is kept with that chart\'s birth moment, so it follows the chart into its group. With more than four saved charts LOAD also has the search and the order (latest first or by name).',
         'EXPORT writes all the saved charts to one file, bcp-charts-export.json, and IMPORT reads such a file back, for example on another device. IMPORT adds the charts of the file to the ones already saved and says how many it added, in a note on the screen; restoring a backup in Settings replaces everything instead.',
       ],
       fi: [
         'Yläpalkin kartan toiminnot ovat UUSI, AVAA, TALLENNA, TALLENNA NIMELLÄ, VIE ja TUO. TALLENNA NIMELLÄ antaa kartalle nimen ja säilyttää sen tässä selaimessa; AVAA avaa tallennetun kartan; TALLENNA tallentaa uudet muutokset avattuun karttaan. UUSI aloittaa alusta (se kysyy ensin, ettei karttaa menetetä vahingossa).',
+        'TALLENNA NIMELLÄ kysyy myös asiakasta (valinnainen). Asiakas voi olla henkilö, jolla on useita karttoja, tai perhe. AVAA näyttää kartat asiakkaittain ryhmiteltynä: asiakkaat aakkosjärjestyksessä ja ilman asiakasta olevat kartat viimeisinä; kartan asiakas-painike siirtää sen toiselle asiakkaalle, ja haku löytää asiakkaan myös nimellä. Kartan tapahtumalista säilytetään kartan syntymähetken mukaan, joten se seuraa karttaa ryhmään. Kun tallennettuja karttoja on yli neljä, AVAA:ssa on myös haku ja järjestys (uusin ensin tai nimen mukaan).',
         'VIE kirjoittaa kaikki tallennetut kartat yhteen tiedostoon, bcp-charts-export.json, ja TUO lukee sellaisen tiedoston takaisin, esimerkiksi toisella laitteella. TUO lisää tiedoston kartat jo tallennettujen joukkoon ja kertoo ruudulla näkyvässä ilmoituksessa, montako se lisäsi; varmuuskopion palautus Asetuksissa korvaa sen sijaan kaiken.',
       ],
     },

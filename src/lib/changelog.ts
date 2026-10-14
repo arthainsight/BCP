@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v2.94',
+    date: '2026-10-14',
+    title: 'Saved charts kept by client, Next.js 16.4.0, and browser tests for the new features',
+    changes: [
+      'Saved charts can belong to a client (a person with several charts, a family). SAVE AS asks for the client (optional, with the clients you have as suggestions), LOAD shows the charts in groups by client — the clients in alphabetical order, the charts of no client last — and the client button on a chart moves it to another client. The search finds a client by name too, and the client goes into EXPORT / IMPORT and the backup. The event list of a chart is kept with its birth moment, so it follows the chart into its group.',
+      'Next.js is updated from 16.2.4 to 16.4.0 (and eslint-config-next with it): the older version had advisories for denial of service, request forgery and cache poisoning, three of them critical. npm audit finds nothing in the packages the app ships; the five that remain are in the lint tooling (braces, through eslint-config-next) and the only fix offered is a downgrade to Next 14.',
+      'Browser tests for what had unit tests only: a backup locked with a password (the file holds nothing readable, a wrong password and a changed file are refused, the right password shows the contents), the search, the groups and the change of client of the saved charts, the client in the export file, the order of the outer planets in the graha table, and a sunrise typed in Settings moving the special lagnas of the graha table.',
+      'Updated the application version to v2.94.',
+    ],
+  },
+  {
     version: 'v2.93',
     date: '2026-10-14',
     title: 'Special lagnas and sphutas from one calculation, the outer planets after Rahu and Ketu, and a steadier palm test',
