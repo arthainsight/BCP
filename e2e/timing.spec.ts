@@ -419,3 +419,76 @@ test('TIMING Year at a glance puts Tithi, Nakṣatra and Yoga Praveśa and Var�
 
   expect(errors).toEqual([]);
 });
+
+test('TIMING Sudarśana draws the three charts and makes the house of the year active in all of them, with its months and days', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // The clock stands still on 14.10.2026, so the year in force is the same on every run.
+  await page.clock.setFixedTime(new Date('2026-10-14T12:00:00Z'));
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Sudarśana', exact: true })).click();
+  const chart = visible(page, page.locator('[data-sud="chart"]'));
+  await expect(chart).toBeVisible();
+
+  // Three rings of twelve houses. The chart of 15.08.1947: the Lagna is Virgo, the Moon and the Sun are in Cancer.
+  await expect(chart.locator('[data-sud-cell]')).toHaveCount(36);
+  await expect(chart.locator('[data-sud-cell="lagna-1"]')).toHaveAttribute('data-sud-sign', '6');
+  await expect(chart.locator('[data-sud-cell="moon-1"]')).toHaveAttribute('data-sud-sign', '4');
+  await expect(chart.locator('[data-sud-cell="sun-1"]')).toHaveAttribute('data-sud-sign', '4');
+  await expect(chart.locator('[data-sud-cell="lagna-3"]')).toHaveAttribute('data-sud-sign', '8');
+
+  // BPHS draws the Lagna's chart innermost and the Sun's outermost.
+  const area = (id: string) => chart.locator(`[data-sud-cell="${id}"] path`).first().evaluate((path) => { const box = (path as SVGPathElement).getBBox(); return box.width * box.height; });
+  const [outer, middle, inner] = [await area('sun-1'), await area('moon-1'), await area('lagna-1')];
+  expect(outer).toBeGreaterThan(middle);
+  expect(middle).toBeGreaterThan(inner);
+  // The Moon and the Sun are in Cancer together, so BPHS says to judge from the Lagna chart alone.
+  await expect(visible(page, page.locator('[data-sud="not-applicable"]'))).toContainText('not in three different signs');
+
+  // 14.10.2026: 79 years completed, so the 80th year runs, and the 8th house (79 mod 12 = 7, plus one) is active in all three.
+  await expect(chart.locator('[data-sud="centre-age"]')).toContainText('age 79', { timeout: 30_000 });
+  await expect(chart.locator('[data-sud="centre-house"]')).toContainText('house 8');
+  for (const ring of ['lagna', 'moon', 'sun']) await expect(chart.locator(`[data-sud-year="${ring}"]`)).toHaveCount(1);
+  const panel = visible(page, page.locator('[data-sud="houses"]'));
+  await expect(panel).toContainText('The active house 8 in the three charts');
+  // From Virgo the 8th house is Aries; Jupiter (7th aspect) and Saturn (10th aspect) look at it, its lord Mars is in Gemini, the 10th from Virgo.
+  const lagnaRow = panel.locator('[data-sud-row="lagna"]');
+  await expect(lagnaRow).toContainText('Ar');
+  await expect(lagnaRow).toContainText('Ge (house 10)');
+  await expect(lagnaRow).toContainText('Ju Sa');
+  // Nothing stands in Aries; Jupiter (benefic) and Saturn (malefic) aspect it: mixed. Aquarius is aspected by Jupiter alone.
+  await expect(lagnaRow.locator('[data-sud-verdict]')).toHaveAttribute('data-sud-verdict', 'mixed');
+  await expect(lagnaRow.locator('[data-sud-verdict]')).toHaveAttribute('data-sud-basis', 'aspects');
+  await expect(panel.locator('[data-sud-row="moon"] [data-sud-verdict]')).toHaveAttribute('data-sud-verdict', 'benefic');
+  await expect(panel.locator('[data-sud-row="sun"] [data-sud-verdict]')).toHaveAttribute('data-sud-basis', 'aspects');
+  // From Cancer the 8th house is Aquarius, from the Moon and from the Sun alike.
+  await expect(panel.locator('[data-sud-row="moon"]')).toContainText('Aq');
+  await expect(panel.locator('[data-sud-row="sun"]')).toContainText('Aq');
+
+  // The year runs between two solar returns in August; the twelve months follow from the house of the year.
+  const dates = visible(page, page.locator('[data-sud-year-dates]'));
+  await expect(dates).toContainText(/begins\s*\d{2}\.08\.2026/);
+  await expect(dates).toContainText(/ends\s*\d{2}\.08\.2027/);
+  const months = visible(page, page.locator('[data-sud="months"]')).locator('[data-sud-month-row]');
+  await expect(months).toHaveCount(12);
+  await expect(months.first()).toContainText('8');
+  const houses = await months.evaluateAll((rows) => rows.map((row) => Number(row.querySelectorAll('td')[2].textContent)));
+  expect(houses).toEqual([8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7]);
+
+  // A month opens its twelve days, and is marked in the three rings.
+  await months.nth(2).click();
+  await expect(chart.locator('[data-sud-month]')).toHaveCount(3);
+  const days = visible(page, page.locator('[data-sud="days"]')).locator('[data-sud-day-row]');
+  await expect(days).toHaveCount(12);
+  await expect(days.first()).toContainText('house 10');
+  await expect(days.nth(3)).toContainText('house 1');
+
+  // A year back: the 7th house.
+  await visible(page, page.getByRole('button', { name: 'Previous year', exact: true })).click();
+  await expect(chart.locator('[data-sud="centre-age"]')).toContainText('age 78', { timeout: 30_000 });
+  await expect(chart.locator('[data-sud="centre-house"]')).toContainText('house 7');
+
+  expect(errors).toEqual([]);
+});

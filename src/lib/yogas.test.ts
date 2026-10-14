@@ -168,4 +168,78 @@ assert.ok(
   'only planets actually present count towards the average',
 );
 
+// ---------------------------------------------------------------------------
+// The classical yogas (yogasClassical.ts): worked examples, house = sign counted from an Aries Lagna unless the chart says
+// otherwise. The Moon is put 150° from the Sun where its phase matters (a benefic), and the nodes out of the way.
+// ---------------------------------------------------------------------------
+const chartOf = (placements: Record<string, number>, lagna = 1, moonDegree = 15): PlanetData[] =>
+  ALL_NAMES.map((name) => {
+    const sign = placements[name] ?? 12;
+    const degree = name === 'Moon' ? moonDegree : name === 'Sun' ? 15 : 7;
+    return { name, sign, degree, longitude: (sign - 1) * 30 + degree, house: ((sign - lagna + 12) % 12) + 1 };
+  });
+const active = (planets: PlanetData[], lagna = 1) => new Set(calculateYogas(planets, lagna).filter((y) => y.status === 'active').map((y) => y.id));
+
+// Vajra: benefics in the 1st and 7th, malefics in the 4th and 10th, the rest anywhere. (Before the review it asked every
+// planet to stand in those houses, which no chart in the sky can do.) Yava is the other way round.
+const vajra = chartOf({ Jupiter: 1, Venus: 7, Sun: 4, Saturn: 10, Mars: 4, Mercury: 1, Moon: 2, Rahu: 6, Ketu: 12 });
+assert.ok(active(vajra).has('nabhasa-vajra'), 'benefics in 1 and 7, malefics in 4 and 10');
+assert.ok(!active(vajra).has('nabhasa-yava'));
+const yava = chartOf({ Sun: 1, Mars: 7, Jupiter: 4, Venus: 10, Saturn: 1, Mercury: 4, Moon: 2 });
+assert.ok(active(yava).has('nabhasa-yava'), 'malefics in 1 and 7, benefics in 4 and 10');
+assert.ok(!active(yava).has('nabhasa-vajra'));
+// One of the four houses missing its planet is no Vajra.
+assert.ok(!active(chartOf({ Jupiter: 1, Venus: 7, Sun: 4, Saturn: 5, Mars: 5, Mercury: 1, Moon: 2 })).has('nabhasa-vajra'));
+
+// Maala: benefics in three Kendras; Sarpa the same with malefics; the two cannot hold together, a Kendra with both counting for neither.
+const maala = chartOf({ Jupiter: 1, Venus: 4, Mercury: 7, Sun: 2, Mars: 3, Saturn: 5, Moon: 6 });
+assert.ok(active(maala).has('nabhasa-maala'));
+assert.ok(!active(maala).has('nabhasa-sarpa'));
+const mixedKendras = chartOf({ Jupiter: 1, Saturn: 1, Venus: 4, Sun: 4, Mercury: 7, Mars: 7, Moon: 10 });
+assert.ok(!active(mixedKendras).has('nabhasa-maala') && !active(mixedKendras).has('nabhasa-sarpa'), 'every Kendra holds both kinds');
+
+// An Ashraya yoga gives way to a Dala or Akriti yoga (Saravali): all in Aries and Cancer is Gada, and not Rajju; all in
+// Aries is Rajju, and Gola with it, for only a Dala or Akriti yoga stops a Sankhya yoga here.
+const gada = chartOf({ Sun: 1, Moon: 4, Mars: 1, Mercury: 4, Jupiter: 1, Venus: 4, Saturn: 1 });
+assert.ok(active(gada).has('nabhasa-gada'));
+assert.ok(!active(gada).has('nabhasa-rajju'), 'Gada stops the Ashraya yoga');
+assert.ok(calculateYogas(gada, 1).find((y) => y.id === 'nabhasa-rajju')!.resultText.includes('Not counted'), 'and says so');
+const oneSign = chartOf({ Sun: 1, Moon: 1, Mars: 1, Mercury: 1, Jupiter: 1, Venus: 1, Saturn: 1 });
+assert.ok(active(oneSign).has('nabhasa-rajju') && active(oneSign).has('nabhasa-gola'), 'all in Aries: Rajju and Gola');
+
+// The other Akriti yogas: the seven planets in the seven houses from the Lagna, one in each, is Nauka; and the Sankhya yoga
+// of seven signs is not counted then.
+const nauka = chartOf({ Sun: 1, Moon: 2, Mars: 3, Mercury: 4, Jupiter: 5, Venus: 6, Saturn: 7 });
+assert.ok(active(nauka).has('nabhasa-nauka'));
+assert.ok(!active(nauka).has('nabhasa-veena'), 'Veena is not counted when an Akriti yoga holds');
+// Planets in only some of the houses of a shape do not make it.
+assert.ok(!active(chartOf({ Sun: 1, Moon: 1, Mars: 2, Mercury: 2, Jupiter: 3, Venus: 3, Saturn: 3 })).has('nabhasa-yupa'), 'Yupa needs all four houses 1-4 occupied');
+
+// Neecha Bhanga: Mars is debilitated in Cancer, whose lord is the Moon, and the Moon is "in a Kendra from the Moon" whatever
+// it does. That is no cancellation: the chart has to give another reason. (It once did.)
+const marsInCancer = chartOf({ Mars: 4, Moon: 6, Sun: 2, Mercury: 2, Jupiter: 2, Venus: 3, Saturn: 5 });
+assert.ok(!active(marsInCancer).has('neecha-bhanga'), 'the Moon in the 6th from the Lagna: no cancellation');
+// The Moon in a Kendra from the Lagna does cancel it.
+assert.ok(active(chartOf({ Mars: 4, Moon: 7, Sun: 2, Mercury: 2, Jupiter: 2, Venus: 3, Saturn: 5 })).has('neecha-bhanga'));
+// Jupiter, exalted in Cancer, with the debilitated Mars cancels it too.
+assert.ok(active(chartOf({ Mars: 4, Jupiter: 4, Moon: 6, Sun: 2, Mercury: 2, Venus: 3, Saturn: 5 })).has('neecha-bhanga'));
+// The lord of the sign of exaltation (Saturn, for Mars) in a Kendra from the Lagna cancels it (Raman).
+assert.ok(active(chartOf({ Mars: 4, Saturn: 10, Moon: 6, Sun: 2, Mercury: 2, Jupiter: 2, Venus: 3 })).has('neecha-bhanga'));
+
+// Gajakesari: Jupiter in a Kendra from the Moon, joined by a benefic, not debilitated.
+const gajakesari = chartOf({ Moon: 1, Jupiter: 4, Venus: 4, Sun: 8, Mars: 9, Mercury: 8, Saturn: 6 }, 1, 15);
+assert.ok(active(gajakesari).has('gajakesari'));
+assert.ok(!active(chartOf({ Moon: 1, Jupiter: 4, Sun: 8, Mars: 9, Mercury: 8, Venus: 9, Saturn: 6 })).has('gajakesari'), 'no benefic joins or aspects Jupiter');
+assert.ok(!active(chartOf({ Moon: 1, Jupiter: 3, Venus: 3, Sun: 8, Mars: 9, Mercury: 8, Saturn: 6 })).has('gajakesari'), 'Jupiter in the 3rd from the Moon');
+
+// Harsha, Sarala, Vimala; the exchanges and their classes; Dharma-Karmadhipati; Maha Raja.
+const aries = (placements: Record<string, number>) => active(chartOf(placements));
+assert.ok(aries({ Mercury: 8 }).has('harsha'), 'Aries Lagna: Mercury rules the 6th (Virgo); in the 8th it is Harsha');
+assert.ok(!aries({ Mercury: 2 }).has('harsha'));
+assert.ok(aries({ Mars: 5, Sun: 1 }).has('maha-raja'), 'the Lagna lord Mars in Leo and the 5th lord Sun in Aries exchange signs');
+assert.ok(aries({ Mars: 5, Sun: 1 }).has('maha-parivartana'), 'the 1st and 5th houses are both good ones: also a Maha Parivartana');
+assert.ok(aries({ Mars: 6, Mercury: 1 }).has('dainya-parivartana'), 'Mars in Virgo, Mercury (6th lord) in Aries: Dainya');
+assert.ok(aries({ Venus: 3, Mercury: 2 }).has('khala-parivartana'), 'Mercury (3rd lord) in Taurus and Venus in Gemini: Khala');
+assert.ok(aries({ Saturn: 5, Sun: 11 }).has('maha-parivartana'), 'Saturn (10th and 11th lord) in Leo and the Sun (5th) in Aquarius: Maha');
+
 console.log('Yoga tests passed');

@@ -15,6 +15,7 @@ const CATEGORY_LABELS: Record<YogaCategory, string> = {
   dhana:                'Dhana',
   general:              'General',
   'pancha-mahapurusha': 'Pancha Mahapurusha',
+  nabhasa:              'Nabhasa',
 };
 
 function strengthColor(c: StrengthClassification): string {

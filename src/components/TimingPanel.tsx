@@ -11,13 +11,14 @@ import TithiPravesaPanel from './TithiPravesaPanel';
 import PraveshaPanel from './PraveshaPanel';
 import YearGlancePanel from './YearGlancePanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
+import SudarshanaPanel from './SudarshanaPanel';
 import MuhurtaPanel from './MuhurtaPanel';
 import type { AnnualPlace } from './annualShared';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
-type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year';
+type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'dasha', label: 'Dasha' },
@@ -30,6 +31,7 @@ const VIEWS: { key: View; label: string }[] = [
   { key: 'yoga', label: 'Yoga Praveśa' },
   { key: 'varsha', label: 'Varṣaphala' },
   { key: 'year', label: 'Year at a glance' },
+  { key: 'sudarshana', label: 'Sudarśana' },
 ];
 
 interface Props {
@@ -202,6 +204,16 @@ export default function TimingPanel({
           calculationSettings={calculationSettings}
           place={annualPlace}
           onPlaceChange={setAnnualPlace}
+        />
+      )}
+
+      {view === 'sudarshana' && (
+        <SudarshanaPanel
+          chart={chart}
+          birthDatetime={birthDatetime}
+          targetDate={targetDate}
+          ianaTimezone={ianaTimezone}
+          calculationSettings={calculationSettings}
         />
       )}
 

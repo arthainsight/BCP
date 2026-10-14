@@ -306,6 +306,27 @@ test('a stored "sidereal" nakshatra zodiac, the old default, means the same ayan
   expect(errors).toEqual([]);
 });
 
+test('the yoga table has the Nabhasa yogas and the other classical ones, each with its reason', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+
+  // The chart of 15.08.1947: the seven grahas are in three signs (Gemini, Cancer, Libra), which is the Shoola yoga, and no
+  // other Nabhasa yoga holds; the Venus and Mercury, lords of the 9th and 10th, stand together in Cancer.
+  const row = (name: string) => visible(page, page.locator('tr').filter({ has: page.locator('td:first-child', { hasText: new RegExp(`^${name}$`) }) }));
+  await expect(row('Shoola')).toContainText('Nabhasa');
+  await expect(row('Shoola')).toContainText('Planets in 3 signs');
+  await expect(row('Dharma-Karmadhipati')).toContainText('Raja');
+  await expect(row('Dharma-Karmadhipati')).toContainText('9th lord Venus in Cancer, house 11');
+  await expect(row('Dharma-Karmadhipati')).toContainText('Conjunct');
+  // Only the active yogas are listed; the others are not.
+  await expect(page.locator('td:first-child').filter({ hasText: /^(Gada|Gajakesari)$/ }).locator('visible=true')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('the yoga detection is open at first, and what you choose is remembered', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -560,6 +581,97 @@ test('ANALYSIS Sarvatobhadra marks the squares the lines cross, the syllable of 
   await expect(rahu.locator('[data-sbc-pierced-point="name"]')).toHaveAttribute('data-sbc-pierced-at', 'line');
   await syllable.fill('');
   await expect(chart.locator('[data-sbc-roles~="name"]')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Kota Chakra counts the nakshatras from the Moon\'s, puts the grahas in their squares and names the Swami and the Pala', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Kota Chakra', exact: true })).click();
+  const chart = visible(page, page.locator('[data-kota="chart"]'));
+  await expect(chart).toBeVisible();
+
+  // 28 nakshatras in four squares: 8, 8, 8 and 4.
+  await expect(chart.locator('[data-kota-square]')).toHaveCount(28);
+  for (const [ring, count] of [[0, 8], [1, 8], [2, 8], [3, 4]]) await expect(chart.locator(`[data-kota-ring="${ring}"]`)).toHaveCount(count);
+
+  // The chart of 15.08.1947 09.15 in New Delhi: the Moon is in Pushya (pada 2), the first place of the count, at the
+  // top left of the outer square; Pushya's neighbours in the count follow it.
+  const square = (nakshatra: string) => chart.locator(`[data-kota-square="${nakshatra}"]`);
+  await expect(square('Pushya')).toHaveAttribute('data-kota-place', '1');
+  await expect(square('Pushya')).toHaveAttribute('data-kota-ring', '0');
+  await expect(square('Pushya').locator('[data-kota-janma="true"]')).toHaveCount(1);
+  await expect(square('Ashlesha')).toHaveAttribute('data-kota-place', '2');
+  await expect(square('Ashlesha')).toHaveAttribute('data-kota-ring', '1');
+  await expect(square('Punarvasu')).toHaveAttribute('data-kota-place', '28');
+  await expect(square('Rohini')).toHaveAttribute('data-kota-ring', '3');
+
+  // The grahas stand in the squares of their nakshatras.
+  await expect(square('Pushya').locator('[data-kota-planet="Moon"]')).toHaveCount(1);
+  await expect(square('Pushya').locator('[data-kota-planet="Mercury"]')).toHaveCount(1);
+  await expect(square('Ashlesha').locator('[data-kota-planet="Sun"]')).toHaveCount(1);
+  await expect(square('Ashlesha').locator('[data-kota-planet="Venus"]')).toHaveCount(1);
+  await expect(square('Ashlesha').locator('[data-kota-planet="Saturn"]')).toHaveCount(1);
+  await expect(square('Ardra').locator('[data-kota-planet="Mars"]')).toHaveCount(1);
+  await expect(square('Vishakha').locator('[data-kota-planet="Jupiter"]')).toHaveCount(1);
+  await expect(square('Krittika').locator('[data-kota-planet="Rahu"]')).toHaveCount(1);
+  await expect(square('Anuradha').locator('[data-kota-planet="Ketu"]')).toHaveCount(1);
+  await expect(square('Hasta').locator('[data-kota-planet="Asc"]')).toHaveCount(1);
+
+  // The Moon is in Cancer, so the Swami is the Moon; Pushya pada 2 gives Rahu as the Pala.
+  await expect(visible(page, page.locator('[data-kota-swami]'))).toHaveAttribute('data-kota-swami', 'Moon');
+  await expect(visible(page, page.locator('[data-kota-pala]'))).toHaveAttribute('data-kota-pala', 'Rahu');
+  await expect(visible(page, page.locator('[data-kota="legend"]'))).toContainText('Janma nakshatra: Pushya (pada 2)');
+  await expect(visible(page, page.locator('[data-kota-row="n:Moon"]'))).toContainText('Bahya (exterior)');
+  await expect(visible(page, page.locator('[data-kota-row="n:Sun"]'))).toContainText('Praakaara (wall)');
+
+  // Where they stand: the Moon, the Swami, is in Pushya (Bahya); Rahu, the Pala, in Krittika (inside the wall).
+  await expect(visible(page, page.locator('[data-kota="lords-place"]'))).toContainText('Kota Swami (fort lord): Moon — Bahya (exterior)');
+  await expect(visible(page, page.locator('[data-kota="lords-place"]'))).toContainText('Kota Pala (fort guard): Rahu — Durgantara (interior)');
+
+  // The count can begin at Krittika, as the fort wheel of the Agni Purana does: the same squares, Krittika first, Pushya the 6th.
+  await visible(page, page.getByRole('button', { name: 'Krittika (Agni Purana)', exact: true })).click();
+  await expect(square('Krittika')).toHaveAttribute('data-kota-place', '1');
+  await expect(square('Krittika')).toHaveAttribute('data-kota-ring', '0');
+  await expect(square('Pushya')).toHaveAttribute('data-kota-place', '6');
+  await expect(square('Pushya')).toHaveAttribute('data-kota-ring', '1');
+  await expect(square('Pushya').locator('[data-kota-janma="true"]')).toHaveCount(1);
+  await expect(square('Pushya').locator('[data-kota-planet="Moon"]')).toHaveCount(1);
+  await visible(page, page.getByRole('button', { name: 'Janma nakshatra', exact: true })).click();
+  await expect(square('Pushya')).toHaveAttribute('data-kota-place', '1');
+
+  // Every text stays inside its own square, however many grahas stand in it.
+  const outside = () => chart.evaluate((svg) => {
+    const bad: string[] = [];
+    for (const group of Array.from(svg.querySelectorAll('[data-kota-square]'))) {
+      const box = (group.querySelector('rect') as SVGRectElement).getBBox();
+      for (const text of Array.from(group.querySelectorAll('text'))) {
+        const b = (text as SVGTextElement).getBBox();
+        if (b.x < box.x - 0.5 || b.y < box.y - 0.5 || b.x + b.width > box.x + box.width + 0.5 || b.y + b.height > box.y + box.height + 0.5) {
+          bad.push(`${group.getAttribute('data-kota-square')}: ${text.textContent}`);
+        }
+      }
+    }
+    return bad;
+  });
+  expect(await outside()).toEqual([]);
+
+  // The transiting grahas can be added, in a colour of their own.
+  const transit = visible(page, page.getByRole('button', { name: 'Transit', exact: true }));
+  if (await transit.isEnabled()) {
+    await transit.click();
+    await expect(chart.locator('[data-kota-transit="true"]').first()).toBeVisible();
+    expect(await outside()).toEqual([]);
+    // The transiting grahas are read in the heart of the fort and outside it.
+    const reading = visible(page, page.locator('[data-kota="reading"]'));
+    await expect(reading.locator('[data-kota-zone="heart"]')).toContainText('Heart (Stambha, Durgantara)');
+    await expect(reading.locator('[data-kota-zone="outer"]')).toContainText('Outside (Praakaara, Bahya)');
+    await expect(reading.locator('[data-kota-zone]')).toHaveCount(2);
+  }
 
   expect(errors).toEqual([]);
 });
