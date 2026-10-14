@@ -319,11 +319,24 @@ test('TIMING Nakṣatra Praveśa and Yoga Praveśa give the annual chart for the
   await expect(rows).toContainText('Cn');
   await expect(nakshatra).toContainText('in the lunar month of birth, the last return at or before the Tithi Praveśa.');
 
-  // The other rule: the last return before the birthday.
-  await visible(page, page.getByRole('button', { name: 'Before birthday', exact: true })).click();
+  // The other rule: the last return before the birthday; the same month is the one chosen at first.
+  const sameMonth = visible(page, page.getByRole('button', { name: 'Same month', exact: true }));
+  const beforeBirthday = visible(page, page.getByRole('button', { name: 'Before birthday', exact: true }));
+  await expect(sameMonth).toHaveAttribute('aria-pressed', 'true');
+  await expect(beforeBirthday).toHaveAttribute('aria-pressed', 'false');
+  await beforeBirthday.click();
+  await expect(beforeBirthday).toHaveAttribute('aria-pressed', 'true');
+  await expect(sameMonth).toHaveAttribute('aria-pressed', 'false');
   await expect(nakshatra).toContainText('the last one at or before the birthday.');
   await expect(rows).toContainText('Pushya (8) · pada 2');
   await expect(rows).toContainText(/begins\s*\d{2}\.\d{2}\.\d{4}/);
+  // The choice stays when the tab changes to the Yoga Praveśa, and back to the same month with one click.
+  await visible(page, page.getByRole('button', { name: 'Yoga Praveśa', exact: true })).click();
+  await expect(visible(page, page.getByRole('button', { name: 'Before birthday', exact: true }))).toHaveAttribute('aria-pressed', 'true');
+  await expect(visible(page, page.locator('[data-pravesha="yoga"]'))).toContainText('the last one at or before the birthday.');
+  await visible(page, page.getByRole('button', { name: 'Nakṣatra Praveśa', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Same month', exact: true })).click();
+  await expect(visible(page, page.locator('[data-pravesha="nakshatra"]'))).toContainText('in the lunar month of birth, the last return at or before the Tithi Praveśa.');
 
   // A year back.
   const yearBefore = (await visible(page, page.locator('[data-pravesha="nakshatra"]').getByText(/^\d{4}$/)).innerText()).trim();

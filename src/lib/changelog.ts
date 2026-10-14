@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v2.98',
+    date: '2026-10-14',
+    title: 'Same month or before the birthday, named plainly in Nakṣatra and Yoga Praveśa',
+    changes: [
+      'In Nakṣatra Praveśa and Yoga Praveśa the choice of the return that begins the year is named by what it does: Same month (the return inside the lunar month of birth, the last one at or before the Tithi Praveśa; the one chosen at first) and Before birthday (the last return at or before the birthday). The buttons say which is on, have a hint of their own, and the choice stays when you move between the two Praveśa tabs. The user guide and the Finnish texts (Sama kuukausi, Ennen syntymäpäivää) follow.',
+      'Updated the application version to v2.98.',
+    ],
+  },
+  {
     version: 'v2.97',
     date: '2026-10-14',
     title: 'Nakṣatra Praveśa and Yoga Praveśa',
