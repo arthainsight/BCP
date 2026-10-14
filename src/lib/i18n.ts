@@ -996,20 +996,63 @@ export const FI: Record<string, string> = {
   '2nd and 11th lords': '2. ja 11. herra',
 
   // Toggle
+  // Saved charts: search and order
+  'Search name, place or birth year': 'Hae nimeä, paikkaa tai syntymävuotta',
+  'Search saved charts': 'Hae tallennetuista kartoista',
+  'Order': 'Järjestys',
+  'latest first': 'uusin ensin',
+  'by name': 'nimen mukaan',
+  // Encrypted backup
+  'Open': 'Avaa',
+  'password (optional)': 'salasana (valinnainen)',
+  'The backup is encrypted with this password in your browser. A lost password cannot be recovered.': 'Varmuuskopio salataan tällä salasanalla selaimessasi. Kadonnutta salasanaa ei voi palauttaa.',
+  'This backup is encrypted. Enter its password.': 'Tämä varmuuskopio on salattu. Anna sen salasana.',
+  'Wrong password, or the file has been changed.': 'Väärä salasana tai tiedostoa on muutettu.',
+  // Messages of the page and file actions
+  'Chart calculation error:': 'Kartan laskennan virhe:',
+  'Transit calculation error:': 'Transiittilaskennan virhe:',
+  'City not found. Please try a different name.': 'Kaupunkia ei löytynyt. Kokeile toista nimeä.',
+  'Failed to look up city. Please try again.': 'Kaupungin haku epäonnistui. Yritä uudelleen.',
+  'Invalid birth datetime format. Use dd.mm.yyyy hh.mm.ss': 'Virheellinen syntymäaika. Käytä muotoa pp.kk.vvvv hh.mm.ss',
+  'Invalid birth datetime format.': 'Virheellinen syntymäajan muoto.',
+  'Invalid target date.': 'Virheellinen kohdepäivä.',
+  'Invalid transit datetime format. Use dd.mm.yyyy hh.mm.ss': 'Virheellinen transiittiaika. Käytä muotoa pp.kk.vvvv hh.mm.ss',
+  'Failed to calculate chart.': 'Kartan laskenta epäonnistui.',
+  'Failed to calculate transit.': 'Transiitin laskenta epäonnistui.',
+  'Please enter birth date and time.': 'Anna syntymäaika ja -kellonaika.',
+  'Please enter valid latitude and longitude.': 'Anna kelvolliset leveys- ja pituusasteet.',
+  'Timezone could not be determined. Enter a city or set a manual UTC offset.': 'Aikavyöhykettä ei voitu päätellä. Anna kaupunki tai aseta UTC-siirtymä käsin.',
+  'Natal location data is required for transit calculation.': 'Transiittilaskenta vaatii syntymäpaikan tiedot.',
+  'No saved charts yet. Use SAVE AS to save the current chart.': 'Tallennettuja karttoja ei vielä ole. Tallenna nykyinen kartta SAVE AS -toiminnolla.',
+  'No saved charts to export.': 'Ei tallennettuja karttoja vietäväksi.',
+  'Failed to read file. Make sure it is a valid export file.': 'Tiedoston luku epäonnistui. Varmista, että se on kelvollinen vientitiedosto.',
+  'Imported {count} chart.': 'Tuotiin {count} kartta.',
+  'Imported {count} charts.': 'Tuotiin {count} karttaa.',
   'on': 'päällä',
   'off': 'pois',
-
-  // Saved charts export and import
-  'No saved charts yet. Use SAVE AS to save the current chart.': 'Ei vielä tallennettuja karttoja. Tallenna nykyinen kartta SAVE AS -painikkeella.',
-  'No saved charts to export.': 'Ei tallennettuja karttoja vietäväksi.',
-  'Imported {count} chart.': 'Tuotu {count} kartta.',
-  'Imported {count} charts.': 'Tuotu {count} karttaa.',
-  'Failed to read file. Make sure it is a valid export file.': 'Tiedoston lukeminen epäonnistui. Varmista, että se on kelvollinen vientitiedosto.',
 };
 
 /** Translates English interface text; anything without a Finnish entry stays in English. */
 export function translate(language: Language, text: string): string {
   return language === 'fi' ? FI[text] ?? text : text;
+}
+
+/**
+ * Translates a message that may carry a detail after a colon or sentence, such as
+ * 'Chart calculation error: <server text>': the known start is translated, the rest stays as it came.
+ */
+export function translateMessage(language: Language, text: string): string {
+  if (language !== 'fi' || text in FI) return translate(language, text);
+  for (const separator of [': ', '. ']) {
+    const at = text.indexOf(separator);
+    if (at > 0) {
+      const head = text.slice(0, at + 1);
+      if (head in FI) return FI[head] + text.slice(at + 1);
+      const bare = text.slice(0, at + separator.length);
+      if (bare in FI) return FI[bare] + text.slice(at + separator.length);
+    }
+  }
+  return text;
 }
 
 /** Puts values into the {name} places of a text, which is translated whole: `fill(t('Added {count} events.'), { count: 3 })`. */

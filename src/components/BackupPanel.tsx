@@ -6,6 +6,7 @@ import { backupToPalms, palmsToBackup } from '@/lib/palm/backup';
 import { listPalms, replacePalms, storageAvailable } from '@/lib/palm/storage';
 import { fill, useT } from '@/lib/i18n';
 import { saveFile } from '@/lib/download';
+import { decryptBackupText, encryptBackupText, isEncryptedBackup } from '@/lib/backupCrypto';
 
 /** Palm photographs make a backup large; this is the most the panel will read back. */
 const MAX_BACKUP_BYTES = 150_000_000;
@@ -20,6 +21,10 @@ export default function BackupPanel() {
   const [message, setMessage] = useState('');
   const [withPalms, setWithPalms] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [password, setPassword] = useState('');
+  // The text of an encrypted backup that waits for its password.
+  const [locked, setLocked] = useState<string | null>(null);
+  const [unlockPassword, setUnlockPassword] = useState('');
 
   async function exportAll() {
     setBusy(true);
@@ -27,7 +32,8 @@ export default function BackupPanel() {
       const palms = withPalms && storageAvailable() ? await palmsToBackup(await listPalms()) : undefined;
       const backup = createBcpBackup(localStorage, palms);
       // Pictures are long lines anyway: a backup with photographs is not indented.
-      download(JSON.stringify(backup, null, palms?.length ? 0 : 2));
+      const text = JSON.stringify(backup, null, palms?.length ? 0 : 2);
+      download(password ? await encryptBackupText(text, password) : text);
       setMessage(fill(t(palms?.length ? 'Backed up {records} local data records and {palms} palm photographs.' : 'Backed up {records} local data records.'), { records: Object.keys(backup.entries).length, palms: palms?.length ?? 0 }));
     } catch {
       setMessage(t('The backup could not be made.'));
@@ -40,11 +46,34 @@ export default function BackupPanel() {
     if (!file) return;
     if (file.size > MAX_BACKUP_BYTES) return setMessage(t('Backup exceeds the 150 MB limit.'));
     try {
-      setPreview(parseBcpBackup(await file.text()));
+      const text = await file.text();
+      if (isEncryptedBackup(text)) {
+        setPreview(null);
+        setLocked(text);
+        setUnlockPassword('');
+        setMessage('');
+        return;
+      }
+      setLocked(null);
+      setPreview(parseBcpBackup(text));
       setMessage('');
     } catch {
       setPreview(null);
       setMessage(t('Invalid or unsupported BCP backup.'));
+    }
+  }
+
+  async function unlock() {
+    if (!locked) return;
+    setBusy(true);
+    try {
+      setPreview(parseBcpBackup(await decryptBackupText(locked, unlockPassword)));
+      setLocked(null);
+      setMessage('');
+    } catch {
+      setMessage(t('Wrong password, or the file has been changed.'));
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -76,6 +105,11 @@ export default function BackupPanel() {
         <input type="checkbox" checked={withPalms} onChange={event => setWithPalms(event.target.checked)} />
         {t('include the palm photographs')}
       </label>
+      <label className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
+        {t('password (optional)')}
+        <input type="password" autoComplete="new-password" value={password} onChange={event => setPassword(event.target.value)} className="w-32 rounded border border-zinc-300 bg-transparent px-1 py-0.5 dark:border-zinc-600" />
+      </label>
+      {password && <p className="text-[10px] text-amber-700 dark:text-amber-400">{t('The backup is encrypted with this password in your browser. A lost password cannot be recovered.')}</p>}
       <div className="flex flex-wrap gap-2">
         <button type="button" disabled={busy} onClick={() => void exportAll()} className="rounded border border-emerald-400 px-2 py-1.5 text-xs text-emerald-700 disabled:opacity-50 dark:text-emerald-300">
           {t('Download backup')}
@@ -85,6 +119,16 @@ export default function BackupPanel() {
           <input type="file" accept=".json,application/json" className="hidden" onChange={event => { void read(event.target.files?.[0]); event.target.value = ''; }} />
         </label>
       </div>
+      {locked && (
+        <div className="rounded border border-amber-300 bg-amber-50 p-2 text-[10px] dark:border-amber-800 dark:bg-amber-950/20">
+          <p>{t('This backup is encrypted. Enter its password.')}</p>
+          <div className="mt-2 flex gap-2">
+            <input type="password" autoComplete="current-password" value={unlockPassword} onChange={event => setUnlockPassword(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') void unlock(); }} className="w-32 rounded border border-zinc-300 bg-transparent px-1 py-0.5 dark:border-zinc-600" />
+            <button type="button" onClick={() => setLocked(null)} className="rounded border px-2 py-1">{t('Cancel')}</button>
+            <button type="button" disabled={busy || !unlockPassword} onClick={() => void unlock()} className="rounded bg-amber-700 px-2 py-1 font-semibold text-white disabled:opacity-50">{t('Open')}</button>
+          </div>
+        </div>
+      )}
       {preview && (
         <div className="rounded border border-amber-300 bg-amber-50 p-2 text-[10px] dark:border-amber-800 dark:bg-amber-950/20">
           <p>

@@ -150,3 +150,20 @@ export function importSavedCharts(fileText: string): number {
   persist([...existing, ...added]);
   return added.length;
 }
+
+export type SavedChartSort = 'updated' | 'name';
+
+/**
+ * The saved charts that match a search (name, place or birth date, without regard to case) in the chosen order:
+ * the most recently changed first, or by name. A search with several words needs every word to be found.
+ */
+export function filterSavedCharts(charts: readonly SavedChart[], query: string, sort: SavedChartSort = 'updated'): SavedChart[] {
+  const words = query.toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  const matching = charts.filter(chart => {
+    const text = `${chart.name} ${chart.chartData.city} ${chart.chartData.birthDatetime}`.toLocaleLowerCase();
+    return words.every(word => text.includes(word));
+  });
+  return [...matching].sort(sort === 'name'
+    ? (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+    : (a, b) => b.updatedAt.localeCompare(a.updatedAt));
+}
