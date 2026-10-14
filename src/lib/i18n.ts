@@ -999,6 +999,10 @@ export const FI: Record<string, string> = {
 
   // Toggle
   // Sarvatobhadra chakra
+  'Vedha': 'Vedha',
+  'A graha has vedha on the nakshatra straight across the chart from its own and on the two nakshatras on the diagonals from it. Choose a graha above to draw its lines; a nakshatra with grahas in it is pierced.': 'Grahalla on vedha nakshatraan, joka on suoraan vastapäätä sen omaa kartan toisella puolella, sekä kahteen nakshatraan sen viistoilla. Valitse graha yltä, niin sen viivat piirtyvät; nakshatra, jossa on grahoja, on lävistetty.',
+  'across': 'vastapäätä',
+  'diagonal': 'viisto',
   'Sarvatobhadra chakra': 'Sarvatobhadra-chakra',
   'The 28 nakshatras (with Abhijit) round the edge, the vowels, consonants and signs inside and the tithi groups with the weekdays in the middle. Every graha stands in the square of its nakshatra.': 'Reunalla 28 nakshatraa (Abhijit mukana), sisällä vokaalit, konsonantit ja rāśit sekä keskellä tithi-ryhmät viikonpäivineen. Jokainen graha on oman nakshatransa ruudussa.',
   'Moon sign': 'Kuun rāśi',

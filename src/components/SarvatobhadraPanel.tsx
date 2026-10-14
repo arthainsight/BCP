@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import type { ChartData, PlanetData } from '@/types';
 import {
   SBC_GRID, SBC_SIGN_CELLS, SBC_TITHI_CELLS,
-  sbcCellOf, sbcMarkLayout, sbcNakshatra, tithiOf, vedicWeekday, weekdayGroup, type SbcCell, type SbcKind, type SbcPosition,
+  sbcCellOf, sbcMarkLayout, sbcNakshatra, sbcVedha, tithiOf, vedicWeekday, weekdayGroup, type SbcCell, type SbcKind, type SbcPosition,
 } from '@/lib/sarvatobhadra';
 import { SIGN_ABBR } from '@/lib/signs';
 import { formatDms } from '@/lib/specialSphutas';
@@ -55,6 +55,12 @@ const ROLE_EDGE: Record<Role, string> = {
 
 interface Mark { name: string; label: string; retrograde: boolean; transit: boolean }
 
+/** A graha (or the Lagna) in its square, natal or transiting. */
+interface Entry extends Mark { id: string; position: SbcPosition }
+
+const keyOf = (position: SbcPosition) => `${position[0]}-${position[1]}`;
+const centre = (position: SbcPosition) => ({ x: position[1] * 100 + 50, y: position[0] * 100 + 50 });
+
 /**
  * The Sarvatobhadra chakra: the 28 nakṣatras round the edge, the vowels, consonants and signs inside and the
  * tithi groups with the weekdays in the middle, each graha in the square of its nakṣatra. The Moon's nakṣatra and
@@ -65,25 +71,34 @@ export default function SarvatobhadraPanel({ chart, transitPlanets = [], nakshat
   const language = useLanguage();
   const { code, name: grahaFullName } = useGrahaNames();
   const [showTransit, setShowTransit] = useState(false);
+  // The graha whose vedha is drawn: the id of an entry ('n:Sun' natal, 't:Sun' transiting).
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const moon = chart.planets.find(planet => planet.name === 'Moon');
   const sun = chart.planets.find(planet => planet.name === 'Sun');
 
   const model = useMemo(() => {
     // The grahas in their squares.
-    const marks = new Map<string, Mark[]>();
-    const put = (position: SbcPosition, mark: Mark) => {
-      const key = `${position[0]}-${position[1]}`;
-      marks.set(key, [...(marks.get(key) ?? []), mark]);
+    const entries: Entry[] = [];
+    const add = (name: string, longitude: number, retrograde: boolean, transit: boolean) => {
+      entries.push({ id: `${transit ? 't' : 'n'}:${name}`, name, label: code(name), retrograde, transit, position: sbcCellOf(longitude, nakshatraAdjust) });
     };
-    put(sbcCellOf(chart.ascendant.longitude, nakshatraAdjust), { name: 'Asc', label: code('Asc'), retrograde: false, transit: false });
-    for (const planet of chart.planets.filter(item => GRAHAS.includes(item.name))) {
-      put(sbcCellOf(planet.longitude, nakshatraAdjust), { name: planet.name, label: code(planet.name), retrograde: Boolean(planet.isRetrograde) && planet.name !== 'Rahu' && planet.name !== 'Ketu', transit: false });
-    }
-    if (showTransit) {
-      for (const planet of transitPlanets.filter(item => GRAHAS.includes(item.name))) {
-        put(sbcCellOf(planet.longitude, nakshatraAdjust), { name: planet.name, label: code(planet.name), retrograde: Boolean(planet.isRetrograde) && planet.name !== 'Rahu' && planet.name !== 'Ketu', transit: true });
-      }
+    add('Asc', chart.ascendant.longitude, false, false);
+    const isRetro = (planet: PlanetData) => Boolean(planet.isRetrograde) && planet.name !== 'Rahu' && planet.name !== 'Ketu';
+    for (const planet of chart.planets.filter(item => GRAHAS.includes(item.name))) add(planet.name, planet.longitude, isRetro(planet), false);
+    if (showTransit) for (const planet of transitPlanets.filter(item => GRAHAS.includes(item.name))) add(planet.name, planet.longitude, isRetro(planet), true);
+    const marks = new Map<string, Mark[]>();
+    for (const entry of entries) marks.set(keyOf(entry.position), [...(marks.get(keyOf(entry.position)) ?? []), entry]);
+
+    // The vedha of every graha: the three nakṣatras it pierces, and who stands in them.
+    const vedha = new Map<string, { lines: NonNullable<ReturnType<typeof sbcVedha>>; occupants: Map<string, Entry[]> }>();
+    for (const entry of entries) {
+      const lines = sbcVedha(entry.position);
+      if (!lines) continue;
+      vedha.set(entry.id, {
+        lines,
+        occupants: new Map(lines.map(line => [keyOf(line.target), entries.filter(other => other.id !== entry.id && keyOf(other.position) === keyOf(line.target))])),
+      });
     }
 
     // The squares the birth marks.
@@ -110,8 +125,12 @@ export default function SarvatobhadraPanel({ chart, transitPlanets = [], nakshat
     const vara = weekday === null ? null : weekdayGroup(weekday);
     if (vara) mark(SBC_TITHI_CELLS[vara], 'vara');
 
-    return { marks, roles, janma, tithi, weekday, vara };
+    return { entries, marks, vedha, roles, janma, tithi, weekday, vara };
   }, [chart, transitPlanets, showTransit, nakshatraAdjust, moon, sun, code]);
+
+  const selected = selectedId ? model.vedha.get(selectedId) ?? null : null;
+  const selectedEntry = selectedId ? model.entries.find(entry => entry.id === selectedId) ?? null : null;
+  const targetKeys = new Set((selected?.lines ?? []).map(line => keyOf(line.target)));
 
   const chip = (on: boolean) =>
     `rounded-md border px-2.5 py-1.5 text-[10px] font-mono sm:px-2 sm:py-1 ${on
@@ -134,6 +153,8 @@ export default function SarvatobhadraPanel({ chart, transitPlanets = [], nakshat
       <g key={key} data-sbc-cell={key} data-sbc-kind={cell.kind} data-sbc-label={cell.label}>
         <rect x={x} y={y} width={100} height={100} className={`${roles.length ? ROLE_FILL[roles[0]] : 'fill-white dark:fill-zinc-900'} stroke-zinc-400 dark:stroke-zinc-600`} strokeWidth={1.5} />
         {roles.length > 0 && <rect x={x + 4} y={y + 4} width={92} height={92} fill="none" className={ROLE_EDGE[roles[roles.length - 1]]} strokeWidth={4} />}
+        {targetKeys.has(key) && <rect data-sbc-vedha="target" x={x + 9} y={y + 9} width={82} height={82} fill="none" className="stroke-rose-600 dark:stroke-rose-400" strokeWidth={5} />}
+        {selectedEntry && keyOf(selectedEntry.position) === key && <rect data-sbc-vedha="source" x={x + 2} y={y + 2} width={96} height={96} fill="none" className="stroke-zinc-900 dark:stroke-zinc-100" strokeWidth={3} />}
         {cell.kind === 'nakshatra' ? (
           <text x={x + 50} y={y + 26} textAnchor="middle" fontSize={20} fontWeight={600} className={KIND_TEXT.nakshatra}>{cell.label}</text>
         ) : cell.kind === 'tithi' ? (
@@ -185,9 +206,36 @@ export default function SarvatobhadraPanel({ chart, transitPlanets = [], nakshat
         </button>
       </div>
 
+      <div className="space-y-1" data-sbc="vedha-choice">
+        {[false, true].map(transit => {
+          const row = model.entries.filter(entry => entry.transit === transit);
+          if (row.length === 0) return null;
+          return (
+            <div key={String(transit)} className="flex flex-wrap items-center gap-1">
+              <span className="mr-1 w-24 shrink-0 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('Vedha')} · {t(transit ? 'transit' : 'natal')}</span>
+              {row.map(entry => (
+                <button key={entry.id} type="button" aria-pressed={selectedId === entry.id} data-sbc-choice={entry.id} onClick={() => setSelectedId(current => (current === entry.id ? null : entry.id))} className={chip(selectedId === entry.id)}>
+                  {entry.label}
+                </button>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+
       <div className="mx-auto w-full max-w-[640px]">
         <svg viewBox="-2 -2 904 904" role="img" aria-label={t('Sarvatobhadra chakra')} data-sbc="chart" className="h-auto w-full font-mono">
           {SBC_GRID.map((row, r) => row.map((cell, col) => renderCell(cell, r, col)))}
+          {selected && selectedEntry && selected.lines.map((line) => (
+            <line
+              key={keyOf(line.target)}
+              data-sbc-vedha-line={line.direction}
+              x1={centre(selectedEntry.position).x} y1={centre(selectedEntry.position).y}
+              x2={centre(line.target).x} y2={centre(line.target).y}
+              strokeWidth={4} strokeDasharray="10 8" strokeLinecap="round" pointerEvents="none"
+              className="stroke-rose-500/70 dark:stroke-rose-400/70"
+            />
+          ))}
         </svg>
       </div>
 
@@ -198,6 +246,36 @@ export default function SarvatobhadraPanel({ chart, transitPlanets = [], nakshat
         {model.tithi && <li>{swatch('tithi')} {t('Birth tithi')}: <span className="font-bold">{paksha} {tithiNumber}</span> · {model.tithi.group}</li>}
         {model.vara && model.weekday !== null && <li>{swatch('vara')} {t('Birth day')}: <span className="font-bold">{WEEKDAYS[language][model.weekday]}</span> · {model.vara}</li>}
       </ul>
+
+      <div data-sbc="vedha">
+        <div className="mb-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('Vedha')}</div>
+        <p className="mb-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+          {t('A graha has vedha on the nakshatra straight across the chart from its own and on the two nakshatras on the diagonals from it. Choose a graha above to draw its lines; a nakshatra with grahas in it is pierced.')}
+        </p>
+        <ul className="space-y-0.5 text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
+          {model.entries.filter(entry => model.vedha.has(entry.id)).map(entry => {
+            const info = model.vedha.get(entry.id)!;
+            const here = SBC_GRID[entry.position[0]][entry.position[1]];
+            return (
+              <li key={entry.id} data-sbc-vedha-from={entry.id} className={entry.transit ? 'text-violet-700 dark:text-violet-300' : ''}>
+                <span className="font-bold">{entry.label}{entry.transit ? ` (${t('transit')})` : ''}</span>
+                <span className="text-zinc-400 dark:text-zinc-500"> {here.label}</span> →{' '}
+                {info.lines.map((line, index) => {
+                  const target = SBC_GRID[line.target[0]][line.target[1]];
+                  const occupants = info.occupants.get(keyOf(line.target)) ?? [];
+                  return (
+                    <span key={keyOf(line.target)} data-sbc-vedha-target={target.label} title={t(line.direction === 'across' ? 'across' : 'diagonal')}>
+                      {index > 0 && ' · '}
+                      <span className={occupants.length ? 'font-bold' : ''}>{target.label}</span>
+                      {occupants.length > 0 && <span className="text-red-700 dark:text-red-400"> [{occupants.map(other => `${other.label}${other.transit ? '↗' : ''}`).join(' ')}]</span>}
+                    </span>
+                  );
+                })}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
       <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
         {t('Abhijit is the stretch from 6°40′ to 10°53′20″ of Capricorn; the nakshatras follow the nakshatra zodiac of Settings. The weekday counts from sunrise.')}

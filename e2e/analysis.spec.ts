@@ -462,3 +462,44 @@ test('ANALYSIS Sarvatobhadra puts the grahas in the squares of their nakshatras,
 
   expect(errors).toEqual([]);
 });
+
+test('ANALYSIS Sarvatobhadra draws the vedha of a graha: across the chart and on the two diagonals', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Sarvatobhadra', exact: true })).click();
+  const chart = visible(page, page.locator('[data-sbc="chart"]'));
+  await expect(chart).toBeVisible();
+  await expect(chart.locator('[data-sbc-vedha-line]')).toHaveCount(0);
+
+  // Jupiter stands in Vishakha: across the chart is Dhanishtha, and the diagonals reach Anuradha and Krittika.
+  await visible(page, page.locator('[data-sbc-choice="n:Jupiter"]')).click();
+  await expect(chart.locator('[data-sbc-vedha-line]')).toHaveCount(3);
+  await expect(chart.locator('[data-sbc-vedha-line="across"]')).toHaveCount(1);
+  await expect(chart.locator('[data-sbc-vedha-line="diagonal"]')).toHaveCount(2);
+  await expect(chart.locator('[data-sbc-vedha="source"]')).toHaveCount(1);
+  await expect(chart.locator('[data-sbc-cell][data-sbc-label="Visa"] [data-sbc-vedha="source"]')).toHaveCount(1);
+  const marked = chart.locator('[data-sbc-vedha="target"]');
+  await expect(marked).toHaveCount(3);
+  for (const label of ['Dhan', 'Anu', 'Krit']) {
+    await expect(chart.locator(`[data-sbc-cell][data-sbc-label="${label}"] [data-sbc-vedha="target"]`)).toHaveCount(1);
+  }
+
+  // The list names them, with the grahas that stand in them: Ketu is in Anuradha and Rahu in Krittika.
+  const row = visible(page, page.locator('[data-sbc-vedha-from="n:Jupiter"]'));
+  await expect(row).toContainText('Dhan');
+  await expect(row.locator('[data-sbc-vedha-target="Anu"]')).toContainText('Ke');
+  await expect(row.locator('[data-sbc-vedha-target="Krit"]')).toContainText('Ra');
+  await expect(row.locator('[data-sbc-vedha-target="Dhan"]')).not.toContainText('[');
+
+  // Another graha moves the lines; choosing the same one again takes them away.
+  await visible(page, page.locator('[data-sbc-choice="n:Moon"]')).click();
+  await expect(chart.locator('[data-sbc-cell][data-sbc-label="Push"] [data-sbc-vedha="source"]')).toHaveCount(1);
+  await expect(chart.locator('[data-sbc-cell][data-sbc-label="Visa"] [data-sbc-vedha="source"]')).toHaveCount(0);
+  await visible(page, page.locator('[data-sbc-choice="n:Moon"]')).click();
+  await expect(chart.locator('[data-sbc-vedha-line]')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});

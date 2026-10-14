@@ -127,3 +127,43 @@ export function sbcMarkLayout(count: number, longest: number): { perLine: number
   const size = Math.max(6, Math.min(byCount, byWidth, byHeight));
   return { perLine, size, lineHeight: size * 1.15 };
 }
+
+// --- Vedha ---------------------------------------------------------------------------------------------------------
+// A graha has vedha on the nakṣatra directly across the chart from the one it stands in, and on the two nakṣatras
+// on the diagonals from it: three lines run from its square into the chart, one straight and two at 45°, and each
+// ends on the nakṣatra at the edge where it leaves the chart.
+
+export type VedhaDirection = 'across' | 'diagonal';
+
+export interface VedhaLine {
+  direction: VedhaDirection;
+  /** The squares the line crosses, from the one next to the graha's to the nakṣatra at its end. */
+  path: SbcPosition[];
+  /** The nakṣatra at the end of the line, which has the vedha. */
+  target: SbcPosition;
+}
+
+/** The three lines of vedha from a nakṣatra square on the edge of the chart; null for a square that is not a nakṣatra's. */
+export function sbcVedha(from: SbcPosition): VedhaLine[] | null {
+  const [row, column] = from;
+  if (!SBC_GRID[row]?.[column]?.nakshatra) return null;
+  // Into the chart from the edge the square is on.
+  const inward: readonly [number, number] = row === 0 ? [1, 0] : row === 8 ? [-1, 0] : column === 0 ? [0, 1] : [0, -1];
+  const side: readonly [number, number] = [inward[1], inward[0]];
+  const directions: [VedhaDirection, number, number][] = [
+    ['across', inward[0], inward[1]],
+    ['diagonal', inward[0] + side[0], inward[1] + side[1]],
+    ['diagonal', inward[0] - side[0], inward[1] - side[1]],
+  ];
+  return directions.map(([direction, stepRow, stepColumn]) => {
+    const path: SbcPosition[] = [];
+    let r = row + stepRow;
+    let c = column + stepColumn;
+    while (r >= 0 && r < 9 && c >= 0 && c < 9) {
+      path.push([r, c]);
+      r += stepRow;
+      c += stepColumn;
+    }
+    return { direction, path, target: path[path.length - 1] };
+  });
+}
