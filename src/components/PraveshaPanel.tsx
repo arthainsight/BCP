@@ -10,6 +10,7 @@ import { nakshatraOfLongitude, yogaOfSum } from '@/lib/praveshaNames';
 import { formatDegree } from '@/lib/formatDegree';
 import StyledChart from './StyledChart';
 import {
+  AnnualDashaList,
   AnnualPlaceControl,
   AnnualPlanetTable,
   Row,
@@ -18,9 +19,11 @@ import {
   buildAnnualParams,
   fmtLocal,
   fmtOffset,
+  referenceJd,
   toggleClass,
   useAnnualFetch,
   type AnnualPlace,
+  type LocalMahadasha,
   type LocalParts,
 } from './annualShared';
 import { SIGN_ABBR } from '@/lib/signs';
@@ -35,6 +38,7 @@ type PraveshaResponse = {
   vedicDay: VedicDay;
   tithiPravesaLocal: LocalParts;
   next: PraveshaResult & { local: LocalParts; tzOffset: number };
+  dasha: LocalMahadasha[];
   chart: ChartData;
 };
 
@@ -140,6 +144,15 @@ export default function PraveshaPanel({
               {t('The sum of two sidereal longitudes depends on the ayanamsa twice, so the moment moves with the ayanamsa of Settings.')}
             </div>
           )}
+
+          <AnnualDashaList
+            title={kind === 'nakshatra' ? 'Vimśottarī daśā (beta)' : 'Yoga Vimśottarī daśā (beta)'}
+            note={t(kind === 'nakshatra'
+              ? 'Vimśottarī’s 120 years compressed into this year. The Moon stands where it did at birth, so the daśā of birth begins again: the lord of the birth nakshatra, with the same part of its period spent. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted.'
+              : 'Vimśottarī’s 120 years compressed into this year, entered by the yoga of birth counted like a nakshatra (the 1st yoga as Ashwini, and so on round the nine lords), with the part of the yoga spent as the part of the period spent. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted.')}
+            dasha={shown.dasha}
+            referenceJd={referenceJd(targetDate, shown.tzOffset)}
+          />
 
           <AnnualPlanetTable annual={shown.chart} natal={chart} showOuterPlanets={chartDisplaySettings.showOuterPlanets} />
         </div>

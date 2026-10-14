@@ -998,7 +998,20 @@ export const FI: Record<string, string> = {
   '2nd and 11th lords': '2. ja 11. herra',
 
   // Toggle
+  // Year at a glance
+  'Year at a glance': 'Vuosi yhdellä silmäyksellä',
+  'The four annual charts side by side: Tithi Praveśa, Nakṣatra Praveśa, Yoga Praveśa and Varṣaphala. Each begins at a moment of its own, a few weeks apart.': 'Neljä vuosikarttaa rinnakkain: Tithi Praveśa, Nakṣatra Praveśa, Yoga Praveśa ja Varṣaphala. Jokainen alkaa omasta hetkestään, muutaman viikon välein.',
+  'Birth date and place are needed for the annual charts.': 'Vuosikartat tarvitsevat syntymäajan ja -paikan.',
+  'Nakṣatra and Yoga Praveśa': 'Nakṣatra ja Yoga Praveśa',
+  'annual chart': 'vuosikartta',
+  'lord of the year': 'vuoden herra',
+  'days from the first': 'päivää ensimmäisestä',
+  'target date': 'valittu päivä',
+  'failed': 'epäonnistui',
+  'The lord of the year is the vāra lord at the moment for the three Praveśas and the Tājika year lord for Varṣaphala. Open one of the tabs for the chart, the planets and the daśā of the year.': 'Vuoden herra on kolmella Praveśalla vāra-herra sillä hetkellä ja Varṣaphalalla Tājikan vuoden herra. Avaa jokin välilehdistä nähdäksesi kartan, planeetat ja vuoden daśān.',
   // Nakshatra and Yoga Pravesa
+  'Vimśottarī’s 120 years compressed into this year. The Moon stands where it did at birth, so the daśā of birth begins again: the lord of the birth nakshatra, with the same part of its period spent. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted.': 'Vimśottarīn 120 vuotta puristettuna tähän vuoteen. Kuu on siellä, missä se oli syntymässä, joten syntymän daśā alkaa uudelleen: syntymän nakshatran herra, ja sen jaksosta on kulunut sama osa. Antardaśāt alkavat mahādaśān herrasta. Käynnissä oleva jakso valittuna ajankohtana on korostettu.',
+  'Vimśottarī’s 120 years compressed into this year, entered by the yoga of birth counted like a nakshatra (the 1st yoga as Ashwini, and so on round the nine lords), with the part of the yoga spent as the part of the period spent. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted.': 'Vimśottarīn 120 vuotta puristettuna tähän vuoteen, aloitus syntymän yogasta laskettuna kuten nakshatra (1. yoga kuten Ashwini, ja niin edelleen yhdeksän herran kierros), ja yogasta kulunut osa on jaksosta kulunut osa. Antardaśāt alkavat mahādaśān herrasta. Käynnissä oleva jakso valittuna ajankohtana on korostettu.',
   'Nakṣatra Praveśa — annual chart': 'Nakṣatra Praveśa — vuosikartta',
   'Yoga Praveśa — annual chart': 'Yoga Praveśa — vuosikartta',
   'Birth date and place are needed for Nakṣatra Praveśa.': 'Nakṣatra Praveśa tarvitsee syntymäajan ja -paikan.',
@@ -1018,6 +1031,15 @@ export const FI: Record<string, string> = {
   'tithi praveśa': 'tithi praveśa',
   'The sum of two sidereal longitudes depends on the ayanamsa twice, so the moment moves with the ayanamsa of Settings.': 'Kahden sideerisen pituuden summa riippuu ayanamsasta kahdesti, joten hetki siirtyy Asetusten ayanamsan mukana.',
   // Sarvatobhadra chakra
+  'Name syllable (optional)': 'Nimen tavu (valinnainen)',
+  'name syllable': 'nimen tavu',
+  'Name syllable': 'Nimen tavu',
+  'No square has that letter': 'Mikään ruutu ei ole tuo kirjain',
+  'Birth points pierced': 'Lävistetyt syntymäpisteet',
+  'The Moon’s nakshatra, the Moon’s sign, the Lagna’s sign, the birth tithi and weekday and the syllable of the name that a graha has vedha on: at the end of a line, or crossed by it. A transiting graha is marked ↗.': 'Kuun nakshatra, Kuun rāśi, Lagnan rāśi, syntymän tithi ja viikonpäivä sekä nimen tavu, joihin grahalla on vedha: viivan päässä tai viivan lävistämänä. Transiittigraha on merkitty ↗.',
+  'No graha pierces any of them.': 'Mikään graha ei lävistä niistä yhtäkään.',
+  'line end': 'viivan pää',
+  'crossed': 'viivan varrella',
   'Vedha': 'Vedha',
   'A graha has vedha on the nakshatra straight across the chart from its own and on the two nakshatras on the diagonals from it. Choose a graha above to draw its lines; a nakshatra with grahas in it is pierced.': 'Grahalla on vedha nakshatraan, joka on suoraan vastapäätä sen omaa kartan toisella puolella, sekä kahteen nakshatraan sen viistoilla. Valitse graha yltä, niin sen viivat piirtyvät; nakshatra, jossa on grahoja, on lävistetty.',
   'across': 'vastapäätä',

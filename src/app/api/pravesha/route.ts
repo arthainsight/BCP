@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculatePravesha, praveshaYearAt, type PraveshaKind, type PraveshaMethod } from "@/lib/pravesha";
 import { jdFromLocal, localPartsFromJd, vedicDayAt } from "@/lib/lunisolar";
-import { castAt, offsetAt, parseAnnualRequest } from "@/lib/annualRequest";
+import { castAt, localizePeriods, offsetAt, parseAnnualRequest } from "@/lib/annualRequest";
+import { VIMSHOTTARI_CYCLE, buildAnnualDasha, vimshottariFirstLord } from "@/lib/annualDasha";
+import { nakshatraOfLongitude, yogaOfSum } from "@/lib/praveshaNames";
+import { NAKSHATRA_SIZE } from "@/lib/nakshatras";
 
 // Returns the Nakṣatra Praveśa or the Yoga Praveśa (`kind`) in force at `target` (yyyy-mm-dd, local noon), or the
 // one for `tpYear`, with its chart. The chart is cast at `lat`/`lng`: the birthplace by default, or the place of
@@ -33,6 +36,16 @@ export async function GET(request: NextRequest) {
     const nextTz = offsetAt(req, next.jd);
     const tithiTz = offsetAt(req, current.tithiPravesaJd);
 
+    // The Vimśottarī of the year: the dasha of birth begins again. At Nakṣatra Praveśa the Moon stands where it did at
+    // birth, so the lord of the birth nakṣatra begins with the same part of its period spent; Yoga Praveśa counts its
+    // yoga the same way.
+    const natalValue = current.natalValue;
+    const entry = kind === "nakshatra"
+      ? { number: nakshatraOfLongitude(natalValue).number, spent: (natalValue % NAKSHATRA_SIZE) / NAKSHATRA_SIZE }
+      : { number: yogaOfSum(natalValue).number, spent: yogaOfSum(natalValue).spent };
+    const dasha = buildAnnualDasha(VIMSHOTTARI_CYCLE, vimshottariFirstLord(entry.number), entry.spent, current.jd, next.jd - current.jd)
+      .map((md) => ({ ...md, antardashas: localizePeriods(req, md.antardashas) }));
+
     return NextResponse.json({
       pravesha: current,
       local,
@@ -41,6 +54,7 @@ export async function GET(request: NextRequest) {
       vedicDay,
       tithiPravesaLocal: localPartsFromJd(current.tithiPravesaJd, tithiTz),
       next: { ...next, local: localPartsFromJd(next.jd, nextTz), tzOffset: nextTz },
+      dasha: localizePeriods(req, dasha),
       chart,
     });
   } catch (error) {

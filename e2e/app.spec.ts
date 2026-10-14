@@ -102,9 +102,10 @@ test('the panels and the sentences the calculations write are in Finnish', async
   // ANALYSIS: the yoga table's reasons are written by the engine in English and shown in Finnish.
   await selectWorkspace(page, 'ANALYYSI');
   await visible(page, page.getByRole('button', { name: 'Grahat', exact: true })).click();
-  await visible(page, page.getByRole('button', { name: /yoga\.detection/ })).click();
+  // The yoga table is open at first.
   await expect(visible(page, page.getByText('Mars 12. merkissä Auringosta'))).toBeVisible();
-  await expect(visible(page, page.getByText('Kendra-/Trikona-herrat').first())).toBeVisible();
+  // (Both layouts of the page hold the table now, so the visible one is picked out.)
+  await expect(visible(page, page.getByText('Kendra-/Trikona-herrat'))).toBeVisible();
 
   // The Varga matrix and the argala headers.
   await visible(page, page.getByRole('button', { name: 'Varga', exact: true })).click();
@@ -127,6 +128,9 @@ test('the panels and the sentences the calculations write are in Finnish', async
   await expect(visible(page, page.getByText(/% kulunut/))).toBeVisible();
   await visible(page, page.getByRole('button', { name: 'Varṣaphala', exact: true })).click();
   await expect(visible(page, page.getByText('Pañcādhikārī — viisi virkamiestä'))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Vuosi yhdellä silmäyksellä', exact: true })).click();
+  await expect(visible(page, page.getByText('Neljä vuosikarttaa rinnakkain'))).toBeVisible();
+  await expect(visible(page, page.getByText('vuoden herra'))).toBeVisible();
   await visible(page, page.getByRole('button', { name: 'Daśā', exact: true })).click();
   await expect(visible(page, page.getByText(/Ehdollinen: ei sovellettavissa \(Rahu \d+\. talossa Lagnan herrasta\)/))).toBeVisible();
 

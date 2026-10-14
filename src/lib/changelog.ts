@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v2.99',
+    date: '2026-10-14',
+    title: 'Year at a glance, the daśā of the Praveśa years, more of the Sarvatobhadra chakra, and the yoga table open',
+    changes: [
+      'TIMING → Year at a glance: Tithi Praveśa, Nakṣatra Praveśa, Yoga Praveśa and Varṣaphala side by side. A table gives the moment each year begins and ends, the lord of the year and the lagna, and bars on one time axis show the weeks between the starts (with the target date marked). The year stepper, the place of residence and the Same month / Before birthday choice work as in the separate tabs, and the rows agree with them.',
+      'Nakṣatra Praveśa and Yoga Praveśa have a daśā of the year (beta): Vimśottarī\'s 120 years compressed into the year. At Nakṣatra Praveśa the Moon stands where it did at birth, so the daśā of birth begins again, from the lord of the birth nakṣatra with the same part of its period spent. Yoga Praveśa counts the yoga of birth like a nakṣatra (the 1st yoga as Ashwini, and so on round the nine lords) with the part of the yoga spent as the part of the period spent.',
+      'Sarvatobhadra: the squares the three lines of a graha cross are tinted (the nakṣatras they end on stay outlined). A Name syllable field (ch, kh, a …) marks the squares of the first letter of a name. Under the chart, Birth points pierced lists which graha — natal, or transiting with ↗ — has vedha on the Moon\'s nakṣatra, the Moon\'s sign, the Lagna\'s sign, the birth tithi, the birth weekday and the syllable of the name, at the end of a line or crossed by it.',
+      'The yoga table in ANALYSIS → Grahas is open when the page opens, and what you choose is remembered. Before that, the 29 yoga rules were checked against their own stated rules: a test works every yoga out a second time, from the rule text and from tables written out again, on 6000 random charts and compares the two (a deliberately broken rule is caught at once). The rules that are only as good as their source are Kemadruma and Sakata (taught with cancellations that are not applied), Mukuta, the Dhana yoga of a lord that rules both the 2nd and the 11th (always active), Uttama, Sama and Adhama, and Amara, Dhvaja and Muni (definition pending, never active).',
+      'Updated the application version to v2.99.',
+    ],
+  },
+  {
     version: 'v2.98',
     date: '2026-10-14',
     title: 'Same month or before the birthday, named plainly in Nakṣatra and Yoga Praveśa',

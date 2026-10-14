@@ -9,6 +9,8 @@
 //
 // Pure arithmetic on Julian days; no ephemeris calls.
 
+import { VIMSHOTTARI_LORDS, VIMSHOTTARI_YEARS } from './vimshottari';
+
 export interface DashaLord {
   name: string;
   /** Length in the system's own units (days of 360, or years of 108). */
@@ -62,6 +64,19 @@ export function buildAnnualDasha(
     start += length;
   }
   return result;
+}
+
+// ── Vimśottarī in the year: Nakṣatra Praveśa and Yoga Praveśa ───────────────
+// The 120 years of Vimśottarī, entered as at birth. At Nakṣatra Praveśa the Moon stands exactly where it did at
+// birth, so the dasha of birth begins again: the lord of the birth nakṣatra, with the same part of its period
+// spent. Yoga Praveśa counts its yoga in the same way (the 1st yoga, Vishkambha, as Ashwini, and so on round the
+// nine lords three times) with the part of the yoga spent as the part of the period spent.
+
+export const VIMSHOTTARI_CYCLE: DashaLord[] = VIMSHOTTARI_LORDS.map((name) => ({ name, units: VIMSHOTTARI_YEARS[name] }));
+
+/** Index into VIMSHOTTARI_CYCLE of the lord of nakṣatra (or yoga) 1–27: the nine lords repeat three times. */
+export function vimshottariFirstLord(number: number): number {
+  return (((number - 1) % 9) + 9) % 9;
 }
 
 // ── Mudda (Varṣa Vimśottarī) ─────────────────────────────────────────────

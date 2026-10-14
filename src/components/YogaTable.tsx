@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { ChartData } from '@/types';
 import { calculateYogas, YogaCategory } from '@/lib/yogas';
 import { qualifyYogas, type StrengthClassification } from '@/lib/yogaStrength';
@@ -162,7 +163,8 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
 /** The yoga table, shut until it is opened: the table is long, and the other analysis comes first. */
 export default function YogaTable({ chart, showInactive = false }: Props) {
   const t = useT();
-  const [expanded, setExpanded] = useState(false);
+  // Open to begin with; what is chosen is remembered.
+  const [expanded, toggleExpanded] = useStoredFlag('bhrigu:yoga-detection-open', true);
   const [sortByStrength, setSortByStrength] = useState(false);
 
   return (
@@ -170,7 +172,7 @@ export default function YogaTable({ chart, showInactive = false }: Props) {
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
-          onClick={() => setExpanded(value => !value)}
+          onClick={() => toggleExpanded()}
           aria-expanded={expanded}
           className="flex min-w-0 flex-1 items-center justify-between text-left"
         >

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
 import {
   ABHIJIT_END, ABHIJIT_START, SBC_GRID, SBC_NAKSHATRA_CELLS, SBC_SIGN_CELLS, SBC_TITHI_CELLS, TITHI_GROUPS,
-  sbcCellOf, sbcMarkLayout, sbcNakshatra, sbcVedha, tithiOf, vedicWeekday, weekdayGroup,
+  sbcCellOf, sbcLetterSquares, sbcMarkLayout, sbcNakshatra, sbcPierces, sbcVedha, tithiOf, vedicWeekday, weekdayGroup,
 } from './sarvatobhadra';
 
 const cells = SBC_GRID.flat();
@@ -142,5 +142,56 @@ for (const name of [...NAKSHATRA_NAMES, 'Abhijit']) {
 // Squares that are not a nakṣatra's have no vedha of their own.
 assert.equal(sbcVedha([4, 4]), null);
 assert.equal(sbcVedha([0, 0]), null);
+
+// --- The squares the lines cross --------------------------------------------------------------------------------
+const labelAt = ([r, col]: readonly [number, number]) => SBC_GRID[r][col].label;
+const crossed = (name: string) => sbcVedha(SBC_NAKSHATRA_CELLS[name])!.map(line => line.path.map(labelAt));
+// Ashwini: straight down the column through the Taurus square to Purva Phalguni; one diagonal to Rohini (two squares), the other to Jyeshtha.
+const ashwini = crossed('Ashwini');
+const byFirstLabel = (paths: string[][]) => [...paths].sort((x, y) => x[0].localeCompare(y[0]));
+assert.deepEqual(byFirstLabel(ashwini), byFirstLabel([
+  ['l', 'lu', 'Ta', 'Ge', 'Cn', 'luu', 'm', 'PPha'],
+  ['ch', 'Pi', 'ah', 'Sg', 'y', 'Jye'],
+  ['u', 'Rohi'],
+]), 'the three lines of Ashwini, square by square');
+
+// Saturn in Ashlesha (the chart of 15.08.1947): the diagonal crosses Cancer and the Rikta square.
+const ashlesha = crossed('Ashlesha');
+assert.ok(ashlesha.some(path => path.includes('Cn') && path.includes('Rikta') && path.includes('Nanda')), 'a diagonal from Ashlesha crosses Cancer, Nanda and Rikta');
+// The squares of one graha's three lines are all different (three rays leave one square).
+for (const name of [...NAKSHATRA_NAMES, 'Abhijit']) {
+  const squares = sbcVedha(SBC_NAKSHATRA_CELLS[name])!.flatMap(line => line.path.map(([r, col]) => `${r}-${col}`));
+  assert.equal(new Set(squares).size, squares.length, `${name}: no square is on two of its lines`);
+}
+
+// --- The letters of a name ---------------------------------------------------------------------------------------
+assert.deepEqual(sbcLetterSquares('ch'), [[1, 5]]);
+assert.deepEqual(sbcLetterSquares(' CH '), [[1, 5]], 'case and spaces do not matter');
+assert.equal(sbcLetterSquares('d').length, 2, 'd has two squares');
+assert.equal(sbcLetterSquares('a').length, 2, 'a has two squares, as in the chart it is copied from');
+assert.deepEqual(sbcLetterSquares(''), []);
+assert.deepEqual(sbcLetterSquares('Aq'), [], 'a sign is not a letter');
+assert.deepEqual(sbcLetterSquares('Krit'), [], 'a nakshatra is not a letter');
+assert.deepEqual(sbcLetterSquares('zzz'), []);
+
+// --- What a graha pierces ----------------------------------------------------------------------------------------
+const at = (label: string): [number, number] => cells.map((cell, index) => [cell, index] as const).filter(([cell]) => cell.label === label).map(([, index]) => [Math.floor(index / 9), index % 9] as [number, number])[0];
+const points = [
+  { id: 'janma' as const, position: SBC_NAKSHATRA_CELLS.Pushya },
+  { id: 'moonSign' as const, position: SBC_SIGN_CELLS[4] },
+  { id: 'lagnaSign' as const, position: SBC_SIGN_CELLS[6] },
+  { id: 'tithi' as const, position: SBC_TITHI_CELLS.Rikta },
+  { id: 'vara' as const, position: SBC_TITHI_CELLS.Rikta },
+  { id: 'name' as const, position: at('ch') },
+];
+// Saturn in Ashlesha pierces the Moon's sign (Cancer) and the Rikta square (tithi and weekday), each crossed by a line.
+const saturn = sbcPierces(sbcVedha(SBC_NAKSHATRA_CELLS.Ashlesha)!, points);
+assert.deepEqual(saturn.map(hit => [hit.point.id, hit.at]), [['moonSign', 'line'], ['tithi', 'line'], ['vara', 'line']]);
+// A graha has vedha on the nakshatra at the end of a line: Jupiter in Vishakha reaches Dhanishtha, which is the Moon's here.
+const reaches = sbcPierces(sbcVedha(SBC_NAKSHATRA_CELLS.Vishakha)!, [{ id: 'janma', position: SBC_NAKSHATRA_CELLS.Dhanishtha }]);
+assert.deepEqual(reaches.map(hit => [hit.point.id, hit.direction, hit.at]), [['janma', 'across', 'end']]);
+// A point on none of the lines is not reached, and a graha does not pierce its own square.
+assert.deepEqual(sbcPierces(sbcVedha(SBC_NAKSHATRA_CELLS.Vishakha)!, [{ id: 'janma', position: SBC_NAKSHATRA_CELLS.Vishakha }]), []);
+assert.deepEqual(sbcPierces(sbcVedha(SBC_NAKSHATRA_CELLS.Ashwini)!, [{ id: 'name', position: at('kh') }]), []);
 
 console.log('sarvatobhadra tests passed');

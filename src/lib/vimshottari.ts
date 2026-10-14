@@ -11,6 +11,10 @@ const YEARS: Record<string, number> = {
 };
 
 
+/** The nine lords in daśā order and the years of each, for the daśās that borrow the Vimśottarī cycle. */
+export const VIMSHOTTARI_LORDS = LORDS;
+export const VIMSHOTTARI_YEARS: Readonly<Record<string, number>> = YEARS;
+
 export interface MahadashaEntry {
   lord: string;
   startDate: Date;

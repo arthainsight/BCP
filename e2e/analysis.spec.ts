@@ -306,31 +306,41 @@ test('a stored "sidereal" nakshatra zodiac, the old default, means the same ayan
   expect(errors).toEqual([]);
 });
 
-test('the yoga detection is shut until it is opened', async ({ page }) => {
+test('the yoga detection is open at first, and what you choose is remembered', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
   await selectWorkspace(page, 'ANALYSIS');
 
-  // The graha positions are open; the yoga table is a closed line.
+  // The graha positions and the yoga table are both open.
   await expect(visible(page, page.getByText('graha.positions'))).toBeVisible();
   const toggle = visible(page, page.getByRole('button', { name: /yoga\.detection/ }));
-  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(toggle).toContainText('expand');
-  await expect(page.locator('th').filter({ hasText: /^Yoga$/ }).locator('visible=true')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'sort by strength' }).locator('visible=true')).toHaveCount(0);
-
-  // Opening it shows the table and the sort button; closing it hides them again.
-  await toggle.click();
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
   await expect(toggle).toContainText('collapse');
   await expect(visible(page, page.locator('th').filter({ hasText: /^Yoga$/ }))).toBeVisible();
+
+  // The sort button is there; closing the table hides it and the table.
   const sort = visible(page, page.getByRole('button', { name: 'sort by strength' }));
   await sort.click();
   await expect(visible(page, page.getByRole('button', { name: '↓ strength' }))).toBeVisible();
   await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle).toContainText('expand');
   await expect(page.locator('th').filter({ hasText: /^Yoga$/ }).locator('visible=true')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /strength/ }).locator('visible=true')).toHaveCount(0);
+
+  // The choice is kept: after a reload the table is still closed, and opening it is kept the same way.
+  expect(await page.evaluate(() => localStorage.getItem('bhrigu:yoga-detection-open'))).toBe('false');
+  await page.reload();
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  const again = visible(page, page.getByRole('button', { name: /yoga\.detection/ }));
+  await expect(again).toHaveAttribute('aria-expanded', 'false');
+  await again.click();
+  await expect(again).toHaveAttribute('aria-expanded', 'true');
+  expect(await page.evaluate(() => localStorage.getItem('bhrigu:yoga-detection-open'))).toBe('true');
+  await expect(visible(page, page.locator('th').filter({ hasText: /^Yoga$/ }))).toBeVisible();
 
   expect(errors).toEqual([]);
 });
@@ -500,6 +510,56 @@ test('ANALYSIS Sarvatobhadra draws the vedha of a graha: across the chart and on
   await expect(chart.locator('[data-sbc-cell][data-sbc-label="Visa"] [data-sbc-vedha="source"]')).toHaveCount(0);
   await visible(page, page.locator('[data-sbc-choice="n:Moon"]')).click();
   await expect(chart.locator('[data-sbc-vedha-line]')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Sarvatobhadra marks the squares the lines cross, the syllable of a name and the birth points a graha pierces', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Sarvatobhadra', exact: true })).click();
+  const chart = visible(page, page.locator('[data-sbc="chart"]'));
+  await expect(chart).toBeVisible();
+  const pierced = visible(page, page.locator('[data-sbc="pierced"]'));
+
+  // The chart of 15.08.1947: Saturn in Ashlesha has a line through Cancer (the Moon's sign) and the Rikta square, which is the
+  // tithi (Krishna 14) and the weekday (Friday) of the birth. Both are crossed, not ends of a line.
+  const saturn = pierced.locator('[data-sbc-pierced-from="n:Saturn"]');
+  await expect(saturn).toBeVisible();
+  await expect(saturn.locator('[data-sbc-pierced-point="moonSign"]')).toHaveAttribute('data-sbc-pierced-at', 'line');
+  await expect(saturn.locator('[data-sbc-pierced-point="tithi"]')).toHaveAttribute('data-sbc-pierced-at', 'line');
+  await expect(saturn.locator('[data-sbc-pierced-point="vara"]')).toHaveAttribute('data-sbc-pierced-at', 'line');
+  await expect(saturn).not.toContainText('Janma nakshatra');
+
+  // Choosing Saturn draws its lines and tints the squares they cross; the nakshatras they end on are marked as before.
+  await expect(chart.locator('[data-sbc-vedha="crossed"]')).toHaveCount(0);
+  await visible(page, page.locator('[data-sbc-choice="n:Saturn"]')).click();
+  await expect(chart.locator('[data-sbc-vedha-line]')).toHaveCount(3);
+  await expect(chart.locator('[data-sbc-vedha="target"]')).toHaveCount(3);
+  // Across: uu m t~ p r t ri (7 squares before Anuradha); the diagonals: d Cn Nanda Rikta Aq g (6 before Dhanishtha) and none before Magha.
+  await expect(chart.locator('[data-sbc-vedha="crossed"]')).toHaveCount(13);
+  for (const label of ['Cn', 'Nanda', 'Rikta', 'Aq', 'uu', 'ri']) {
+    await expect(chart.locator(`[data-sbc-cell][data-sbc-label="${label}"] [data-sbc-vedha="crossed"]`)).toHaveCount(1);
+  }
+  await expect(chart.locator('[data-sbc-cell][data-sbc-label="Anu"] [data-sbc-vedha="crossed"]')).toHaveCount(0);
+  await visible(page, page.locator('[data-sbc-choice="n:Saturn"]')).click();
+  await expect(chart.locator('[data-sbc-vedha="crossed"]')).toHaveCount(0);
+
+  // The syllable of the name: its squares are marked, and a graha that has a line through one of them pierces it.
+  const syllable = visible(page, page.getByRole('textbox', { name: 'name syllable' }));
+  await syllable.fill('zzz');
+  await expect(visible(page, page.getByText('No square has that letter'))).toBeVisible();
+  await syllable.fill('ch');
+  await expect(chart.locator('[data-sbc-cell][data-sbc-label="ch"] [data-sbc-roles~="name"]')).toHaveCount(1);
+  await expect(visible(page, page.locator('[data-sbc="legend"]'))).toContainText('Name syllable: ch');
+  // Rahu in Krittika (on the right edge, row 2) has its straight line along that row, through 'ch'.
+  const rahu = pierced.locator('[data-sbc-pierced-from="n:Rahu"]');
+  await expect(rahu.locator('[data-sbc-pierced-point="name"]')).toHaveAttribute('data-sbc-pierced-at', 'line');
+  await syllable.fill('');
+  await expect(chart.locator('[data-sbc-roles~="name"]')).toHaveCount(0);
 
   expect(errors).toEqual([]);
 });
