@@ -3,6 +3,7 @@ import type { NakshatraMode } from '@/lib/nakshatraZodiac';
 import type { SaturnPortionLagnas } from '@/lib/upagrahas';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import type { ParayaBody } from '@/lib/bnn/nadiParaya';
+import type { SpecialSphuta } from '@/lib/specialSphutas';
 export type { DegreePrecision };
 
 export interface GeoResult {
@@ -65,6 +66,17 @@ export interface DebugInfo {
   previousSunriseLocalHours?: number;
 }
 
+/** The time the special sphutas run on: the ishṭa, and the sunrise it was counted from. */
+export interface SpecialSphutaTiming {
+  /** Ghaṭīs from sunrise to birth. */
+  ishta: number;
+  /** The sunrise used, in local decimal hours. */
+  sunriseUsed: number;
+  /** The sunrise the app calculated (true or mean-time, as chosen), in local decimal hours. */
+  sunriseCalculated: number;
+  source: 'true' | 'mean' | 'manual';
+}
+
 export interface SpecialLagna {
   name: string;
   longitude: number;
@@ -80,6 +92,9 @@ export interface ChartData {
   };
   planets: PlanetData[];
   specialLagnas?: SpecialLagna[];
+  /** All the special sphuṭas (the special lagnas above are six of them) and the time they were counted on. */
+  specialSphutas?: SpecialSphuta[];
+  specialSphutaTiming?: SpecialSphutaTiming;
   /** Sidereal longitude of the Midheaven (the 10th cusp), for the Śrīpati bhāvas. */
   midheaven?: number;
   /** The Lagna at the beginning, middle and end of Saturn's part of the day or night (Gulika and Māndi); missing when the Sun neither rises nor sets. */
@@ -179,6 +194,8 @@ export interface CalculationSettings {
   parayaRahu: ParayaSpeed;
   /** The sunrise the special lagnas count from: true (the default), or mean-time (true sunrise plus the equation of time). */
   sunriseMode: 'true' | 'mean';
+  /** A sunrise typed in (HH:MM:SS, for example the one another program shows); it replaces the calculated sunrise when it is a time of day. */
+  sunriseManual: string;
 }
 
 export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
@@ -191,6 +208,7 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   parayaSaturn: 'alternating',
   parayaRahu: 'alternating',
   sunriseMode: 'true',
+  sunriseManual: '',
 };
 
 export interface CharaOptions {

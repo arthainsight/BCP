@@ -2,6 +2,7 @@ import { getVargaSignIndex } from '@/lib/varga';
 import { normalizeDegrees as normalize } from './angles';
 import { SIGN_LORDS } from './signs';
 import { NAKSHATRA_NAMES } from './nakshatras';
+import { pad2 } from './dateFormat';
 
 // The special sphuṭas: the lagnas that run on the clock after sunrise, the
 // Moon-based Śrī Lagna and Bhṛgu Bindu, the Jaimini points (Āruḍha, Varṇada)
@@ -48,6 +49,23 @@ export function equationOfTimeMinutes(year: number, month: number, day: number, 
     - 1.25 * e * e * Math.sin(2 * mean * rad);
   return 4 * (eot / rad);
 }
+
+/** "06:28:31" or "6:28" as decimal hours, or null when it is not a time of day. */
+export function parseClock(text: string): number | null {
+  const match = /^\s*(\d{1,2}):(\d{2})(?::(\d{2}))?\s*$/.exec(text);
+  if (!match) return null;
+  const [hours, minutes, seconds] = [Number(match[1]), Number(match[2]), Number(match[3] ?? 0)];
+  return hours < 24 && minutes < 60 && seconds < 60 ? hours + minutes / 60 + seconds / 3600 : null;
+}
+
+/** Decimal hours as HH:MM:SS. */
+export function formatClock(hours: number): string {
+  const total = Math.round((((hours % 24) + 24) % 24) * 3600);
+  return `${pad2(Math.floor(total / 3600))}:${pad2(Math.floor((total % 3600) / 60))}:${pad2(total % 60)}`;
+}
+
+/** Where the sunrise of the special sphutas comes from. */
+export type SunriseSource = 'true' | 'mean' | 'manual';
 
 /**
  * The ishṭa in ghaṭīs: the time from sunrise to birth. With the mean-time

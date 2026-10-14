@@ -102,11 +102,15 @@ test('ANALYSIS Special Sphutas lists the special lagnas and follows the sunrise 
   await expect(visible(page, page.getByText(/mean-time sunrise \d{2}:\d{2}:\d{2}/))).toBeVisible();
   expect((await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ')).not.toEqual(trueHoraFirst);
 
-  // A sunrise typed in replaces the calculated one in the table.
+  // A sunrise typed in (in Settings) replaces the calculated one in the table, and the charts follow it.
   const meanHora = (await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ');
+  await selectWorkspace(page, '⚙');
   await visible(page, page.getByRole('textbox', { name: 'manual sunrise' })).fill('06:28:31');
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Special Sphutas', exact: true })).click();
   await expect(visible(page, page.getByText(/manual sunrise 06:28:31/))).toBeVisible();
   expect((await trueTable.locator('tbody tr', { hasText: 'Hora Lagna' }).innerText()).replace(/\s+/g, ' ')).not.toEqual(meanHora);
+  await selectWorkspace(page, '⚙');
   await visible(page, page.getByRole('textbox', { name: 'manual sunrise' })).fill('26:99');
   await expect(visible(page, page.getByText('Not a time of day'))).toBeVisible();
 

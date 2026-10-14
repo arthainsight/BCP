@@ -27,6 +27,7 @@ import { setSplitView, useSplitView } from '@/hooks/useSplitView';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
 import { calculationParams } from '@/lib/apiParams';
+import { parseClock } from '@/lib/specialSphutas';
 
 // The panels that are not on the first screen load when they are opened, which keeps the first load small.
 // The calculation panels render on the server as well, so the first paint of each is the same as before.
@@ -306,6 +307,8 @@ export default function Home() {
           lat: String(lat), lng: String(lng), tz: String(tzOffset),
           ...settingsParams,
           sunrise: calculationSettings.sunriseMode ?? 'true',
+          // Only a sunrise that is a time of day is sent.
+          ...(parseClock(calculationSettings.sunriseManual ?? '') !== null ? { sunriseManual: calculationSettings.sunriseManual.trim() } : {}),
         });
 
         const res = await fetch('/api/chart?' + params.toString());
@@ -329,7 +332,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [settingsParams, calculationSettings.sunriseMode]
+    [settingsParams, calculationSettings.sunriseMode, calculationSettings.sunriseManual]
   );
 
   const handleCalculate = useCallback(async (options?: CalculationOptions) => {
@@ -359,6 +362,8 @@ export default function Home() {
       calculationSettings.ayanamsaOffsetDegrees,
       calculationSettings.nodeMode,
       calculationSettings.sunriseMode,
+      // A text that is not a time of day changes nothing, so only the sunrise that counts is part of the key.
+      parseClock(calculationSettings.sunriseManual ?? ''),
     ].join('|');
 
     if (previousCalculationKeyRef.current === calculationKey) return;
@@ -377,6 +382,7 @@ export default function Home() {
     calculationSettings.ayanamsaOffsetDegrees,
     calculationSettings.nodeMode,
     calculationSettings.sunriseMode,
+    calculationSettings.sunriseManual,
     handleCalculate,
   ]);
 

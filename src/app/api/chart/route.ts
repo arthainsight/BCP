@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateChart } from "@/lib/ephemeris";
+import { parseClock } from "@/lib/specialSphutas";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -20,6 +21,8 @@ export async function GET(request: NextRequest) {
 
   // The sunrise the special lagnas are counted from: the true sunrise (the default) or the mean-time one.
   const sunriseMode = searchParams.get("sunrise") === "mean" ? "mean" : "true";
+  // A sunrise typed in (HH:MM:SS) replaces the calculated one; anything that is not a time of day is left out.
+  const sunriseManualHours = parseClock(searchParams.get("sunriseManual") ?? "");
 
   if ([year, month, day, hour, minute, second, lat, lng, tz, ayanamsaOffset].some(Number.isNaN)) {
     return NextResponse.json({ error: "A date, time, place or offset parameter is not a number" }, { status: 400 });
@@ -30,7 +33,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const chart = await calculateChart(year, month, day, hour, minute, second, lat, lng, tz, ayanamsa, nodeMode, ayanamsaOffset, sunriseMode);
+    const chart = await calculateChart(year, month, day, hour, minute, second, lat, lng, tz, ayanamsa, nodeMode, ayanamsaOffset, sunriseMode, sunriseManualHours);
     return NextResponse.json(chart);
   } catch (error) {
     console.error("Chart calculation error:", error);
