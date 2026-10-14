@@ -106,6 +106,9 @@ test('the panels and the sentences the calculations write are in Finnish', async
   await expect(visible(page, page.getByText('Mars 12. merkissä Auringosta'))).toBeVisible();
   // (Both layouts of the page hold the table now, so the visible one is picked out.)
   await expect(visible(page, page.getByText('Kendra-/Trikona-herrat'))).toBeVisible();
+  // The classical yogas: the Nabhasa Shoola (the grahas in three signs) and the Dharma-Karmadhipati of the 9th and 10th lords.
+  await expect(visible(page, page.getByText('Planeetat 3 merkissä', { exact: true }))).toBeVisible();
+  await expect(visible(page, page.getByText('9. herra Venus merkissä Cancer, talo 11'))).toBeVisible();
 
   // The Varga matrix and the argala headers.
   await visible(page, page.getByRole('button', { name: 'Varga', exact: true })).click();

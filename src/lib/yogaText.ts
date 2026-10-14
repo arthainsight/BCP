@@ -12,7 +12,67 @@ const QUALITY = { exaltation: 'korotus', 'own sign': 'oma merkki' } as const;
 
 type Rule = [RegExp, (m: RegExpExecArray) => string];
 
+const KIND = { movable: 'liikkuvissa', fixed: 'pysyvissä', dual: 'kaksoisluonteisissa', mixed: 'sekalaisissa' } as const;
+const GROUP = { Benefics: 'Hyväntekijät', Malefics: 'Pahantekijät' } as const;
+const FROM = { Lagna: 'Lagnasta', Moon: 'Kuusta' } as const;
+const LORD = '(Lagna lord|(\\d+)(?:st|nd|rd|th) lord)';
+const lordLabel = (label: string, number: string | undefined) => (number ? `${number}. herra` : 'Lagnan herra');
+const NONE = (text: string) => (text === 'none' ? 'ei yhtään' : text);
+
+/**
+ * The reasons of the yogas in yogasClassical.ts. They come first: a few of them start like a reason a more general
+ * pattern below would catch ("Jupiter in 3rd from Moon (not a Kendra)").
+ */
+const CLASSICAL_RULES: Rule[] = [
+  [/^Planets in (movable|fixed|dual|mixed) signs$/, (m) => `Planeetat ${KIND[m[1] as keyof typeof KIND]} merkeissä`],
+  [/^Planets in houses (.+)$/, (m) => `Planeetat taloissa ${m[1]}`],
+  [/^Planets in (\d+) signs?$/, (m) => `Planeetat ${m[1]} merkissä`],
+  [/^Not counted: a Dala or Akriti yoga holds$/, () => 'Ei lasketa: Dala- tai Akriti-yoga on voimassa'],
+  [/^(Benefics|Malefics) in kendra houses (.+)$/, (m) => `${GROUP[m[1] as keyof typeof GROUP]} kendra-taloissa ${NONE(m[2])}`],
+  [/^(Benefics|Malefics) in houses (.+)$/, (m) => `${GROUP[m[1] as keyof typeof GROUP]} taloissa ${NONE(m[2])}`],
+  [new RegExp(`^Jupiter in ${ORD} from Moon \\(not a Kendra\\)$`), (m) => `Jupiter ${m[1]}. merkissä Kuusta (ei Kendra)`],
+  [new RegExp(`^Jupiter in ${ORD} from Moon — no benefic joins or aspects it$`), (m) => `Jupiter ${m[1]}. merkissä Kuusta — mikään hyväntekijä ei ole sen kanssa eikä aspektoi sitä`],
+  [new RegExp(`^Jupiter in ${ORD} from Moon — Jupiter is debilitated$`), (m) => `Jupiter ${m[1]}. merkissä Kuusta — Jupiter on heikennetty`],
+  [new RegExp(`^Jupiter in ${ORD} from Moon — Jupiter is combust \\((.+)° from Sun\\)$`), (m) => `Jupiter ${m[1]}. merkissä Kuusta — Jupiter on polttunut (${m[2]}° Auringosta)`],
+  [new RegExp(`^Jupiter in ${ORD} from Moon — Jupiter is in an enemy sign \\((\\S+)\\)$`), (m) => `Jupiter ${m[1]}. merkissä Kuusta — Jupiter on vihollisen merkissä (${m[2]})`],
+  [/^(\S+) with Jupiter$/, (m) => `${m[1]} Jupiterin kanssa`],
+  [/^(\S+) aspects Jupiter$/, (m) => `${m[1]} aspektoi Jupiteria`],
+  [new RegExp(`^${LORD} (\\S+) in (\\S+), house (\\d+)$`), (m) => `${lordLabel(m[1], m[2])} ${m[3]} merkissä ${m[4]}, talo ${m[5]}`],
+  [new RegExp(`^${LORD} (\\S+) not in the chart$`), (m) => `${lordLabel(m[1], m[2])} ${m[3]} puuttuu kartasta`],
+  [/^9th lord is not in a Kendra$/, () => '9. herra ei ole kendrassa'],
+  [/^9th lord is not in its own or exaltation sign$/, () => '9. herra ei ole omassa eikä korotusmerkissään'],
+  [/^Lagna lord is not strong \(own or exaltation sign, Kendra or Trikona\)$/, () => 'Lagnan herra ei ole vahva (oma- tai korotusmerkki, Kendra tai Trikona)'],
+  [/^Exchange of signs$/, () => 'Merkkien vaihto'],
+  [/^No exchange of signs$/, () => 'Ei merkkien vaihtoa'],
+  [/^No exchange of signs of this kind$/, () => 'Ei tämän tyyppistä merkkien vaihtoa'],
+  [/^Same planet rules both$/, () => 'Sama planeetta hallitsee molempia'],
+  [/^Conjunct$/, () => 'Yhtymässä'],
+  [/^Mutual aspect$/, () => 'Keskinäinen aspekti'],
+  [/^No conjunction, exchange or mutual aspect$/, () => 'Ei yhtymää, merkkien vaihtoa eikä keskinäistä aspektia'],
+  [/^(\S+) ⇄ (\S+) \(houses (\d+) and (\d+)\)$/, (m) => `${m[1]} ⇄ ${m[2]} (talot ${m[3]} ja ${m[4]})`],
+  [new RegExp(`^${ORD} lord (\\S+) in house (\\d+)$`), (m) => `${m[1]}. herra ${m[2]} talossa ${m[3]}`],
+  [/^(\S+) debilitated in (\S+)$/, (m) => `${m[1]} heikennetty merkissä ${m[2]}`],
+  [/^No cancellation$/, () => 'Ei kumoutumista'],
+  [/^No planet is debilitated$/, () => 'Yksikään planeetta ei ole heikennetty'],
+  [/^Lord (\S+) is exalted$/, (m) => `Herra ${m[1]} on korotettu`],
+  [/^Lord (\S+) in a Kendra from the (Lagna|Moon)$/, (m) => `Herra ${m[1]} kendrassa ${FROM[m[2] as keyof typeof FROM]}`],
+  [/^Lord (\S+) aspects (\S+)$/, (m) => `Herra ${m[1]} aspektoi planeettaa ${m[2]}`],
+  [/^Exaltation lord (\S+) in a Kendra from the (Lagna|Moon)$/, (m) => `Korotusmerkin herra ${m[1]} kendrassa ${FROM[m[2] as keyof typeof FROM]}`],
+  [/^(\S+) exalted in the same sign$/, (m) => `${m[1]} korotettu samassa merkissä`],
+  [/^(\S+) \(exalted here\) in a Kendra from the (Lagna|Moon)$/, (m) => `${m[1]} (korotettu tässä) kendrassa ${FROM[m[2] as keyof typeof FROM]}`],
+  [/^Lagna lord is not in a Kendra or Trikona$/, () => 'Lagnan herra ei ole kendrassa eikä trikonassa'],
+  [/^Lagna is not a fixed sign$/, () => 'Lagna ei ole pysyvä merkki'],
+  [/^Venus is not in a Kendra$/, () => 'Venus ei ole kendrassa'],
+  [/^Moon is not in a Trikona with a benefic$/, () => 'Moon ei ole trikonassa hyväntekijän kanssa'],
+  [/^Saturn is not in the 10th house$/, () => 'Saturn ei ole 10. talossa'],
+  [/^Fixed Lagna, Venus in a Kendra, Moon with a benefic in a Trikona, Saturn in the 10th$/, () => 'Pysyvä Lagna, Venus kendrassa, Moon hyväntekijän kanssa trikonassa, Saturn 10. talossa'],
+  [new RegExp(`^No (benefic|malefic) in the ${ORD} house$`), (m) => `Ei ${m[1] === 'benefic' ? 'hyväntekijää' : 'pahantekijää'} ${m[2]}. talossa`],
+  [/^No benefic and malefic together in the 5th house$/, () => 'Ei hyväntekijää ja pahantekijää yhdessä 5. talossa'],
+  [/^Benefics in houses 1 and 9, benefic and malefic in the 5th, malefics in houses 4 and 8$/, () => 'Hyväntekijät taloissa 1 ja 9, hyväntekijä ja pahantekijä 5. talossa, pahantekijät taloissa 4 ja 8'],
+];
+
 const RULES: Rule[] = [
+  ...CLASSICAL_RULES,
   [new RegExp(`^No eligible planets in ${ORD} from (Sun|Moon)$`), (m) => `Ei kelpaavia planeettoja ${m[1]}. merkissä ${SIDE[m[2] as 'Sun' | 'Moon']}`],
   [new RegExp(`^No benefic in ${ORD} from Moon \\((.+)\\)$`), (m) => `Ei hyväntekijää ${m[1]}. merkissä Kuusta (${m[2]})`],
   [new RegExp(`^No benefic in ${ORD} house from Lagna$`), (m) => `Ei hyväntekijää ${m[1]}. talossa lagnasta`],

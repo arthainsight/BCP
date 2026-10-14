@@ -44,3 +44,30 @@ for (const planets of charts) {
 }
 assert.ok(checked > 100, 'the loop covered many yoga results');
 assert.deepEqual([...untranslated], [], 'every reason the yoga engine writes has a Finnish pattern');
+
+// Many random charts, so that every wording of every yoga turns up: each segment has a pattern and nothing of the
+// English sentence is left behind (planet and sign names are the same in both languages).
+{
+  let seed = 7;
+  const random = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
+  const ENGLISH_LEFT = /\b(the|not|is|are|and|from|with|aspects|joins|enemy|exchange|No|Not|Planets in|none)\b/;
+  const leftBehind = new Set<string>();
+  const seen = new Set<string>();
+  for (let index = 0; index < 4000; index++) {
+    const ascendant = Math.floor(random() * 12) + 1;
+    // Some charts crowd the planets into few signs, so the Nabhasa and Sankhya yogas turn up.
+    const spread = index % 4 === 0 ? 3 : index % 4 === 1 ? 6 : 12;
+    const start = Math.floor(random() * 12);
+    const planets = NAMES.map(name => planet(name, ((start + Math.floor(random() * spread)) % 12) + 1, undefined, random() * 30))
+      .map(item => ({ ...item, house: ((item.sign - ascendant + 12) % 12) + 1 }));
+    for (const yoga of calculateYogas(planets, ascendant)) {
+      for (const segment of yoga.resultText.split('; ')) {
+        seen.add(`${yoga.id}: ${segment}`);
+        const finnish = translateYogaText(segment, 'fi');
+        if (finnish === segment || ENGLISH_LEFT.test(finnish)) leftBehind.add(`${yoga.id}: ${segment} -> ${finnish}`);
+      }
+    }
+  }
+  assert.ok(seen.size > 200, 'the random charts produced many different wordings');
+  assert.deepEqual([...leftBehind].slice(0, 20), [], 'every wording is translated, with nothing English left in it');
+}

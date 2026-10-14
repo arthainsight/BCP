@@ -3,9 +3,11 @@ import { getRashiAspectSigns } from '@/lib/drishti';
 import { normalizeDegrees } from '@/lib/angles';
 import { signLord, signName } from '@/lib/signs';
 import { DEBILITATION, EXALTATION } from '@/lib/dignity';
+import { dynamicBeneficStatus } from '@/lib/yogaCommon';
+import { calculateClassicalYogas } from '@/lib/yogasClassical';
 
 export type YogaStatus = 'active' | 'inactive';
-export type YogaCategory = 'solar' | 'moon' | 'raja' | 'dhana' | 'general' | 'pancha-mahapurusha';
+export type YogaCategory = 'solar' | 'moon' | 'raja' | 'dhana' | 'general' | 'pancha-mahapurusha' | 'nabhasa';
 
 export interface YogaResult {
   id: string;
@@ -34,33 +36,6 @@ const PANCHA_DEFS: { id: string; name: string; planet: string; ownSigns: number[
 const TRACKED_PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 
 const BENEFIC_CANDIDATES = ['Jupiter', 'Venus', 'Mercury', 'Moon'];
-const NAT_MALEFIC = new Set(['Sun', 'Mars', 'Saturn', 'Rahu', 'Ketu']);
-
-// Dynamic benefic status: true = benefic, false = malefic, null = neutral.
-// Avoids circular dep with yogaStrength.ts — inline the same Moon-phase + Mercury-companion logic.
-function dynamicBeneficStatus(name: string, planets: PlanetData[]): true | false | null {
-  const NAT_BENEFIC = new Set(['Jupiter', 'Venus']);
-  if (NAT_BENEFIC.has(name)) return true;
-  if (NAT_MALEFIC.has(name)) return false;
-  if (name === 'Moon') {
-    const sun  = planets.find(p => p.name === 'Sun');
-    const moon = planets.find(p => p.name === 'Moon');
-    if (sun && moon) {
-      const diff = normalizeDegrees(moon.longitude - sun.longitude);
-      if (diff >= 120 && diff <= 240) return true;
-      if (diff <= 60  || diff >= 300) return false;
-    }
-    return null;
-  }
-  if (name === 'Mercury') {
-    const mercury = planets.find(p => p.name === 'Mercury');
-    if (!mercury) return true;
-    if (planets.some(p => p.name !== 'Mercury' && p.sign === mercury.sign && NAT_MALEFIC.has(p.name))) return false;
-    return true;
-  }
-  return null;
-}
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 export function getPlanetsInRelativeSign(
@@ -541,6 +516,10 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
       resultText: active ? parts.join('; ') : 'No benefic occupies or aspects Lagna',
     });
   }
+
+  // ── Yogas of the classical texts: the Nabhasa yogas and a set of single yogas (yogasClassical.ts) ──
+
+  results.push(...calculateClassicalYogas(planets, ascendantSign));
 
   // ── Pending definitions ───────────────────────────────────────────────────
   // Amara, Dhvaja, Muni have multiple conflicting definitions across traditions.
