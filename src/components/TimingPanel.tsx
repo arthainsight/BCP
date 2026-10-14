@@ -9,6 +9,7 @@ import ParayaHitsPanel from './ParayaHitsPanel';
 import TimingSummary from './TimingSummary';
 import TithiPravesaPanel from './TithiPravesaPanel';
 import PraveshaPanel from './PraveshaPanel';
+import YearGlancePanel from './YearGlancePanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
 import MuhurtaPanel from './MuhurtaPanel';
 import type { AnnualPlace } from './annualShared';
@@ -16,7 +17,7 @@ import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
-type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha';
+type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'dasha', label: 'Dasha' },
@@ -28,6 +29,7 @@ const VIEWS: { key: View; label: string }[] = [
   { key: 'nakshatra', label: 'Nakṣatra Praveśa' },
   { key: 'yoga', label: 'Yoga Praveśa' },
   { key: 'varsha', label: 'Varṣaphala' },
+  { key: 'year', label: 'Year at a glance' },
 ];
 
 interface Props {
@@ -90,7 +92,7 @@ export default function TimingPanel({
           <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
             {VIEWS.map((item) => (
               <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-                {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' || item.key === 'muhurta' ? t(item.label) : item.label}
+                {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' || item.key === 'muhurta' || item.key === 'year' ? t(item.label) : item.label}
               </button>
             ))}
           </div>
@@ -186,6 +188,18 @@ export default function TimingPanel({
           chartStyle={chartStyle}
           chartDisplaySettings={chartDisplaySettings}
           nakshatraAdjust={nakshatraAdjust}
+          place={annualPlace}
+          onPlaceChange={setAnnualPlace}
+        />
+      )}
+
+      {view === 'year' && (
+        <YearGlancePanel
+          chart={chart}
+          birthDatetime={birthDatetime}
+          targetDate={targetDate}
+          ianaTimezone={ianaTimezone}
+          calculationSettings={calculationSettings}
           place={annualPlace}
           onPlaceChange={setAnnualPlace}
         />

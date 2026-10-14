@@ -998,6 +998,17 @@ export const FI: Record<string, string> = {
   '2nd and 11th lords': '2. ja 11. herra',
 
   // Toggle
+  // Year at a glance
+  'Year at a glance': 'Vuosi yhdellä silmäyksellä',
+  'The four annual charts side by side: Tithi Praveśa, Nakṣatra Praveśa, Yoga Praveśa and Varṣaphala. Each begins at a moment of its own, a few weeks apart.': 'Neljä vuosikarttaa rinnakkain: Tithi Praveśa, Nakṣatra Praveśa, Yoga Praveśa ja Varṣaphala. Jokainen alkaa omasta hetkestään, muutaman viikon välein.',
+  'Birth date and place are needed for the annual charts.': 'Vuosikartat tarvitsevat syntymäajan ja -paikan.',
+  'Nakṣatra and Yoga Praveśa': 'Nakṣatra ja Yoga Praveśa',
+  'annual chart': 'vuosikartta',
+  'lord of the year': 'vuoden herra',
+  'days from the first': 'päivää ensimmäisestä',
+  'target date': 'valittu päivä',
+  'failed': 'epäonnistui',
+  'The lord of the year is the vāra lord at the moment for the three Praveśas and the Tājika year lord for Varṣaphala. Open one of the tabs for the chart, the planets and the daśā of the year.': 'Vuoden herra on kolmella Praveśalla vāra-herra sillä hetkellä ja Varṣaphalalla Tājikan vuoden herra. Avaa jokin välilehdistä nähdäksesi kartan, planeetat ja vuoden daśān.',
   // Nakshatra and Yoga Pravesa
   'Vimśottarī’s 120 years compressed into this year. The Moon stands where it did at birth, so the daśā of birth begins again: the lord of the birth nakshatra, with the same part of its period spent. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted.': 'Vimśottarīn 120 vuotta puristettuna tähän vuoteen. Kuu on siellä, missä se oli syntymässä, joten syntymän daśā alkaa uudelleen: syntymän nakshatran herra, ja sen jaksosta on kulunut sama osa. Antardaśāt alkavat mahādaśān herrasta. Käynnissä oleva jakso valittuna ajankohtana on korostettu.',
   'Vimśottarī’s 120 years compressed into this year, entered by the yoga of birth counted like a nakshatra (the 1st yoga as Ashwini, and so on round the nine lords), with the part of the yoga spent as the part of the period spent. Antardaśās begin with the mahādaśā lord. The running period at the target date is highlighted.': 'Vimśottarīn 120 vuotta puristettuna tähän vuoteen, aloitus syntymän yogasta laskettuna kuten nakshatra (1. yoga kuten Ashwini, ja niin edelleen yhdeksän herran kierros), ja yogasta kulunut osa on jaksosta kulunut osa. Antardaśāt alkavat mahādaśān herrasta. Käynnissä oleva jakso valittuna ajankohtana on korostettu.',

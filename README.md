@@ -44,7 +44,8 @@ This is not meant to replace traditional study — it's meant to **accelerate it
 * Selectable ayanamsa, including a signed custom offset from Lahiri
 * Transits with automatic recalculation
 * Tithi Praveśa annual chart with Tithi Aṣṭottarī daśā
-* Nakṣatra Praveśa and Yoga Praveśa annual charts (the Moon's return to its natal longitude, and the return of the Sun-and-Moon sum), with two rules for the year's start
+* Nakṣatra Praveśa and Yoga Praveśa annual charts (the Moon's return to its natal longitude, and the return of the Sun-and-Moon sum), with two rules for the year's start and a Vimśottarī daśā of the year
+* Year at a glance: the four annual charts on one time axis
 * Tājika Varṣaphala: Muntha, year lord, Pañcavargīya Bala and Mudda daśā
 
 ### Daśā
@@ -78,7 +79,7 @@ Overlap and Systems), among them:
 * Ṣaḍbala (beta)
 * Bhāva Bala (beta)
 * Graha dṛṣṭi and rāśi dṛṣṭi (Jaimini)
-* Sarvatobhadra chakra: the 9 × 9 chart of the nakṣatras (with Abhijit), vowels, consonants, signs, tithi groups and weekdays, with the grahas in their squares and their vedha (across the chart and on the two diagonals)
+* Sarvatobhadra chakra: the 9 × 9 chart of the nakṣatras (with Abhijit), vowels, consonants, signs, tithi groups and weekdays, with the grahas in their squares and their vedha (across the chart and on the two diagonals), the squares the lines cross, the syllable of a name and the birth points a graha pierces
 * Avasthās, sahams, panchanga
 
 ### Research tools
@@ -176,8 +177,8 @@ Panchang, the palm workspace and the report load when they are opened, and
 
 * Compare Nārāyaṇa, Mūla and Sthira against the JHora desktop application
   (they stay Beta until then)
-* Yoga detection is shut until it is opened; open it by default once its
-  coverage is validated
+* Yoga detection: settle the rules that are only as good as their source
+  (Kemadruma and Sakata cancellations, Mukuta, Amara, Dhvaja, Muni)
 
 ---
 

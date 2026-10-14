@@ -366,3 +366,56 @@ test('TIMING Nakṣatra Praveśa and Yoga Praveśa give the annual chart for the
 
   expect(errors).toEqual([]);
 });
+
+test('TIMING Year at a glance puts Tithi, Nakṣatra and Yoga Praveśa and Varṣaphala on one time axis', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Year at a glance', exact: true })).click();
+  const glance = visible(page, page.locator('[data-year-glance]'));
+  await expect(glance).toBeVisible();
+
+  // All four have their moment, in the form of the other panels, and a lord of the year and a lagna.
+  const rows = glance.locator('[data-year-table] tbody tr');
+  await expect(rows).toHaveCount(4);
+  for (const id of ['tithi', 'nakshatra', 'yoga', 'varsha']) {
+    const row = glance.locator(`[data-year-row="${id}"]`);
+    await expect(row).toContainText(/\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2} \(UTC\+5:30\)/, { timeout: 30_000 });
+    await expect(row).toContainText(/(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn)/);
+    await expect(row).toContainText(/(Ar|Ta|Ge|Cn|Le|Vi|Li|Sc|Sg|Cp|Aq|Pi) \d+°/);
+    await expect(glance.locator(`[data-year-bar="${id}"] rect`)).toHaveCount(1);
+  }
+  await expect(glance.locator('[data-year-timeline]')).toBeVisible();
+
+  // The bars are on one axis: each starts where its moment falls, a few weeks apart, and every one is about a year long.
+  const geometry = await glance.locator('[data-year-bar] rect').evaluateAll((rects) => rects.map((rect) => ({ x: Number(rect.getAttribute('x')), width: Number(rect.getAttribute('width')) })));
+  expect(geometry).toHaveLength(4);
+  const starts = geometry.map((g) => g.x);
+  expect(Math.max(...starts) - Math.min(...starts)).toBeGreaterThan(0);
+  expect(Math.max(...starts) - Math.min(...starts)).toBeLessThan(120);
+  for (const g of geometry) expect(g.width).toBeGreaterThan(550);
+
+  // The rows agree with the panels: Nakṣatra Praveśa begins at the same moment in its own tab.
+  const glanceBegins = (await glance.locator('[data-year-row="nakshatra"] td').nth(1).innerText()).trim();
+  await visible(page, page.getByRole('button', { name: 'Nakṣatra Praveśa', exact: true })).click();
+  await expect(visible(page, page.locator('[data-pravesha-rows]'))).toContainText(glanceBegins.slice(0, 19), { timeout: 30_000 });
+
+  // A year back moves all four.
+  await visible(page, page.getByRole('button', { name: 'Year at a glance', exact: true })).click();
+  const yearText = visible(page, page.locator('[data-year-glance]').getByText(/^\d{4}$/));
+  const shownYear = Number((await yearText.innerText()).trim());
+  await visible(page, page.getByRole('button', { name: 'Previous year', exact: true })).click();
+  await expect(visible(page, page.locator('[data-year-glance]').getByText(String(shownYear - 1), { exact: true }))).toBeVisible();
+  await expect(glance.locator('[data-year-row="tithi"]')).toContainText(String(shownYear - 1), { timeout: 30_000 });
+  await expect(glance.locator('[data-year-row="varsha"]')).toContainText(String(shownYear - 1), { timeout: 30_000 });
+
+  // The rule for Nakṣatra and Yoga Praveśa can be switched here too.
+  const before = visible(page, page.getByRole('button', { name: 'Before birthday', exact: true }));
+  await before.click();
+  await expect(before).toHaveAttribute('aria-pressed', 'true');
+  await expect(glance.locator('[data-year-row="yoga"]')).toContainText(/\d{2}\.\d{2}\.\d{4}/, { timeout: 30_000 });
+
+  expect(errors).toEqual([]);
+});

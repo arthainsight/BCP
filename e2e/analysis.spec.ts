@@ -333,6 +333,7 @@ test('the yoga detection is open at first, and what you choose is remembered', a
   // The choice is kept: after a reload the table is still closed, and opening it is kept the same way.
   expect(await page.evaluate(() => localStorage.getItem('bhrigu:yoga-detection-open'))).toBe('false');
   await page.reload();
+  await calculateChart(page);
   await selectWorkspace(page, 'ANALYSIS');
   const again = visible(page, page.getByRole('button', { name: /yoga\.detection/ }));
   await expect(again).toHaveAttribute('aria-expanded', 'false');
