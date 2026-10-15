@@ -109,6 +109,8 @@ test('the panels and the sentences the calculations write are in Finnish', async
   // The classical yogas: the Nabhasa Shoola (the grahas in three signs) and the Dharma-Karmadhipati of the 9th and 10th lords.
   await expect(visible(page, page.getByText('Planeetat 3 merkissä', { exact: true }))).toBeVisible();
   await expect(visible(page, page.getByText('9. herra Venus merkissä Cancer, talo 11'))).toBeVisible();
+  // The Moon in the same sign as the Sun: Adhama (BPHS 37.1), its reason in Finnish.
+  await expect(visible(page, page.getByText('Moon 1. merkissä Auringosta (Kendra)'))).toBeVisible();
 
   // The Varga matrix and the argala headers.
   await visible(page, page.getByRole('button', { name: 'Varga', exact: true })).click();

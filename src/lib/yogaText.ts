@@ -1,4 +1,4 @@
-import type { Language } from './i18n';
+import { FI, translate, type Language } from './i18n';
 
 /**
  * The reasons the yoga engine writes ("Moon in house 4 (Kendra)") are English
@@ -41,7 +41,8 @@ const CLASSICAL_RULES: Rule[] = [
   [new RegExp(`^${LORD} (\\S+) not in the chart$`), (m) => `${lordLabel(m[1], m[2])} ${m[3]} puuttuu kartasta`],
   [/^9th lord is not in a Kendra$/, () => '9. herra ei ole kendrassa'],
   [/^9th lord is not in its own or exaltation sign$/, () => '9. herra ei ole omassa eikä korotusmerkissään'],
-  [/^Lagna lord is not strong \(own or exaltation sign, Kendra or Trikona\)$/, () => 'Lagnan herra ei ole vahva (oma- tai korotusmerkki, Kendra tai Trikona)'],
+  [/^(Lagna lord|9th lord) is debilitated$/, (m) => `${m[1] === 'Lagna lord' ? 'Lagnan herra' : '9. herra'} on heikennetty`],
+  [/^(Lagna lord|9th lord) is neither in its own, exaltation or friendly sign nor in a Kendra or Trikona$/, (m) => `${m[1] === 'Lagna lord' ? 'Lagnan herra' : '9. herra'} ei ole omassa, korotus- eikä ystävän merkissään eikä Kendrassa tai Trikonassa`],
   [/^Exchange of signs$/, () => 'Merkkien vaihto'],
   [/^No exchange of signs$/, () => 'Ei merkkien vaihtoa'],
   [/^No exchange of signs of this kind$/, () => 'Ei tämän tyyppistä merkkien vaihtoa'],
@@ -68,11 +69,67 @@ const CLASSICAL_RULES: Rule[] = [
   [/^Fixed Lagna, Venus in a Kendra, Moon with a benefic in a Trikona, Saturn in the 10th$/, () => 'Pysyvä Lagna, Venus kendrassa, Moon hyväntekijän kanssa trikonassa, Saturn 10. talossa'],
   [new RegExp(`^No (benefic|malefic) in the ${ORD} house$`), (m) => `Ei ${m[1] === 'benefic' ? 'hyväntekijää' : 'pahantekijää'} ${m[2]}. talossa`],
   [/^No benefic and malefic together in the 5th house$/, () => 'Ei hyväntekijää ja pahantekijää yhdessä 5. talossa'],
+];
+
+const LORD_OF = (label: string, number: string | undefined) => (number ? `${number}. herran` : 'Lagnan herran');
+/** "2, 12, 8" as "2, 12 ja 8". */
+const AND_LIST = (list: string) => list.split(', ').reduce((text, item, index, all) => (index === 0 ? item : index === all.length - 1 ? `${text} ja ${item}` : `${text}, ${item}`), '');
+
+/** The reasons of the yogas in yogasBphs.ts that would be caught by a more general pattern if they came after it. */
+const BPHS_RULES_FIRST: Rule[] = [
   [/^Benefics in houses 1 and 9, benefic and malefic in the 5th, malefics in houses 4 and 8$/, () => 'Hyväntekijät taloissa 1 ja 9, hyväntekijä ja pahantekijä 5. talossa, pahantekijät taloissa 4 ja 8'],
+  [/^Benefics in houses 7, 8 and no malefic joining or aspecting them$/, () => 'Hyväntekijät taloissa 7 ja 8, eikä pahantekijää niiden kanssa tai aspektoimassa niitä'],
+  [new RegExp(`^Benefics in houses (.+) from the sign of the (Lagna lord|(\\d+)(?:st|nd|rd|th) lord)$`), (m) => `Hyväntekijät taloissa ${AND_LIST(m[1])} (${LORD_OF(m[2], m[3])} merkistä lukien)`],
+  [new RegExp(`^No benefic in the ${ORD} from the sign of the (Lagna lord|(\\d+)(?:st|nd|rd|th) lord)$`), (m) => `Ei hyväntekijää ${m[1]}. merkissä ${LORD_OF(m[2], m[3])} merkistä lukien`],
+  [new RegExp(`^Moon in ${ORD} from Sun \\((Kendra|Panaphara|Apoklima)\\)$`), (m) => `Moon ${m[1]}. merkissä Auringosta (${m[2]})`],
+];
+
+/** The reasons of the yogas in yogasBphs.ts, and of Kemadruma and its cancellation. */
+const BPHS_RULES: Rule[] = [
+  [/^Moon unattended — no planet with it or in the 2nd or 12th from it, none in a Kendra from the Lagna or the Moon$/, () => 'Kuu ilman seuralaisia — ei planeettaa sen kanssa eikä 2. tai 12. merkissä siitä, ei yhtään Kendrassa Lagnasta eikä Kuusta'],
+  [/^Moon is joined by: (.+)$/, (m) => `Kuun kanssa: ${m[1]}`],
+  [/^Kemadruma cancelled by a planet in a Kendra: (.+)$/, (m) => `Kemadruma kumoutuu Kendrassa olevalla planeetalla: ${m[1]}`],
+  [/^No Kemadruma to cancel$/, () => 'Ei Kemadrumaa kumottavaksi'],
+  [/^No (benefic|malefic) in the 1st house, none in both the 12th and the 2nd$/, (m) => `Ei ${m[1] === 'benefic' ? 'hyväntekijää' : 'pahantekijää'} 1. talossa, ei myöskään sekä 12. että 2. talossa`],
+  [/^(benefics|malefics) in houses 12, 2$/, (m) => `${m[1] === 'benefics' ? 'hyväntekijät' : 'pahantekijät'} taloissa 12 ja 2`],
+  [/^(.+) in a Kendra from the (Lagna|Moon)$/, (m) => `${m[1]} Kendrassa ${FROM[m[2] as keyof typeof FROM]}`],
+  [/^(\d) of the 3 benefics in the Upachayas from the Moon(?: \((.+)\))?$/, (m) => `${m[1]}/3 hyväntekijää Kuun Upachaya-taloissa${m[2] ? ` (${m[2]})` : ''}`],
+  [/^Not a benefic in a Kendra: (.+)$/, (m) => `Kendrassa ei-hyväntekijä: ${m[1]}`],
+  [/^Not a benefic in the 8th house: (.+)$/, (m) => `8. talossa ei-hyväntekijä: ${m[1]}`],
+  [/^Only benefics in the Kendras: (.+)$/, (m) => `Kendroissa vain hyväntekijöitä: ${m[1]}`],
+  [/^No planet in the Kendras$/, () => 'Ei planeettoja Kendroissa'],
+  [/^(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu) in (\S+), house (\d+)$/, (m) => `${m[1]} merkissä ${m[2]}, talo ${m[3]}`],
+  [/^No form of the yoga holds$/, () => 'Yoga ei toteudu missään muodossaan'],
+  [/^Mutual Kendras$/, () => 'Keskinäiset Kendrat'],
+  [/^The 4th lord is Jupiter itself, counted as in a Kendra from itself$/, () => '4. herra on itse Jupiter, lasketaan Kendrassa itsestään'],
+  [/^The 5th and 6th lords are one planet, counted as in a Kendra from itself$/, () => '5. ja 6. herra on sama planeetta, lasketaan Kendrassa itsestään'],
+  [/^No planet in its own or exaltation sign in a (Kendra|Trikona)$/, (m) => `Ei planeettaa omassa tai korotusmerkissään ${m[1] === 'Kendra' ? 'Kendrassa' : 'Trikonassa'}`],
+  [/^Dignified in a (Kendra|Trikona): (.+)$/, (m) => `Arvokas ${m[1] === 'Kendra' ? 'Kendrassa' : 'Trikonassa'}: ${m[2]}`],
+  [new RegExp(`^No (benefic|malefic) in the ${ORD} house in the right sign$`), (m) => `Ei ${m[1] === 'benefic' ? 'hyväntekijää' : 'pahantekijää'} ${m[2]}. talossa oikeassa merkissä`],
+  [/^Jupiter is not in the 2nd or 5th house$/, () => 'Jupiter ei ole 2. eikä 5. talossa'],
+  [/^Mercury and Venus join or aspect Jupiter$/, () => 'Mercury ja Venus ovat Jupiterin kanssa tai aspektoivat sitä'],
+  [/^Mercury and Venus do not both join or aspect Jupiter$/, () => 'Mercury tai Venus (tai molemmat) ei ole Jupiterin kanssa eikä aspektoi sitä'],
+  [/^Chain: (.+)$/, (m) => `Ketju: ${m[1]}`],
+  [/^(\S+) is not in a Kendra, Trikona or exaltation$/, (m) => `${m[1]} ei ole Kendrassa, Trikonassa eikä korotuksessa`],
+  [/^all in Kendras, Trikonas or exaltation$/, () => 'kaikki Kendroissa, Trikonoissa tai korotuksessa'],
+  [/^a dispositor is not in a Kendra or Trikona$/, () => 'dispositori ei ole Kendrassa eikä Trikonassa'],
+  [/^the two dispositors are in Kendras or Trikonas$/, () => 'molemmat dispositorit ovat Kendroissa tai Trikonoissa'],
+  [/^In its own or exaltation sign, with the 10th lord$/, () => 'Omassa tai korotusmerkissään, 10. herran kanssa'],
+  [/^Lagna lord and 10th lord together in a movable sign$/, () => 'Lagnan herra ja 10. herra yhdessä liikkuvassa merkissä'],
+  [/^Malefic in or aspecting the 7th or 8th house: (.+)$/, (m) => `Pahantekijä 7. tai 8. talossa tai aspektoimassa niitä: ${m[1]}`],
+  [/^Jupiter or Mercury in a Trikona from the Moon$/, () => 'Jupiter tai Mercury Trikonassa Kuusta'],
+  [/^Two or more benefics in house (\d+): (.+)$/, (m) => `Vähintään kaksi hyväntekijää talossa ${m[1]}: ${m[2]}`],
+  [/^Houses 12, 1, 2 and 7 are occupied$/, () => 'Talot 12, 1, 2 ja 7 on miehitetty'],
+  [/^Venus, Jupiter and the Lagna lord are in Kendras$/, () => 'Venus, Jupiter ja Lagnan herra ovat Kendroissa'],
+  [/^Exalted in a Kendra and aspected by Jupiter$/, () => 'Korotettu Kendrassa ja Jupiterin aspektoima'],
+  [/^The 7th lord is in the 10th house, the 10th lord is exalted and with the 9th lord$/, () => '7. herra on 10. talossa, 10. herra on korotettu ja 9. herran kanssa'],
+  [/^Dignified benefics in houses 5, 6 and 7 and malefics in houses 1, 3 and 11$/, () => 'Arvokkaat hyväntekijät taloissa 5, 6 ja 7 ja pahantekijät taloissa 1, 3 ja 11'],
 ];
 
 const RULES: Rule[] = [
+  ...BPHS_RULES_FIRST,
   ...CLASSICAL_RULES,
+  ...BPHS_RULES,
   [new RegExp(`^No eligible planets in ${ORD} from (Sun|Moon)$`), (m) => `Ei kelpaavia planeettoja ${m[1]}. merkissä ${SIDE[m[2] as 'Sun' | 'Moon']}`],
   [new RegExp(`^No benefic in ${ORD} from Moon \\((.+)\\)$`), (m) => `Ei hyväntekijää ${m[1]}. merkissä Kuusta (${m[2]})`],
   [new RegExp(`^No benefic in ${ORD} house from Lagna$`), (m) => `Ei hyväntekijää ${m[1]}. talossa lagnasta`],
@@ -97,12 +154,6 @@ const RULES: Rule[] = [
   [new RegExp(`^Moon is in the ${ORD} sign from Jupiter \\(not 6th or 8th\\)$`), (m) => `Moon on Jupiterista lukien ${m[1]}. merkissä (ei 6. eikä 8.)`],
   [/^Moon in house (\d+) \(Kendra\)$/, (m) => `Moon talossa ${m[1]} (Kendra)`],
   [/^Moon in house (\d+) \(not a Kendra\)$/, (m) => `Moon talossa ${m[1]} (ei Kendra)`],
-  [/^Exalted: (\d+), Debilitated: (\d+) — not equal$/, (m) => `Korotettuja: ${m[1]}, heikennettyjä: ${m[2]} — ei yhtä paljon`],
-  [/^Exalted: (.+)$/, (m) => `Korotettu: ${m[1]}`],
-  [/^Debilitated: (.+)$/, (m) => `Heikennetty: ${m[1]}`],
-  [/^(\d+) exalted planets? — need 3\+$/, (m) => `Korotettuja planeettoja: ${m[1]} — tarvitaan 3+`],
-  [/^(\d+) debilitated planets? — need 3\+$/, (m) => `Heikennettyjä planeettoja: ${m[1]} — tarvitaan 3+`],
-  [/^(\d+) exalted \((.*)\), (\d+) debilitated \((.*)\)$/, (m) => `${m[1]} korotettua (${m[2]}), ${m[3]} heikennettyä (${m[4]})`],
   [/^(\S+) in (\S+) \((exaltation|own sign)\), house (\d+)$/, (m) => `${m[1]} merkissä ${m[2]} (${QUALITY[m[3] as keyof typeof QUALITY]}), talo ${m[4]}`],
   [/^(\S+) in (\S+) — not own or exaltation sign$/, (m) => `${m[1]} merkissä ${m[2]} — ei oma- eikä korotusmerkki`],
   [/^(\S+) in (\S+) \((exaltation|own sign)\) but in house (\d+) — not Kendra$/, (m) => `${m[1]} merkissä ${m[2]} (${QUALITY[m[3] as keyof typeof QUALITY]}), mutta talossa ${m[4]} — ei Kendra`],
@@ -123,6 +174,13 @@ function translateSegment(segment: string): string {
     if (match) return build(match);
   }
   return segment;
+}
+
+/** The Reference column of the yoga table: a whole label with a Finnish entry, else its parts between commas one by one. */
+export function translateYogaReference(reference: string, language: Language): string {
+  if (language !== 'fi') return reference;
+  if (reference in FI) return FI[reference];
+  return reference.split(', ').map(part => translate('fi', part)).join(', ');
 }
 
 /** The yoga engine's reason text in the interface language; English passes through. */

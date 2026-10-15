@@ -1,5 +1,7 @@
 import type { PlanetData } from '@/types';
 import { normalizeDegrees } from '@/lib/angles';
+import { DEBILITATION, EXALTATION, NATURAL_FRIENDS, OWN_SIGNS } from '@/lib/dignity';
+import { signLord } from '@/lib/signs';
 
 // What the yoga rules share: who counts as a benefic, and counting signs and houses.
 
@@ -51,3 +53,36 @@ export function ordinal(n: number): string {
   if (d === 3) return `${n}rd`;
   return `${n}th`;
 }
+
+const GRAHA_EXTRA_ASPECTS: Record<string, number[]> = { Mars: [4, 8], Jupiter: [5, 9], Saturn: [3, 10] };
+
+/** Whether a graha casts its aspect (Parāśara: the 7th from itself, and the special ones of Mars, Jupiter and Saturn) on a sign. */
+export function aspectsSign(planet: Pick<PlanetData, 'name' | 'sign'>, sign: number): boolean {
+  return [7, ...(GRAHA_EXTRA_ASPECTS[planet.name] ?? [])].some(offset => signFrom(planet.sign, offset) === sign);
+}
+
+export const TRIKONAS_AND_KENDRAS = [1, 4, 5, 7, 9, 10];
+
+/** In its own sign or in exaltation (the Moolatrikona signs are one of the two). */
+export const inOwnOrExaltation = (planet: Pick<PlanetData, 'name' | 'sign'>) => EXALTATION[planet.name] === planet.sign || Boolean(OWN_SIGNS[planet.name]?.includes(planet.sign));
+
+/** In the sign of a natural friend. */
+export const inFriendlySign = (planet: Pick<PlanetData, 'name' | 'sign'>) => (NATURAL_FRIENDS[planet.name] ?? []).includes(signLord(planet.sign));
+
+/**
+ * A "strong" lord, as the yogas that ask for one count it (BPHS says "endowed with strength", which is Shadbala; the chart
+ * alone cannot show that): not debilitated, and in its own, exaltation or friendly sign, or in a Kendra or Trikona from the
+ * Lagna. JHora reads it differently from yoga to yoga (by the sign for some, by the houses for others); the app takes one
+ * definition for all of them, and one that leaves out a debilitated lord, which JHora does not.
+ */
+export const isStrongLord = (planet: Pick<PlanetData, 'name' | 'sign'>, ascendantSign: number) =>
+  DEBILITATION[planet.name] !== planet.sign &&
+  (inOwnOrExaltation(planet) || inFriendlySign(planet) || TRIKONAS_AND_KENDRAS.includes(houseFrom(ascendantSign, planet.sign)));
+
+/** Why a lord is not strong, or null when it is: the condition that failed, named for the reason column. */
+export const strongLordProblem = (label: string, planet: Pick<PlanetData, 'name' | 'sign'>, ascendantSign: number): string | null =>
+  isStrongLord(planet, ascendantSign)
+    ? null
+    : DEBILITATION[planet.name] === planet.sign
+      ? `${label} is debilitated`
+      : `${label} is neither in its own, exaltation or friendly sign nor in a Kendra or Trikona`;

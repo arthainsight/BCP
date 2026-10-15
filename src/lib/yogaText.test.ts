@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { PlanetData } from '@/types';
 import { calculateYogas } from './yogas';
-import { translateYogaText } from './yogaText';
+import { translateYogaReference, translateYogaText } from './yogaText';
 
 // ---------------------------------------------------------------------------
 // The reasons the yoga engine writes are shown in the Yoga table. In Finnish
@@ -16,6 +16,15 @@ assert.equal(translateYogaText('Moon is in the 8th sign from Jupiter', 'fi'), 'M
 assert.equal(translateYogaText('Sun and Mercury in Aries', 'fi'), 'Sun ja Mercury merkissä Aries');
 assert.equal(translateYogaText('Sun and Mercury in Aries — Mercury combust (3.2° from Sun)', 'fi'), 'Sun ja Mercury merkissä Aries — Mercury polttunut (3.2° Auringosta)');
 assert.equal(translateYogaText('Nothing like it', 'fi'), 'Nothing like it', 'unknown text stays as it is');
+assert.equal(translateYogaReference('Lagna lord, Kendras and Trikonas', 'fi'), 'Lagnan herra, Kendrat ja Trikonat');
+assert.equal(translateYogaReference('Sun, Mercury, 10th lord', 'fi'), 'Aurinko, Mercury, 10. herra', 'a label without an entry of its own is translated part by part');
+assert.equal(translateYogaReference('9th lord', 'en'), '9th lord');
+// The Finnish of Matsya was half English once, because a general pattern for "Benefics in houses …" came first.
+assert.equal(translateYogaText('Benefics in houses 1 and 9, benefic and malefic in the 5th, malefics in houses 4 and 8', 'fi'), 'Hyväntekijät taloissa 1 ja 9, hyväntekijä ja pahantekijä 5. talossa, pahantekijät taloissa 4 ja 8');
+assert.equal(translateYogaText('Benefics in houses 2, 12, 8 from the sign of the 2nd lord', 'fi'), 'Hyväntekijät taloissa 2, 12 ja 8 (2. herran merkistä lukien)');
+assert.equal(translateYogaText('Two or more benefics in house 10: Moon, Jupiter, Venus', 'fi'), 'Vähintään kaksi hyväntekijää talossa 10: Moon, Jupiter, Venus');
+assert.equal(translateYogaText('9th lord is debilitated', 'fi'), '9. herra on heikennetty');
+assert.equal(translateYogaText('Lagna lord is neither in its own, exaltation or friendly sign nor in a Kendra or Trikona', 'fi'), 'Lagnan herra ei ole omassa, korotus- eikä ystävän merkissään eikä Kendrassa tai Trikonassa');
 
 const planet = (name: string, sign: number, house = sign, degree = 15): PlanetData => ({
   name, sign, degree, longitude: (sign - 1) * 30 + degree, house,
@@ -50,7 +59,7 @@ assert.deepEqual([...untranslated], [], 'every reason the yoga engine writes has
 {
   let seed = 7;
   const random = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; };
-  const ENGLISH_LEFT = /\b(the|not|is|are|and|from|with|aspects|joins|enemy|exchange|No|Not|Planets in|none)\b/;
+  const ENGLISH_LEFT = /\b(the|not|is|are|and|from|with|aspects|joins|enemy|exchange|No|Not|Planets in|none|benefics?|malefics?|lords?|houses?|signs?|debilitated|friendly|itself|neither|nor|counted|holds?|exalted|dignified|Dignified)\b/;
   const leftBehind = new Set<string>();
   const seen = new Set<string>();
   for (let index = 0; index < 4000; index++) {
@@ -61,6 +70,9 @@ assert.deepEqual([...untranslated], [], 'every reason the yoga engine writes has
     const planets = NAMES.map(name => planet(name, ((start + Math.floor(random() * spread)) % 12) + 1, undefined, random() * 30))
       .map(item => ({ ...item, house: ((item.sign - ascendant + 12) % 12) + 1 }));
     for (const yoga of calculateYogas(planets, ascendant)) {
+      // The Reference column: no label may keep an English phrase (planet names are the same in both languages).
+      const reference = translateYogaReference(yoga.referencePlanet, 'fi');
+      if (/\b(lords?|houses?|Houses|Kendras|dispositors|planets?|Exchanging|Debilitated|and its|and 5th|9th|10th|5th|6th|7th|2nd|4th|8th|12th)\b/.test(reference)) leftBehind.add(`${yoga.id} reference: ${yoga.referencePlanet} -> ${reference}`);
       for (const segment of yoga.resultText.split('; ')) {
         seen.add(`${yoga.id}: ${segment}`);
         const finnish = translateYogaText(segment, 'fi');

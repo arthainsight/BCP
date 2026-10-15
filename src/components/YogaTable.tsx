@@ -7,7 +7,7 @@ import { calculateYogas, YogaCategory } from '@/lib/yogas';
 import { qualifyYogas, type StrengthClassification } from '@/lib/yogaStrength';
 
 import { useLanguage, useT } from '@/lib/i18n';
-import { translateYogaText } from '@/lib/yogaText';
+import { translateYogaReference, translateYogaText } from '@/lib/yogaText';
 const CATEGORY_LABELS: Record<YogaCategory, string> = {
   solar:                'Solar',
   moon:                 'Lunar',
@@ -108,7 +108,7 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
                       ? 'text-emerald-700 dark:text-green-400'
                       : 'text-zinc-500 dark:text-zinc-500'
                   }`}>
-                    {yoga.name}
+                    {t(yoga.name)}
                   </td>
 
                   {/* Strength cell */}
@@ -143,7 +143,7 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
                     </td>
                   )}
                   <td className="p-2 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
-                    {yoga.referencePlanet.split(', ').map(part => t(part)).join(', ')}
+                    {translateYogaReference(yoga.referencePlanet, language)}
                   </td>
                   <td className="p-2 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                     {yoga.planetsInvolved.length > 0 ? yoga.planetsInvolved.join(', ') : '—'}
