@@ -71,12 +71,18 @@ export const inFriendlySign = (planet: Pick<PlanetData, 'name' | 'sign'>) => (NA
 
 /**
  * A "strong" lord, as the yogas that ask for one count it (BPHS says "endowed with strength", which is Shadbala; the chart
- * alone cannot show that): not debilitated, and in its own sign, in exaltation, in a friendly sign, or in a Kendra or Trikona
- * from the Lagna. JHora reads it by the dignity of the sign for Kahala, Shankha and Bheri and by the Kendras and Trikonas
- * for Lakshmi; this takes both.
+ * alone cannot show that): not debilitated, and in its own, exaltation or friendly sign, or in a Kendra or Trikona from the
+ * Lagna. JHora reads it differently from yoga to yoga (by the sign for some, by the houses for others); the app takes one
+ * definition for all of them, and one that leaves out a debilitated lord, which JHora does not.
  */
 export const isStrongLord = (planet: Pick<PlanetData, 'name' | 'sign'>, ascendantSign: number) =>
   DEBILITATION[planet.name] !== planet.sign &&
   (inOwnOrExaltation(planet) || inFriendlySign(planet) || TRIKONAS_AND_KENDRAS.includes(houseFrom(ascendantSign, planet.sign)));
 
-export const NOT_STRONG = 'not strong (not debilitated and in its own, exaltation or friendly sign or in a Kendra or Trikona)';
+/** Why a lord is not strong, or null when it is: the condition that failed, named for the reason column. */
+export const strongLordProblem = (label: string, planet: Pick<PlanetData, 'name' | 'sign'>, ascendantSign: number): string | null =>
+  isStrongLord(planet, ascendantSign)
+    ? null
+    : DEBILITATION[planet.name] === planet.sign
+      ? `${label} is debilitated`
+      : `${label} is neither in its own, exaltation or friendly sign nor in a Kendra or Trikona`;

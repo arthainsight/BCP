@@ -297,6 +297,21 @@ const strength = qualifyYogas(
 )[0];
 assert.equal(strength.breakdown!.vargottama, 60, 'Cancer in Cancer');
 assert.equal(strength.breakdown!.navamsa, 30, 'a benefic sign');
+// Every sign is its own Navamsa sign in one of its nine parts: the 1st for a movable sign (Aries, Cancer, Libra, Capricorn), the 5th
+// for a fixed one (Taurus, Leo, Scorpio, Aquarius: the count begins at the 9th sign) and the 9th for a dual one (Gemini, Virgo,
+// Sagittarius, Pisces: it begins at the 5th). The old count began movable signs at Aries, fixed ones at Capricorn and dual ones at
+// Libra whatever the sign, which is right only for Aries, Taurus and Gemini.
+const vargottamaAt = (sign: number, degree: number) =>
+  qualifyYogas(
+    [{ id: 'z', name: 'Z', category: 'general', status: 'active', referencePlanet: 'Moon', planetsInvolved: ['Moon'], rule: 'r', resultText: 't' }],
+    [{ name: 'Moon', sign, degree, longitude: (sign - 1) * 30 + degree, house: sign }],
+  )[0].breakdown!.vargottama === 60;
+for (let sign = 1; sign <= 12; sign++) {
+  const part = [1, 5, 9][(sign - 1) % 3 === 0 ? 0 : (sign - 1) % 3 === 1 ? 1 : 2]; // movable, fixed, dual
+  const inside = (part - 1) * (30 / 9) + 0.5;
+  assert.ok(vargottamaAt(sign, inside), `sign ${sign} is its own Navamsa in part ${part}`);
+  assert.ok(!vargottamaAt(sign, (((part % 9) + 1) - 1) * (30 / 9) + 0.5), `sign ${sign} is not its own Navamsa in the part after`);
+}
 
 // Parvata: only benefics in the Kendras, at least one, and the 8th empty or with benefics only.
 assert.ok(has({ Jupiter: 1, Venus: 7, Sun: 3, Mars: 3, Mercury: 3, Saturn: 3, Moon: 5, Rahu: 6, Ketu: 12 }, 'parvata'));
@@ -350,5 +365,33 @@ assert.ok(!active(chartOf({ Sun: 1, Mercury: 3, Rahu: 9, Ketu: 12, Saturn: 11, J
 const kahalaBase = { Moon: 4, Jupiter: 7, Sun: 3, Mercury: 3, Venus: 3, Saturn: 3 };
 assert.ok(has({ ...kahalaBase, Mars: 5 }, 'kahala'));
 assert.ok(!has({ ...kahalaBase, Mars: 4 }, 'kahala'), 'a debilitated Lagna lord is not strong, Kendra or not');
+
+// The reasons say which condition failed, and the Planets of a yoga with two forms are those of the form that holds.
+const yogaOf = (placements: Record<string, number>, id: string) => calculateYogas(full(placements), 1).find(y => y.id === id)!;
+const involved = (placements: Record<string, number>, id: string) => [...yogaOf(placements, id).planetsInvolved].sort();
+assert.ok(yogaOf({ ...kahalaBase, Mars: 4 }, 'kahala').resultText.includes('Lagna lord is debilitated'));
+assert.ok(!yogaOf({ ...kahalaBase, Mars: 5 }, 'kahala').resultText.includes('debilitated'));
+assert.deepEqual(involved({ ...kahalaBase, Mars: 5 }, 'kahala'), ['Jupiter', 'Mars', 'Moon'], 'first form: the 4th lord, Jupiter and the Lagna lord, not the 10th lord');
+// Lakshmi: Aries, the 9th lord Jupiter exalted in Cancer, a Kendra; the Lagna lord Mars strong at home or debilitated in Cancer.
+assert.ok(has({ Jupiter: 4, Mars: 1 }, 'lakshmi'));
+assert.ok(!has({ Jupiter: 4, Mars: 4 }, 'lakshmi') && yogaOf({ Jupiter: 4, Mars: 4 }, 'lakshmi').resultText.includes('Lagna lord is debilitated'));
+// A Lagna lord in an enemy sign in no Kendra or Trikona (Mars in Gemini, the 3rd) is not strong either, and the reason says that.
+assert.ok(yogaOf({ Jupiter: 4, Mars: 3 }, 'lakshmi').resultText.includes('Lagna lord is neither in its own, exaltation or friendly sign nor in a Kendra or Trikona'));
+// Bheri: the 9th lord Jupiter debilitated in Capricorn (a Kendra) is not strong, however full the 12th, 1st, 2nd and 7th are.
+const bheri = { Mars: 1, Venus: 2, Saturn: 12, Sun: 7, Mercury: 3, Moon: 3 };
+assert.ok(has({ ...bheri, Jupiter: 9 }, 'bheri'));
+assert.deepEqual(involved({ ...bheri, Jupiter: 9 }, 'bheri').filter(name => ['Mars', 'Venus', 'Saturn', 'Sun', 'Jupiter'].includes(name)), ['Jupiter', 'Mars', 'Saturn', 'Sun', 'Venus'], 'first form: the 9th lord and those in the 12th, 1st, 2nd and 7th');
+assert.ok(!has({ ...bheri, Jupiter: 10 }, 'bheri') && yogaOf({ ...bheri, Jupiter: 10 }, 'bheri').resultText.includes('9th lord is debilitated'));
+// Shankha: the Lagna lord Mars debilitated in Cancer, the 5th lord (Sun) and 6th lord (Mercury) in Kendras from each other.
+assert.ok(!has({ Mars: 4, Sun: 1, Mercury: 4, Jupiter: 3, Venus: 3, Saturn: 3 }, 'shankha'));
+assert.ok(yogaOf({ Mars: 4, Sun: 1, Mercury: 4, Jupiter: 3, Venus: 3, Saturn: 3 }, 'shankha').resultText.includes('Lagna lord is debilitated'));
+// Chamara has the Lagna in its second form, and the Planets are the two benefics.
+assert.deepEqual(involved({ Jupiter: 1, Venus: 1, Mars: 3, Sun: 3, Mercury: 3, Saturn: 3, Moon: 3 }, 'chamara'), ['Jupiter', 'Venus']);
+
+// Mridanga: a strong Lagna lord, a planet in its own or exaltation sign in a Kendra and one in a Trikona (the Lagna is both).
+assert.ok(has({ Mars: 5, Sun: 5, Moon: 4 }, 'mridanga'), 'Mars in Leo (a friend, a Trikona), the Sun at home in Leo and the Moon at home in Cancer, a Kendra');
+assert.ok(!has({ Mars: 5, Sun: 5 }, 'mridanga') && yogaOf({ Mars: 5, Sun: 5 }, 'mridanga').resultText.includes('No planet in its own or exaltation sign in a Kendra'));
+assert.ok(has({ Mars: 1 }, 'mridanga'), 'Mars at home in the Lagna is both a Kendra and a Trikona');
+assert.ok(!has({ Mars: 4, Sun: 5, Moon: 4 }, 'mridanga'), 'Mars debilitated in Cancer: the Lagna lord is not strong');
 
 console.log('Yoga tests passed');

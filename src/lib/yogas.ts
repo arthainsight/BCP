@@ -174,7 +174,7 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
       status: kema ? 'active' : 'inactive',
       referencePlanet: 'Moon',
       planetsInvolved: [],
-      rule: 'No planet but the Sun with the Moon or in the 2nd or 12th sign from it, and none in a Kendra from the Lagna or from the Moon (BPHS 37.11-13; the Sun, Moon and nodes do not count)',
+      rule: 'No planet among Mars, Mercury, Jupiter, Venus and Saturn with the Moon or in the 2nd or 12th sign from it, and none in a Kendra from the Lagna (BPHS 37.11-13) or from the Moon (Saravali); the Sun, Moon and nodes do not count',
       resultText: kema
         ? 'Moon unattended — no planet with it or in the 2nd or 12th from it, none in a Kendra from the Lagna or the Moon'
         : withMoon.length > 0
@@ -189,7 +189,7 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
       status: cancelled ? 'active' : 'inactive',
       referencePlanet: 'Moon',
       planetsInvolved: cancelled ? [...new Set([...kendraFromLagna, ...kendraFromMoon].map(p => p.name))] : [],
-      rule: 'The Moon stands alone (nothing with it or in the 2nd or 12th from it) but a planet is in a Kendra from the Lagna or from the Moon: Kemadruma is cancelled',
+      rule: 'The Moon stands alone (nothing with it or in the 2nd or 12th from it) but a planet is in a Kendra from the Lagna (BPHS) or from the Moon (Saravali): Kemadruma is cancelled',
       resultText: cancelled
         ? [...(kendraFromLagna.length ? [`${kendraFromLagna.map(p => p.name).join(', ')} in a Kendra from the Lagna`] : []), ...(kendraFromMoon.length ? [`${kendraFromMoon.map(p => p.name).join(', ')} in a Kendra from the Moon`] : [])].join('; ')
         : 'No Kemadruma to cancel',
@@ -343,7 +343,7 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
 
   // ── Varishta / Sama / Adhama (BPHS 37.1) ──────────────────────────────────────────────────────────────────────────
   // The Moon's place from the Sun: in a Kendra (1, 4, 7, 10) the lowest, Adhama; in a Panaphara (2, 5, 8, 11) the middle,
-  // Sama; in an Apoklima (3, 6, 9, 12) the best (called Uttama in some books, Varishta here). Exactly one of the three always
+  // Sama; in an Apoklima (3, 6, 9, 12) the best (named Uttama in the app before v3.01). Exactly one of the three always
   // holds, because every place from the Sun is one of the three groups. Before v3.01 the app used the id uttama for a
   // different reading (three exalted planets), which has no classical source.
 
@@ -351,7 +351,7 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
     const fromSun = ((moon.sign - sun.sign + 12) % 12) + 1;
     const kind = [1, 4, 7, 10].includes(fromSun) ? 'Kendra' : [2, 5, 8, 11].includes(fromSun) ? 'Panaphara' : 'Apoklima';
     for (const [id, name, wanted, rule] of [
-      ['varishta', 'Varishta', 'Apoklima', 'The Moon in an Apoklima (3rd, 6th, 9th or 12th sign) from the Sun, the best of the three (BPHS 37.1; some books call it Uttama). Exactly one of Varishta, Sama and Adhama always holds'],
+      ['varishta', 'Varishta', 'Apoklima', 'The Moon in an Apoklima (3rd, 6th, 9th or 12th sign) from the Sun, the best of the three (BPHS 37.1 gives the effects of the three places; the app named this one Uttama before v3.01). Exactly one of Varishta, Sama and Adhama always holds'],
       ['sama', 'Sama', 'Panaphara', 'The Moon in a Panaphara (2nd, 5th, 8th or 11th sign) from the Sun (BPHS 37.1). Exactly one of Varishta, Sama and Adhama always holds'],
       ['adhama', 'Adhama', 'Kendra', 'The Moon in a Kendra (1st, 4th, 7th or 10th sign) from the Sun, the lowest of the three (BPHS 37.1). Exactly one of Varishta, Sama and Adhama always holds'],
     ] as const) {

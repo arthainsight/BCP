@@ -3,7 +3,7 @@ import type { YogaResult } from './yogas';
 import { DEBILITATION, EXALTATION, NATURAL_ENEMIES, OWN_SIGNS } from './dignity';
 import { signLord, signName } from './signs';
 import { normalizeDegrees } from './angles';
-import { KENDRAS, NOT_STRONG, aspectsSign, dynamicBeneficStatus, houseFrom, isStrongLord, ordinal, signFrom } from './yogaCommon';
+import { KENDRAS, aspectsSign, dynamicBeneficStatus, houseFrom, ordinal, signFrom, strongLordProblem } from './yogaCommon';
 
 // Yogas of the classical texts that the main list lacks. The first group is the 32 Nabhasa yogas of Brihat Parashara
 // Hora Shastra chapter 35, which look at where the seven grahas (the Sun to Saturn; the nodes are not counted) stand
@@ -193,7 +193,7 @@ function singleYogas(planets: PlanetData[], ascendantSign: number): YogaResult[]
       const failures = [
         ...(KENDRAS.includes(houseOf(ninthPlanet)) ? [] : ['9th lord is not in a Kendra']),
         ...(dignified(ninthPlanet) ? [] : ['9th lord is not in its own or exaltation sign']),
-        ...(isStrongLord(lagnaPlanet, ascendantSign) ? [] : [`Lagna lord is ${NOT_STRONG}`]),
+        ...[strongLordProblem('Lagna lord', lagnaPlanet, ascendantSign)].filter((problem): problem is string => problem !== null),
       ];
       out.push(result(seed, failures.length === 0, [ninth, lagnaLord], [lordText(house(9), ninth), lordText('Lagna lord', lagnaLord), ...failures].join('; ')));
     }

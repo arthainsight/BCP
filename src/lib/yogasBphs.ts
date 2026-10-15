@@ -3,14 +3,15 @@ import type { YogaResult } from './yogas';
 import { EXALTATION } from './dignity';
 import { signLord, signName } from './signs';
 import { calcD9 } from './varga/d9';
-import { KENDRAS, NOT_STRONG, TRIKONAS_AND_KENDRAS, aspectsSign, dynamicBeneficStatus, houseFrom, inFriendlySign, inOwnOrExaltation, isStrongLord, ordinal, signFrom } from './yogaCommon';
+import { KENDRAS, TRIKONAS_AND_KENDRAS, aspectsSign, dynamicBeneficStatus, houseFrom, inFriendlySign, inOwnOrExaltation, ordinal, signFrom, strongLordProblem } from './yogaCommon';
 
 // Yogas of the classical texts that the Nabhasa and single-yoga lists lack: the Lagna yogas, the three Vasumati yogas,
-// and the yogas of BPHS 36 that need a lord, a count of benefics or a chain of dispositors. The rules follow the text
-// of BPHS (the Santhanam translation) where it speaks; where JHora, Raman or another source reads it differently the rule
-// text says so. A "strong" lord (isStrongLord) is one the chart can show to be well placed: not debilitated, and in its own,
-// exaltation or friendly sign or in a Kendra or Trikona; BPHS means Shadbala, which these yogas do not compute. When one
-// planet holds two of the lordships a rule compares, it counts as together with itself and in a Kendra from itself, as in JHora.
+// and the yogas of BPHS 36 that need a lord, a count of benefics or a chain of dispositors (Parijata is not in BPHS: it is
+// Raman's and JHora's). The rules follow the text of BPHS (the Santhanam translation) where it speaks; the rule text says where
+// the app reads one differently from Raman or JHora, for the ones where that was checked. A "strong" lord (strongLordProblem
+// returns null for one) is one the chart can show to be well placed: not debilitated, and in its own, exaltation or friendly
+// sign or in a Kendra or Trikona; BPHS means Shadbala, which these yogas do not compute. When one planet holds two of the
+// lordships a rule compares, it counts as together with itself and in a Kendra from itself, as in JHora.
 
 type Seed = Pick<YogaResult, 'id' | 'name' | 'category' | 'referencePlanet' | 'rule'>;
 
@@ -60,7 +61,7 @@ export function calculateBphsYogas(planets: PlanetData[], ascendantSign: number)
     const here = (wanted ? benefics : malefics)(inHouse(1));
     const sides = flanks(wanted);
     out.push(result(
-      { id, name, category: 'general', referencePlanet: 'Lagna', rule: `A ${word} in the Lagna, or ${word}s in both the 12th and the 2nd house from it (BPHS 36.1-2). Subha and Asubha can both hold in one chart` },
+      { id, name, category: 'general', referencePlanet: 'Lagna', rule: `A ${word} in the Lagna, or ${word}s in both the 12th and the 2nd house from it (BPHS 36.1-2). Subha and Asubha can both hold in one chart${wanted ? '. Susubha, the older row, also counts a benefic aspecting the Lagna' : ''}` },
       here.length > 0 || sides.held, [...names(here), ...(sides.held ? [...names(sides.twelfth), ...names(sides.second)] : [])],
       [...(here.length ? [`${names(here).join(', ')} in Lagna`] : []), ...(sides.held ? [`${word}s in houses 12, 2`] : [])].join('; ') || `No ${word} in the 1st house, none in both the 12th and the 2nd`,
     ));
@@ -103,14 +104,18 @@ export function calculateBphsYogas(planets: PlanetData[], ascendantSign: number)
 
   // ── Kahala (BPHS 36.9-10) ────────────────────────────────────────────────────────────────────────────────────────
   {
-    const seed: Seed = { id: 'kahala', name: 'Kahala', category: 'general', referencePlanet: '4th lord, Jupiter', rule: 'The 4th lord and Jupiter in Kendras from each other and the Lagna lord strong; or the 4th lord in its own or exaltation sign with the 10th lord (JHora\'s BVR-15 form reads the 4th and 9th lords for the first form)' };
+    const seed: Seed = { id: 'kahala', name: 'Kahala', category: 'general', referencePlanet: '4th lord, Jupiter', rule: 'The 4th lord and Jupiter in Kendras from each other and the Lagna lord strong; or the 4th lord in its own or exaltation sign with the 10th lord (JHora also has a form with the 4th and 9th lords)' };
     const fourth = lordOf(4); const tenth = lordOf(10); const lagna = lordOf(1); const jupiter = at('Jupiter');
     if (fourth && tenth && lagna && jupiter) {
-      const first = mutualKendras(fourth, jupiter) && isStrongLord(lagna, ascendantSign);
+      const kendras = mutualKendras(fourth, jupiter);
+      const weak = strongLordProblem('Lagna lord', lagna, ascendantSign);
+      const first = kendras && !weak;
       const second = inOwnOrExaltation(fourth) && fourth.sign === tenth.sign;
-      const facts = [lordText(4), planetText(jupiter), lordText(1)];
-      out.push(result(seed, first || second, [fourth.name, jupiter.name, lagna.name, tenth.name],
-        first ? [...facts, 'Mutual Kendras'].join('; ') : second ? [lordText(4), lordText(10), 'In its own or exaltation sign, with the 10th lord'].join('; ') : [...facts, NONE_HOLDS].join('; ')));
+      const mutual = fourth.name === jupiter.name ? 'The 4th lord is Jupiter itself, counted as in a Kendra from itself' : 'Mutual Kendras';
+      out.push(result(seed, first || second, first ? [fourth.name, jupiter.name, lagna.name] : [fourth.name, tenth.name],
+        first ? [lordText(4), planetText(jupiter), lordText(1), mutual].join('; ')
+          : second ? [lordText(4), lordText(10), 'In its own or exaltation sign, with the 10th lord'].join('; ')
+          : [lordText(4), planetText(jupiter), lordText(1), ...(kendras && weak ? [weak] : []), NONE_HOLDS].join('; ')));
     }
   }
 
@@ -121,9 +126,9 @@ export function calculateBphsYogas(planets: PlanetData[], ascendantSign: number)
     if (lagna && jupiter) {
       const first = EXALTATION[lagna.name] === lagna.sign && KENDRAS.includes(houseOf(lagna)) && aspectsSign(jupiter, lagna.sign) && lagna.name !== 'Jupiter';
       const pair = [1, 7, 9, 10].map(house => ({ house, here: benefics(inHouse(house)) })).find(item => item.here.length >= 2);
-      out.push(result(seed, first || Boolean(pair), [lagna.name, 'Jupiter', ...(pair ? names(pair.here) : [])],
+      out.push(result(seed, first || Boolean(pair), first ? [lagna.name, 'Jupiter'] : pair ? names(pair.here) : [],
         first ? [lordText(1), 'Exalted in a Kendra and aspected by Jupiter'].join('; ')
-          : pair ? `Two benefics in house ${pair.house}: ${names(pair.here).join(', ')}`
+          : pair ? `Two or more benefics in house ${pair.house}: ${names(pair.here).join(', ')}`
           : [lordText(1), NONE_HOLDS].join('; ')));
     }
   }
@@ -133,12 +138,17 @@ export function calculateBphsYogas(planets: PlanetData[], ascendantSign: number)
     const seed: Seed = { id: 'shankha', name: 'Shankha', category: 'general', referencePlanet: 'Lagna, 5th, 6th lords', rule: 'The Lagna lord strong and the 5th and 6th lords in Kendras from each other; or the Lagna lord and the 10th lord together in a movable sign and the 9th lord strong' };
     const lagna = lordOf(1); const fifth = lordOf(5); const sixth = lordOf(6); const ninth = lordOf(9); const tenth = lordOf(10);
     if (lagna && fifth && sixth && ninth && tenth) {
-      const first = isStrongLord(lagna, ascendantSign) && mutualKendras(fifth, sixth);
-      const second = (lagna.name === tenth.name || lagna.sign === tenth.sign) && [1, 4, 7, 10].includes(lagna.sign) && isStrongLord(ninth, ascendantSign);
-      out.push(result(seed, first || second, [lagna.name, fifth.name, sixth.name, ninth.name, tenth.name],
-        first ? [lordText(1), lordText(5), lordText(6), 'Mutual Kendras'].join('; ')
+      const kendras = mutualKendras(fifth, sixth);
+      const weakLagna = strongLordProblem('Lagna lord', lagna, ascendantSign);
+      const weakNinth = strongLordProblem('9th lord', ninth, ascendantSign);
+      const first = !weakLagna && kendras;
+      const movable = (lagna.name === tenth.name || lagna.sign === tenth.sign) && [1, 4, 7, 10].includes(lagna.sign);
+      const second = movable && !weakNinth;
+      const mutual = fifth.name === sixth.name ? 'The 5th and 6th lords are one planet, counted as in a Kendra from itself' : 'Mutual Kendras';
+      out.push(result(seed, first || second, first ? [lagna.name, fifth.name, sixth.name] : [lagna.name, tenth.name, ninth.name],
+        first ? [lordText(1), lordText(5), lordText(6), mutual].join('; ')
           : second ? [lordText(1), lordText(10), lordText(9), 'Lagna lord and 10th lord together in a movable sign'].join('; ')
-          : [lordText(1), lordText(5), lordText(6), NONE_HOLDS].join('; ')));
+          : [lordText(1), lordText(5), lordText(6), ...(kendras && weakLagna ? [weakLagna] : []), ...(movable && weakNinth ? [lordText(9), weakNinth] : []), NONE_HOLDS].join('; ')));
     }
   }
 
@@ -147,19 +157,36 @@ export function calculateBphsYogas(planets: PlanetData[], ascendantSign: number)
     const seed: Seed = { id: 'bheri', name: 'Bheri', category: 'general', referencePlanet: '9th lord', rule: 'The 9th lord strong and the 12th, 1st, 2nd and 7th houses all occupied; or the 9th lord strong and Venus, Jupiter and the Lagna lord each in a Kendra' };
     const ninth = lordOf(9); const lagna = lordOf(1); const venus = at('Venus'); const jupiter = at('Jupiter');
     if (ninth && lagna && venus && jupiter) {
-      const strong = isStrongLord(ninth, ascendantSign);
-      const first = strong && [12, 1, 2, 7].every(house => inHouse(house).length > 0);
-      const second = strong && [venus, jupiter, lagna].every(planet => KENDRAS.includes(houseOf(planet)));
-      out.push(result(seed, first || second, [ninth.name, 'Venus', 'Jupiter', lagna.name],
+      const weak = strongLordProblem('9th lord', ninth, ascendantSign);
+      const occupied = [12, 1, 2, 7].every(house => inHouse(house).length > 0);
+      const kendras = [venus, jupiter, lagna].every(planet => KENDRAS.includes(houseOf(planet)));
+      const first = !weak && occupied;
+      const second = !weak && kendras;
+      out.push(result(seed, first || second, first ? [ninth.name, ...[12, 1, 2, 7].flatMap(house => names(inHouse(house)))] : [ninth.name, 'Venus', 'Jupiter', lagna.name],
         first ? [lordText(9), 'Houses 12, 1, 2 and 7 are occupied'].join('; ')
           : second ? [lordText(9), 'Venus, Jupiter and the Lagna lord are in Kendras'].join('; ')
-          : [lordText(9), strong ? NONE_HOLDS : `9th lord is ${NOT_STRONG}`].join('; ')));
+          : [lordText(9), ...(weak && (occupied || kendras) ? [weak] : []), NONE_HOLDS].join('; ')));
+    }
+  }
+
+  // ── Mridanga (BPHS 36.17, with Raman and JHora) ──────────────────────────────────────────────────────────────────
+  {
+    const seed: Seed = { id: 'mridanga', name: 'Mridanga', category: 'general', referencePlanet: 'Lagna lord, Kendras and Trikonas', rule: 'The Lagna lord strong, and a planet in its own or exaltation sign in a Kendra and one in a Trikona (the Lagna counts as both). BPHS says "others occupy Kendras, Konas, own houses or exaltation signs"; this is the reading of Raman and JHora' };
+    const lagna = lordOf(1);
+    if (lagna) {
+      const weak = strongLordProblem('Lagna lord', lagna, ascendantSign);
+      const dignified = nine.filter(planet => inOwnOrExaltation(planet));
+      const inKendra = dignified.filter(planet => KENDRAS.includes(houseOf(planet)));
+      const inTrikona = dignified.filter(planet => [1, 5, 9].includes(houseOf(planet)));
+      const held = !weak && inKendra.length > 0 && inTrikona.length > 0;
+      out.push(result(seed, held, [lagna.name, ...names(inKendra), ...names(inTrikona)],
+        [lordText(1), weak ?? (inKendra.length === 0 ? 'No planet in its own or exaltation sign in a Kendra' : inTrikona.length === 0 ? 'No planet in its own or exaltation sign in a Trikona' : `Dignified in a Kendra: ${names(inKendra).join(', ')}; Dignified in a Trikona: ${names(inTrikona).join(', ')}`)].join('; ')));
     }
   }
 
   // ── Srinatha (BPHS 36.18) ────────────────────────────────────────────────────────────────────────────────────────
   {
-    const seed: Seed = { id: 'srinatha', name: 'Srinatha', category: 'general', referencePlanet: '7th, 9th, 10th lords', rule: 'The 7th lord in the 10th house, and the 10th lord exalted and with the 9th lord (JHora asks the 7th lord to be exalted too)' };
+    const seed: Seed = { id: 'srinatha', name: 'Srinatha', category: 'general', referencePlanet: '7th, 9th, 10th lords', rule: 'The 7th lord in the 10th house, and the 10th lord exalted and with the 9th lord (Raman and JHora ask the 7th lord, not the 10th, to be the exalted one, in the 10th)' };
     const seventh = lordOf(7); const ninth = lordOf(9); const tenth = lordOf(10);
     if (seventh && ninth && tenth) {
       const seventhIn10 = houseOf(seventh) === 10;
@@ -176,8 +203,9 @@ export function calculateBphsYogas(planets: PlanetData[], ascendantSign: number)
     const tenth = lordOf(10); const mercury = at('Mercury'); const sun = at('Sun'); const jupiter = at('Jupiter'); const mars = at('Mars');
     if (tenth && mercury && sun && jupiter && mars && moon) {
       const first = houseOf(tenth) === 5 && KENDRAS.includes(houseOf(mercury)) && sun.sign === 5;
-      const second = [jupiter, mercury].some(planet => [1, 5, 9].includes(houseFrom(moon.sign, planet.sign))) && houseOf(mars) === 11;
-      out.push(result(seed, first || second, ['Mercury', 'Sun', tenth.name, 'Jupiter', 'Mars'],
+      const trine = [jupiter, mercury].filter(planet => [1, 5, 9].includes(houseFrom(moon.sign, planet.sign)));
+      const second = trine.length > 0 && houseOf(mars) === 11;
+      out.push(result(seed, first || second, first ? [tenth.name, 'Mercury', 'Sun'] : ['Mars', ...names(trine)],
         first ? [lordText(10), planetText(mercury), planetText(sun)].join('; ')
           : second ? [planetText(mars), 'Jupiter or Mercury in a Trikona from the Moon'].join('; ')
           : [lordText(10), planetText(mercury), planetText(sun), NONE_HOLDS].join('; ')));

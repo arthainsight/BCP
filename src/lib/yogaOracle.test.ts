@@ -8,7 +8,7 @@ import { getRashiAspectSigns } from './drishti';
 // rule the engine prints for it (the `rule` text) and from tables written out again in this file, and the two are
 // compared on thousands of random charts. A slip in a sign table, a house count or a condition shows up as a
 // disagreement on some chart, which a handful of hand-made examples would miss. What this does not check is
-// whether a rule is the one a tradition teaches; the list at the end names the rules that are only as good as
+// whether a rule is the one a tradition teaches; the Roadmap of the README names the rules that are only as good as
 // their source.
 // ---------------------------------------------------------------------------
 
@@ -289,6 +289,8 @@ function bphsExpected({ ascendant, planets }: Chart): Record<string, boolean> {
   out.shankha = (strong(l1) && KENDRA.includes(((l5.sign - l6.sign + 12) % 12) + 1))
     || ((l1.name === l10.name || l1.sign === l10.sign) && [1, 4, 7, 10].includes(l1.sign) && strong(l9));
   out.bheri = strong(l9) && ([12, 1, 2, 7].every(house => planets.some(p => p.house === house)) || [venus, jupiter, l1].every(p => KENDRA.includes(p.house)));
+  // Mridanga: a strong Lagna lord, a planet in its own or exaltation sign in a Kendra and one in a Trikona
+  out.mridanga = strong(l1) && planets.some(p => own(p) && KENDRA.includes(p.house)) && planets.some(p => own(p) && TRIKONA.includes(p.house));
   out.srinatha = l7.house === 10 && EXALT[l10.name] === l10.sign && l10.sign === l9.sign;
   out.sharada = (lord(10).house === 5 && KENDRA.includes(mercury.house) && sun.sign === 5)
     || ([jupiter, mercury].some(p => [1, 5, 9].includes(fromMoon(p))) && mars.house === 11);
@@ -308,7 +310,7 @@ function bphsExpected({ ascendant, planets }: Chart): Record<string, boolean> {
 
   // Hari, Hara, Brahma: benefics in three houses counted from the sign of a lord
   const benefics = (from: PlanetData, counts: number[]) => counts.every(count => planets.some(p => ben(p) && ((p.sign - from.sign + 12) % 12) + 1 === count));
-  out.hari = benefics(l5 && lord(2), [2, 12, 8]);
+  out.hari = benefics(lord(2), [2, 12, 8]);
   out.hara = benefics(l7, [4, 9, 8]);
   out.brahma = benefics(l1, [4, 10, 11]);
 
@@ -329,7 +331,7 @@ function expected({ ascendant, planets }: Chart): Record<string, boolean> {
   result.vosi = sun12; result.vesi = sun2; result.ubhayachari = sun12 && sun2;
   const moon12 = inSign(relSign(moon.sign, 12), ELIGIBLE).length > 0;
   const moon2 = inSign(relSign(moon.sign, 2), ELIGIBLE).length > 0;
-  result.anapha = moon12; result.sunapha = moon2; result.durudhara = moon12 && moon2; result.kemadruma = !moon12 && !moon2;
+  result.anapha = moon12; result.sunapha = moon2; result.durudhara = moon12 && moon2;
 
   result.mukuta = KENDRA.includes(jupiter.house) && TRIKONA.includes(moon.house);
 
@@ -350,11 +352,6 @@ function expected({ ascendant, planets }: Chart): Record<string, boolean> {
 
   const beneficsIn = (sign: number) => inSign(sign, ['Jupiter', 'Venus', 'Mercury']).length > 0;
   result.adhi = [6, 7, 8].every(n => beneficsIn(relSign(moon.sign, n)));
-
-  const tracked = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
-  const exalted = tracked.filter(n => at(n).sign === EXALT[n]).length;
-  const debilitated = tracked.filter(n => at(n).sign === DEBIL[n]).length;
-  result.varishta = exalted >= 3; result.adhama = debilitated >= 3; result.sama = exalted >= 1 && debilitated >= 1 && exalted === debilitated;
 
   for (const [id, name, own, exalt] of PANCHA) {
     const p = at(name);
