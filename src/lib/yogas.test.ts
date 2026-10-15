@@ -242,4 +242,113 @@ assert.ok(aries({ Mars: 6, Mercury: 1 }).has('dainya-parivartana'), 'Mars in Vir
 assert.ok(aries({ Venus: 3, Mercury: 2 }).has('khala-parivartana'), 'Mercury (3rd lord) in Taurus and Venus in Gemini: Khala');
 assert.ok(aries({ Saturn: 5, Sun: 11 }).has('maha-parivartana'), 'Saturn (10th and 11th lord) in Leo and the Sun (5th) in Aquarius: Maha');
 
+// ---------------------------------------------------------------------------
+// The BPHS yogas (yogasBphs.ts): worked examples on an Aries Lagna (house = sign), every classical planet placed. The nodes
+// stand in Pisces unless a case says so; the Moon is a benefic when it is 180° from the Sun.
+// ---------------------------------------------------------------------------
+const full = (placements: Record<string, number>) => {
+  const planets = chartOf({ Sun: 3, Moon: 9, Mars: 3, Mercury: 3, Jupiter: 3, Venus: 3, Saturn: 3, ...placements });
+  return planets;
+};
+const has = (placements: Record<string, number>, id: string) => active(full(placements)).has(id);
+
+// Lagna yogas: a benefic (Subha) or a malefic (Asubha) in the Lagna, or benefics (or malefics) in both the 12th and the 2nd.
+assert.ok(has({ Jupiter: 1 }, 'subha') && !has({ Jupiter: 1 }, 'asubha'));
+assert.ok(has({ Saturn: 1 }, 'asubha') && !has({ Saturn: 1 }, 'subha'));
+assert.ok(has({ Jupiter: 12, Venus: 2 }, 'subha-kartari') && has({ Jupiter: 12, Venus: 2 }, 'subha'), 'benefics on both sides are Subha too (BPHS 36.2)');
+assert.ok(has({ Saturn: 12, Mars: 2 }, 'papa-kartari') && has({ Saturn: 12, Mars: 2 }, 'asubha'));
+assert.ok(has({ Jupiter: 1, Saturn: 12, Mars: 2 }, 'subha') && has({ Jupiter: 1, Saturn: 12, Mars: 2 }, 'asubha'), 'Subha and Asubha can both hold');
+assert.ok(!has({ Jupiter: 12, Venus: 5 }, 'subha-kartari'), 'both flanks are needed');
+assert.ok(has({ Saturn: 12, Mars: 2 }, 'papa-kartari'));
+
+// Vasumati: how many of Jupiter, Venus and Mercury stand in the 3rd, 6th, 10th or 11th from the Moon (here the Moon is in Aries).
+const upachaya = (placements: Record<string, number>) => ({ Moon: 1, Sun: 7, ...placements });
+assert.ok(has(upachaya({ Jupiter: 3, Venus: 6, Mercury: 10 }), 'vasumati-all'));
+assert.ok(has(upachaya({ Jupiter: 3, Venus: 6, Mercury: 2 }), 'vasumati-two') && !has(upachaya({ Jupiter: 3, Venus: 6, Mercury: 2 }), 'vasumati-all'));
+assert.ok(has(upachaya({ Jupiter: 3, Venus: 2, Mercury: 2 }), 'vasumati-one'));
+assert.ok(!has(upachaya({ Jupiter: 2, Venus: 2, Mercury: 2 }), 'vasumati-one'), 'none: no Vasumati of any kind');
+
+// Kemadruma (BPHS 37.11-13): nothing with the Moon or in the 2nd or 12th from it. A planet in a Kendra from the Lagna or from the
+// Moon cancels it: then Kemadruma Bhanga holds instead and Kemadruma does not; a planet with the Moon, or next to it, means none
+// at all.
+const alone = { Moon: 1, Sun: 1, Mars: 3, Mercury: 3, Jupiter: 3, Venus: 3, Saturn: 3 };
+assert.ok(has(alone, 'kemadruma') && !has(alone, 'kemadruma-bhanga'));
+assert.ok(!has({ ...alone, Jupiter: 4 }, 'kemadruma') && has({ ...alone, Jupiter: 4 }, 'kemadruma-bhanga'), 'Jupiter in a Kendra from the Lagna cancels it');
+assert.ok(has({ ...alone, Jupiter: 6 }, 'kemadruma-bhanga') === false, 'the 6th from the Moon is no Kendra');
+// Lagna Aries, Moon in Taurus, the five planets in Leo: the 4th from the Moon (a Kendra) and the 5th from the Lagna (not one).
+const kendraFromMoonOnly = active(chartOf({ Moon: 2, Sun: 2, Mars: 5, Mercury: 5, Jupiter: 5, Venus: 5, Saturn: 5 }), 1);
+assert.ok(!kendraFromMoonOnly.has('kemadruma') && kendraFromMoonOnly.has('kemadruma-bhanga'), 'a planet in a Kendra from the Moon alone cancels it too');
+assert.ok(!has({ ...alone, Jupiter: 1 }, 'kemadruma') && !has({ ...alone, Jupiter: 1 }, 'kemadruma-bhanga'), 'Jupiter with the Moon: no Kemadruma at all');
+assert.ok(!has({ ...alone, Venus: 2 }, 'kemadruma'), 'Venus in the 2nd from the Moon');
+assert.ok(has({ ...alone, Sun: 2 }, 'kemadruma'), 'the Sun next to the Moon does not count');
+
+// Varishta, Sama and Adhama: the Moon in an Apoklima, a Panaphara or a Kendra from the Sun; exactly one holds.
+const fromSun = (moon: number) => active(full({ Sun: 1, Moon: moon }));
+assert.ok(fromSun(3).has('varishta') && !fromSun(3).has('sama') && !fromSun(3).has('adhama'));
+assert.ok(fromSun(6).has('sama') === false && fromSun(6).has('varishta'), 'the 6th from the Sun is an Apoklima');
+assert.ok(fromSun(2).has('sama') && fromSun(11).has('sama'));
+assert.ok(fromSun(4).has('adhama') && fromSun(1).has('adhama') && fromSun(10).has('adhama'));
+
+// The Navamsa the strength scoring uses is the Navamsa of the divisional charts: the Moon at 1° of Cancer is in Cancer in the
+// Navamsa too (Vargottama), which a count that began every movable sign at Aries missed.
+const strength = qualifyYogas(
+  [{ id: 'z', name: 'Z', category: 'general', status: 'active', referencePlanet: 'Moon', planetsInvolved: ['Moon'], rule: 'r', resultText: 't' }],
+  [{ name: 'Moon', sign: 4, degree: 1, longitude: 91, house: 4 }],
+)[0];
+assert.equal(strength.breakdown!.vargottama, 60, 'Cancer in Cancer');
+assert.equal(strength.breakdown!.navamsa, 30, 'a benefic sign');
+
+// Parvata: only benefics in the Kendras, at least one, and the 8th empty or with benefics only.
+assert.ok(has({ Jupiter: 1, Venus: 7, Sun: 3, Mars: 3, Mercury: 3, Saturn: 3, Moon: 5, Rahu: 6, Ketu: 12 }, 'parvata'));
+assert.ok(!has({ Jupiter: 1, Venus: 7, Saturn: 4, Sun: 3, Mars: 3, Mercury: 3, Moon: 5, Rahu: 6, Ketu: 12 }, 'parvata'), 'Saturn in a Kendra');
+assert.ok(!has({ Jupiter: 1, Venus: 7, Mars: 8, Sun: 3, Mercury: 3, Saturn: 3, Moon: 5, Rahu: 6, Ketu: 12 }, 'parvata'), 'Mars in the 8th');
+
+// Kahala: the 4th lord (the Moon) and Jupiter in Kendras from each other, the Lagna lord (Mars) strong.
+assert.ok(has({ Moon: 1, Jupiter: 4, Mars: 1, Sun: 3, Mercury: 3, Venus: 3, Saturn: 3 }, 'kahala'));
+assert.ok(!has({ Moon: 1, Jupiter: 3, Mars: 1, Sun: 3, Mercury: 3, Venus: 3, Saturn: 3 }, 'kahala'), 'Jupiter in the 3rd from the Moon');
+// Chamara: the Lagna lord Mars exalted in Capricorn (a Kendra) and aspected by Jupiter (Jupiter in Cancer, its 7th); or two benefics together in the 7th.
+assert.ok(has({ Mars: 10, Jupiter: 4, Sun: 3, Mercury: 3, Venus: 3, Saturn: 3 }, 'chamara'));
+assert.ok(has({ Jupiter: 7, Venus: 7, Mars: 3, Sun: 3, Mercury: 3, Saturn: 3 }, 'chamara'), 'two benefics in the 7th');
+// Shankha: the Lagna lord strong and the 5th lord (Sun) and 6th lord (Mercury) in Kendras from each other.
+assert.ok(has({ Mars: 8, Sun: 1, Mercury: 4, Jupiter: 3, Venus: 3, Saturn: 3 }, 'shankha'));
+assert.ok(!has({ Mars: 8, Sun: 1, Mercury: 3, Jupiter: 3, Venus: 3, Saturn: 3 }, 'shankha'), 'Mercury in the 3rd from the Sun');
+// Bheri: the 9th lord (Jupiter) strong and the 12th, 1st, 2nd and 7th houses occupied.
+assert.ok(has({ Jupiter: 9, Mars: 1, Venus: 2, Saturn: 12, Sun: 7, Mercury: 3, Moon: 3 }, 'bheri'));
+assert.ok(!has({ Jupiter: 9, Mars: 1, Venus: 2, Saturn: 12, Sun: 6, Mercury: 3, Moon: 3 }, 'bheri'), 'the 7th is empty');
+// Srinatha: the 7th lord (Venus) in the 10th, the 10th lord (Saturn) exalted in Libra with the 9th lord (Jupiter).
+assert.ok(has({ Venus: 10, Saturn: 7, Jupiter: 7, Sun: 3, Mars: 3, Mercury: 3 }, 'srinatha'));
+assert.ok(!has({ Venus: 10, Saturn: 7, Jupiter: 5, Sun: 3, Mars: 3, Mercury: 3 }, 'srinatha'), 'Jupiter is not with Saturn');
+// Sharada: the 10th lord (Saturn) in the 5th, Mercury in a Kendra, the Sun in Leo.
+assert.ok(has({ Saturn: 5, Mercury: 4, Sun: 5, Mars: 3, Jupiter: 3, Venus: 3 }, 'sharada'));
+// Kalanidhi: Jupiter in the 2nd with Venus (joined) and Mercury (aspecting from Scorpio, the 7th from Taurus).
+assert.ok(has({ Jupiter: 2, Venus: 2, Mercury: 8, Sun: 3, Mars: 3, Saturn: 3 }, 'kalanidhi'));
+assert.ok(!has({ Jupiter: 2, Venus: 2, Mercury: 7, Sun: 3, Mars: 3, Saturn: 3 }, 'kalanidhi'), 'Mercury in Libra does not aspect Taurus');
+// Hari, Hara, Brahma: benefics in three houses counted from the sign of a lord. The Moon is full (the Sun six signs away).
+assert.ok(has({ Venus: 3, Jupiter: 4, Mercury: 2, Moon: 10, Sun: 4, Mars: 5, Saturn: 5 }, 'hari'), 'the 2nd, 12th and 8th from the 2nd lord Venus in Gemini');
+assert.ok(has({ Venus: 3, Mercury: 6, Jupiter: 11, Moon: 10, Sun: 4, Mars: 5, Saturn: 5 }, 'hara'), 'the 4th, 9th and 8th from the 7th lord Venus in Gemini');
+assert.ok(has({ Mars: 1, Jupiter: 4, Mercury: 10, Venus: 11, Sun: 3, Saturn: 3, Moon: 9 }, 'brahma'), 'the 4th, 10th and 11th from the Lagna lord Mars in Aries');
+// Lagnaadhi: benefics in the 7th and 8th with no malefic joining or aspecting them.
+assert.ok(has({ Jupiter: 7, Venus: 8, Saturn: 3, Mars: 3, Sun: 3, Mercury: 3, Rahu: 3, Ketu: 9 }, 'lagnaadhi'));
+assert.ok(!has({ Jupiter: 7, Venus: 8, Saturn: 2, Mars: 3, Sun: 3, Mercury: 3, Rahu: 3, Ketu: 9 }, 'lagnaadhi'), 'Saturn in Taurus aspects Scorpio by its 7th');
+// Parijata: the dispositors of the Lagna lord (Mars in Leo: the Sun, then the lord of the Sun\'s sign) in Kendras or Trikonas.
+assert.ok(has({ Mars: 5, Sun: 1, Jupiter: 3, Venus: 3, Mercury: 3, Saturn: 3 }, 'parijata'));
+assert.ok(!has({ Mars: 5, Sun: 3, Jupiter: 3, Venus: 3, Mercury: 3, Saturn: 3 }, 'parijata'), 'the Sun in Gemini is no Kendra or Trikona');
+// Kalpadruma: the Lagna lord Mars in Aries at 7° (the 3rd Navamsa, which is Gemini), so the chain Mars, Mars, Mars ends with the lord of
+// Gemini, Mercury, who has to be in a Kendra, a Trikona or exaltation too.
+assert.ok(has({ Mars: 1, Mercury: 4, Sun: 3, Jupiter: 3, Venus: 3, Saturn: 3 }, 'kalpadruma'));
+assert.ok(!has({ Mars: 1, Mercury: 3, Sun: 3, Jupiter: 3, Venus: 3, Saturn: 3 }, 'kalpadruma'), 'Mercury in Gemini, the 3rd house');
+assert.ok(!has({ Jupiter: 5, Venus: 6, Mercury: 7, Sun: 1, Mars: 1, Saturn: 7 }, 'kurma'));
+// Kurma is extremely rare but not impossible: Lagna Aries; the Sun exalted in the Lagna; Mercury in Gemini, made a malefic by Rahu
+// there; Saturn in Aquarius (the 11th); Jupiter in Leo (a friend's sign), the Moon in Virgo (waxing, in Mercury's sign) and Venus in
+// Libra (its own), the 5th, 6th and 7th.
+const kurma = chartOf({ Sun: 1, Mercury: 3, Rahu: 3, Ketu: 9, Saturn: 11, Jupiter: 5, Moon: 6, Venus: 7, Mars: 10 });
+assert.ok(active(kurma).has('kurma'), 'Kurma on a contrived chart');
+assert.ok(!active(chartOf({ Sun: 1, Mercury: 3, Rahu: 9, Ketu: 12, Saturn: 11, Jupiter: 5, Moon: 6, Venus: 7, Mars: 10 })).has('kurma'), 'Mercury alone in Gemini is a benefic, so the 3rd house has no malefic');
+
+// A strong lord is not debilitated: Mars (the Lagna lord of Aries) in Cancer is in a Kendra but debilitated, in Leo it is in a friend\'s
+// sign and a Trikona. Kahala needs the 4th lord (the Moon in Cancer) and Jupiter in Kendras from each other and a strong Lagna lord.
+const kahalaBase = { Moon: 4, Jupiter: 7, Sun: 3, Mercury: 3, Venus: 3, Saturn: 3 };
+assert.ok(has({ ...kahalaBase, Mars: 5 }, 'kahala'));
+assert.ok(!has({ ...kahalaBase, Mars: 4 }, 'kahala'), 'a debilitated Lagna lord is not strong, Kendra or not');
+
 console.log('Yoga tests passed');

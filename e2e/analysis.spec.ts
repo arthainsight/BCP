@@ -321,8 +321,11 @@ test('the yoga table has the Nabhasa yogas and the other classical ones, each wi
   await expect(row('Dharma-Karmadhipati')).toContainText('Raja');
   await expect(row('Dharma-Karmadhipati')).toContainText('9th lord Venus in Cancer, house 11');
   await expect(row('Dharma-Karmadhipati')).toContainText('Conjunct');
+  // The Moon is in the same sign as the Sun (the New Moon side of it), a Kendra from the Sun: Adhama of BPHS 37.1, the lowest of
+  // the three (Varishta, Sama, Adhama), of which exactly one always holds.
+  await expect(row('Adhama')).toContainText('Moon in 1st from Sun (Kendra)');
   // Only the active yogas are listed; the others are not.
-  await expect(page.locator('td:first-child').filter({ hasText: /^(Gada|Gajakesari)$/ }).locator('visible=true')).toHaveCount(0);
+  await expect(page.locator('td:first-child').filter({ hasText: /^(Gada|Gajakesari|Varishta|Sama|Kemadruma|Kurma)$/ }).locator('visible=true')).toHaveCount(0);
 
   expect(errors).toEqual([]);
 });

@@ -3,6 +3,7 @@ import type { YogaResult } from '@/lib/yogas';
 import { getRashiAspectSigns } from '@/lib/drishti';
 import { normalizeDegrees } from '@/lib/angles';
 import { DEBILITATION, EXALTATION, OWN_SIGNS } from '@/lib/dignity';
+import { calcD9 } from '@/lib/varga/d9';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -79,13 +80,9 @@ function getPlanetNature(name: string, planets: PlanetData[]): 'benefic' | 'male
   return 'neutral';
 }
 
+/** The Navamsa sign (1–12) of a degree in a sign: movable signs count from themselves, fixed from the 9th, dual from the 5th. */
 function getNavamsaSign(sign: number, degree: number): number {
-  const navamsaIndex = Math.min(Math.floor(degree * 9 / 30), 8);
-  let startSign: number;
-  if ([1, 4, 7, 10].includes(sign))  startSign = 1;   // Movable → Aries
-  else if ([2, 5, 8, 11].includes(sign)) startSign = 10; // Fixed → Capricorn
-  else startSign = 7;                                     // Dual → Libra
-  return ((startSign - 1 + navamsaIndex) % 12) + 1;
+  return calcD9((sign - 1) * 30 + degree) + 1;
 }
 
 function getDignity(name: string, sign: number, degree: number): number {

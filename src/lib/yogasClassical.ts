@@ -3,7 +3,7 @@ import type { YogaResult } from './yogas';
 import { DEBILITATION, EXALTATION, NATURAL_ENEMIES, OWN_SIGNS } from './dignity';
 import { signLord, signName } from './signs';
 import { normalizeDegrees } from './angles';
-import { KENDRAS, dynamicBeneficStatus, houseFrom, ordinal, signFrom } from './yogaCommon';
+import { KENDRAS, NOT_STRONG, aspectsSign, dynamicBeneficStatus, houseFrom, isStrongLord, ordinal, signFrom } from './yogaCommon';
 
 // Yogas of the classical texts that the main list lacks. The first group is the 32 Nabhasa yogas of Brihat Parashara
 // Hora Shastra chapter 35, which look at where the seven grahas (the Sun to Saturn; the nodes are not counted) stand
@@ -145,13 +145,6 @@ function nabhasaYogas(planets: PlanetData[], ascendantSign: number): YogaResult[
 
 // ── Single yogas ─────────────────────────────────────────────────────────────────────────────────────────────────
 
-const GRAHA_EXTRA_ASPECTS: Record<string, number[]> = { Mars: [4, 8], Jupiter: [5, 9], Saturn: [3, 10] };
-
-/** Whether a graha casts its aspect (Parāśara: the 7th from itself, and the special ones of Mars, Jupiter and Saturn) on a sign. */
-function aspectsSign(planet: PlanetData, sign: number): boolean {
-  return [7, ...(GRAHA_EXTRA_ASPECTS[planet.name] ?? [])].some(offset => signFrom(planet.sign, offset) === sign);
-}
-
 function singleYogas(planets: PlanetData[], ascendantSign: number): YogaResult[] {
   const at = (name: string) => planets.find(planet => planet.name === name);
   const houseOf = (planet: PlanetData) => houseFrom(ascendantSign, planet.sign);
@@ -188,10 +181,9 @@ function singleYogas(planets: PlanetData[], ascendantSign: number): YogaResult[]
     }
   }
 
-  // Lakshmi (BPHS 36.27-28): the 9th lord in a Kendra in its own or exaltation sign, and a strong Lagna lord (here, as in
-  // JHora: in its own or exaltation sign, or in a Kendra or Trikona, the strength the chart can show without Shadbala).
+  // Lakshmi (BPHS 36.27-28): the 9th lord in a Kendra in its own or exaltation sign, and a strong Lagna lord (isStrongLord).
   {
-    const seed: Seed = { id: 'lakshmi', name: 'Lakshmi', category: 'dhana', referencePlanet: '9th and Lagna lords', rule: '9th lord in a Kendra in its own or exaltation sign, and the Lagna lord strong (counted as: in its own or exaltation sign, or in a Kendra or Trikona, as JHora does)' };
+    const seed: Seed = { id: 'lakshmi', name: 'Lakshmi', category: 'dhana', referencePlanet: '9th and Lagna lords', rule: '9th lord in a Kendra in its own or exaltation sign, and the Lagna lord strong (counted as: not debilitated and in its own, exaltation or friendly sign or in a Kendra or Trikona)' };
     const ninth = lordOfHouse(9);
     const lagnaLord = lordOfHouse(1);
     const ninthPlanet = at(ninth);
@@ -201,7 +193,7 @@ function singleYogas(planets: PlanetData[], ascendantSign: number): YogaResult[]
       const failures = [
         ...(KENDRAS.includes(houseOf(ninthPlanet)) ? [] : ['9th lord is not in a Kendra']),
         ...(dignified(ninthPlanet) ? [] : ['9th lord is not in its own or exaltation sign']),
-        ...(dignified(lagnaPlanet) || [...KENDRAS, ...TRIKONAS].includes(houseOf(lagnaPlanet)) ? [] : ['Lagna lord is not strong (own or exaltation sign, Kendra or Trikona)']),
+        ...(isStrongLord(lagnaPlanet, ascendantSign) ? [] : [`Lagna lord is ${NOT_STRONG}`]),
       ];
       out.push(result(seed, failures.length === 0, [ninth, lagnaLord], [lordText(house(9), ninth), lordText('Lagna lord', lagnaLord), ...failures].join('; ')));
     }

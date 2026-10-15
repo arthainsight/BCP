@@ -82,7 +82,7 @@ Overlap and Systems), among them:
 * Graha dṛṣṭi and rāśi dṛṣṭi (Jaimini)
 * Sarvatobhadra chakra: the 9 × 9 chart of the nakṣatras (with Abhijit), vowels, consonants, signs, tithi groups and weekdays, with the grahas in their squares and their vedha (across the chart and on the two diagonals), the squares the lines cross, the syllable of a name and the birth points a graha pierces
 * Kota Chakra: the 28 nakṣatras (with Abhijit) in the four squares of the fort (Bāhya, Prākāra, Durgāntara, Stambha), counted from the Moon's nakṣatra, with the grahas in their squares, natal and transiting, and the Kota Swāmī and Kota Pāla
-* Yoga detection with the rule of each yoga and a strength: the Pañcha Mahāpuruṣa, Raja, Dhana, Solar and Lunar yogas, the 32 Nabhasa yogas of BPHS 35 (Ashraya, Dala, Akriti and Sankhya), Gajakesari, Lakshmi, Maha Raja, Dharma-Karmadhipati, the Maha, Khala and Dainya Parivartanas, Harsha, Sarala and Vimala (Viparita Raja), Neecha Bhanga, Khadga, Kusuma and Matsya
+* Yoga detection with the rule of each yoga and a strength: the Pañcha Mahāpuruṣa, Raja, Dhana, Solar and Lunar yogas, the 32 Nabhasa yogas of BPHS 35 (Ashraya, Dala, Akriti and Sankhya), Gajakesari, Lakshmi, Maha Raja, Dharma-Karmadhipati, the Maha, Khala and Dainya Parivartanas, Harsha, Sarala and Vimala (Viparita Raja), Neecha Bhanga, Khadga, Kusuma and Matsya, and from BPHS 36 and 37 the Lagna yogas, Vasumati, Kemadruma and its cancellation, Varishta, Sama and Adhama, Parvata, Kahala, Chamara, Shankha, Bheri, Srinatha, Sharada, Kurma, Kalanidhi, Kalpadruma, Hari, Hara, Brahma, Lagnaadhi and Parijata
 * Avasthās, sahams, panchanga
 
 ### Research tools
@@ -181,7 +181,8 @@ Panchang, the palm workspace and the report load when they are opened, and
 * Compare Nārāyaṇa, Mūla and Sthira against the JHora desktop application
   (they stay Beta until then)
 * Yoga detection: settle the rules that are only as good as their source
-  (Kemadruma and Sakata cancellations, Mukuta, Amara, Dhvaja, Muni; the Navamsa condition of Neecha Bhanga and the stricter forms of Gajakesari and Viparita Raja)
+  (the other cancellations of Kemadruma and Sakata, Mukuta, Amara, Dhvaja, Muni; the Navamsa condition of Neecha Bhanga and the stricter forms of Gajakesari and Viparita Raja;
+  a "strong" lord by Shadbala instead of by sign and house in Lakshmi, Kahala, Shankha and Bheri; Parijata, Kurma and the Vasumati count from the Lagna)
 
 ---
 

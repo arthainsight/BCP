@@ -48,11 +48,11 @@ function randomChart(kind = 0) {
   const ascendant = randomInt(12) + 1;
   const signOfHouse = (house: number) => ((ascendant - 1 + house - 1) % 12) + 1;
   let signs: number[];
-  if (kind % 4 === 1) {
+  if (kind % 5 === 1) {
     // The planets crowded into a few signs.
     const pool = Array.from({ length: 2 + randomInt(5) }, () => randomInt(12) + 1);
     signs = NAMES.map(() => pool[randomInt(pool.length)]);
-  } else if (kind % 4 === 2) {
+  } else if (kind % 5 === 2) {
     // The seven planets spread over the houses a Nabhasa pattern names, each of them occupied.
     const masks = AKRITI_MASKS[randomInt(AKRITI_MASKS.length)][1];
     const bits = masks[randomInt(masks.length)];
@@ -64,10 +64,25 @@ function randomChart(kind = 0) {
     });
     // The nodes go anywhere.
     signs[7] = randomInt(12) + 1; signs[8] = randomInt(12) + 1;
-  } else if (kind % 4 === 3) {
+  } else if (kind % 5 === 3) {
     // The planets in the houses the Matsya yoga names and a few more.
     const pool = [1, 4, 5, 8, 9, ...Array.from({ length: randomInt(3) }, () => randomInt(12) + 1)];
     signs = NAMES.map(() => signOfHouse(pool[randomInt(pool.length)]));
+  } else if (kind % 5 === 4) {
+    // The Kurma pattern: a planet that is dignified there in each of the houses 1, 3, 11, 5, 6 and 7 where one can be (own or
+    // exaltation sign; in the 5th, 6th and 7th a friendly sign as well), the rest anywhere. A Rahu in the 3rd house now and
+    // then gives a Mercury in Gemini or Virgo the company that makes it a malefic.
+    signs = NAMES.map(() => randomInt(12) + 1);
+    const free = new Set<string>(NAMES.slice(0, 7));
+    for (const house of [1, 3, 11, 5, 6, 7]) {
+      const sign = signOfHouse(house);
+      const fits = [...free].filter(name => EXALT[name] === sign || SIGN_LORD[sign - 1] === name || (house >= 5 && house <= 7 && FRIENDS[name].includes(SIGN_LORD[sign - 1])));
+      if (fits.length === 0) continue;
+      const pick = fits[randomInt(fits.length)];
+      free.delete(pick);
+      signs[NAMES.indexOf(pick as (typeof NAMES)[number])] = sign;
+    }
+    if (random() < 0.5) signs[7] = signOfHouse(3);
   } else {
     signs = NAMES.map(() => randomInt(12) + 1);
   }
@@ -165,7 +180,10 @@ function classicalExpected({ ascendant, planets }: Chart): Record<string, boolea
   const lordOf = (house: number) => at(SIGN_LORD[relSign(ascendant, house) - 1]);
   const ownSigns = (name: string) => SIGN_LORD.flatMap((lord, index) => (lord === name ? [index + 1] : []));
   const dignified = (p: PlanetData) => EXALT[p.name] === p.sign || ownSigns(p.name).includes(p.sign);
-  out.lakshmi = KENDRA.includes(lordOf(9).house) && dignified(lordOf(9)) && (dignified(lordOf(1)) || [...KENDRA, ...TRIKONA].includes(lordOf(1).house));
+  const lagnaLord = lordOf(1);
+  const lagnaLordStrong = DEBIL[lagnaLord.name] !== lagnaLord.sign
+    && (dignified(lagnaLord) || FRIENDS[lagnaLord.name].includes(SIGN_LORD[lagnaLord.sign - 1]) || [...KENDRA, ...TRIKONA].includes(lagnaLord.house));
+  out.lakshmi = KENDRA.includes(lordOf(9).house) && dignified(lordOf(9)) && lagnaLordStrong;
 
   // Exchanges of signs, by the houses the two planets stand in.
   const exchanges: [number, number][] = [];
@@ -210,6 +228,96 @@ function classicalExpected({ ascendant, planets }: Chart): Record<string, boolea
   return out;
 }
 
+// ---------------------------------------------------------------------------
+// The yogas of yogasBphs.ts, and the three that were redefined (Kemadruma, Varishta, Sama and Adhama): worked out again,
+// planet by planet, from the rules as BPHS states them.
+// ---------------------------------------------------------------------------
+const FRIENDS: Record<string, string[]> = {
+  Sun: ['Moon', 'Mars', 'Jupiter'], Moon: ['Sun', 'Mercury'], Mars: ['Sun', 'Moon', 'Jupiter'], Mercury: ['Sun', 'Venus'],
+  Jupiter: ['Sun', 'Moon', 'Mars'], Venus: ['Mercury', 'Saturn'], Saturn: ['Mercury', 'Venus'],
+};
+/** The Navamsa sign of a planet by the rule of the elements: fire signs count from Aries, earth from Capricorn, air from Libra, water from Cancer. */
+function navamsaOf(p: PlanetData): number {
+  const start = [1, 10, 7, 4][(p.sign - 1) % 4];
+  return ((start - 1 + Math.min(Math.floor((p.degree * 9) / 30), 8)) % 12) + 1;
+}
+
+function bphsExpected({ ascendant, planets }: Chart): Record<string, boolean> {
+  const at = (name: string) => planets.find(p => p.name === name)!;
+  const out: Record<string, boolean> = {};
+  const ben = (p: PlanetData) => benefic(p.name, planets) === true;
+  const mal = (p: PlanetData) => benefic(p.name, planets) === false;
+  const lord = (house: number) => at(SIGN_LORD[relSign(ascendant, house) - 1]);
+  const own = (p: PlanetData) => EXALT[p.name] === p.sign || SIGN_LORD[p.sign - 1] === p.name;
+  const friendly = (p: PlanetData) => (FRIENDS[p.name] ?? []).includes(SIGN_LORD[p.sign - 1]);
+  // A strong lord: not debilitated, and in its own, exaltation or friendly sign or in a Kendra or Trikona.
+  const strong = (p: PlanetData) => DEBIL[p.name] !== p.sign && (own(p) || friendly(p) || [1, 4, 5, 7, 9, 10].includes(p.house));
+  const moon = at('Moon'); const sun = at('Sun'); const jupiter = at('Jupiter'); const mercury = at('Mercury'); const venus = at('Venus'); const mars = at('Mars');
+  const fromMoon = (p: PlanetData) => ((p.sign - moon.sign + 12) % 12) + 1;
+  const has = (house: number, test: (p: PlanetData) => boolean) => planets.some(p => p.house === house && test(p));
+
+  // Lagna yogas
+  out['subha-kartari'] = has(12, ben) && has(2, ben);
+  out['papa-kartari'] = has(12, mal) && has(2, mal);
+  out.subha = has(1, ben) || out['subha-kartari']; out.asubha = has(1, mal) || out['papa-kartari'];
+
+  // Vasumati: how many of the three benefics are in the Upachayas from the Moon
+  const upachaya = ['Jupiter', 'Venus', 'Mercury'].filter(name => [3, 6, 10, 11].includes(fromMoon(at(name)))).length;
+  out['vasumati-all'] = upachaya === 3; out['vasumati-two'] = upachaya === 2; out['vasumati-one'] = upachaya === 1;
+
+  // Kemadruma and its cancellation (the nodes are not counted)
+  const eligible = ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'].map(at);
+  const lonely = !eligible.some(p => [1, 2, 12].includes(fromMoon(p)));
+  const kendraLagna = eligible.some(p => KENDRA.includes(p.house));
+  const kendraMoon = eligible.some(p => KENDRA.includes(fromMoon(p)));
+  out.kemadruma = lonely && !kendraLagna && !kendraMoon;
+  out['kemadruma-bhanga'] = lonely && (kendraLagna || kendraMoon);
+
+  // The Moon from the Sun
+  const apart = ((moon.sign - sun.sign + 12) % 12) + 1;
+  out.adhama = [1, 4, 7, 10].includes(apart); out.sama = [2, 5, 8, 11].includes(apart); out.varishta = [3, 6, 9, 12].includes(apart);
+
+  // Parvata
+  const inKendras = planets.filter(p => KENDRA.includes(p.house));
+  out.parvata = inKendras.length > 0 && inKendras.every(ben) && planets.filter(p => p.house === 8).every(ben);
+
+  // Kahala, Chamara, Shankha, Bheri, Srinatha, Sharada
+  const l1 = lord(1); const l4 = lord(4); const l5 = lord(5); const l6 = lord(6); const l7 = lord(7); const l9 = lord(9); const l10 = lord(10);
+  out.kahala = (KENDRA.includes(((jupiter.sign - l4.sign + 12) % 12) + 1) && strong(l1)) || (own(l4) && l4.sign === l10.sign);
+  out.chamara = (EXALT[l1.name] === l1.sign && KENDRA.includes(l1.house) && looksAt(jupiter, l1.sign) && l1.name !== 'Jupiter')
+    || [1, 7, 9, 10].some(house => planets.filter(p => p.house === house && ben(p)).length >= 2);
+  out.shankha = (strong(l1) && KENDRA.includes(((l5.sign - l6.sign + 12) % 12) + 1))
+    || ((l1.name === l10.name || l1.sign === l10.sign) && [1, 4, 7, 10].includes(l1.sign) && strong(l9));
+  out.bheri = strong(l9) && ([12, 1, 2, 7].every(house => planets.some(p => p.house === house)) || [venus, jupiter, l1].every(p => KENDRA.includes(p.house)));
+  out.srinatha = l7.house === 10 && EXALT[l10.name] === l10.sign && l10.sign === l9.sign;
+  out.sharada = (lord(10).house === 5 && KENDRA.includes(mercury.house) && sun.sign === 5)
+    || ([jupiter, mercury].some(p => [1, 5, 9].includes(fromMoon(p))) && mars.house === 11);
+
+  // Kurma
+  const goodBenefic = (house: number) => has(house, p => ben(p) && (own(p) || friendly(p)));
+  const goodMalefic = (house: number) => has(house, p => mal(p) && own(p));
+  out.kurma = [5, 6, 7].every(goodBenefic) && [1, 3, 11].every(goodMalefic);
+
+  // Kalanidhi
+  out.kalanidhi = [2, 5].includes(jupiter.house) && [mercury, venus].every(p => p.sign === jupiter.sign || looksAt(p, jupiter.sign));
+
+  // Kalpadruma and Parijata: the chain of dispositors
+  const d1 = at(SIGN_LORD[l1.sign - 1]); const d2 = at(SIGN_LORD[d1.sign - 1]); const d3 = at(SIGN_LORD[navamsaOf(d2) - 1]);
+  out.kalpadruma = [l1, d1, d2, d3].every(p => [1, 4, 5, 7, 9, 10].includes(p.house) || EXALT[p.name] === p.sign);
+  out.parijata = [d1, d2].every(p => [1, 4, 5, 7, 9, 10].includes(p.house));
+
+  // Hari, Hara, Brahma: benefics in three houses counted from the sign of a lord
+  const benefics = (from: PlanetData, counts: number[]) => counts.every(count => planets.some(p => ben(p) && ((p.sign - from.sign + 12) % 12) + 1 === count));
+  out.hari = benefics(l5 && lord(2), [2, 12, 8]);
+  out.hara = benefics(l7, [4, 9, 8]);
+  out.brahma = benefics(l1, [4, 10, 11]);
+
+  // Lagnaadhi
+  const harmed = planets.filter(mal).some(p => [7, 8].includes(p.house) || [7, 8].some(house => looksAt(p, relSign(ascendant, house))));
+  out.lagnaadhi = has(7, ben) && has(8, ben) && !harmed;
+  return out;
+}
+
 function expected({ ascendant, planets }: Chart): Record<string, boolean> {
   const at = (name: string) => planets.find(p => p.name === name)!;
   const inSign = (sign: number, names: string[]) => planets.filter(p => names.includes(p.name) && p.sign === sign);
@@ -246,7 +354,7 @@ function expected({ ascendant, planets }: Chart): Record<string, boolean> {
   const tracked = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
   const exalted = tracked.filter(n => at(n).sign === EXALT[n]).length;
   const debilitated = tracked.filter(n => at(n).sign === DEBIL[n]).length;
-  result.uttama = exalted >= 3; result.adhama = debilitated >= 3; result.sama = exalted >= 1 && debilitated >= 1 && exalted === debilitated;
+  result.varishta = exalted >= 3; result.adhama = debilitated >= 3; result.sama = exalted >= 1 && debilitated >= 1 && exalted === debilitated;
 
   for (const [id, name, own, exalt] of PANCHA) {
     const p = at(name);
@@ -265,6 +373,7 @@ function expected({ ascendant, planets }: Chart): Record<string, boolean> {
   result.susubha = candidates.some(n => benefic(n, planets) === true && (at(n).sign === ascendant || lagnaAspect.includes(at(n).sign)));
 
   Object.assign(result, classicalExpected({ ascendant, planets }));
+  Object.assign(result, bphsExpected({ ascendant, planets }));
 
   result.amara = false; result.dhvaja = false; result.muni = false;
   return result;
@@ -292,10 +401,14 @@ assert.deepEqual(disagreements, [], `the engine and its stated rules disagree:\n
 
 // The comparison means something only if both outcomes were met: every yoga that can fire fired on some chart
 // and stayed quiet on others (the three whose definition is pending never fire).
+const neverFired: string[] = [];
+const neverQuiet: string[] = [];
 for (const [id, { active, inactive }] of seen) {
   if (['amara', 'dhvaja', 'muni'].includes(id)) { assert.equal(active, 0, `${id} stays inactive until its definition is settled`); continue; }
-  assert.ok(active > 0, `${id} fired on some chart (${CHARTS} tried)`);
-  assert.ok(inactive > 0, `${id} stayed quiet on some chart`);
+  if (active === 0) neverFired.push(id);
+  if (inactive === 0) neverQuiet.push(id);
 }
+assert.deepEqual(neverFired, [], `these yogas never fired in ${CHARTS} charts`);
+assert.deepEqual(neverQuiet, [], 'these yogas never stayed quiet');
 
 console.log('yoga oracle tests passed');

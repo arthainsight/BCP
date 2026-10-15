@@ -2,9 +2,9 @@ import { PlanetData } from '@/types';
 import { getRashiAspectSigns } from '@/lib/drishti';
 import { normalizeDegrees } from '@/lib/angles';
 import { signLord, signName } from '@/lib/signs';
-import { DEBILITATION, EXALTATION } from '@/lib/dignity';
 import { dynamicBeneficStatus } from '@/lib/yogaCommon';
 import { calculateClassicalYogas } from '@/lib/yogasClassical';
+import { calculateBphsYogas } from '@/lib/yogasBphs';
 
 export type YogaStatus = 'active' | 'inactive';
 export type YogaCategory = 'solar' | 'moon' | 'raja' | 'dhana' | 'general' | 'pancha-mahapurusha' | 'nabhasa';
@@ -32,8 +32,6 @@ const PANCHA_DEFS: { id: string; name: string; planet: string; ownSigns: number[
   { id: 'malavya', name: 'Malavya', planet: 'Venus',   ownSigns: [2, 7],   exaltSign: 12 },
   { id: 'shasha',  name: 'Shasha',  planet: 'Saturn',  ownSigns: [10, 11], exaltSign: 7  },
 ];
-
-const TRACKED_PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 
 const BENEFIC_CANDIDATES = ['Jupiter', 'Venus', 'Mercury', 'Moon'];
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -160,16 +158,41 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
         : 'Not both flanks of Moon are occupied',
     });
 
-    const kema = in12.length === 0 && in2.length === 0;
+    // Kemadruma (BPHS 37.11-13): no planet with the Moon or in the 2nd or 12th from it. The Sun, the Moon and the nodes are
+    // not counted. The texts cancel it by a planet in a Kendra from the Lagna (BPHS) or from the Moon (Saravali and others):
+    // then the row below, Kemadruma Bhanga, holds instead of Kemadruma, so the two never hold together. The other
+    // cancellations the texts give (a full Moon, the Moon aspected by Jupiter or Venus) are not applied.
+    const withMoon = planets.filter(p => ELIGIBLE.has(p.name) && p.sign === moon.sign);
+    const lonely = in12.length === 0 && in2.length === 0 && withMoon.length === 0;
+    const inKendraFrom = (from: number) => planets.filter(p => ELIGIBLE.has(p.name) && [1, 4, 7, 10].includes(((p.sign - from + 12) % 12) + 1));
+    const kendraFromLagna = inKendraFrom(ascendantSign);
+    const kendraFromMoon = inKendraFrom(moon.sign);
+    const cancelled = lonely && (kendraFromLagna.length > 0 || kendraFromMoon.length > 0);
+    const kema = lonely && !cancelled;
     results.push({
       id: 'kemadruma', name: 'Kemadruma', category: 'moon',
       status: kema ? 'active' : 'inactive',
       referencePlanet: 'Moon',
       planetsInvolved: [],
-      rule: 'No eligible planets in 2nd or 12th sign from Moon',
+      rule: 'No planet but the Sun with the Moon or in the 2nd or 12th sign from it, and none in a Kendra from the Lagna or from the Moon (BPHS 37.11-13; the Sun, Moon and nodes do not count)',
       resultText: kema
-        ? 'Moon unattended — no eligible planets in 2nd or 12th'
-        : `Moon flanked by: ${[...in12.map(p => p.name), ...in2.map(p => p.name)].join(', ')}`,
+        ? 'Moon unattended — no planet with it or in the 2nd or 12th from it, none in a Kendra from the Lagna or the Moon'
+        : withMoon.length > 0
+          ? `Moon is joined by: ${withMoon.map(p => p.name).join(', ')}`
+          : in12.length > 0 || in2.length > 0
+            ? `Moon flanked by: ${[...in12.map(p => p.name), ...in2.map(p => p.name)].join(', ')}`
+            : `Kemadruma cancelled by a planet in a Kendra: ${[...new Set([...kendraFromLagna, ...kendraFromMoon].map(p => p.name))].join(', ')}`,
+    });
+
+    results.push({
+      id: 'kemadruma-bhanga', name: 'Kemadruma Bhanga', category: 'moon',
+      status: cancelled ? 'active' : 'inactive',
+      referencePlanet: 'Moon',
+      planetsInvolved: cancelled ? [...new Set([...kendraFromLagna, ...kendraFromMoon].map(p => p.name))] : [],
+      rule: 'The Moon stands alone (nothing with it or in the 2nd or 12th from it) but a planet is in a Kendra from the Lagna or from the Moon: Kemadruma is cancelled',
+      resultText: cancelled
+        ? [...(kendraFromLagna.length ? [`${kendraFromLagna.map(p => p.name).join(', ')} in a Kendra from the Lagna`] : []), ...(kendraFromMoon.length ? [`${kendraFromMoon.map(p => p.name).join(', ')} in a Kendra from the Moon`] : [])].join('; ')
+        : 'No Kemadruma to cancel',
     });
   }
 
@@ -318,45 +341,29 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
     });
   }
 
-  // ── Uttama / Sama / Adhama ────────────────────────────────────────────────
+  // ── Varishta / Sama / Adhama (BPHS 37.1) ──────────────────────────────────────────────────────────────────────────
+  // The Moon's place from the Sun: in a Kendra (1, 4, 7, 10) the lowest, Adhama; in a Panaphara (2, 5, 8, 11) the middle,
+  // Sama; in an Apoklima (3, 6, 9, 12) the best (called Uttama in some books, Varishta here). Exactly one of the three always
+  // holds, because every place from the Sun is one of the three groups. Before v3.01 the app used the id uttama for a
+  // different reading (three exalted planets), which has no classical source.
 
-  {
-    const exalted     = planets.filter(p => TRACKED_PLANETS.includes(p.name) && EXALTATION[p.name] === p.sign);
-    const debilitated = planets.filter(p => TRACKED_PLANETS.includes(p.name) && DEBILITATION[p.name] === p.sign);
-
-    results.push({
-      id: 'uttama', name: 'Uttama', category: 'general',
-      status: exalted.length >= 3 ? 'active' : 'inactive',
-      referencePlanet: '—',
-      planetsInvolved: exalted.map(p => p.name),
-      rule: '3 or more planets in their exaltation signs',
-      resultText: exalted.length >= 3
-        ? `Exalted: ${exalted.map(p => `${p.name} (${sn(p.sign)})`).join(', ')}`
-        : `${exalted.length} exalted planet${exalted.length !== 1 ? 's' : ''} — need 3+`,
-    });
-
-    const sama = exalted.length >= 1 && debilitated.length >= 1 && exalted.length === debilitated.length;
-    results.push({
-      id: 'sama', name: 'Sama', category: 'general',
-      status: sama ? 'active' : 'inactive',
-      referencePlanet: '—',
-      planetsInvolved: sama ? [...exalted.map(p => p.name), ...debilitated.map(p => p.name)] : [],
-      rule: 'Equal number of exalted and debilitated planets (both ≥ 1)',
-      resultText: sama
-        ? `${exalted.length} exalted (${exalted.map(p => p.name).join(', ')}), ${debilitated.length} debilitated (${debilitated.map(p => p.name).join(', ')})`
-        : `Exalted: ${exalted.length}, Debilitated: ${debilitated.length} — not equal`,
-    });
-
-    results.push({
-      id: 'adhama', name: 'Adhama', category: 'general',
-      status: debilitated.length >= 3 ? 'active' : 'inactive',
-      referencePlanet: '—',
-      planetsInvolved: debilitated.map(p => p.name),
-      rule: '3 or more planets in their debilitation signs',
-      resultText: debilitated.length >= 3
-        ? `Debilitated: ${debilitated.map(p => `${p.name} (${sn(p.sign)})`).join(', ')}`
-        : `${debilitated.length} debilitated planet${debilitated.length !== 1 ? 's' : ''} — need 3+`,
-    });
+  if (sun && moon) {
+    const fromSun = ((moon.sign - sun.sign + 12) % 12) + 1;
+    const kind = [1, 4, 7, 10].includes(fromSun) ? 'Kendra' : [2, 5, 8, 11].includes(fromSun) ? 'Panaphara' : 'Apoklima';
+    for (const [id, name, wanted, rule] of [
+      ['varishta', 'Varishta', 'Apoklima', 'The Moon in an Apoklima (3rd, 6th, 9th or 12th sign) from the Sun, the best of the three (BPHS 37.1; some books call it Uttama). Exactly one of Varishta, Sama and Adhama always holds'],
+      ['sama', 'Sama', 'Panaphara', 'The Moon in a Panaphara (2nd, 5th, 8th or 11th sign) from the Sun (BPHS 37.1). Exactly one of Varishta, Sama and Adhama always holds'],
+      ['adhama', 'Adhama', 'Kendra', 'The Moon in a Kendra (1st, 4th, 7th or 10th sign) from the Sun, the lowest of the three (BPHS 37.1). Exactly one of Varishta, Sama and Adhama always holds'],
+    ] as const) {
+      results.push({
+        id, name, category: 'general',
+        status: kind === wanted ? 'active' : 'inactive',
+        referencePlanet: 'Sun, Moon',
+        planetsInvolved: kind === wanted ? ['Sun', 'Moon'] : [],
+        rule,
+        resultText: `Moon in ${ordinal(fromSun)} from Sun (${kind})`,
+      });
+    }
   }
 
   // ── Pancha Mahapurusha yogas ──────────────────────────────────────────────
@@ -520,6 +527,7 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
   // ── Yogas of the classical texts: the Nabhasa yogas and a set of single yogas (yogasClassical.ts) ──
 
   results.push(...calculateClassicalYogas(planets, ascendantSign));
+  results.push(...calculateBphsYogas(planets, ascendantSign));
 
   // ── Pending definitions ───────────────────────────────────────────────────
   // Amara, Dhvaja, Muni have multiple conflicting definitions across traditions.
