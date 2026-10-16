@@ -52,13 +52,13 @@ test('the Paraya options in Settings change the Paraya hits', async ({ page }) =
   expect(errors).toEqual([]);
 });
 
-test('Systems stand side by side in columns, and each daśā keeps a note', async ({ page }, info) => {
+test('The Dasas tab has the systems side by side in columns, and each daśā keeps a note', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
 
   // A note on the Vimsottari daśā is kept in the browser with the chart's birth moment.
   const vimshottari = visible(page, page.getByRole('button', { name: /^Vimsottari/ }));
@@ -122,7 +122,7 @@ test('the Vimsottari daśās drill down level by level, and NOW opens the runnin
   await visible(page, page.getByRole('button', { name: /dasha systems/ })).click();
   await visible(page, page.getByText('Vimsottari Original (U K Jha)')).locator('..').getByRole('switch').click();
   await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
 
   for (const system of [{ name: /^Vimsottari (?!Utpanna|Kshema|Adhana|Original)/, original: false }, { name: /^Vimsottari Original/, original: true }]) {
     const card = visible(page, page.getByRole('button', { name: system.name }));
@@ -157,7 +157,7 @@ test('Vimsottari Utpanna / Kshema / Adhana starts from the Moon house rule, or t
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
 
   const card = visible(page, page.getByRole('button', { name: /^Vimsottari (Utpanna|Kshema|Adhana).*[▶▼]$/ }));
   await expect(card).toHaveAttribute('aria-expanded', 'false');
@@ -178,7 +178,7 @@ test('Vimsottari Utpanna / Kshema / Adhana starts from the Moon house rule, or t
   await visible(page, page.getByRole('button', { name: /dasha methods/ })).click();
   await visible(page, page.locator('select', { has: page.getByRole('option', { name: 'Kshema (4th nakshatra)' }) })).selectOption('kshema');
   await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
   const kshema = visible(page, page.getByRole('button', { name: /^Vimsottari Kshema.*[▶▼]$/ }));
   await kshema.click();
   await expect(visible(page, page.getByText(/chosen in Settings: Kshema/))).toBeVisible();
@@ -208,7 +208,7 @@ test('Utpanna / Kshema / Adhana is not used when the Moon stands in a house with
   await expect(visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'))).toBeVisible({ timeout: 30_000 });
 
   await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
   const card = visible(page, page.getByRole('button', { name: /^Vimsottari Utpanna \/ Kshema \/ Adhana.*[▶▼]$/ }));
   await expect(card).toContainText('Conditional: not applicable (Moon in 10H');
   await card.click();
@@ -275,20 +275,22 @@ test('TIMING Summary gathers the running daśās, sign changes and transit hits'
   expect(errors).toEqual([]);
 });
 
-test('TIMING Systems draws the daśā systems in groups, and the … list chooses the active ones', async ({ page }) => {
+test('TIMING Dasas draws the daśā systems in groups, and the … list chooses the active ones', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
 
-  // Two groups to begin with: the nakṣatra daśās and the rāśi daśās. The third, the others, has no system and is not drawn.
+  // The three groups: the nakṣatra daśās, the rāśi daśās and the others, which hold the Naisargika (off to begin with).
   const nakshatra = visible(page, page.getByRole('region', { name: 'Nakshatra daśās' }));
   const rasi = visible(page, page.getByRole('region', { name: 'Rāśi daśās' }));
   await expect(nakshatra).toBeVisible();
   await expect(rasi).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Other daśās' })).toHaveCount(0);
+  const other = visible(page, page.getByRole('region', { name: 'Other daśās' }));
+  await expect(other.getByRole('heading')).toContainText('0/1');
+  await expect(other).toContainText('None of these is active.');
   // The default settings: 4 of the 5 nakṣatra systems (the Original of U K Jha is off) and 3 of the 5 rāśi ones.
   await expect(nakshatra.getByRole('heading')).toContainText('4/5');
   await expect(rasi.getByRole('heading')).toContainText('3/5');
@@ -300,12 +302,12 @@ test('TIMING Systems draws the daśā systems in groups, and the … list choose
 
   // The … button counts the active systems and opens the list of all of them, in the same groups.
   const picker = visible(page, page.getByRole('button', { name: 'Choose daśā systems' }));
-  await expect(picker).toContainText('7/10');
+  await expect(picker).toContainText('7/11');
   await expect(picker).toHaveAttribute('aria-expanded', 'false');
   await picker.click();
   await expect(picker).toHaveAttribute('aria-expanded', 'true');
   const list = visible(page, page.getByRole('group', { name: 'Choose daśā systems' }));
-  await expect(list.getByRole('checkbox')).toHaveCount(10);
+  await expect(list.getByRole('checkbox')).toHaveCount(11);
   await expect(list.getByRole('checkbox', { name: /^Chara/ })).not.toBeChecked();
   await expect(list.getByRole('checkbox', { name: /^Vimsottari Original/ })).not.toBeChecked();
   await expect(list.getByRole('checkbox', { name: /^Mūla/ })).toBeChecked();
@@ -315,7 +317,7 @@ test('TIMING Systems draws the daśā systems in groups, and the … list choose
   await list.getByRole('checkbox', { name: /^Chara/ }).check();
   await expect(rasi.getByRole('button', { name: /^Chara/ })).toBeVisible();
   await expect(rasi.getByRole('heading')).toContainText('4/5');
-  await expect(picker).toContainText('8/10');
+  await expect(picker).toContainText('8/11');
   await list.getByRole('checkbox', { name: /^Yoginī/ }).uncheck();
   await expect(nakshatra.getByRole('button', { name: /^Yoginī/ })).toHaveCount(0);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('dashaSettings') ?? '{}').dashas);
@@ -326,7 +328,7 @@ test('TIMING Systems draws the daśā systems in groups, and the … list choose
   await expect(rasi.locator('button[aria-expanded]')).toHaveCount(0);
   await expect(rasi).toContainText('None of these is active.');
   await expect(nakshatra.getByRole('button', { name: /^Vimsottari/ }).first()).toBeVisible();
-  await expect(picker).toContainText('3/10');
+  await expect(picker).toContainText('3/11');
   // All switches it on again, the beta ones included.
   await list.getByRole('button', { name: 'all' }).nth(1).click();
   await expect(rasi.locator('button[aria-expanded]')).toHaveCount(5);
@@ -340,13 +342,52 @@ test('TIMING Systems draws the daśā systems in groups, and the … list choose
   expect(errors).toEqual([]);
 });
 
-test('TIMING Systems lists the daśā systems closed and opens one on click', async ({ page }) => {
+test('the Naisargika daśā is in the other daśās, from birth in the order of natural strength', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  // The date is fixed so that the running period is known: the chart is of 15.08.1947, so on 15.08.2026 the native is 79, in Saturn's 50 years.
+  await page.clock.setFixedTime(new Date('2026-08-15T12:00:00'));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
+  // Off to begin with; the … list makes it active, and it is drawn in the group of the other daśās.
+  const other = visible(page, page.getByRole('region', { name: 'Other daśās' }));
+  await expect(other.getByRole('button', { name: /^Naisargika/ })).toHaveCount(0);
+  await visible(page, page.getByRole('button', { name: 'Choose daśā systems' })).click();
+  await visible(page, page.getByRole('group', { name: 'Choose daśā systems' })).getByRole('checkbox', { name: /^Naisargika/ }).check();
+  const card = other.getByRole('button', { name: /^Naisargika/ });
+  await expect(card).toBeVisible();
+  // The header already tells the running periods: Saturn's (the Moon 1, Mars 2, Mercury 9, Venus 20, Jupiter 18 and the Sun 20 end at 70, 2017; Saturn's 50 years end in 2067).
+  await expect(card).toContainText(/Saturn – \w+ – \w+ · MD → 08\.2067/);
+  await card.click();
+  const panel = card.locator('xpath=..');
+  await expect(panel).toContainText('132-year cycle from birth');
+  await expect(panel).toContainText('MD · 8 periods');
+  const rows = panel.locator('button.grid');
+  await expect(rows).toHaveCount(8);
+  const expected: [string, string][] = [['Moon', '1.00'], ['Mars', '2.00'], ['Mercury', '9.00'], ['Venus', '20.00'], ['Jupiter', '18.00'], ['Sun', '20.00'], ['Saturn', '50.00'], ['Lagna', '12.00']];
+  for (const [index, [name, years]] of expected.entries()) {
+    await expect(rows.nth(index).locator('span').first()).toHaveText(name);
+    await expect(rows.nth(index)).toContainText(`${years} y`);
+  }
+  // The Moon's period begins at birth; a period opens the periods inside it, the grahas of the signs from its lord's, and back goes up.
+  await expect(rows.first()).toContainText('15.08.1947');
+  await rows.first().click();
+  await expect(panel).toContainText(/AD · \d periods/);
+  await panel.getByRole('button', { name: '← back' }).click();
+  await expect(panel).toContainText('MD · 8 periods');
+
+  expect(errors).toEqual([]);
+});
+
+test('TIMING Dasas lists the daśā systems closed and opens one on click', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
 
   const vimshottari = visible(page, page.getByRole('button', { name: /^Vimsottari .*[▶▼]$/ }));
   await expect(vimshottari).toBeVisible();

@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.04',
+    date: '2026-10-17',
+    title: 'The Naisargika daśā, and the Dasas tab',
+    changes: [
+      'The Naisargika (natural) daśā: periods in the order of the natural strength of the grahas from the birth moment, with no balance of a nakṣatra: the Moon 1 year, Mars 2, Mercury 9, Venus 20, Jupiter 18, the Sun 20, Saturn 50 (the years of BPHS 46, Nisargayu) and the Lagna 12 (Saravali 47 puts the Lagna last, and JHora counts it), 132 years in all. The antardaśās and the periods inside them are those of JHora: the grahas that stand in the 1st, 4th, 7th, 10th, 2nd, 5th, 8th, 11th, 3rd, 6th, 9th and 12th sign from the sign of the lord of the daśā, in that order, share it equally; the lord itself and Rahu and Ketu have no share, and the Lagna\'s daśā counts from the Lagna sign with all seven grahas.',
+      'It is the first daśā of the group of the other daśās in TIMING → Dasha → Dasas, off to begin with (the … list turns it on, as does Settings → dasha systems). Once on, it is in the Finder, the Overlap, the Event list and its timeline, the Slider, the Yearly table and the shared timeline like the others, and its lords can be marked on the charts (Settings → display → dasha lords from: Naisargika).',
+      'The Systems tab is now called Dasas (Daśāt in Finnish).',
+      'Tests: the periods and the antardaśās of a chart worked out by hand, the Lagna\'s daśā, a daśā inside a daśā, and the lords marked on the charts agree with the Event list; an e2e test turns the daśā on and reads its periods.',
+      'Updated the application version to v3.04.',
+    ],
+  },
+  {
     version: 'v3.03',
     date: '2026-10-16',
     title: 'The daśā systems in three groups, and a list to choose them',

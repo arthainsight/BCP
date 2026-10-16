@@ -683,13 +683,14 @@ export const FI: Record<string, string> = {
   'History': 'Historia',
   'Patterns': 'Kuviot',
   'Overlap': 'Päällekkäisyys',
-  'Systems': 'Järjestelmät',
+  'Dasas': 'Daśāt',
 
   // Remaining components, batch 1
   'Bhinna & Sarva · signs Ar–Pi': 'Bhinna & Sarva · merkit Ar–Pi',
   'Table': 'Taulukko',
   'Points': 'Pisteet',
   'Moon and birth datetime required.': 'Kuu ja syntymäaika vaaditaan.',
+  'Birth datetime required.': 'Syntymäaika vaaditaan.',
   'Condition not met': 'Ehto ei täyty',
   'Applicability is disputed between traditions. This check uses the named BPHS/PVR Rahu rule.': 'Sovellettavuudesta kiistellään perinteiden välillä. Tämä tarkistus käyttää mainittua BPHS/PVR:n Rahu-sääntöä.',
   'Calculate anyway': 'Laske silti',
@@ -1145,7 +1146,7 @@ export const FI: Record<string, string> = {
   'Imported {count} charts.': 'Tuotiin {count} karttaa.',
   'on': 'päällä',
   'off': 'pois',
-  // The Systems tab of the daśās: three groups and the "…" list that chooses the active systems.
+  // The Dasas tab of the daśās: three groups and the "…" list that chooses the active systems.
   'Nakshatra daśās': 'Nakṣatra-daśāt',
   'Rāśi daśās': 'Rāśi-daśāt',
   'Other daśās': 'Muut daśāt',

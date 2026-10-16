@@ -19,7 +19,7 @@ const counts = (groups: PickerGroup[]) => {
 };
 
 /**
- * The "…" button of the Systems tab, with the number of active systems. It opens the list below (DashaSystemPickerList): every
+ * The "…" button of the Dasas tab, with the number of active systems. It opens the list below (DashaSystemPickerList): every
  * daśā system, in the three groups of the tab, each with a box for whether it is active.
  */
 export function DashaSystemPickerButton({ groups, open, onToggleOpen }: { groups: PickerGroup[]; open: boolean; onToggleOpen: () => void }) {
