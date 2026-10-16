@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.03',
+    date: '2026-10-16',
+    title: 'The daśā systems in three groups, and a list to choose them',
+    changes: [
+      'TIMING → Systems now draws the daśā systems in three groups, each with a heading and the number of its systems that are active: the nakṣatra daśās (Vimsottari, its Utpanna / Kshema / Adhana variant and the Original of U K Jha, Yoginī, Aṣṭottarī), the rāśi daśās (Chara, Kālachakra, Nārāyaṇa, Mūla, Sthira) and the other daśās. No system is yet in the last group, so it stays out of sight until one is. A group with none active says so.',
+      'A … button at the top right of the tab, with the number of active systems (for example 7/10), opens the list of all the systems in the same groups. Each has a box that makes it active or not at once, a beta mark where it applies, and each group has all and none. It is the same choice as Settings → display → dasha systems (it is saved in the same place), so the timeline, the finder and the other daśā views follow it. On a phone the button and the boxes are large enough to touch, and the columns choice is still for wide screens.',
+      'Updated the application version to v3.03.',
+    ],
+  },
+  {
     version: 'v3.02',
     date: '2026-10-16',
     title: 'Every ayanamsa for the nakṣatra zodiac',

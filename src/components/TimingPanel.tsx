@@ -39,6 +39,8 @@ interface Props {
   birthDatetime: string;
   targetDate?: string;
   dashaSettings: DashaSettings;
+  /** Saves the daśā settings: the Systems tab chooses which systems are active. */
+  onUpdateDashaSettings?: (update: Partial<DashaSettings>) => void;
   transitPlanets: PlanetData[];
   transitDatetime: string;
   onSetTransitDatetime: (value: string) => void;
@@ -66,6 +68,7 @@ export default function TimingPanel({
   birthDatetime,
   targetDate,
   dashaSettings,
+  onUpdateDashaSettings,
   transitPlanets,
   transitDatetime,
   onSetTransitDatetime,
@@ -113,6 +116,7 @@ export default function TimingPanel({
           ascendant={chart.ascendant}
           birthDatetime={birthDatetime}
           dashaSettings={dashaSettings}
+          onUpdateDashaSettings={onUpdateDashaSettings}
           transitPlanets={transitPlanets}
           transitDatetime={transitDatetime}
           onSetTransitDatetime={onSetTransitDatetime}

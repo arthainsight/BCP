@@ -191,11 +191,11 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     a: {
       en: [
         'Vimsottari (with the Utpanna, Kshema and Adhana variants where they apply, and the Original of U K Jha), Chara, Yoginī, Aṣṭottarī, Kālachakra, and the Nārāyaṇa, Mūla and Sthira daśās, which are still marked beta.',
-        'Settings → display → dasha systems chooses which of them are shown. Settings → dasha methods holds the choices of the methods themselves.',
+        'Settings → display → dasha systems chooses which of them are active. TIMING → Systems draws the active ones in three groups: the nakṣatra daśās (Vimsottari and its variants, Yoginī, Aṣṭottarī), the rāśi daśās (Chara, Kālachakra, Nārāyaṇa, Mūla, Sthira) and the others, a group that appears when there is such a system. The … button there, with the number of active systems, opens the list of all of them with a box for each, and all / none for a group; it is the same choice as in Settings. Settings → dasha methods holds the choices of the methods themselves.',
       ],
       fi: [
         'Vimsottari (Utpanna-, Kshema- ja Adhana-muunnelmineen, kun ne soveltuvat, sekä U K Jhan Original), Chara, Yoginī, Aṣṭottarī, Kālachakra sekä Nārāyaṇa-, Mūla- ja Sthira-daśāt, jotka on vielä merkitty beetaksi.',
-        'Asetukset → näyttö → daśā-järjestelmät valitsee, mitkä niistä näytetään. Asetukset → daśā-menetelmät sisältää itse menetelmien valinnat.',
+        'Asetukset → näyttö → daśā-järjestelmät valitsee, mitkä niistä ovat aktiivisia. AJANKOHTA → Systems piirtää aktiiviset kolmessa ryhmässä: nakṣatra-daśāt (Vimsottari ja sen muunnelmat, Yoginī, Aṣṭottarī), rāśi-daśāt (Chara, Kālachakra, Nārāyaṇa, Mūla, Sthira) ja muut, ryhmä joka ilmestyy, kun sellainen järjestelmä on. Siellä oleva …-painike aktiivisten määrineen avaa luettelon kaikista järjestelmistä, kunkin omalla ruudullaan sekä ryhmän kaikki / ei yhtään -painikkeilla; valinta on sama kuin Asetuksissa. Asetukset → daśā-menetelmät sisältää itse menetelmien valinnat.',
       ],
     },
   },

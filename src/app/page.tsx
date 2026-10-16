@@ -603,7 +603,7 @@ export default function Home() {
   );
   const timingPanel = (wideControl?: { wide: boolean; onToggleWide: () => void }) => (
     chartData
-      ? <TimingPanel chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={showVargaMatrix} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} {...wideControl} />
+      ? <TimingPanel chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} onUpdateDashaSettings={updateDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={showVargaMatrix} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} {...wideControl} />
       : <EmptyState message="Calculate a chart to see Dasha analysis" />
   );
   const panchangPanel = chartDisplaySettings.showPanchang && chartData && (

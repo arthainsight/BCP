@@ -1145,6 +1145,14 @@ export const FI: Record<string, string> = {
   'Imported {count} charts.': 'Tuotiin {count} karttaa.',
   'on': 'päällä',
   'off': 'pois',
+  // The Systems tab of the daśās: three groups and the "…" list that chooses the active systems.
+  'Nakshatra daśās': 'Nakṣatra-daśāt',
+  'Rāśi daśās': 'Rāśi-daśāt',
+  'Other daśās': 'Muut daśāt',
+  'Choose daśā systems': 'Valitse daśā-järjestelmät',
+  'A checked system is active: it is drawn here and counted by the other daśā views. The same choice as Settings → dasha systems.': 'Valittu järjestelmä on aktiivinen: se piirretään tässä ja muut daśā-näkymät huomioivat sen. Sama valinta kuin kohdassa Asetukset → daśā-järjestelmät.',
+  'No daśā system is active. Choose them with the … button.': 'Mikään daśā-järjestelmä ei ole aktiivinen. Valitse ne …-painikkeesta.',
+  'None of these is active.': 'Mikään näistä ei ole aktiivinen.',
   // Yoga names with a description in them.
   'Vasumati (three benefics)': 'Vasumati (kolme hyväntekijää)',
   'Vasumati (two benefics)': 'Vasumati (kaksi hyväntekijää)',
