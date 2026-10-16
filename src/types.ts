@@ -39,7 +39,13 @@ export interface PlanetData {
 export interface DebugInfo {
   julianDay: number;
   ayanamsa: number;
+  /** The Lahiri ayanāṁśa at the chart's moment, whatever the chart itself uses. */
   siderealAyanamsa?: number;
+  /**
+   * The ayanāṁśa of every choice in the ayanamsa list at the chart's moment (the tropical zodiac is 0; Custom Lahiri is not
+   * in it, it is Lahiri with the adjustment of Settings). The nakṣatra zodiac of Settings is read from it.
+   */
+  ayanamsas?: Record<string, number>;
   utcOffset: number;
   ascendantDegree: number;
   ascendantSign: number;

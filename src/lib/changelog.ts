@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.02',
+    date: '2026-10-16',
+    title: 'Every ayanamsa for the nakṣatra zodiac',
+    changes: [
+      'Settings → calculations → nakṣatra zodiac now offers every choice of the ayanamsa list: Lahiri, Raman, Krishnamurti, Fagan–Bradley, Sri Yukteshwar, J.N. Bhasin, De Luce, Djwhal Khul, True Chitra, True Revati, Chandra-Hari, Wilhelm Mūla, Mardyks, Babylonian (Britton), Ushāśaśi, Custom Lahiri and the tropical zodiac, in the same groups as the ayanamsa select, besides Same ayanamsa as the grahas (the default). Before it had only Lahiri and the tropical zodiac. A stored Lahiri or tropical choice means what it did.',
+      'The grahas stay in the ayanamsa chosen for the chart and the nakṣatras are read from the longitude in the zodiac chosen: the chart carries the ayanamsa of every choice of the list at its moment, so changing the zodiac does not calculate the chart again. Custom Lahiri here is Lahiri with the adjustment set under the ayanamsa. The choice applies to the nakṣatras everywhere: the charts, the graha table, the panchang, the Nava-Tara, the Sarvatobhadra, the Kota Chakra and the special sphuṭas.',
+      'Tests: for the same moment the chart is calculated in each of the 17 ayanamsas, and the longitude of every graha in each chart, moved by the adjustment for each of the 17 zodiacs, is the longitude the chart of that zodiac gives it (all 289 pairs, to a ten-millionth of a degree).',
+      'Updated the application version to v3.02.',
+    ],
+  },
+  {
     version: 'v3.01',
     date: '2026-10-15',
     title: 'The yogas of BPHS 36 and 37',

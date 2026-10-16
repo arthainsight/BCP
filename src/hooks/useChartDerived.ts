@@ -34,8 +34,13 @@ export function useChartDerived(
   // Nakshatra longitude adjustment: converts the stored graha longitude to the longitude the nakshatra is read
   // from. By default it is the grahas' own ayanamsa (no adjustment); Lahiri and the tropical zodiac can be chosen.
   const nakshatraAdjust = useMemo(
-    () => nakshatraAdjustFor(calculationSettings.nakshatraMode, chartData?.debug?.ayanamsa ?? 0, chartData?.debug?.siderealAyanamsa),
-    [chartData?.debug, calculationSettings.nakshatraMode],
+    () => {
+      const debug = chartData?.debug;
+      // A chart from before the table of ayanamsas knew only the Lahiri one.
+      const ayanamsas = debug?.ayanamsas ?? (debug?.siderealAyanamsa === undefined ? undefined : { lahiri: debug.siderealAyanamsa });
+      return nakshatraAdjustFor(calculationSettings.nakshatraMode, debug?.ayanamsa ?? 0, ayanamsas, calculationSettings.ayanamsaOffsetDegrees ?? 0);
+    },
+    [chartData?.debug, calculationSettings.nakshatraMode, calculationSettings.ayanamsaOffsetDegrees],
   );
 
   // RSN: age at the target date

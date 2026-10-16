@@ -5,7 +5,7 @@ import {
   SE_MEAN_NODE, SE_TRUE_NODE,
   sweJulday, sweGetAyanamsa, sweCalcUt, sweCalcUtEquatorial, sweGetAscendant, sweGetAngles,
 } from "./ephemerisAdapter";
-import { applyAyanamsaOffset, resolveAyanamsaMode } from './ayanamsas';
+import { AYANAMSA_OPTIONS, applyAyanamsaOffset, resolveAyanamsaMode } from './ayanamsas';
 import { calculateSunTimes } from './sunTimes';
 import { normalizeDegrees } from './angles';
 import { lunarMonthAt } from './lunisolar';
@@ -87,6 +87,15 @@ async function addNodes(planets: PlanetData[], jd: number, ayanamsa: number, use
   planets.push({ name: "Ketu", longitude: ketuLon, sign: Math.floor(ketuLon / 30) + 1, degree: ketuLon % 30, house: 0, isRetrograde: nodeRetro, speed: nodeSpeed });
 }
 
+/** The ayanāṁśa of every choice of the ayanamsa list but Custom Lahiri (Lahiri with an adjustment) at a moment. */
+async function ayanamsaValues(jd: number): Promise<Record<string, number>> {
+  const values: Record<string, number> = {};
+  for (const option of AYANAMSA_OPTIONS) {
+    if (option.value !== 'custom-lahiri') values[option.value] = await sweGetAyanamsa(jd, option.value);
+  }
+  return values;
+}
+
 export async function calculateChart(
   year: number,
   month: number,
@@ -111,7 +120,8 @@ export async function calculateChart(
   const jd = await sweJulday(utc.year, utc.month, utc.day, utc.totalHours);
   const baseAyanamsa = await sweGetAyanamsa(jd, ayanamsaMode);
   const ayanamsa = applyAyanamsaOffset(baseAyanamsa, ayanamsaMode, ayanamsaOffsetDegrees);
-  const siderealAyanamsa = ayanamsaMode === 'lahiri' ? ayanamsa : await sweGetAyanamsa(jd, 'lahiri');
+  const ayanamsas = await ayanamsaValues(jd);
+  const siderealAyanamsa = ayanamsas.lahiri;
   const useTropical = ayanamsaMode === 'tropical';
 
   const bodies = await calculatePlanetPositions(jd, ayanamsa, useTropical);
@@ -197,6 +207,7 @@ export async function calculateChart(
     julianDay: jd,
     ayanamsa,
     siderealAyanamsa,
+    ayanamsas,
     utcOffset: timezoneOffset,
     ascendantDegree: ascDegree,
     ascendantSign: ascSignIndex + 1,

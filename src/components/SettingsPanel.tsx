@@ -220,11 +220,15 @@ export default function SettingsPanel(props: Props) {
                 onChange={(e) => onUpdateCalculationSettings({ nakshatraMode: readNakshatraMode(e.target.value) })}
               >
                 <option value="same">{t('Same ayanamsa as the grahas')}</option>
-                <option value="lahiri">{t('Sidereal (Lahiri)')}</option>
-                <option value="tropical">{t('Tropical')}</option>
+                {['Zodiac', 'Custom', 'Requested', 'Common'].map((group) => (
+                  <optgroup key={group} label={t(group)}>
+                    {AYANAMSA_OPTIONS.filter((option) => option.group === group).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                  </optgroup>
+                ))}
               </select>
               <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
                 {t('The nakshatras follow the ayanamsa of the grahas unless you choose another here.')}
+                {calculationSettings.nakshatraMode === 'custom-lahiri' && ` ${t('Custom Lahiri here uses the Lahiri adjustment of the ayanamsa above.')}`}
               </div>
             </div>
             <div>
