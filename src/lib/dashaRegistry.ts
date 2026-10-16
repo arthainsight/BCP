@@ -4,28 +4,40 @@ export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta';
 export type DashaRendererKey = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'narayana' | 'moola' | 'sthira';
 
+/**
+ * How the Systems tab sorts the daśās: those that run by the Moon's nakṣatra (Vimśottarī and its kin, Yoginī, Aṣṭottarī), those
+ * that run by signs (Chara, Kālachakra, Nārāyaṇa, Mūla, Sthira) and the others, which no system is yet.
+ */
+export type DashaFamily = 'nakshatra' | 'rasi' | 'other';
+export const DASHA_FAMILIES: { key: DashaFamily; label: string }[] = [
+  { key: 'nakshatra', label: 'Nakshatra daśās' },
+  { key: 'rasi', label: 'Rāśi daśās' },
+  { key: 'other', label: 'Other daśās' },
+];
+
 export type DashaRegistryItem = {
   key: DashaKey;
   label: string;
   group: string;
   status: DashaStatus;
+  family: DashaFamily;
   renderer?: DashaRendererKey;
   kind?: 'nakshatra' | 'rasi' | 'graha';
   conditional?: boolean;
 };
 
 export const DASHA_REGISTRY: DashaRegistryItem[] = [
-  { key: 'vimshottari', label: 'Vimsottari', group: 'Core', status: 'implemented', renderer: 'vimshottari', kind: 'nakshatra' },
-  { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', group: 'Core', status: 'implemented', renderer: 'vimshottariVariant', kind: 'nakshatra', conditional: true },
-  { key: 'vds', label: 'Vimsottari Original (U K Jha)', group: 'Core', status: 'implemented', renderer: 'vds', kind: 'nakshatra' },
+  { key: 'vimshottari', label: 'Vimsottari', group: 'Core', status: 'implemented', family: 'nakshatra', renderer: 'vimshottari', kind: 'nakshatra' },
+  { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana', group: 'Core', status: 'implemented', family: 'nakshatra', renderer: 'vimshottariVariant', kind: 'nakshatra', conditional: true },
+  { key: 'vds', label: 'Vimsottari Original (U K Jha)', group: 'Core', status: 'implemented', family: 'nakshatra', renderer: 'vds', kind: 'nakshatra' },
 
-  { key: 'chara', label: 'Chara Daśā', group: 'Core', status: 'implemented', renderer: 'chara' },
-  { key: 'yogini', label: 'Yoginī Daśā', group: 'Core', status: 'implemented', renderer: 'yogini' },
-  { key: 'ashtottari', label: 'Aṣṭottarī Daśā', group: 'Core', status: 'implemented', renderer: 'ashtottari', kind: 'nakshatra', conditional: true },
-  { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Core', status: 'implemented', renderer: 'kalachakra' },
-  { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'beta', renderer: 'narayana', kind: 'rasi' },
-  { key: 'moola', label: 'Mūla Daśā', group: 'Core', status: 'beta', renderer: 'moola', kind: 'rasi' },
-  { key: 'sthira', label: 'Sthira Daśā', group: 'Core', status: 'beta', renderer: 'sthira', kind: 'rasi' },
+  { key: 'chara', label: 'Chara Daśā', group: 'Core', status: 'implemented', family: 'rasi', renderer: 'chara' },
+  { key: 'yogini', label: 'Yoginī Daśā', group: 'Core', status: 'implemented', family: 'nakshatra', renderer: 'yogini' },
+  { key: 'ashtottari', label: 'Aṣṭottarī Daśā', group: 'Core', status: 'implemented', family: 'nakshatra', renderer: 'ashtottari', kind: 'nakshatra', conditional: true },
+  { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Core', status: 'implemented', family: 'rasi', renderer: 'kalachakra' },
+  { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'narayana', kind: 'rasi' },
+  { key: 'moola', label: 'Mūla Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'moola', kind: 'rasi' },
+  { key: 'sthira', label: 'Sthira Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'sthira', kind: 'rasi' },
 ];
 // v2.15: dropped the 22 "Other systems" placeholder rows (Tara, Brahma, Drig,
 // Shodashottari, …). They had no renderer, rendered nowhere (SettingsPanel

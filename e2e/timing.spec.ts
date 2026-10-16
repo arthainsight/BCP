@@ -275,6 +275,71 @@ test('TIMING Summary gathers the running daśās, sign changes and transit hits'
   expect(errors).toEqual([]);
 });
 
+test('TIMING Systems draws the daśā systems in groups, and the … list chooses the active ones', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+
+  // Two groups to begin with: the nakṣatra daśās and the rāśi daśās. The third, the others, has no system and is not drawn.
+  const nakshatra = visible(page, page.getByRole('region', { name: 'Nakshatra daśās' }));
+  const rasi = visible(page, page.getByRole('region', { name: 'Rāśi daśās' }));
+  await expect(nakshatra).toBeVisible();
+  await expect(rasi).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Other daśās' })).toHaveCount(0);
+  // The default settings: 4 of the 5 nakṣatra systems (the Original of U K Jha is off) and 3 of the 5 rāśi ones.
+  await expect(nakshatra.getByRole('heading')).toContainText('4/5');
+  await expect(rasi.getByRole('heading')).toContainText('3/5');
+  await expect(nakshatra.getByRole('button', { name: /^Vimsottari/ }).first()).toBeVisible();
+  await expect(nakshatra.getByRole('button', { name: /^Yoginī/ })).toBeVisible();
+  await expect(rasi.getByRole('button', { name: /^Nārāyaṇa/ })).toBeVisible();
+  await expect(rasi.getByRole('button', { name: /^Chara/ })).toHaveCount(0);
+  await expect(nakshatra.getByRole('button', { name: /^Nārāyaṇa/ })).toHaveCount(0);
+
+  // The … button counts the active systems and opens the list of all of them, in the same groups.
+  const picker = visible(page, page.getByRole('button', { name: 'Choose daśā systems' }));
+  await expect(picker).toContainText('7/10');
+  await expect(picker).toHaveAttribute('aria-expanded', 'false');
+  await picker.click();
+  await expect(picker).toHaveAttribute('aria-expanded', 'true');
+  const list = visible(page, page.getByRole('group', { name: 'Choose daśā systems' }));
+  await expect(list.getByRole('checkbox')).toHaveCount(10);
+  await expect(list.getByRole('checkbox', { name: /^Chara/ })).not.toBeChecked();
+  await expect(list.getByRole('checkbox', { name: /^Vimsottari Original/ })).not.toBeChecked();
+  await expect(list.getByRole('checkbox', { name: /^Mūla/ })).toBeChecked();
+  await expect(list.getByText('beta')).toHaveCount(3);
+
+  // A box makes a system active at once, in its own group; the choice is the one of Settings and is kept.
+  await list.getByRole('checkbox', { name: /^Chara/ }).check();
+  await expect(rasi.getByRole('button', { name: /^Chara/ })).toBeVisible();
+  await expect(rasi.getByRole('heading')).toContainText('4/5');
+  await expect(picker).toContainText('8/10');
+  await list.getByRole('checkbox', { name: /^Yoginī/ }).uncheck();
+  await expect(nakshatra.getByRole('button', { name: /^Yoginī/ })).toHaveCount(0);
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('dashaSettings') ?? '{}').dashas);
+  expect(stored).toMatchObject({ chara: true, yogini: false, vimshottari: true });
+
+  // None switches a whole group off: it then says so, and the other group stays as it was.
+  await list.getByRole('button', { name: 'none' }).nth(1).click();
+  await expect(rasi.locator('button[aria-expanded]')).toHaveCount(0);
+  await expect(rasi).toContainText('None of these is active.');
+  await expect(nakshatra.getByRole('button', { name: /^Vimsottari/ }).first()).toBeVisible();
+  await expect(picker).toContainText('3/10');
+  // All switches it on again, the beta ones included.
+  await list.getByRole('button', { name: 'all' }).nth(1).click();
+  await expect(rasi.locator('button[aria-expanded]')).toHaveCount(5);
+
+  // Settings shows the same boxes.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /dasha systems/ })).click();
+  await expect(visible(page, page.getByText('Yoginī Daśā')).locator('..').getByRole('switch')).toHaveAttribute('aria-checked', 'false');
+  await expect(visible(page, page.getByText('Chara Daśā', { exact: true })).locator('..').getByRole('switch')).toHaveAttribute('aria-checked', 'true');
+
+  expect(errors).toEqual([]);
+});
+
 test('TIMING Systems lists the daśā systems closed and opens one on click', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
