@@ -292,6 +292,53 @@ test('the graha table shows the karakas and the nakshatras whatever the chart sh
   expect(errors).toEqual([]);
 });
 
+test('the nakshatra zodiac can be any ayanamsa of the list, and the panchang follows it', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // The panchang is part of the chart workspace when it is switched on.
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('chartDisplaySettings')) localStorage.setItem('chartDisplaySettings', JSON.stringify({ showPanchang: true }));
+  });
+  await calculateChart(page);
+  // The chart of 15.08.1947 in Lahiri: the Moon at 99.8° of the Lahiri zodiac is in Pushya, 2nd pada (96°40′ to 100°).
+  await selectWorkspace(page, 'CHART');
+  await expect(visible(page, page.getByText('Pushya · Pada 2'))).toBeVisible();
+
+  await selectWorkspace(page, '⚙');
+  const zodiac = visible(page, page.locator('select').filter({ has: page.locator('option[value="same"]') }));
+  // Every choice of the ayanamsa select is a choice here, with "same as the grahas" first, in the same groups.
+  const ayanamsa = visible(page, page.locator('select').filter({ has: page.locator('option[value="custom-lahiri"]') }).filter({ hasNot: page.locator('option[value="same"]') }));
+  const ayanamsaValues = await ayanamsa.locator('option').evaluateAll(options => options.map(option => (option as HTMLOptionElement).value));
+  expect(ayanamsaValues).toHaveLength(17);
+  expect(await zodiac.locator('option').evaluateAll(options => options.map(option => (option as HTMLOptionElement).value))).toEqual(['same', ...ayanamsaValues]);
+  expect(await zodiac.locator('optgroup').evaluateAll(groups => groups.map(group => (group as HTMLOptGroupElement).label)))
+    .toEqual(await ayanamsa.locator('optgroup').evaluateAll(groups => groups.map(group => (group as HTMLOptGroupElement).label)));
+  for (const value of ['raman', 'krishnamurti', 'fagan-bradley', 'yukteshwar', 'true-chitra', 'mardyks', 'ushashashi', 'tropical', 'custom-lahiri']) {
+    await expect(zodiac.locator(`option[value="${value}"]`)).toHaveCount(1);
+  }
+
+  // Raman puts the Moon at 101.2°, in the 3rd pada (100° to 103°20′); the tropical zodiac at 122.9°, in Maghā; Lahiri is the grahas' own.
+  await zodiac.selectOption('raman');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('calculationSettings') ?? '{}').nakshatraMode)).toBe('raman');
+  await selectWorkspace(page, 'CHART');
+  await expect(visible(page, page.getByText('Pushya · Pada 3'))).toBeVisible();
+  await selectWorkspace(page, '⚙');
+  await zodiac.selectOption('tropical');
+  await selectWorkspace(page, 'CHART');
+  await expect(visible(page, page.getByText(/^Magha · Pada \d$/))).toBeVisible();
+  await selectWorkspace(page, '⚙');
+  await zodiac.selectOption('lahiri');
+  await selectWorkspace(page, 'CHART');
+  await expect(visible(page, page.getByText('Pushya · Pada 2'))).toBeVisible();
+  // Custom Lahiri here takes the adjustment of the ayanamsa select: a note says so.
+  await selectWorkspace(page, '⚙');
+  await zodiac.selectOption('custom-lahiri');
+  await expect(visible(page, page.getByText('Custom Lahiri here uses the Lahiri adjustment of the ayanamsa above.'))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
 test('a stored "sidereal" nakshatra zodiac, the old default, means the same ayanamsa as the grahas', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

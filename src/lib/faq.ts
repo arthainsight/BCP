@@ -291,10 +291,10 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'Which zodiac are the nakshatras counted in?', fi: 'Missä zodiakissa nakshatrat lasketaan?' },
     a: {
       en: [
-        'By default in the same ayanamsa as the grahas. Settings → calculations → nakshatra zodiac can change that to Sidereal (Lahiri) or Tropical, for example to see the nakshatras in the tropical zodiac. The choice applies to the nakshatras everywhere: the charts, the table, the panchang, the Nava-Tara and the special sphutas.',
+        'By default in the same ayanamsa as the grahas. Settings → calculations → nakshatra zodiac can change that to any ayanamsa of the ayanamsa list above it (Lahiri, Raman, Krishnamurti, Fagan–Bradley and the rest, Custom Lahiri with its adjustment) or to the tropical zodiac, for example to see the nakshatras in the tropical zodiac or to keep the grahas in one ayanamsa and the nakshatras in another. The choice applies to the nakshatras everywhere: the charts, the table, the panchang, the Nava-Tara, the Sarvatobhadra, the Kota Chakra and the special sphutas.',
       ],
       fi: [
-        'Oletuksena samassa ayanamsassa kuin grahat. Asetukset → laskenta → nakṣatrojen zodiakki voi vaihtaa sen valintaan Sidereal (Lahiri) tai Tropical, esimerkiksi nähdäksesi nakshatrat tropiikkisessa zodiakissa. Valinta koskee nakshatroja kaikkialla: kartoissa, taulukossa, panchangassa, Nava-Tarassa ja erikoissphuṭissa.',
+        'Oletuksena samassa ayanamsassa kuin grahat. Asetukset → laskenta → nakṣatrojen zodiakki voi vaihtaa sen mihin tahansa sen yläpuolella olevan ayanamsa-luettelon ayanamsaan (Lahiri, Raman, Krishnamurti, Fagan–Bradley ja muut, Mukautettu Lahiri säätöineen) tai tropiikkiseen zodiakkiin, esimerkiksi nähdäksesi nakshatrat tropiikkisessa zodiakissa tai pitääksesi grahat yhdessä ayanamsassa ja nakshatrat toisessa. Valinta koskee nakshatroja kaikkialla: kartoissa, taulukossa, panchangassa, Nava-Tarassa, Sarvatobhadrassa, Kota Chakrassa ja erikoissphuṭissa.',
       ],
     },
   },
