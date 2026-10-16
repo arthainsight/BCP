@@ -36,29 +36,34 @@ function strengthBg(c: StrengthClassification): string {
   }
 }
 
-function breakdownTitle(breakdown: NonNullable<ReturnType<typeof qualifyYogas>[number]['breakdown']>, t: (text: string) => string): string {
+function breakdownTitle(breakdown: NonNullable<ReturnType<typeof qualifyYogas>[number]['breakdown']>, influence: string | null, t: (text: string) => string): string {
   const lines: string[] = [];
   if (breakdown.rasi)         lines.push(`Rāśi: ${breakdown.rasi > 0 ? '+' : ''}${breakdown.rasi}`);
   if (breakdown.dignity)      lines.push(`${t('Dignity')}: ${breakdown.dignity > 0 ? '+' : ''}${breakdown.dignity}`);
   if (breakdown.navamsa)      lines.push(`Navamsa: ${breakdown.navamsa > 0 ? '+' : ''}${breakdown.navamsa}`);
+  if (breakdown.navamsaDignity) lines.push(`${t('Navamsa dignity')}: ${breakdown.navamsaDignity > 0 ? '+' : ''}${breakdown.navamsaDignity}`);
   if (breakdown.vargottama)   lines.push(`Vargottama: +${breakdown.vargottama}`);
+  if (breakdown.tara)         lines.push(`Tara: ${breakdown.tara > 0 ? '+' : ''}${breakdown.tara}`);
   if (breakdown.conjunctions) lines.push(`${t('Conjunctions')}: ${breakdown.conjunctions > 0 ? '+' : ''}${breakdown.conjunctions}`);
   if (breakdown.aspects)      lines.push(`${t('Aspects')}: ${breakdown.aspects > 0 ? '+' : ''}${breakdown.aspects}`);
   if (breakdown.kartari)      lines.push(`Kartari: ${breakdown.kartari > 0 ? '+' : ''}${breakdown.kartari}`);
+  if (influence)              lines.push(`${t(influence)} yoga`);
   return lines.join(' | ');
 }
 
 interface Props {
   chart: ChartData;
   showInactive?: boolean;
+  /** The nakṣatra zodiac of Settings, as degrees to add to a graha's longitude; the Tara is counted in it. */
+  nakshatraAdjust?: number;
 }
 
-function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props & { showInactive: boolean; sortByStrength: boolean; onSortChange: (value: boolean) => void }) {
+function YogaRows({ chart, showInactive, sortByStrength, onSortChange, nakshatraAdjust }: Props & { showInactive: boolean; sortByStrength: boolean; onSortChange: (value: boolean) => void }) {
   const t = useT();
   const language = useLanguage();
 
   const raw     = calculateYogas(chart.planets, chart.ascendant.sign);
-  const all     = qualifyYogas(raw, chart.planets);
+  const all     = qualifyYogas(raw, chart.planets, nakshatraAdjust);
   const visible = showInactive ? all : all.filter(y => y.status === 'active');
 
   const sorted = sortByStrength
@@ -116,7 +121,7 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
                     {yoga.strength !== null && yoga.classification !== null ? (
                       <span
                         className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${strengthBg(yoga.classification)}`}
-                        title={yoga.breakdown ? breakdownTitle(yoga.breakdown, t) : undefined}
+                        title={yoga.breakdown ? breakdownTitle(yoga.breakdown, yoga.influence, t) : undefined}
                       >
                         <span className="tabular-nums">{yoga.strength > 0 ? '+' : ''}{yoga.strength}</span>
                         <span className={`hidden sm:inline font-normal ${strengthColor(yoga.classification)}`}>
@@ -162,7 +167,7 @@ function YogaRows({ chart, showInactive, sortByStrength, onSortChange }: Props &
 }
 
 /** The yoga table, shut until it is opened: the table is long, and the other analysis comes first. */
-export default function YogaTable({ chart, showInactive = false }: Props) {
+export default function YogaTable({ chart, showInactive = false, nakshatraAdjust = 0 }: Props) {
   const t = useT();
   // Open to begin with; what is chosen is remembered.
   const [expanded, toggleExpanded] = useStoredFlag('bhrigu:yoga-detection-open', true);
@@ -194,7 +199,7 @@ export default function YogaTable({ chart, showInactive = false }: Props) {
           </button>
         )}
       </div>
-      {expanded && <YogaRows chart={chart} showInactive={showInactive} sortByStrength={sortByStrength} onSortChange={setSortByStrength} />}
+      {expanded && <YogaRows chart={chart} nakshatraAdjust={nakshatraAdjust} showInactive={showInactive} sortByStrength={sortByStrength} onSortChange={setSortByStrength} />}
     </div>
   );
 }

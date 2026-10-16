@@ -309,6 +309,9 @@ test('the nakshatra zodiac can be any ayanamsa of the list, and the panchang fol
   const zodiac = visible(page, page.locator('select').filter({ has: page.locator('option[value="same"]') }));
   // Every choice of the ayanamsa select is a choice here, with "same as the grahas" first, in the same groups.
   const ayanamsa = visible(page, page.locator('select').filter({ has: page.locator('option[value="custom-lahiri"]') }).filter({ hasNot: page.locator('option[value="same"]') }));
+  // (Wait for the options to be there before they are read.)
+  await expect(ayanamsa.locator('option')).toHaveCount(17);
+  await expect(zodiac.locator('option')).toHaveCount(18);
   const ayanamsaValues = await ayanamsa.locator('option').evaluateAll(options => options.map(option => (option as HTMLOptionElement).value));
   expect(ayanamsaValues).toHaveLength(17);
   expect(await zodiac.locator('option').evaluateAll(options => options.map(option => (option as HTMLOptionElement).value))).toEqual(['same', ...ayanamsaValues]);

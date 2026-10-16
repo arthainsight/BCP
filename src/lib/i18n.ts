@@ -1154,6 +1154,11 @@ export const FI: Record<string, string> = {
   'A checked system is active: it is drawn here and counted by the other daśā views. The same choice as Settings → dasha systems.': 'Valittu järjestelmä on aktiivinen: se piirretään tässä ja muut daśā-näkymät huomioivat sen. Sama valinta kuin kohdassa Asetukset → daśā-järjestelmät.',
   'No daśā system is active. Choose them with the … button.': 'Mikään daśā-järjestelmä ei ole aktiivinen. Valitse ne …-painikkeesta.',
   'None of these is active.': 'Mikään näistä ei ole aktiivinen.',
+  // The strength of a yoga: the tooltip of its points.
+  'Navamsa dignity': 'Navamsan arvokkuus',
+  'Subha': 'Subha',
+  'Asubha': 'Asubha',
+  'Misra': 'Misra',
   // Yoga names with a description in them.
   'Vasumati (three benefics)': 'Vasumati (kolme hyväntekijää)',
   'Vasumati (two benefics)': 'Vasumati (kaksi hyväntekijää)',
