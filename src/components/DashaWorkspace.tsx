@@ -11,7 +11,7 @@ import DashaYearly from './DashaYearly';
 import DashaSlider from './DashaSlider';
 
 type Tab = 'timeline' | 'slider' | 'yearly' | 'finder' | 'events' | 'history' | 'patterns' | 'overlap' | 'systems';
-const TABS: { key: Tab; label: string }[] = [{ key: 'timeline', label: 'Timeline' }, { key: 'slider', label: 'Slider' }, { key: 'yearly', label: 'Yearly' }, { key: 'finder', label: 'Finder' }, { key: 'events', label: 'Events' }, { key: 'history', label: 'History' }, { key: 'patterns', label: 'Patterns' }, { key: 'overlap', label: 'Overlap' }, { key: 'systems', label: 'Systems' }];
+const TABS: { key: Tab; label: string }[] = [{ key: 'timeline', label: 'Timeline' }, { key: 'slider', label: 'Slider' }, { key: 'yearly', label: 'Yearly' }, { key: 'finder', label: 'Finder' }, { key: 'events', label: 'Events' }, { key: 'history', label: 'History' }, { key: 'patterns', label: 'Patterns' }, { key: 'overlap', label: 'Overlap' }, { key: 'systems', label: 'Dasas' }];
 interface Props { chart?: ChartData; chartDisplaySettings?: ChartDisplaySettings; transitLocation?: TransitLocation; calculationSettings?: CalculationSettings; targetDate?: string; planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashaSettings: DashaSettings; transitPlanets?: PlanetData[]; transitDatetime?: string; onSetTransitDatetime?: (value: string) => void; onOpenVargaMatrix?: () => void; onOpenDateInChart?: (date: string) => void; onUpdateDashaSettings?: (update: Partial<DashaSettings>) => void; }
 export default function DashaWorkspace(props: Props) {
   const t = useT();

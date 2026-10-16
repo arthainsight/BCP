@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useT } from '@/lib/i18n';
 
 /**
- * One daśā system in the Systems tab. Closed to start with; the system is only
+ * One daśā system in the Dasas tab. Closed to start with; the system is only
  * drawn once opened. A link to its anchor (#dasha-<key>) opens it.
  */
 export default function DashaSystemCard({ id, title, summary, flag, note = '', onNoteChange, children }: {

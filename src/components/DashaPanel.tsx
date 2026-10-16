@@ -25,7 +25,7 @@ interface Props {
   view?: 'all' | 'finder' | 'timeline' | 'systems';
   /** Target date, YYYY-MM-DD; the running periods in the system headers are for this day. */
   targetDate?: string;
-  /** Saves the daśā settings; with it the Systems tab can choose which systems are active. */
+  /** Saves the daśā settings; with it the Dasas tab can choose which systems are active. */
   onUpdateDashaSettings?: (update: Partial<DashaSettings>) => void;
 }
 
@@ -60,7 +60,7 @@ export default function DashaPanel({ planets, ascendant, birthDatetime, dashaSet
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthDatetime, targetDate, planets, ascendant, dashaSettings, view]);
   const activeDashas = RENDERABLE_DASHAS.filter(d => d.renderer && normalizedDashas[d.key]);
-  // The systems in the groups of the Systems tab, in the order of the registry within each.
+  // The systems in the groups of the Dasas tab, in the order of the registry within each.
   const groups: { family: DashaFamily; label: string; members: typeof RENDERABLE_DASHAS; active: typeof RENDERABLE_DASHAS }[] = DASHA_FAMILIES.map(({ key, label }) => {
     const members = RENDERABLE_DASHAS.filter(d => d.family === key);
     return { family: key, label, members, active: members.filter(d => activeDashas.includes(d)) };

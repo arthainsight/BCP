@@ -9,7 +9,7 @@ import { useT } from '@/lib/i18n';
 import { DASHA_EVENT_CATEGORIES, DASHA_EVENT_CATEGORY_LABELS, dashaEventsStorageKey, parseStoredDashaEvents, type DashaEventCategory, type StoredDashaEvent } from '@/lib/dashaEventStore';
 
 type SnapshotKey = DashaEventSnapshot['key'];
-const SYSTEM_LABELS: Record<SnapshotKey, string> = { vimshottari: 'Vimsottari', vimshottariVariant: 'Vimsottari Utpanna / Kshema / Adhana', vds: 'Vimsottari Original (U K Jha)', chara: 'Chara', yogini: 'Yogini', ashtottari: 'Ashtottari', kalaChakra: 'Kalachakra', narayana: 'Narayana', moola: 'Mula', sthira: 'Sthira' };
+const SYSTEM_LABELS: Record<SnapshotKey, string> = { vimshottari: 'Vimsottari', vimshottariVariant: 'Vimsottari Utpanna / Kshema / Adhana', vds: 'Vimsottari Original (U K Jha)', chara: 'Chara', yogini: 'Yogini', ashtottari: 'Ashtottari', kalaChakra: 'Kalachakra', naisargika: 'Naisargika', narayana: 'Narayana', moola: 'Mula', sthira: 'Sthira' };
 
 interface Props { planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashaSettings: DashaSettings; }
 interface EventRow { event: StoredDashaEvent; snapshots: DashaEventSnapshot[]; }

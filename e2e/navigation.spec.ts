@@ -285,7 +285,7 @@ test('divisional charts stay on screen next to the daśā panel on a wide screen
   // On a wide screen the chart column stays while TIMING is open.
   if (info.project.name === 'desktop') {
     await selectWorkspace(page, 'TIMING');
-    await expect(visible(page, page.getByRole('button', { name: 'Systems', exact: true }))).toBeVisible();
+    await expect(visible(page, page.getByRole('button', { name: 'Dasas', exact: true }))).toBeVisible();
     await expect(visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'))).toBeVisible();
     await expect(visible(page, page.getByRole('group', { name: 'divisional charts' }).getByRole('button', { name: 'D9', exact: true }))).toHaveAttribute('aria-pressed', 'true');
   }
@@ -300,7 +300,7 @@ test('on a phone the chart stays pinned at the top while the daśās scroll', as
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
 
   const pinned = page.getByRole('region', { name: 'pinned chart' });
   await expect(pinned.locator('svg[aria-label="North Indian Jyotish chart"]')).toBeVisible();
@@ -331,7 +331,7 @@ test('the timing panel can take the whole width on a wide screen', async ({ page
   await expect(visible(page, page.getByRole('button', { name: '⤢ full' }))).toBeInViewport({ ratio: 1 });
   await visible(page, page.getByRole('button', { name: '⤢ full' })).click();
   await expect(page.locator('svg[aria-label="North Indian Jyotish chart"]').locator('visible=true')).toHaveCount(0);
-  await visible(page, page.getByRole('button', { name: 'Systems', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
   const panel = await visible(page, page.getByRole('button', { name: /^Vimsottari/ })).boundingBox();
   expect(panel?.width ?? 0).toBeGreaterThan(900);
 

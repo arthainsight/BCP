@@ -2,10 +2,10 @@ import { DashaSettings } from '@/types';
 
 export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta';
-export type DashaRendererKey = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'narayana' | 'moola' | 'sthira';
+export type DashaRendererKey = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'naisargika' | 'narayana' | 'moola' | 'sthira';
 
 /**
- * How the Systems tab sorts the daśās: those that run by the Moon's nakṣatra (Vimśottarī and its kin, Yoginī, Aṣṭottarī), those
+ * How the Dasas tab sorts the daśās: those that run by the Moon's nakṣatra (Vimśottarī and its kin, Yoginī, Aṣṭottarī), those
  * that run by signs (Chara, Kālachakra, Nārāyaṇa, Mūla, Sthira) and the others, which no system is yet.
  */
 export type DashaFamily = 'nakshatra' | 'rasi' | 'other';
@@ -35,6 +35,7 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'yogini', label: 'Yoginī Daśā', group: 'Core', status: 'implemented', family: 'nakshatra', renderer: 'yogini' },
   { key: 'ashtottari', label: 'Aṣṭottarī Daśā', group: 'Core', status: 'implemented', family: 'nakshatra', renderer: 'ashtottari', kind: 'nakshatra', conditional: true },
   { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Core', status: 'implemented', family: 'rasi', renderer: 'kalachakra' },
+  { key: 'naisargika', label: 'Naisargika Daśā', group: 'Core', status: 'implemented', family: 'other', renderer: 'naisargika', kind: 'graha' },
   { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'narayana', kind: 'rasi' },
   { key: 'moola', label: 'Mūla Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'moola', kind: 'rasi' },
   { key: 'sthira', label: 'Sthira Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'sthira', kind: 'rasi' },

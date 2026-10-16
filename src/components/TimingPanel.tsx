@@ -39,7 +39,7 @@ interface Props {
   birthDatetime: string;
   targetDate?: string;
   dashaSettings: DashaSettings;
-  /** Saves the daśā settings: the Systems tab chooses which systems are active. */
+  /** Saves the daśā settings: the Dasas tab chooses which systems are active. */
   onUpdateDashaSettings?: (update: Partial<DashaSettings>) => void;
   transitPlanets: PlanetData[];
   transitDatetime: string;

@@ -190,12 +190,27 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'Which daśā systems are there, and how do I choose them?', fi: 'Mitä daśā-järjestelmiä on ja miten ne valitaan?' },
     a: {
       en: [
-        'Vimsottari (with the Utpanna, Kshema and Adhana variants where they apply, and the Original of U K Jha), Chara, Yoginī, Aṣṭottarī, Kālachakra, and the Nārāyaṇa, Mūla and Sthira daśās, which are still marked beta.',
-        'Settings → display → dasha systems chooses which of them are active. TIMING → Systems draws the active ones in three groups: the nakṣatra daśās (Vimsottari and its variants, Yoginī, Aṣṭottarī), the rāśi daśās (Chara, Kālachakra, Nārāyaṇa, Mūla, Sthira) and the others, a group that appears when there is such a system. The … button there, with the number of active systems, opens the list of all of them with a box for each, and all / none for a group; it is the same choice as in Settings. Settings → dasha methods holds the choices of the methods themselves.',
+        'Vimsottari (with the Utpanna, Kshema and Adhana variants where they apply, and the Original of U K Jha), Chara, Yoginī, Aṣṭottarī, Kālachakra, the Naisargika daśā and the Nārāyaṇa, Mūla and Sthira daśās, which are still marked beta.',
+        'Settings → display → dasha systems chooses which of them are active. TIMING → Dasha → Dasas draws the active ones in three groups: the nakṣatra daśās (Vimsottari and its variants, Yoginī, Aṣṭottarī), the rāśi daśās (Chara, Kālachakra, Nārāyaṇa, Mūla, Sthira) and the others (the Naisargika daśā, which is off to begin with). The … button there, with the number of active systems, opens the list of all of them with a box for each, and all / none for a group; it is the same choice as in Settings. Settings → dasha methods holds the choices of the methods themselves.',
       ],
       fi: [
-        'Vimsottari (Utpanna-, Kshema- ja Adhana-muunnelmineen, kun ne soveltuvat, sekä U K Jhan Original), Chara, Yoginī, Aṣṭottarī, Kālachakra sekä Nārāyaṇa-, Mūla- ja Sthira-daśāt, jotka on vielä merkitty beetaksi.',
-        'Asetukset → näyttö → daśā-järjestelmät valitsee, mitkä niistä ovat aktiivisia. AJANKOHTA → Systems piirtää aktiiviset kolmessa ryhmässä: nakṣatra-daśāt (Vimsottari ja sen muunnelmat, Yoginī, Aṣṭottarī), rāśi-daśāt (Chara, Kālachakra, Nārāyaṇa, Mūla, Sthira) ja muut, ryhmä joka ilmestyy, kun sellainen järjestelmä on. Siellä oleva …-painike aktiivisten määrineen avaa luettelon kaikista järjestelmistä, kunkin omalla ruudullaan sekä ryhmän kaikki / ei yhtään -painikkeilla; valinta on sama kuin Asetuksissa. Asetukset → daśā-menetelmät sisältää itse menetelmien valinnat.',
+        'Vimsottari (Utpanna-, Kshema- ja Adhana-muunnelmineen, kun ne soveltuvat, sekä U K Jhan Original), Chara, Yoginī, Aṣṭottarī, Kālachakra, Naisargika-daśā sekä Nārāyaṇa-, Mūla- ja Sthira-daśāt, jotka on vielä merkitty beetaksi.',
+        'Asetukset → näyttö → daśā-järjestelmät valitsee, mitkä niistä ovat aktiivisia. AJANKOHTA → Dasha → Daśāt piirtää aktiiviset kolmessa ryhmässä: nakṣatra-daśāt (Vimsottari ja sen muunnelmat, Yoginī, Aṣṭottarī), rāśi-daśāt (Chara, Kālachakra, Nārāyaṇa, Mūla, Sthira) ja muut (Naisargika-daśā, joka on aluksi pois päältä). Siellä oleva …-painike aktiivisten määrineen avaa luettelon kaikista järjestelmistä, kunkin omalla ruudullaan sekä ryhmän kaikki / ei yhtään -painikkeilla; valinta on sama kuin Asetuksissa. Asetukset → daśā-menetelmät sisältää itse menetelmien valinnat.',
+      ],
+    },
+  },
+  {
+    id: 'naisargika-dasha',
+    section: 'timing',
+    q: { en: 'How does the Naisargika daśā work?', fi: 'Miten Naisargika-daśā toimii?' },
+    a: {
+      en: [
+        'The natural daśā runs in the order of the natural strength of the grahas, from the birth moment and with no balance of a nakṣatra: the Moon 1 year, Mars 2, Mercury 9, Venus 20, Jupiter 18, the Sun 20, Saturn 50 and the Lagna 12, 132 years in all. BPHS gives the years of the seven (Nisargayu, chapter 46); Saravali 47 adds the Lagna at the end, and so does JHora.',
+        'The antardaśās and the periods inside them follow JHora: a daśā is shared equally by the grahas that stand in the 1st, 4th, 7th, 10th, 2nd, 5th, 8th, 11th, 3rd, 6th, 9th and 12th sign from the sign of its lord, taken in that order; the lord itself and Rahu and Ketu are left out. The Lagna\'s daśā counts from the Lagna sign and has all seven grahas. It is in the group of the other daśās in TIMING → Dasha → Dasas, off to begin with; the … button there turns it on. Its lords can also be marked on the charts (Settings → display → dasha lords from).',
+      ],
+      fi: [
+        'Luonnollinen daśā kulkee grahojen luontaisen voiman järjestyksessä syntymähetkestä alkaen ilman nakṣatran jäännöstä: Kuu 1 vuosi, Mars 2, Mercury 9, Venus 20, Jupiter 18, Aurinko 20, Saturn 50 ja Lagna 12, yhteensä 132 vuotta. BPHS antaa seitsemän vuodet (Nisargayu, luku 46); Saravali 47 lisää loppuun Lagnan, samoin JHora.',
+        'Antardaśāt ja niiden sisällä olevat jaksot noudattavat JHoraa: daśā jaetaan tasan niiden grahojen kesken, jotka ovat sen herran merkistä lukien 1., 4., 7., 10., 2., 5., 8., 11., 3., 6., 9. ja 12. merkissä, tässä järjestyksessä; herra itse sekä Rahu ja Ketu jäävät pois. Lagnan daśā lasketaan Lagnan merkistä ja siinä on kaikki seitsemän grahaa. Se on muiden daśojen ryhmässä kohdassa AJANKOHTA → Dasha → Daśāt, aluksi pois päältä; siellä oleva …-painike kytkee sen päälle. Sen herrat voi myös merkitä kartoille (Asetukset → näyttö → daśā-herrat järjestelmästä).',
       ],
     },
   },

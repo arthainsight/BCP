@@ -143,7 +143,7 @@ export interface ChartDisplaySettings {
   /** Coloured borders on the houses of the running mahadasha and antardasha lords. */
   showDashaHouses: boolean;
   /** Which graha-based dasha system the marks follow. */
-  dashaMarkSystem: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'yogini' | 'ashtottari';
+  dashaMarkSystem: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'yogini' | 'ashtottari' | 'naisargika';
   /** Interface language. */
   language: 'en' | 'fi';
   /** Names of the grahas: English or Sanskrit. */
@@ -250,6 +250,8 @@ export interface DashaSettings {
     chara?: boolean;
     yogini?: boolean;
     ashtottari?: boolean;
+    /** The natural daśā: Moon 1, Mars 2, Mercury 9, Venus 20, Jupiter 18, Sun 20, Saturn 50 and the Lagna 12 years. */
+    naisargika?: boolean;
     kalaChakra?: boolean;
     narayana?: boolean;
     moola?: boolean;
@@ -269,6 +271,7 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     chara: false,
     yogini: true,
     ashtottari: true,
+    naisargika: false,
     kalaChakra: false,
     narayana: true,
     moola: true,
