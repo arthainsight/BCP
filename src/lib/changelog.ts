@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v3.05',
+    date: '2026-10-17',
+    title: 'The strength of a yoga after "Qualifying Yogas"',
+    changes: [
+      'The strength of a yoga is now worked out as in "Qualifying Yogas" (Ernst Wilhelm): each planet of the yoga gets the points of the Subha / Asubha table. Rāśi ±30 and the dignity in it (exaltation +60, moolatrikona +45, own +30, debilitation -60); the same for the Navamsa, which is new for the dignity; vargottama +60; Tara ±60 from the Moon\'s nakṣatra (new; in the nakṣatra zodiac of Settings); the conjunctions; the aspects; and hemmed between benefics or malefics ±60.',
+      'Changed from before: the nature of a planet is the natural one (Mercury is a benefic with a malefic too; before it turned malefic); a planet that joins or aspects counts by its own dignity in the rāśi or the Navamsa (a debilitated benefic gives 0 instead of +60; a malefic gives +30 when exalted, +15 in its moolatrikona and 0 in its own sign or when vargottama, instead of -30, -45 and -60); the aspects are the planets\' aspects of the whole sign in virupas (the 7th 60, the 4th and 8th 45, the 5th and 9th 30, the 3rd and 10th 15, full for Mars, Jupiter and Saturn on theirs), instead of a flat ±30 for the rāśi aspects of Jaimini; and a benefic sign in which the planet is debilitated, or a malefic sign that is its own, its exaltation or one it is vargottama in, gives no ±30.',
+      'The tooltip of the strength lists the points, with Navamsa dignity and Tara, and says whether the yoga is Subha, Asubha or Misra, by which kind of influence its planets have more of. The strengths of the yogas change with this: the numbers are not comparable with those of v3.04 and before.',
+      'Not applied: the book\'s note that a planet joined with the lord of the 6th, 8th or 12th in one of those houses is harmed (it gives no number). The labels (Very Strong, Strong, Moderate, Weak) still follow the average per planet, with the app\'s own thresholds. A new FAQ entry explains it.',
+      'Tests: a table of cases worked out by hand for the rāśi, Navamsa, dignity, vargottama, conjunctions of every kind, aspects in virupas, Tara (with the nakṣatra zodiac), hemming and the Subha / Asubha / Misra count.',
+      'Updated the application version to v3.05.',
+    ],
+  },
+  {
     version: 'v3.04',
     date: '2026-10-17',
     title: 'The Naisargika daśā, and the Dasas tab',
