@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.06',
+    date: '2026-10-17',
+    title: 'The Bala view: Ṣaḍbala, Bhāva Bala and Vimśopaka with diagrams',
+    changes: [
+      'ANALYSIS has a new Bala view (after Varga) for the strengths that used to be at the bottom of Varga → Matrix & Bala: Ṣaḍbala, Bhāva Bala and Vimśopaka Bala, each with a diagram and the table it had before under it. Varga → Matrix & Bala is now Varga → Matrix and has only the matrix of the signs and dignities.',
+      'Ṣaḍbala: bars of each graha\'s total as a percentage of the required strength, with the line at 100 % and a status that is also an icon and a word (✕ weak, ! ok, ✓ strong), and the six balas (Sthāna, Dig, Kāla, Cheṣṭā, Naisargika, Dṛg) stacked in virūpa to the total, with a mark at the required strength (Dṛg can go to the left of the zero). Bhāva Bala: a stacked column for each house (the lord\'s Ṣaḍbala, the aspects of benefics and malefics, the grahas in the house and Kendra), with the total over it; the table now has the occupants\' column too, so that the parts add up to the total. Vimśopaka: bars out of 20 for the scheme you choose, strongest first, with the numbers of all four schemes in the tooltip.',
+      'The diagrams are drawn at the width they have (readable on a phone), in colours that tell apart for the colour-blind and in both light and dark, with a tooltip on hover and on keyboard focus for every bar and column. The numbers of the calculations did not change.',
+      'The calculations are in src/lib (vargaMatrix, balaView, barScale) apart from the screens. Tests: the round axes and the stacking on both sides of zero, that the six balas and the parts of a house add up to their totals, the status limits and the order of the Vimśopaka; an e2e test goes through the three views; the Open Varga Matrix button of the Event List now shows the Matrix.',
+      'Updated the application version to v3.06.',
+    ],
+  },
+  {
     version: 'v3.05',
     date: '2026-10-17',
     title: 'The strength of a yoga after "Qualifying Yogas"',

@@ -22,3 +22,37 @@ body {
   body[data-print-report] [data-report-root] { position: static !important; overflow: visible !important; height: auto !important; background: #fff !important; }
 }
 @page { margin: 12mm; }
+
+/* The diagrams of the Bala views (components/BalaCharts.tsx). The categorical slots are the validated default palette, stepped for the
+   dark surface, not flipped; the status colours are reserved and always come with an icon and a word. */
+.viz {
+  --viz-surface: #fcfcfb;
+  --viz-grid: #e4e3df;
+  --viz-axis: #a8a79f;
+  --viz-ink: #0b0b0b;
+  --viz-ink-2: #52514e;
+  --viz-ink-3: #7a7973;
+  --viz-1: #2a78d6;
+  --viz-2: #eb6834;
+  --viz-3: #1baf7a;
+  --viz-4: #eda100;
+  --viz-5: #e87ba4;
+  --viz-6: #008300;
+  --viz-good: #0ca30c;
+  --viz-warning: #fab219;
+  --viz-critical: #d03b3b;
+}
+.dark .viz {
+  --viz-surface: #1a1a19;
+  --viz-grid: #2e2e2b;
+  --viz-axis: #5c5b55;
+  --viz-ink: #f0efec;
+  --viz-ink-2: #c3c2b7;
+  --viz-ink-3: #8f8e86;
+  --viz-1: #3987e5;
+  --viz-2: #d95926;
+  --viz-3: #199e70;
+  --viz-4: #c98500;
+  --viz-5: #d55181;
+  --viz-6: #008300;
+}

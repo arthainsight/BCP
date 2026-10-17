@@ -728,3 +728,39 @@ test('ANALYSIS Kota Chakra counts the nakshatras from the Moon\'s, puts the grah
 
   expect(errors).toEqual([]);
 });
+
+test('ANALYSIS Bala has a diagram and a table for the Ṣaḍbala, the Bhāva Bala and the Vimśopaka', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Bala', exact: true })).click();
+
+  // Ṣaḍbala first: a bar for each of the seven grahas against the required strength, with a status word and icon, and the six balas in a second diagram.
+  const against = visible(page, page.getByRole('img', { name: 'Ṣaḍbala against the required', exact: true }));
+  await expect(against).toBeVisible();
+  await expect(visible(page, page.getByText(/(✕|!|✓) \d+ % (weak|ok|strong)/))).toBeVisible();
+  await expect(visible(page, page.getByRole('img', { name: 'What the Ṣaḍbala is made of', exact: true }))).toBeVisible();
+  // Every bar can be reached with the keyboard and tells its numbers.
+  const sunBar = visible(page, page.getByRole('img', { name: /^Sun: Total \d+ vp, Required 390 vp/ }));
+  await sunBar.focus();
+  await expect(visible(page, page.getByRole('status'))).toContainText('390 vp');
+  // The table is below the diagrams.
+  await expect(visible(page, page.getByText('shadbala.beta'))).toBeVisible();
+
+  // Bhāva Bala: a column for each of the twelve houses.
+  await visible(page, page.getByRole('button', { name: 'Bhāva Bala', exact: true })).click();
+  await expect(visible(page, page.getByRole('img', { name: 'Bhāva Bala of the houses', exact: true }))).toBeVisible();
+  await expect(visible(page, page.getByRole('img', { name: /^H12 · / }))).toBeVisible();
+  await expect(visible(page, page.getByText('bhava.bala.beta'))).toBeVisible();
+
+  // Vimśopaka: the scheme is chosen from four; the table has all of them.
+  await visible(page, page.getByRole('button', { name: 'Vimśopaka', exact: true })).click();
+  await expect(visible(page, page.getByRole('img', { name: /^Vimśopaka Bala/ }))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Ṣaḍvarga', exact: true })).click();
+  await expect(visible(page, page.getByRole('img', { name: /Ṣaḍvarga/ }))).toBeVisible();
+  await expect(visible(page, page.getByText('varga.strength.vimsopaka'))).toBeVisible();
+
+  expect(errors).toEqual([]);
+});

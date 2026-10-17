@@ -108,7 +108,7 @@ export default function Home() {
     setSplitView({ on: true, panes });
     if (current === 'settings') selectWorkspace(panes[0]);
   }, [split, selectWorkspace]);
-  // The Event List opens the Matrix & Bala of ANALYSIS: ANALYSIS is shown (or added to the split view) and told what to show.
+  // The Event List opens the Matrix of ANALYSIS: ANALYSIS is shown (or added to the split view) and told what to show.
   const [analysisRequest, setAnalysisRequest] = useState<AnalysisRequest | null>(null);
   const showVargaMatrix = useCallback(() => {
     setAnalysisRequest(current => ({ id: (current?.id ?? 0) + 1, view: 'varga', vargaView: 'table' }));

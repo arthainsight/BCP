@@ -29,7 +29,7 @@ interface Props {
   transitPlanets?: PlanetData[];
   transitDatetime?: string;
   onSetTransitDatetime?: (value: string) => void;
-  /** Shows the Matrix & Bala of the Varga view in ANALYSIS. */
+  /** Shows the Matrix of the Varga view in ANALYSIS. */
   onOpenVargaMatrix?: () => void;
   /** Sets the target date and transit moment to a YYYY-MM-DD date and shows the chart. */
   onOpenDateInChart?: (date: string) => void;
