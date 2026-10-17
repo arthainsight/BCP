@@ -114,7 +114,10 @@ test('the panels and the sentences the calculations write are in Finnish', async
 
   // The Varga matrix and the argala headers.
   await visible(page, page.getByRole('button', { name: 'Varga', exact: true })).click();
-  await visible(page, page.getByRole('button', { name: 'Matriisi ja bala', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Matriisi', exact: true })).click();
+  await expect(visible(page, page.getByText('varga.matrix'))).toBeVisible();
+  await visible(page, page.getByRole('button', { name: 'Bala', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Vimśopaka', exact: true })).click();
   await expect(visible(page, page.getByText('Neljä painotettua laskentaa asteikolla 20.'))).toBeVisible();
   await visible(page, page.getByRole('button', { name: 'Argala', exact: true })).click();
   await expect(visible(page, page.getByText('4. ⊣ 10.'))).toBeVisible();

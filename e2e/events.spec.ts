@@ -143,7 +143,7 @@ test('events can be pasted with periods and loose dates, and changed or deleted 
   expect(errors).toEqual([]);
 });
 
-test('an event opens the Matrix & Bala of the Varga view in ANALYSIS', async ({ page }) => {
+test('an event opens the Matrix of the Varga view in ANALYSIS', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -156,7 +156,7 @@ test('an event opens the Matrix & Bala of the Varga view in ANALYSIS', async ({ 
 
   // ANALYSIS is on screen, on the Varga view, showing the matrix and not the charts.
   await expect(visible(page, page.getByText('varga.matrix'))).toBeVisible();
-  await expect(visible(page, page.getByRole('button', { name: 'Matrix & Bala' }))).toBeVisible();
+  await expect(visible(page, page.getByRole('button', { name: 'Matrix', exact: true }))).toBeVisible();
 
   // And it works again after going elsewhere and back to the events.
   await selectWorkspace(page, 'TIMING');

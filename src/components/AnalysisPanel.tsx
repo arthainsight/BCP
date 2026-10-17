@@ -6,6 +6,7 @@ import type { DashaLordMarks } from './chartLayers';
 import GrahasPanel from './GrahasPanel';
 import VargaGridPanel from './VargaGridPanel';
 import VargaMatrix from './VargaMatrix';
+import BalaPanel from './BalaPanel';
 import NadiAmsaPanel from './NadiAmsaPanel';
 import AshtakavargaPanel from './AshtakavargaPanel';
 import DrishtiPanel from './DrishtiPanel';
@@ -20,11 +21,12 @@ import BhavaChalitPanel from './BhavaChalitPanel';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 
-export type AnalysisView = 'grahas' | 'varga' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota';
+export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota';
 
 const VIEWS: { key: AnalysisView; label: string }[] = [
   { key: 'grahas', label: 'Grahas' },
   { key: 'varga', label: 'Varga' },
+  { key: 'bala', label: 'Bala' },
   { key: 'nadi', label: 'Nāḍī' },
   { key: 'ashtakavarga', label: 'Aṣṭakavarga' },
   { key: 'gochara', label: 'Gochara' },
@@ -38,7 +40,7 @@ const VIEWS: { key: AnalysisView; label: string }[] = [
   { key: 'kota', label: 'Kota Chakra' },
 ];
 
-/** A request from elsewhere in the app to show one view, for example the Matrix & Bala of the Varga view. A new id is a new request. */
+/** A request from elsewhere in the app to show one view, for example the Matrix of the Varga view. A new id is a new request. */
 export interface AnalysisRequest {
   id: number;
   view: AnalysisView;
@@ -135,7 +137,7 @@ export default function AnalysisPanel({
               onClick={() => setVargaView('table')}
               className={`rounded-md px-2.5 py-1 text-[10px] font-mono ${vargaView === 'table' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'}`}
             >
-              {t('Matrix & Bala')}
+              {t('Matrix')}
             </button>
           </div>
           {vargaView === 'chart' ? (
@@ -152,6 +154,8 @@ export default function AnalysisPanel({
           )}
         </div>
       )}
+
+      {view === 'bala' && <BalaPanel chart={chart} />}
 
       {view === 'nadi' && (
         <div className="min-w-0 overflow-x-auto"><NadiAmsaPanel chart={chart} /></div>

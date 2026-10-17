@@ -45,7 +45,7 @@ interface Props {
   transitDatetime: string;
   onSetTransitDatetime: (value: string) => void;
   onOpenDateInChart: (date: string) => void;
-  /** Shows the Matrix & Bala of the Varga view in ANALYSIS. */
+  /** Shows the Matrix of the Varga view in ANALYSIS. */
   onOpenVargaMatrix?: () => void;
   calculationSettings?: CalculationSettings;
   chartDisplaySettings: ChartDisplaySettings;

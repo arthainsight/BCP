@@ -76,9 +76,8 @@ Overlap and Systems), among them:
 
 ### Strength and divisional analysis
 
-* Varga matrix (D1 → D60) and Viṁśopaka Bala
-* Ṣaḍbala (beta)
-* Bhāva Bala (beta)
+* Varga matrix (D1 → D60)
+* Bala view with a diagram and a table each: Ṣaḍbala (beta; against the required strength and its six parts), Bhāva Bala (beta; a column per house) and Viṁśopaka Bala (four schemes)
 * Graha dṛṣṭi and rāśi dṛṣṭi (Jaimini)
 * Sarvatobhadra chakra: the 9 × 9 chart of the nakṣatras (with Abhijit), vowels, consonants, signs, tithi groups and weekdays, with the grahas in their squares and their vedha (across the chart and on the two diagonals), the squares the lines cross, the syllable of a name and the birth points a graha pierces
 * Kota Chakra: the 28 nakṣatras (with Abhijit) in the four squares of the fort (Bāhya, Prākāra, Durgāntara, Stambha), counted from the Moon's nakṣatra, with the grahas in their squares, natal and transiting, and the Kota Swāmī and Kota Pāla

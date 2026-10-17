@@ -1,6 +1,6 @@
 // Ṣaḍbala engine (beta).
 //
-// Extracted from the Matrix & Bala view (components/VargaMatrix.tsx), where the calculation grew inside
+// Extracted from the Matrix view (now components/ShadbalaPanel.tsx), where the calculation grew inside
 // the card component as untyped JavaScript. The maths is unchanged; this module
 // only gives it types and a home alongside the other calculation code so the
 // fixtures in shadbala.test.ts can exercise it directly.

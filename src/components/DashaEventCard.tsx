@@ -106,7 +106,7 @@ export default function DashaEventCard({
               {DASHA_EVENT_VARGAS.map(value => <option key={value}>{value}</option>)}
             </select>
           </label>
-          {onOpenVargaMatrix && <button type="button" onClick={onOpenVargaMatrix} title={t('Show the Matrix & Bala of the Varga view in ANALYSIS')} className={`${ACTION} border-zinc-300 dark:border-zinc-700`}>{t('Open Varga Matrix')}</button>}
+          {onOpenVargaMatrix && <button type="button" onClick={onOpenVargaMatrix} title={t('Show the Matrix of the Varga view in ANALYSIS')} className={`${ACTION} border-zinc-300 dark:border-zinc-700`}>{t('Open Varga Matrix')}</button>}
           {onSetTransitDatetime && <button type="button" onClick={() => onSetTransitDatetime(`${formatEventDate(item.date)} 12.00.00`)} title={t('Move the target moment, and the transits with it, to this date')} className={`${ACTION} border-violet-300 text-violet-700 dark:border-violet-700 dark:text-violet-300`}>{t('Set as target')}</button>}
           {onOpenDateInChart && <button type="button" onClick={() => onOpenDateInChart(item.date)} title={t('Read BCP, RSN, dasha lords and transits for this date')} className={`${ACTION} border-emerald-400 text-emerald-700 dark:border-emerald-700 dark:text-emerald-300`}>{t('Open in chart')}</button>}
         </div>
