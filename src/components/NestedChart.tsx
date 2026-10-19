@@ -11,6 +11,8 @@ import { normalizeDegrees } from '@/lib/angles';
 import { layoutHouseLabels, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
 import { INNER_SQUARE, SOUTH_CENTRE, centroidOf, northRegions, southRegions, type NestedRegion } from '@/lib/nestedChart';
 import { dashaMark, dignityColor } from './chartLayers';
+import { useGrahaRoles, yogiMarkOf } from '@/lib/grahaMarks';
+import { usePlanetHover } from '@/lib/planetHover';
 import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import NorthIndianChart from './NorthIndianChart';
 import { SIGN_ABBR } from '@/lib/signs';
@@ -54,6 +56,8 @@ export default function NestedChart({ shape, outer, inner, outerTitle, innerTitl
   const fill = useChartFill();
   const k = useChartFontScale();
   const { code: grahaCode } = useGrahaNames();
+  const grahaRoles = useGrahaRoles();
+  const planetHover = usePlanetHover();
   const regions = useMemo(() => (shape === 'north' ? northRegions() : southRegions()), [shape]);
 
   const stroke = '#71717a';
@@ -66,7 +70,7 @@ export default function NestedChart({ shape, outer, inner, outerTitle, innerTitl
   const dignity = inner.colorByDignity === true;
 
   const planetLabel = (layer: ChartProps, planet: PlanetData) => {
-    const parts = [grahaCode(planet.name) + (planet.isRetrograde ? '℞' : '') + dashaMark(planet.name, layer.dashaLords ?? null)];
+    const parts = [grahaCode(planet.name) + (planet.isRetrograde ? '℞' : '') + dashaMark(planet.name, layer.dashaLords ?? null) + yogiMarkOf(grahaRoles, planet.name)];
     if ((layer.degreePrecision ?? 'off') !== 'off') parts.push(formatDegree(planet.degree, layer.degreePrecision!));
     if (layer.showCharaKaraka && layer.karakaByPlanet?.[planet.name]) parts.push(layer.karakaByPlanet[planet.name]);
     if (layer.showNakshatra) parts.push(nakshatraAbbr(normalizeDegrees(planet.longitude + (layer.nakshatraAdjust ?? 0))));
@@ -81,7 +85,7 @@ export default function NestedChart({ shape, outer, inner, outerTitle, innerTitl
     }
     if (layer.showNatalPlanets !== false) {
       const visible = layer.showOuterPlanets ? layer.planets : layer.planets.filter(planet => !OUTER_PLANETS.includes(planet.name));
-      visible.filter(planet => planet.sign === sign).forEach(planet => tokens.push({ key: `na-${planet.name}`, group: 'natal', text: planetLabel(layer, planet) }));
+      visible.filter(planet => planet.sign === sign).forEach(planet => tokens.push({ key: `na-${planet.name}`, group: 'natal', text: planetLabel(layer, planet), title: planetHover(planet) }));
     }
     if (layer.showSpecialLagnas) {
       (layer.specialLagnas ?? []).filter(special => special.sign === sign).forEach((special, index) => tokens.push({ key: `sl-${special.name}-${index}`, group: 'special', text: special.name }));
@@ -131,6 +135,7 @@ export default function NestedChart({ shape, outer, inner, outerTitle, innerTitl
                 onClick={clickable ? click : undefined}
                 style={clickable ? { cursor: 'pointer' } : undefined}
               >
+                {token.title && <title>{token.title}</title>}
                 {token.text}
               </tspan>
             </Fragment>

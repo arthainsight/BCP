@@ -267,7 +267,7 @@ test('the graha table shows the karakas and the nakshatras whatever the chart sh
   await expect(table.locator('th', { hasText: 'Kāraka' })).toBeVisible();
   await expect(moon()).toContainText('Puṣya');
   // The chara karakas are in the Kāraka column: the 8 of the default scheme, on the 8 grahas with Rahu.
-  const karakas = (await table.locator('td[title]').allInnerTexts()).filter(text => text.trim() !== '');
+  const karakas = (await table.locator('td[title]:not([data-marks])').allInnerTexts()).filter(text => text.trim() !== '');
   expect(karakas).toHaveLength(8);
   expect(karakas).toEqual(expect.arrayContaining(['AK', 'AmK', 'BK', 'MK', 'PiK', 'PuK', 'GK', 'DK']));
 
@@ -789,11 +789,29 @@ test('ANALYSIS Sensitive Degrees marks Sandhi, Gandanta, Mṛtyu Bhāga and the 
   // The Lagna (Virgo 12°18') is on none of them.
   await expect(row('Lagna')).not.toContainText(/⚠|✦/);
 
+  // Combustion: Mercury 13°59' from the Sun (orb 14°), Venus 5°19' (orb 10°) and Saturn 7°50' (orb 15°); the Moon, Mars and Jupiter are clear.
+  await expect(row('Mercury').locator('[data-mark="combust"]')).toContainText("13°59' from the Sun (orb 14°)");
+  await expect(row('Venus').locator('[data-mark="combust"]')).toContainText("5°19' from the Sun (orb 10°)");
+  await expect(row('Saturn').locator('[data-mark="combust"]')).toContainText('☼');
+  for (const clear of ['Moon', 'Mars', 'Jupiter', 'Sun', 'Rahu', 'Ketu']) await expect(row(clear).locator('[data-mark="combust"]')).not.toContainText('☼');
+
   // The summary names the points, and the table of every sign is under it.
   await expect(visible(page, page.locator('[data-sensitive-summary]'))).toContainText('On a weakening degree: Sun, Maandi');
   await expect(visible(page, page.locator('[data-sensitive-summary]'))).toContainText('On a Puṣkara degree: Moon, Jupiter, Maandi');
+  await expect(visible(page, page.locator('[data-sensitive-summary]'))).toContainText('Combust: Mercury, Venus, Saturn');
   await visible(page, page.getByText('The sensitive degrees of every sign')).click();
   await expect(visible(page, page.getByRole('cell', { name: "20°–23°20' · 26°40'–30°" }))).toBeVisible();
+
+  // The same tests in the Navamsa chart, on the position each point has there: the Lagna (Aries 20°49') is in the Puṣkara navāṁśa and
+  // on the Puṣkara degree, Mercury (Scorpio 9°19') is in the 3rd navamsa of its sign, and there is no combustion column.
+  await visible(page, page.getByLabel('chart to test', { exact: true })).selectOption('9');
+  await expect(row('Lagna')).toContainText('Aries 20°49');
+  await expect(row('Lagna').locator('[data-mark="pushkaraNavamsa"]')).toContainText("7th navamsa (20°–23°20'), Libra");
+  await expect(row('Lagna').locator('[data-mark="pushkaraBhaga"]')).toContainText('21st degree');
+  await expect(row('Mercury').locator('[data-mark="pushkaraNavamsa"]')).toContainText("3rd navamsa (6°40'–10°), Virgo");
+  await expect(row('Mercury').locator('[data-mark="combust"]')).toHaveCount(0);
+  await visible(page, page.getByLabel('chart to test', { exact: true })).selectOption('1');
+  await expect(row('Sun').locator('[data-mark="gandanta"]')).toContainText('Ashlesha');
 
   // Special Sphutas has the Yogi, the Sahayogi and the Avayogi: Sun + Moon + 93°20' is Aquarius 11°29', in Shatabhisha (Rahu's).
   await visible(page, page.getByRole('button', { name: 'Special Sphutas', exact: true })).click();
@@ -803,6 +821,25 @@ test('ANALYSIS Sensitive Degrees marks Sandhi, Gandanta, Mṛtyu Bhāga and the 
   await expect(yogi.locator('[data-yogi-role="Sahayogi"]')).toContainText('Saturn');
   await expect(yogi.locator('[data-yogi-role="Avayogi"]')).toContainText('Venus');
   await expect(yogi.locator('[data-yogi-role="Avayogi"]')).toContainText('Purva Phalguni');
+
+  expect(errors).toEqual([]);
+});
+
+test('the graha table marks the points on sensitive degrees and the combust ones, with the reason as a tooltip', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  const marks = (code: string) => visible(page, page.locator(`td[data-marks="${code}"]`));
+  // The Sun is in the Gandanta (⚠), the Moon in a Puṣkara navāṁśa (✦), Mercury combust (☼); Mars and the Lagna have nothing.
+  await expect(marks('Su')).toHaveText('⚠');
+  await expect(marks('Su')).toHaveAttribute('title', "⚠ Gandanta: Ashlesha → Magha, 1°38' from the junction");
+  await expect(marks('Mo')).toHaveText('✦');
+  await expect(marks('Me')).toHaveText('☼');
+  await expect(marks('Me')).toHaveAttribute('title', "☼ Combust: 13°59' from the Sun (orb 14°)");
+  await expect(marks('Ma')).toHaveText('');
+  await expect(marks('As')).toHaveText('');
 
   expect(errors).toEqual([]);
 });

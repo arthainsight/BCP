@@ -22,6 +22,8 @@ import { withDashaLayers } from '@/components/chartLayers';
 import { LanguageContext, type Language } from '@/lib/i18n';
 import { decodeShare } from '@/lib/shareLink';
 import { GrahaNamesContext } from '@/lib/grahaNames';
+import { GrahaMarksContext } from '@/lib/grahaMarks';
+import { yogiRoles } from '@/lib/yogiPoints';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
@@ -573,6 +575,13 @@ export default function Home() {
     return Number.isNaN(lat) || Number.isNaN(lng) || effectiveTzOffset === null ? undefined : { lat, lng, tzOffset: effectiveTzOffset };
   }, [manualLat, manualLng, effectiveTzOffset]);
 
+  // Who is the Yogi, the Sahayogi and the Avayogi, marked on the grahas of every chart while the layer is on.
+  const grahaRoles = useMemo(() => {
+    const sun = chartData?.planets.find(planet => planet.name === 'Sun');
+    const moon = chartData?.planets.find(planet => planet.name === 'Moon');
+    return chartDisplaySettings.showYogiMarks && sun && moon ? yogiRoles(sun.longitude, moon.longitude, nakshatraAdjust) : {};
+  }, [chartData, chartDisplaySettings.showYogiMarks, nakshatraAdjust]);
+
   // The dasha marks and house borders of the extra charts follow the same layer switches as the main chart.
   const chartDashaLords = useMemo(() => withDashaLayers(dashaLords, chartDisplaySettings), [dashaLords, chartDisplaySettings]);
 
@@ -650,6 +659,7 @@ export default function Home() {
     <LanguageContext.Provider value={language}>
     <GrahaNamesContext.Provider value={chartDisplaySettings.grahaNames ?? 'english'}>
     <ChartFontContext.Provider value={clampFontScale(chartDisplaySettings.chartFontScale)}>
+    <GrahaMarksContext.Provider value={grahaRoles}>
     <div className="min-h-screen overflow-x-clip bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
       <AppHeader
         activeChartName={activeChartName}
@@ -806,6 +816,7 @@ export default function Home() {
         <span className="ml-2 text-zinc-300 dark:text-zinc-700">{APP_VERSION}</span>
       </footer>
     </div>
+    </GrahaMarksContext.Provider>
     </ChartFontContext.Provider>
     </GrahaNamesContext.Provider>
     </LanguageContext.Provider>

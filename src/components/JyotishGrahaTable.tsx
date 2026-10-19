@@ -6,8 +6,10 @@ import { normalizeDegrees } from '@/lib/angles';
 import { grahaCode, grahaCodeFromEnglishCode, grahaName, useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_ABBR } from '@/lib/signs';
 import { NAKSHATRA_SIZE } from '@/lib/nakshatras';
+import { marksOf, markIcons, type PlanetMarks } from '@/lib/planetMarks';
+import { markLines } from '@/lib/planetMarksText';
 
-import { useT } from '@/lib/i18n';
+import { useLanguage, useT } from '@/lib/i18n';
 const OUTER_PLANETS = ['Uranus', 'Neptune', 'Pluto'];
 
 // The Chara karakas, by their short names.
@@ -78,26 +80,34 @@ export default function JyotishGrahaTable({
   nakshatraAdjust = 0,
 }: Props) {
   const t = useT();
+  const language = useLanguage();
   const { style } = useGrahaNames();
   const adjLon = (lon: number) => normalizeDegrees(lon + nakshatraAdjust);
 
   /** One row: a point of the chart with its sign and degree, and the nakṣatra of its longitude. */
-  const buildRow = (code: string, name: string, karaka: string, sign: number, degree: number, longitude: number, isSpecial: boolean) => {
+  const buildRow = (code: string, name: string, karaka: string, sign: number, degree: number, longitude: number, isSpecial: boolean, marks?: PlanetMarks) => {
     const nak = getNakshatra(adjLon(longitude));
     return {
-      code, name, karaka, isSpecial,
+      code, name, karaka, isSpecial, marks,
       position: `${SIGN_ABBR[sign - 1]} ${tableFormatDeg(degree, degreePrecision)}`,
       nakshatra: `${nak.name}(${nak.number}) ${grahaCodeFromEnglishCode(nak.lord, style)}`,
     };
   };
+
+  const sun = chart.planets.find((p) => p.name === 'Sun');
+  /** The nine grahas have marks; the outer planets do not. */
+  const marksOfPlanet = (p: ChartData['planets'][number]): PlanetMarks | undefined =>
+    ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'].includes(p.name)
+      ? marksOf(p.name as 'Sun', p.longitude, { nakshatraAdjust, sunLongitude: p.name === 'Sun' ? undefined : sun?.longitude, retrograde: p.isRetrograde === true })
+      : undefined;
 
   const filteredPlanets = showOuterPlanets
     ? chart.planets
     : chart.planets.filter((p) => !OUTER_PLANETS.includes(p.name));
 
   const rows = [
-    buildRow('As', 'Lagna', '', chart.ascendant.sign, chart.ascendant.degree, chart.ascendant.longitude, false),
-    ...filteredPlanets.map((p) => buildRow(grahaCode(p.name, style) + (p.isRetrograde ? ' ℞' : ''), grahaName(p.name, style), karakaByPlanet[p.name] ?? '', p.sign, p.degree, p.longitude, false)),
+    buildRow('As', 'Lagna', '', chart.ascendant.sign, chart.ascendant.degree, chart.ascendant.longitude, false, marksOf('Lagna', chart.ascendant.longitude, { nakshatraAdjust })),
+    ...filteredPlanets.map((p) => buildRow(grahaCode(p.name, style) + (p.isRetrograde ? ' ℞' : ''), grahaName(p.name, style), karakaByPlanet[p.name] ?? '', p.sign, p.degree, p.longitude, false, marksOfPlanet(p))),
     ...(showSpecialLagnas ? (chart.specialLagnas ?? []).map((sl) => buildRow(sl.name, sl.name, '', sl.sign, sl.degree, sl.longitude, true)) : []),
   ];
 
@@ -111,6 +121,7 @@ export default function JyotishGrahaTable({
             <th className="p-2 text-left">{t('Pos')}</th>
             <th className="p-2 text-left">Kāraka</th>
             <th className="p-2 text-left">Nakṣatra</th>
+            <th className="p-2 text-left" title={t('⚠ a weakening degree (Sandhi, Gandanta, Mṛtyu Bhāga) · ✦ a Puṣkara degree · ☼ combust. Hover a mark for the reason.')}>{t('Marks')}</th>
           </tr>
         </thead>
         <tbody>
@@ -121,6 +132,7 @@ export default function JyotishGrahaTable({
               <td className="p-2 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">{row.position}</td>
               <td className="p-2 font-bold text-amber-700 dark:text-amber-400 whitespace-nowrap" title={KARAKA_NAMES[row.karaka]}>{row.karaka}</td>
               <td className="p-2 text-cyan-700 dark:text-cyan-300 whitespace-nowrap">{row.nakshatra}</td>
+              <td className="p-2 whitespace-nowrap text-amber-700 dark:text-amber-400" data-marks={row.code} title={markLines(row.marks, t, language).join('\n') || undefined}>{markIcons(row.marks)}</td>
             </tr>
           ))}
         </tbody>

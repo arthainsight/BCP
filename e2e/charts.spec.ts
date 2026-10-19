@@ -427,9 +427,65 @@ test('a chart that is opened for the first time shows the signs, the grahas and 
 
   // The ··· menu has them all off.
   await visible(page, page.getByRole('button', { name: '···' })).click();
-  for (const name of ['nakshatra', 'karaka', 'outer planets', 'special lagnas']) {
+  for (const name of ['nakshatra', 'karaka', 'outer planets', 'special lagnas', 'yogi ʸ sahayogi ˢ avayogi ᵃ']) {
     await expect(visible(page, page.getByRole('button', { name, exact: true }))).toHaveAttribute('aria-pressed', 'false');
   }
+
+  expect(errors).toEqual([]);
+});
+
+test('a graha in a chart tells its sensitive degrees and combustion when it is hovered, in the rāśi chart and in a varga', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const north = () => visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
+  // 15.08.1947: the Sun is in the Gandanta, the Moon and Jupiter in a Puṣkara navāṁśa, Mercury, Venus and Saturn combust; the chart itself shows none of it.
+  await expect(north().locator('title', { hasText: "⚠ Gandanta: Ashlesha → Magha, 1°38' from the junction" })).toHaveCount(1);
+  await expect(north().locator('title', { hasText: "✦ Puṣkara Navāṁśa: 3rd navamsa (6°40'–10°), Virgo" })).toHaveCount(1);
+  await expect(north().locator('title', { hasText: "☼ Combust: 13°59' from the Sun (orb 14°)" })).toHaveCount(1);
+  await expect(north().locator('title', { hasText: '☼ Combust' })).toHaveCount(3);
+  // Mars has no mark and so no tooltip.
+  await expect(north().locator('tspan', { hasText: /^Ma/ }).locator('title')).toHaveCount(0);
+
+  // The Navamsa chart comes beside the rāśi chart: the tests are made on the positions there (Mercury is in a Puṣkara navāṁśa of its own there), and nothing is combust.
+  await visible(page, page.getByRole('button', { name: 'D9', exact: true })).click();
+  const navamsa = page.locator('svg[aria-label="North Indian Jyotish chart"]:visible').nth(1);
+  await expect(navamsa.locator('title', { hasText: /Puṣkara Navāṁśa/ })).not.toHaveCount(0);
+  await expect(navamsa.locator('title', { hasText: '☼ Combust' })).toHaveCount(0);
+  await expect(navamsa.locator('title', { hasText: '⚠ Gandanta' })).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
+test('the Yogi, Sahayogi and Avayogi are marked on the grahas of the charts when the layer is switched on', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const north = () => visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
+  const roles = () => north().locator('title', { hasText: /^[ʸˢᵃ] / });
+  // Off to begin with.
+  await expect(roles()).toHaveCount(0);
+
+  // The ··· menu has the layer; switching it on marks Rahu (the Yogi), Saturn (the Sahayogi) and Venus (the Avayogi) of the 15.08.1947 chart.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  const toggle = visible(page, page.getByRole('button', { name: 'yogi ʸ sahayogi ˢ avayogi ᵃ', exact: true }));
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await page.mouse.click(2, 2);
+  await expect(north().locator('tspan', { hasText: /Ra℞?ʸ/ })).toHaveCount(1);
+  await expect(north().locator('tspan', { hasText: /Saˢ/ })).toHaveCount(1);
+  await expect(north().locator('tspan', { hasText: /Veᵃ/ })).toHaveCount(1);
+  await expect(north().locator('title', { hasText: 'ʸ Yogi' })).toHaveCount(1);
+  await expect(north().locator('title', { hasText: 'ˢ Sahayogi' })).toHaveCount(1);
+  await expect(north().locator('title', { hasText: 'ᵃ Avayogi' })).toHaveCount(1);
+
+  // The varga charts carry the same marks.
+  await visible(page, page.getByRole('button', { name: 'D9', exact: true })).click();
+  await expect(page.locator('svg[aria-label="North Indian Jyotish chart"]:visible').nth(1).locator('tspan', { hasText: /Ra℞?ʸ/ })).toHaveCount(1);
 
   expect(errors).toEqual([]);
 });

@@ -3,10 +3,10 @@ import { calculateGrahaDrishti } from './drishti';
 import { calcSolarTimes } from './panchang/solar';
 import { DEBILITATION, EXALTATION, MOOLATRIKONA, NATURAL_ENEMIES, NATURAL_FRIENDS, OWN_SIGNS } from './dignity';
 import { signLord } from './signs';
+import { combustionOf } from './combustion';
 
 const CLASSICAL = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'] as const;
 const PLANET_NUMBER: Record<string, number> = { Sun: 1, Moon: 2, Mars: 3, Mercury: 4, Jupiter: 5, Venus: 6, Saturn: 7, Rahu: 8, Ketu: 9 };
-const COMBUST_ORB: Record<string, number> = { Moon: 12, Mars: 17, Mercury: 14, Jupiter: 11, Venus: 10, Saturn: 15 };
 const SAYANADI = ['Śayana', 'Upaveśana', 'Netrāṇi', 'Prakāśa', 'Gamana', 'Āgamana', 'Sabhā', 'Āgama', 'Bhojana', 'Nṛtyalipsā', 'Kautuka', 'Nidrā'];
 
 export type AvasthaResult = {
@@ -18,11 +18,6 @@ export type AvasthaResult = {
   sayanadi: string;
   reasons: { baladi: string; jagratadi: string; deeptadi: string; lajjitadi: string; sayanadi: string };
 };
-
-function angularDistance(a: number, b: number): number {
-  const d = Math.abs(a - b) % 360;
-  return Math.min(d, 360 - d);
-}
 
 function relationship(planet: string, sign: number): 'friend' | 'enemy' | 'neutral' {
   const lord = signLord(sign);
@@ -49,9 +44,8 @@ export function calculateJagratadi(planet: PlanetData): { value: string; reason:
 
 function calculateDeeptadi(planet: PlanetData, sun: PlanetData | undefined): { value: string; reason: string } {
   if (!CLASSICAL.includes(planet.name as typeof CLASSICAL[number])) return { value: '—', reason: 'Classical dignity state is shown for Sun–Saturn.' };
-  if (planet.name !== 'Sun' && sun && angularDistance(planet.longitude, sun.longitude) <= (COMBUST_ORB[planet.name] ?? 0)) {
-    return { value: 'Vikala', reason: `combust · ${angularDistance(planet.longitude, sun.longitude).toFixed(2)}° from Sun` };
-  }
+  const combust = sun ? combustionOf(planet.name, planet.longitude, sun.longitude, planet.isRetrograde === true) : null;
+  if (combust) return { value: 'Vikala', reason: `combust · ${combust.distance.toFixed(2)}° from Sun` };
   if (planet.sign === EXALTATION[planet.name]) return { value: 'Dīpta', reason: 'exaltation sign' };
   if (planet.sign === DEBILITATION[planet.name]) return { value: 'Duḥkhita', reason: 'debilitation sign' };
   if (OWN_SIGNS[planet.name]?.includes(planet.sign)) return { value: 'Svastha', reason: 'own sign' };

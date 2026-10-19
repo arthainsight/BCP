@@ -33,6 +33,10 @@ assert.equal(results.find((row) => row.planet === 'Sun')?.deeptadi, 'Dīpta');
 assert.equal(results.find((row) => row.planet === 'Mars')?.deeptadi, 'Dīpta');
 assert.equal(results.find((row) => row.planet === 'Mercury')?.deeptadi, 'Vikala');
 assert.notEqual(results.find((row) => row.planet === 'Jupiter')?.sayanadi, '—');
+// Combustion has the orbs of combustion.ts: Mercury 2° from the Sun is Vikala, and a retrograde Venus 9° from it is not (orb 8°), a direct one is (orb 10°).
+const venusAt = (isRetrograde: boolean): ChartData => ({ ...chart, planets: planets.map((p) => (p.name === 'Venus' ? { ...p, sign: 1, degree: 19, longitude: 19, isRetrograde } : p)) });
+assert.equal(calculateAvasthas(venusAt(false), '2000-01-01T12:00').find((row) => row.planet === 'Venus')?.deeptadi, 'Vikala');
+assert.notEqual(calculateAvasthas(venusAt(true), '2000-01-01T12:00').find((row) => row.planet === 'Venus')?.deeptadi, 'Vikala');
 
 console.log('Planetary Avastha tests passed');
 

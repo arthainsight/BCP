@@ -14,6 +14,8 @@ export interface LabelToken {
   key: string;
   text: string;
   group: LabelGroup;
+  /** The hover text of the label. */
+  title?: string;
 }
 
 export type Point = readonly [number, number];

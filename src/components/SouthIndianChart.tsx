@@ -11,6 +11,8 @@ import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { useChartFontScale } from '@/lib/chartFont';
 import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
+import { useGrahaRoles, yogiMarkOf } from '@/lib/grahaMarks';
+import { usePlanetHover } from '@/lib/planetHover';
 import { layoutHouseLabels, type LabelToken } from '@/lib/chartLabelLayout';
 import { SIGN_ABBR } from '@/lib/signs';
 import { nakshatraAbbr } from '@/lib/nakshatras';
@@ -167,6 +169,7 @@ function PlanetSpan({ token, highlightPlanet, onPlanetClick, selectedPlanet, onP
     <span
       className={`${className ?? ''}${clickable ? ' cursor-pointer' : ''}`}
       style={style}
+      title={token.title}
       onClick={clickable ? handleClick : undefined}
     >
       {token.text}
@@ -205,6 +208,8 @@ export default function SouthIndianChart({
   centerContent,
 }: Props) {
   const { code: grahaCode } = useGrahaNames();
+  const grahaRoles = useGrahaRoles();
+  const planetHover = usePlanetHover();
   const { resolvedTheme } = useTheme();
   const hydrated = useHydrated();
   const fill = useChartFill();
@@ -299,7 +304,8 @@ export default function SouthIndianChart({
           planetsHere.forEach((p, index) => tokens.push({
             key: `${p.isTransit ? 'tr' : 'na'}-${p.name}-${index}`,
             group: p.isTransit ? 'transit' : 'natal',
-            text: getPlanetLabel(p, p.isTransit, degreePrecision, showNakshatra, showCharaKaraka, karakaByPlanet, nakshatraAdjust, p.isTransit ? '' : dashaMark(p.name, dashaLords), grahaCode),
+            text: getPlanetLabel(p, p.isTransit, degreePrecision, showNakshatra, showCharaKaraka, karakaByPlanet, nakshatraAdjust, p.isTransit ? '' : dashaMark(p.name, dashaLords) + yogiMarkOf(grahaRoles, p.name), grahaCode),
+            title: p.isTransit ? undefined : planetHover(p),
           }));
           specialHere.forEach((sl, index) => tokens.push({ key: `sl-${sl.name}-${index}`, group: 'special', text: sl.name }));
           const hasBnnLabel = (bnnMajorHouse > 0 && house === bnnMajorHouse) || (bnnMinorHouse > 0 && house === bnnMinorHouse);
