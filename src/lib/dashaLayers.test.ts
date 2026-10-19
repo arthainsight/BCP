@@ -23,7 +23,7 @@ assert.match(dashaHouseBorders(lords, at('Saturn'), false)[0].title, /Mahadasha 
 assert.deepEqual(dashaHouseBorders(withDashaLayers(lords, { showDashaLords: true, showDashaHouses: false }), at('Saturn'), false), []);
 assert.deepEqual(dashaHouseBorders(null, at('Saturn'), false), []);
 
-// The house borders are on by default.
-assert.equal(DEFAULT_CHART_DISPLAY.showDashaHouses, true);
+// The house borders are off by default, like every other layer of the chart.
+assert.equal(DEFAULT_CHART_DISPLAY.showDashaHouses, false);
 
 console.log('Daśā layer tests passed');

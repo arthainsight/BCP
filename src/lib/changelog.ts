@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.07',
+    date: '2026-10-19',
+    title: 'A chart opens plain: signs, grahas and their degrees and minutes',
+    changes: [
+      'When a person opens a chart for the first time (nothing stored in the browser yet), every layer is off except the signs, the grahas and their degrees and minutes: the nakṣatras, the special lagnas, the RSN Major and Minor labels, the Nāḍī Paraya and the dasha-lord marks and house borders were on before, and the degrees were off. The ··· menu of the chart and Settings → display switch any of them on.',
+      'Settings that are already stored are kept as they were. The special lagna rows of ANALYSIS → Grahas follow the special lagnas switch as before, so they too are off in a new browser until it is switched on.',
+      'Tests: the whole set of defaults, in a unit test and in a browser test that opens a chart and looks at it and at the ··· menu; the browser tests of the layers (RSN labels, Paraya, the dasha lords and their house borders, the special lagnas in the graha table) now switch the layer on first.',
+      'Updated the application version to v3.07.',
+    ],
+  },
+  {
     version: 'v3.06',
     date: '2026-10-17',
     title: 'The Bala view: Ṣaḍbala, Bhāva Bala and Vimśopaka with diagrams',

@@ -5,6 +5,14 @@ import { DEFAULT_CHART_DISPLAY } from '@/types';
 import { FONT_SCALE_MAX, FONT_SCALE_MIN, clampFontScale, fontScaleLabel } from '@/lib/chartFont';
 import { migrateChartDisplaySettings } from './chartDisplaySettings';
 
+// --- The defaults of a chart that is opened for the first time: the signs, the grahas and their degrees and minutes, every layer off ---
+assert.equal(DEFAULT_CHART_DISPLAY.showSigns, true);
+assert.equal(DEFAULT_CHART_DISPLAY.showNatalPlanets, true);
+assert.equal(DEFAULT_CHART_DISPLAY.degreePrecision, 'minute');
+for (const layer of ['showNakshatra', 'showCharaKaraka', 'showOuterPlanets', 'showSpecialLagnas', 'showPanchang', 'showBnnMajorHighlight', 'showBnnMinorHighlight', 'showTransitOverlay', 'showNadiParaya', 'showBcpHighlight', 'showDashaLords', 'showDashaHouses'] as const) {
+  assert.equal(DEFAULT_CHART_DISPLAY[layer], false, `${layer} is off to begin with`);
+}
+
 // --- Stored settings ----------------------------------------------------------
 assert.deepEqual(migrateChartDisplaySettings(null), DEFAULT_CHART_DISPLAY);
 assert.deepEqual(migrateChartDisplaySettings('nonsense'), DEFAULT_CHART_DISPLAY);
