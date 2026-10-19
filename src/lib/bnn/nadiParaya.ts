@@ -22,8 +22,12 @@ export const ALL_PARAYA_BODIES: readonly ParayaBody[] = [...PARAYA_BODIES, ...PA
  */
 export const PARAYA_BETA_YEARS: Record<ParayaBetaBody, number> = { Mars: 1 / 6, Mercury: 1 / 12, Venus: 1 / 12 };
 
-/** The natal sign (0–11) of a beta graha and whether it was going backwards, which starts its walk one sign back as for Jupiter and Saturn. */
-export type ParayaBetaNatal = Partial<Record<ParayaBetaBody, { signIndex: number; retrograde?: boolean }>>;
+/**
+ * The natal sign (0–11) of a beta graha and the degree it stood at in it (0–30; 0 when not given), and whether it was going backwards, which
+ * starts its walk one sign back as for Jupiter and Saturn. The beta grahas begin at their natal degree: Mercury at 7° and Venus at 18° of Libra
+ * are in different places on their way round, and reach the same degree of another sign at different times.
+ */
+export type ParayaBetaNatal = Partial<Record<ParayaBetaBody, { signIndex: number; degree?: number; retrograde?: boolean }>>;
 
 /** The choices for how Saturn and Rahu (and so Ketu) stay in each sign. */
 export interface ParayaOptions {
@@ -88,7 +92,14 @@ type PeriodParams = {
   durations: readonly number[];
   direction: 1 | -1;
   retrogradeStartShift?: boolean;
+  /** The degree of the sign the walk is at when the age is 0 (the beta grahas): the walk begins part of the way through its first stay. */
+  startDegree?: number;
 };
+
+/** How much of the first stay has already gone at age 0, in years: the start degree as a part of the stay (0 when the walk begins at the start of the sign). */
+function phaseOf(params: PeriodParams): number {
+  return params.startDegree ? (Math.max(0, Math.min(30, params.startDegree)) / 30) * params.durations[0] : 0;
+}
 
 /** The length of a round, in years: the stays in the twelve signs added up. */
 function cycleLengthOf(durations: readonly number[]): number {
@@ -108,8 +119,8 @@ function makePeriod(params: PeriodParams, completedCycles: number, step: number,
     body: params.body,
     signIndex,
     signName: SIGN_NAMES[signIndex],
-    startAge: completedCycles * cycleLength + startAgeInCycle,
-    endAge: completedCycles * cycleLength + startAgeInCycle + durationYears,
+    startAge: completedCycles * cycleLength + startAgeInCycle - phaseOf(params),
+    endAge: completedCycles * cycleLength + startAgeInCycle + durationYears - phaseOf(params),
     durationYears,
     cycleNumber: completedCycles + 1,
     degree,
@@ -117,7 +128,7 @@ function makePeriod(params: PeriodParams, completedCycles: number, step: number,
 }
 
 function periodAtAge(params: PeriodParams & { ageYears: number }): ParayaPeriod {
-  const ageYears = Math.max(0, params.ageYears);
+  const ageYears = Math.max(0, params.ageYears) + phaseOf(params);
   const cycleLength = cycleLengthOf(params.durations);
   const completedCycles = Math.floor(ageYears / cycleLength);
   const ageInCycle = ageYears - completedCycles * cycleLength;
@@ -194,6 +205,7 @@ export function calculateBetaParaya(params: { ageYears: number; natal: ParayaBet
       durations: parayaDurations(body),
       direction: 1,
       retrogradeStartShift: natal.retrograde,
+      startDegree: natal.degree,
     })];
   });
 }
@@ -201,6 +213,8 @@ export function calculateBetaParaya(params: { ageYears: number; natal: ParayaBet
 export function buildParayaTimeline(params: {
   body: Exclude<ParayaBody, 'Ketu'>;
   natalSignIndex: number;
+  /** The natal degree the walk starts from (the beta grahas); the first period then begins before age 0. */
+  startDegree?: number;
   maxAge: number;
   retrograde?: boolean;
   options?: ParayaOptions;
@@ -211,13 +225,14 @@ export function buildParayaTimeline(params: {
     durations: parayaDurations(params.body, params.options),
     direction: params.body === 'Rahu' ? -1 : 1,
     retrogradeStartShift: params.body !== 'Rahu' && params.retrograde,
+    startDegree: params.startDegree,
   };
   // The periods are laid out round by round, each from the sum of the ones before it, and not found again from the age at which the one before
   // ended: a stay of a twelfth of a year does not add up to exactly a year in floating point, and an age that falls a hair short of a boundary
   // would give the same period again for ever.
   const periods: ParayaPeriod[] = [];
   const cycleLength = cycleLengthOf(config.durations);
-  for (let cycle = 0; cycle * cycleLength < params.maxAge; cycle++) {
+  for (let cycle = 0; cycle * cycleLength - phaseOf(config) < params.maxAge; cycle++) {
     let startAgeInCycle = 0;
     for (let step = 0; step < 12; step++) {
       const period = makePeriod(config, cycle, step, startAgeInCycle, 0);
@@ -267,6 +282,7 @@ export function findParayaAgesForPosition(params: {
   const timeline = buildParayaTimeline({
     body: sourceBody,
     natalSignIndex,
+    startDegree: beta?.degree,
     maxAge,
     retrograde,
     options: params.options,
@@ -285,5 +301,6 @@ export function findParayaAgesForPosition(params: {
         cycleNumber: period.cycleNumber,
       };
     })
-    .filter(match => match.ageYears <= maxAge);
+    // A beta graha begins part of the way through its first stay: a position it has already gone past in that stay was reached before birth.
+    .filter(match => match.ageYears >= 0 && match.ageYears <= maxAge);
 }

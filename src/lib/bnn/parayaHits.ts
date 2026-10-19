@@ -54,7 +54,7 @@ export function findParayaHits(params: {
   const natalBeta: ParayaBetaNatal = {};
   for (const body of PARAYA_BETA_BODIES) {
     const planet = chart.planets.find(p => p.name === body);
-    if (planet) natalBeta[body] = { signIndex: planet.sign - 1, retrograde: Boolean(planet.isRetrograde) };
+    if (planet) natalBeta[body] = { signIndex: planet.sign - 1, degree: planet.degree, retrograde: Boolean(planet.isRetrograde) };
   }
 
   const hits: ParayaHit[] = [];

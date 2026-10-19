@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.12',
+    date: '2026-10-19',
+    title: 'Mars, Mercury and Venus begin at their natal degrees',
+    changes: [
+      'The Paraya progressions of Mars, Mercury and Venus (beta) now begin at the natal degree of each, not at the start of the natal sign: Mercury at 7° and Venus at 18° of Libra are at 7° and 18° of Libra at age 0 and go on from there, a month for each sign at the same pace, so Venus stays 11° ahead of Mercury. Before, two of them in the same natal sign were in the same place at every age, and their hits to the natal points came on the same days; now the dates are those of the exact degree (the same degree as the natal point in the 1st, 5th, 7th or 9th sign) for each graha.',
+      'A graha that was retrograde at birth still begins one sign back, at the same degree. Jupiter, Saturn, Rahu and Ketu are as they were (they begin at the start of the natal sign). The chart labels, the Paraya hits and the Paraya tab all follow the change.',
+      'Tests: the positions of Mercury at 7° and Venus at 18° of Libra at hand-worked ages, the stay that began before birth, a degree already passed at birth being reached next round and not at a negative age, the ages at which a position is reached for both, the hits of Mars, and a browser test that the gap between Mercury and Venus in the chart stays what the natal degrees give.',
+      'Updated the application version to v3.12.',
+    ],
+  },
+  {
     version: 'v3.11',
     date: '2026-10-19',
     title: 'The Paraya tab: every progression hit to the natal points, at a glance',

@@ -90,12 +90,13 @@ const betaChart = {
   planets: [planet('Jupiter', 1, 5), planet('Saturn', 6, 10), planet('Rahu', 4, 20), planet('Sun', 1, 15), planet('Mars', 1, 5), planet('Mercury', 3, 10), planet('Venus', 2, 20)],
 } as unknown as ChartData;
 const betaWindow = (years: number, bodies: readonly (typeof ALL_PARAYA_BODIES)[number][]) => ({ chart: betaChart, birthTime: birth, fromTime: birth, toTime: birth + years * YEAR, bodies });
-// Mars starts in Aries and stays two months in a sign: it is at 15° Aries (the Sun) at age 1/12, at 15° Leo (the 5th) at 3/4, at 15° Sagittarius (the 9th)
-// at 1 5/12, and again every two years.
+// Mars starts at its natal degree (5° Aries) and stays two months in a sign: it is at 15° Aries (the Sun) when it has gone 10° of its first stay, at age
+// 10/30 * 1/6 = 0.056, at 15° Leo (the 5th) at 4 stays and 10° on, 0.722, at 15° Sagittarius (the 9th) at 1.389, and again every two years.
 const marsToSun = findParayaHits({ ...betaWindow(3, ['Mars']), relations: [1, 5, 9] }).filter(hit => hit.natal === 'Sun');
 assert.deepEqual(marsToSun.map(hit => hit.relation), [1, 5, 9, 1, 5]);
-assert.deepEqual(marsToSun.map(hit => Math.round(hit.ageYears * 1000) / 1000), [0.083, 0.75, 1.417, 2.083, 2.75]);
-// Every hit of Mars, Mercury and Venus: the Paraya calculation puts the graha in the wanted sign at the natal degree, direct or retrograde at birth.
+assert.deepEqual(marsToSun.map(hit => Math.round(hit.ageYears * 1000) / 1000), [0.056, 0.722, 1.389, 2.056, 2.722]);
+// Every hit of Mars, Mercury and Venus: the Paraya calculation puts the graha in the wanted sign at the natal degree, direct or retrograde at birth (they start from
+// their own natal degrees, which differ here: 5°, 10° and 20°).
 for (const retro of [false, true]) {
   const chartAt = {
     ...betaChart,
@@ -108,7 +109,7 @@ for (const retro of [false, true]) {
     const point = chartAt.planets.find(p => p.name === hit.natal) ?? { sign: 1, degree: 2 };
     const period = calculateBetaParaya({
       ageYears: hit.ageYears,
-      natal: { Mars: { signIndex: 0, retrograde: retro }, Mercury: { signIndex: 2, retrograde: retro }, Venus: { signIndex: 1, retrograde: retro } },
+      natal: { Mars: { signIndex: 0, degree: 5, retrograde: retro }, Mercury: { signIndex: 2, degree: 10, retrograde: retro }, Venus: { signIndex: 1, degree: 20, retrograde: retro } },
     }).find(item => item.body === hit.body)!;
     const wantedSign = (point.sign - 1 + RELATION_OFFSET[hit.relation] / 30) % 12;
     assert.equal(period.signIndex, wantedSign, `${hit.body} → ${hit.natal} (${hit.relation}) is in the wanted sign`);

@@ -59,7 +59,7 @@ export function parayaPeriodsOf(chart: ChartData | null, ageYears: number, optio
     const natal: ParayaBetaNatal = {};
     for (const body of PARAYA_BETA_BODIES) {
       const planet = chart.planets.find(p => p.name === body);
-      if (planet) natal[body] = { signIndex: planet.sign - 1, retrograde: Boolean(planet.isRetrograde) };
+      if (planet) natal[body] = { signIndex: planet.sign - 1, degree: planet.degree, retrograde: Boolean(planet.isRetrograde) };
     }
     periods.push(...calculateBetaParaya({ ageYears, natal }));
   }
