@@ -39,6 +39,48 @@ test('an event shows the transits of its day on the charts', async ({ page }, in
   expect(errors).toEqual([]);
 });
 
+test('an event shows the progressions (Paraya) of its day, for its first and last day', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('textbox', { name: 'Event name' })).fill('Moved house');
+  await visible(page, page.getByLabel('Event date')).fill('2015-06-15');
+  await visible(page, page.getByRole('button', { name: 'Add', exact: true })).click();
+
+  // The card names the four progressing grahas of the day: where each stood, its house, and the natal points it aspected by sign.
+  const card = visible(page, page.locator('details').filter({ hasText: 'Moved house' }));
+  const progressions = card.locator('[data-event-progressions="2015-06-15"]');
+  await expect(progressions).toBeVisible();
+  for (const body of ['Jupiter', 'Saturn', 'Rahu', 'Ketu']) await expect(progressions.locator(`[data-event-progression="${body}"]`)).toContainText(/H\d+/);
+  await expect(progressions.locator('[data-event-progression]')).toHaveCount(4);
+  await expect(progressions.locator('[data-aspect]').first()).toBeVisible();
+  for (const aspect of await progressions.locator('[data-aspect]').all()) await expect(aspect).toHaveAttribute('data-aspect', /^(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu|Asc)\|[1579]$/);
+
+  // They are what the Paraya tab shows for that day: the same sign and degree for each graha.
+  const standing = async (body: string) => ((await progressions.locator(`[data-event-progression="${body}"]`).innerText()).match(/([A-Z][a-z]+) (\d+°\d+')/) ?? [])[0];
+  const onTheCard = { Jupiter: await standing('Jupiter'), Saturn: await standing('Saturn') };
+  expect(onTheCard.Jupiter).toBeTruthy();
+  await card.getByRole('button', { name: 'Set as target' }).click();
+  await visible(page, page.getByRole('button', { name: 'Paraya', exact: true })).click();
+  for (const body of ['Jupiter', 'Saturn'] as const) {
+    const row = visible(page, page.locator(`tr[data-progressing="${body}"]`));
+    expect((await row.innerText()).replace(/\s+/g, ' ')).toContain(onTheCard[body]);
+  }
+
+  // An event that lasted for a while has them for its last day too.
+  await visible(page, page.getByRole('button', { name: 'Dasha', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  const again = visible(page, page.locator('details').filter({ hasText: 'Moved house' }));
+  await again.getByLabel('End date').fill('2016-01-15');
+  await expect(again.locator('[data-event-progressions]')).toHaveCount(2);
+  await expect(again.locator('[data-event-progressions="2016-01-15"]')).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
 test('many events can be pasted into the Event List at once', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

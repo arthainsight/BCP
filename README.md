@@ -70,7 +70,9 @@ Overlap and Systems), among them:
 * **Finder** — search a date range for MD/AD/PD combinations, across systems
 * **Events** — saved life events (single days or periods) with categories, tags,
   notes and significance; many can be pasted, imported, changed or deleted at
-  once, with Undo; CSV/JSON import and export
+  once, with Undo; CSV/JSON import and export; each event shows the daśās, the
+  transits and the progressions (Paraya, with the natal points aspected) of its
+  day
 * **Patterns** — recurring rulers across saved events, with category filters
 * **Systems** — per-system method settings and calculation provenance
 
