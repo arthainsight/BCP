@@ -58,6 +58,92 @@ test('TIMING Paraya shows where the seven progressing grahas stand and every hit
   expect(errors).toEqual([]);
 });
 
+test('TIMING Paraya aspects shows who aspects each natal point by sign, when several do at once, and a search for when a graha aspects another', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Paraya aspects', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'paraya aspects' }));
+  await expect(panel).toBeVisible();
+
+  // At the target moment: the ten natal points, each with the progressing grahas that aspect its sign and the kind of aspect (1, 5, 7 or 9).
+  for (const point of ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu', 'Asc']) {
+    await expect(panel.locator(`tr[data-now="${point}"]`)).toBeVisible();
+  }
+  await expect(panel.locator('tr[data-now]').filter({ hasText: /(Ju|Sa|Ra|Ke) [1579]/ }).first()).toBeVisible();
+
+  // Several at once: thirty years hold plenty of stretches in which two aspect the same point, fewer where three do, and none where five of the four do.
+  await panel.getByRole('button', { name: '30 yr', exact: true }).click();
+  const together = panel.locator('li[data-together]');
+  await expect(together.first()).toBeVisible();
+  await panel.getByRole('button', { name: /^show all/ }).click();
+  const two = await together.count();
+  expect(two).toBeGreaterThan(10);
+  await expect(together.first()).toContainText('←');
+  // Su, Mo, Me, Ve and Sa are all in Cancer in this chart, so they are aspected by the same grahas at the same times: one row for the five.
+  await expect(together.filter({ hasText: 'Su Mo Me Ve Sa' }).first()).toBeVisible();
+  await panel.getByRole('button', { name: '3', exact: true }).click();
+  const three = await together.count();
+  expect(three).toBeLessThan(two);
+  await panel.getByRole('button', { name: '4', exact: true }).click();
+  expect(await together.count()).toBeLessThanOrEqual(three);
+  await panel.getByRole('button', { name: '2', exact: true }).click();
+  // The beta grahas add more.
+  const grahas = panel.getByRole('group', { name: 'progressing grahas' });
+  await grahas.getByRole('button', { name: 'Ma', exact: true }).click();
+  await grahas.getByRole('button', { name: 'Me', exact: true }).click();
+  await grahas.getByRole('button', { name: 'Ve', exact: true }).click();
+  await panel.getByRole('button', { name: /^show all/ }).click();
+  expect(await together.count()).toBeGreaterThan(two);
+  for (const code of ['Ma', 'Me', 'Ve']) await grahas.getByRole('button', { name: code, exact: true }).click();
+
+  // The search: when Jupiter aspects the Moon, in dates, by the kind of aspect.
+  await panel.getByRole('button', { name: 'search', exact: true }).click();
+  await panel.getByLabel('progressing graha', { exact: true }).selectOption('Jupiter');
+  await panel.getByLabel('natal point', { exact: true }).selectOption('Moon');
+  const aspects = panel.locator('li[data-aspect]');
+  await expect(aspects.first()).toBeVisible();
+  expect(await aspects.count()).toBeGreaterThanOrEqual(3);
+  for (const row of await aspects.all()) await expect(row).toHaveAttribute('data-aspect', /^Jupiter\|Moon\|[1579]$/);
+  await expect(aspects.first()).toContainText(/\d{2}\.\d{2}\.\d{4} → \d{2}\.\d{2}\.\d{4}/);
+  // Left out kinds are left out.
+  await panel.getByRole('button', { name: '7', exact: true }).click();
+  await expect(panel.locator('li[data-aspect$="|7"]')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
+test('a graha that was retrograde at birth begins one sign back, or in its natal sign when that is chosen in Settings', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // 15.10.2023: Jupiter and Saturn were retrograde.
+  await calculateChart(page, '15.10.2023 09.15.00');
+  await selectWorkspace(page, 'ANALYSIS');
+  await expect(visible(page, page.locator('tr', { has: page.locator('td', { hasText: /^Ju ℞$/ }) }))).toBeVisible();
+  const stands = async (body: string) => {
+    await selectWorkspace(page, 'TIMING');
+    await visible(page, page.getByRole('button', { name: 'Paraya', exact: true })).click();
+    return (await visible(page, page.locator(`tr[data-progressing="${body}"]`)).innerText()).replace(/\s+/g, ' ');
+  };
+  const before = { Jupiter: await stands('Jupiter'), Saturn: await stands('Saturn'), Rahu: await stands('Rahu') };
+
+  await selectWorkspace(page, '⚙');
+  const choice = visible(page, page.locator('select').filter({ has: page.locator('option', { hasText: 'the natal sign' }) }));
+  await expect(choice).toHaveValue('previous');
+  await choice.selectOption('same');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('calculationSettings') ?? '{}').parayaRetro)).toBe('same');
+
+  // Jupiter and Saturn stand in another sign; Rahu, which is not moved, stands where it did.
+  expect(await stands('Jupiter')).not.toEqual(before.Jupiter);
+  expect(await stands('Saturn')).not.toEqual(before.Saturn);
+  expect(await stands('Rahu')).toEqual(before.Rahu);
+
+  expect(errors).toEqual([]);
+});
+
 test('the Paraya options in Settings change the Paraya hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

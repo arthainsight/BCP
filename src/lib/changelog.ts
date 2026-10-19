@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.14',
+    date: '2026-10-19',
+    title: 'Every Paraya graha begins at its natal degree; retrograde at birth is a choice; the Paraya aspects tab',
+    changes: [
+      'Jupiter, Saturn, Rahu and Ketu now begin at their natal degrees too, like Mars, Mercury and Venus: Jupiter at 7° of Libra is at 7° of Libra at age 0, and Saturn and Rahu begin inside their first stay (the part gone at birth is not lived again), Rahu and Ketu going backwards. A degree already passed in the natal sign is reached the next round, not at a negative age. The chart, the Paraya tab and the hits all follow, and the dates of the hits are those of the exact degree.',
+      'New in Settings → calculations: "paraya retrograde". A graha that was retrograde at birth begins one sign back (as before, the default) or in its natal sign, at the natal degree either way. Rahu and Ketu are not moved.',
+      'New TIMING → Paraya aspects tab. It counts by sign, not by degree: a progressing graha aspects a natal point while it is in its sign (1) or in the 5th, 7th or 9th sign from it. It shows, at the target moment, which grahas aspect each of the ten natal points; "several at once", the stretches in which at least 2, 3 or 4 progressing grahas aspect the same natal point (natal points in the same sign share a row); and "search", the dates from which to which a chosen graha aspects a chosen natal point (or any), by kind of aspect. Range, kinds of aspect and grahas are chosen with buttons, and Set target moves to the start of a stretch.',
+      'Tests: Jupiter, Saturn and Rahu from natal degrees at hand-worked ages, the retrograde choice, the ages at which a position is reached from natal degrees, the stays and convergences of the aspect view on hand-made data, and browser tests of the aspects tab and of the retrograde choice.',
+      'Updated the application version to v3.14.',
+    ],
+  },
+  {
     version: 'v3.13',
     date: '2026-10-19',
     title: 'The old Paraya hits list is gone from Transit Hits; how a retrograde Paraya graha begins',

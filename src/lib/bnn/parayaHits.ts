@@ -69,6 +69,7 @@ export function findParayaHits(params: {
           natalJupiterSignIndex: jupiter.sign - 1,
           natalSaturnSignIndex: saturn.sign - 1,
           natalRahuSignIndex: rahu.sign - 1,
+          natalDegrees: { Jupiter: jupiter.degree, Saturn: saturn.degree, Rahu: rahu.degree },
           jupiterRetrograde: Boolean(jupiter.isRetrograde),
           saturnRetrograde: Boolean(saturn.isRetrograde),
           natalBeta,

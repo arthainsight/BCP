@@ -27,7 +27,8 @@ export async function withChartLayers(page: Page, layers: Record<string, boolean
   }, layers);
 }
 
-export async function calculateChart(page: Page) {
+/** Calculates the chart of 15.08.1947 in New Delhi, or of another birth moment (DD.MM.YYYY HH.MM.SS) in New Delhi. */
+export async function calculateChart(page: Page, birth = '15.08.1947 09.15.00') {
   await page.route('**/api/geocode**', (route) =>
     route.fulfill({
       json: { results: [{ name: 'New Delhi', country: 'India', latitude: 28.6139, longitude: 77.209, timezone: 'Asia/Kolkata' }] },
@@ -36,13 +37,13 @@ export async function calculateChart(page: Page) {
   await page.goto('/');
 
   // CHART is the initial workspace and shows the birth-data panel.
-  await visible(page, page.getByPlaceholder('15.08.1947 09.15.00')).fill('15.08.1947 09.15.00');
+  await visible(page, page.getByPlaceholder('15.08.1947 09.15.00')).fill(birth);
   await visible(page, page.getByPlaceholder('e.g. New Delhi')).fill('New Delhi');
   await visible(page, page.getByRole('button', { name: 'lookup' })).click();
   await visible(page, page.getByRole('button', { name: 'Calculate Chart' })).click();
 
   // The calculation renders the natal chart (North Indian by default).
-  await expect(visible(page, page.getByText(/Asc 12°18'|ASC 12°18'/))).toBeVisible({ timeout: 30_000 });
+  await expect(visible(page, page.getByText(birth === '15.08.1947 09.15.00' ? /Asc 12°18'|ASC 12°18'/ : /Asc \d+°\d+'|ASC \d+°\d+'/))).toBeVisible({ timeout: 30_000 });
 }
 
 /** A small PNG made on the spot: a diagonal gradient, so the photograph is not a flat colour. */

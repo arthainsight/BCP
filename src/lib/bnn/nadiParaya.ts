@@ -1,5 +1,5 @@
 import { SIGN_NAMES } from '@/lib/signs';
-import type { ParayaSpeed } from '@/types';
+import type { ParayaRetro, ParayaSpeed } from '@/types';
 
 /** The Paraya grahas that are tried out (beta): Mars, Mercury and Venus, moved by age like the four. */
 export type ParayaBetaBody = 'Mars' | 'Mercury' | 'Venus';
@@ -33,9 +33,14 @@ export type ParayaBetaNatal = Partial<Record<ParayaBetaBody, { signIndex: number
 export interface ParayaOptions {
   saturn: ParayaSpeed;
   rahu: ParayaSpeed;
+  /** Where a graha that was retrograde at birth begins: one sign back (the default) or in its natal sign. Rahu and Ketu have no such shift. */
+  retro?: ParayaRetro;
 }
 
-export const DEFAULT_PARAYA_OPTIONS: ParayaOptions = { saturn: 'alternating', rahu: 'alternating' };
+export const DEFAULT_PARAYA_OPTIONS: ParayaOptions = { saturn: 'alternating', rahu: 'alternating', retro: 'previous' };
+
+/** Whether a graha that was retrograde at birth begins one sign back. */
+const shiftsBack = (options?: ParayaOptions) => (options?.retro ?? 'previous') === 'previous';
 
 /**
  * Years spent in each sign in turn. Jupiter stays a year; Saturn alternates 3
@@ -92,13 +97,18 @@ type PeriodParams = {
   durations: readonly number[];
   direction: 1 | -1;
   retrogradeStartShift?: boolean;
-  /** The degree of the sign the walk is at when the age is 0 (the beta grahas): the walk begins part of the way through its first stay. */
+  /** The degree of the sign the walk is at when the age is 0 (the natal degree): the walk begins part of the way through its first stay. */
   startDegree?: number;
 };
 
-/** How much of the first stay has already gone at age 0, in years: the start degree as a part of the stay (0 when the walk begins at the start of the sign). */
+/**
+ * How much of the first stay has already gone at age 0, in years: the part of the stay between the start of the walk in the sign and the start
+ * degree (0 when no start degree is given, which is the start of the sign; for a walk backwards, as Rahu's is, the start is the end of the sign).
+ */
 function phaseOf(params: PeriodParams): number {
-  return params.startDegree ? (Math.max(0, Math.min(30, params.startDegree)) / 30) * params.durations[0] : 0;
+  if (params.startDegree === undefined) return 0;
+  const degree = Math.max(0, Math.min(30, params.startDegree));
+  return (params.direction === 1 ? degree / 30 : 1 - degree / 30) * params.durations[0];
 }
 
 /** The length of a round, in years: the stays in the twelve signs added up. */
@@ -153,6 +163,10 @@ export function calculateNadiParaya(params: {
   natalJupiterSignIndex: number;
   natalSaturnSignIndex: number;
   natalRahuSignIndex: number;
+  /** The natal degrees (0–30) the walks begin at; when they are not given the walk begins at the start of the natal sign (the end of it for Rahu). */
+  natalJupiterDegree?: number;
+  natalSaturnDegree?: number;
+  natalRahuDegree?: number;
   jupiterRetrograde?: boolean;
   saturnRetrograde?: boolean;
   options?: ParayaOptions;
@@ -164,7 +178,8 @@ export function calculateNadiParaya(params: {
     ageYears,
     durations: parayaDurations('Jupiter', params.options),
     direction: 1,
-    retrogradeStartShift: params.jupiterRetrograde,
+    retrogradeStartShift: params.jupiterRetrograde && shiftsBack(params.options),
+    startDegree: params.natalJupiterDegree,
   });
   const saturn = periodAtAge({
     body: 'Saturn',
@@ -172,7 +187,8 @@ export function calculateNadiParaya(params: {
     ageYears,
     durations: parayaDurations('Saturn', params.options),
     direction: 1,
-    retrogradeStartShift: params.saturnRetrograde,
+    retrogradeStartShift: params.saturnRetrograde && shiftsBack(params.options),
+    startDegree: params.natalSaturnDegree,
   });
   const rahu = periodAtAge({
     body: 'Rahu',
@@ -180,6 +196,7 @@ export function calculateNadiParaya(params: {
     ageYears,
     durations: parayaDurations('Rahu', params.options),
     direction: -1,
+    startDegree: params.natalRahuDegree,
   });
   const ketuSignIndex = normalizeSign(rahu.signIndex + 6);
   const ketu: ParayaPeriod = {
@@ -193,7 +210,7 @@ export function calculateNadiParaya(params: {
 }
 
 /** The beta Paraya grahas at an age: Mars, Mercury and Venus, in that order, for those that are given. */
-export function calculateBetaParaya(params: { ageYears: number; natal: ParayaBetaNatal }): ParayaPeriod[] {
+export function calculateBetaParaya(params: { ageYears: number; natal: ParayaBetaNatal; options?: ParayaOptions }): ParayaPeriod[] {
   const ageYears = Math.max(0, params.ageYears);
   return PARAYA_BETA_BODIES.flatMap(body => {
     const natal = params.natal[body];
@@ -204,7 +221,7 @@ export function calculateBetaParaya(params: { ageYears: number; natal: ParayaBet
       ageYears,
       durations: parayaDurations(body),
       direction: 1,
-      retrogradeStartShift: natal.retrograde,
+      retrogradeStartShift: natal.retrograde && shiftsBack(params.options),
       startDegree: natal.degree,
     })];
   });
@@ -224,7 +241,7 @@ export function buildParayaTimeline(params: {
     natalSignIndex: params.natalSignIndex,
     durations: parayaDurations(params.body, params.options),
     direction: params.body === 'Rahu' ? -1 : 1,
-    retrogradeStartShift: params.body !== 'Rahu' && params.retrograde,
+    retrogradeStartShift: params.body !== 'Rahu' && params.retrograde && shiftsBack(params.options),
     startDegree: params.startDegree,
   };
   // The periods are laid out round by round, each from the sum of the ones before it, and not found again from the age at which the one before
@@ -253,6 +270,8 @@ export function findParayaAgesForPosition(params: {
   natalRahuSignIndex: number;
   jupiterRetrograde?: boolean;
   saturnRetrograde?: boolean;
+  /** The natal degrees of Jupiter, Saturn and Rahu (the walks begin there); the beta grahas have theirs in `natalBeta`. */
+  natalDegrees?: Partial<Record<'Jupiter' | 'Saturn' | 'Rahu', number>>;
   /** The natal signs of Mars, Mercury and Venus, which the beta grahas need. */
   natalBeta?: ParayaBetaNatal;
   maxAge?: number;
@@ -282,7 +301,7 @@ export function findParayaAgesForPosition(params: {
   const timeline = buildParayaTimeline({
     body: sourceBody,
     natalSignIndex,
-    startDegree: beta?.degree,
+    startDegree: beta ? beta.degree : params.natalDegrees?.[sourceBody as 'Jupiter' | 'Saturn' | 'Rahu'],
     maxAge,
     retrograde,
     options: params.options,
@@ -301,6 +320,6 @@ export function findParayaAgesForPosition(params: {
         cycleNumber: period.cycleNumber,
       };
     })
-    // A beta graha begins part of the way through its first stay: a position it has already gone past in that stay was reached before birth.
+    // A graha begins part of the way through its first stay, at its natal degree: a position it has already gone past in that stay was reached before birth.
     .filter(match => match.ageYears >= 0 && match.ageYears <= maxAge);
 }

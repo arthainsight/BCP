@@ -31,7 +31,7 @@ for (const age of [0, 5.5, 23, 47.9]) {
       minor: house(minor.minorSignIndex),
     });
 
-    const paraya = calculateNadiParaya({ ageYears: age, natalJupiterSignIndex: 1, natalSaturnSignIndex: 7, natalRahuSignIndex: 11 });
+    const paraya = calculateNadiParaya({ ageYears: age, natalJupiterSignIndex: 1, natalSaturnSignIndex: 7, natalRahuSignIndex: 11, natalJupiterDegree: 4.3, natalSaturnDegree: 10, natalRahuDegree: 10 });
     assert.deepEqual(
       calculateParayaHouses(c, age),
       [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu].map(p => ({ body: p.body, house: house(p.signIndex), degree: p.degree })),
@@ -44,17 +44,18 @@ const a = calculateBnnHouses(chart(1), 23);
 const b = calculateBnnHouses(chart(2), 23);
 assert.equal(b.minor, ((a.minor - 2 + 12) % 12) + 1);
 
-// The Paraya houses follow the speed options: at 3 years alternating Saturn has moved to its 2nd sign,
-// while at 2.5 years per sign it is already in its 2nd sign at 2.5 and its 3rd at 5.
+// The Paraya houses follow the speed options. Saturn begins at its natal degree (10°, a third of the first stay gone), so it leaves its natal sign at 2 years
+// alternating (a stay of 3) and at 1⅔ years at 2½ years per sign.
 const saturnHouse = (age: number, saturn: 'alternating' | 'even') =>
   calculateParayaHouses(chart(1), age, { saturn, rahu: 'alternating' }).find(h => h.body === 'Saturn')?.house;
-assert.equal(saturnHouse(2.6, 'alternating'), 8, 'alternating: still in the natal sign (3 years) at 2.6');
-assert.equal(saturnHouse(2.6, 'even'), 9, 'even: already in the next sign (2.5 years) at 2.6');
-assert.equal(saturnHouse(2.6, 'alternating'), calculateParayaHouses(chart(1), 2.6).find(h => h.body === 'Saturn')?.house, 'alternating is the default');
+assert.equal(saturnHouse(1.8, 'alternating'), 8, 'alternating: still in the natal sign at 1.8');
+assert.equal(saturnHouse(1.8, 'even'), 9, 'even: already in the next sign at 1.8');
+assert.equal(saturnHouse(1.8, 'alternating'), calculateParayaHouses(chart(1), 1.8).find(h => h.body === 'Saturn')?.house, 'alternating is the default');
 const rahuHouse = (age: number, rahu: 'alternating' | 'even') =>
   calculateParayaHouses(chart(1), age, { saturn: 'alternating', rahu }).find(h => h.body === 'Rahu')?.house;
-assert.equal(rahuHouse(1.6, 'alternating'), 12, 'alternating: still in the natal sign (2 years) at 1.6');
-assert.equal(rahuHouse(1.6, 'even'), 11, 'even: has gone back a sign (1.5 years) at 1.6');
+// Rahu (10° of its sign, so two thirds of the first stay gone) leaves its natal sign at 0.67 years alternating (a stay of 2) and at 0.5 years at 1.5 per sign.
+assert.equal(rahuHouse(0.6, 'alternating'), 12, 'alternating: still in the natal sign at 0.6');
+assert.equal(rahuHouse(0.6, 'even'), 11, 'even: has gone back a sign at 0.6');
 
 // The beta grahas follow the four when they are asked for, in the houses of their own signs.
 {

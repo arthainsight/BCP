@@ -54,9 +54,10 @@ export function useChartDerived(
   const effectiveBnnHouses = useMemo(() => calculateBnnHouses(chartData, bnnAge), [chartData, bnnAge]);
   const parayaSaturn = calculationSettings.parayaSaturn ?? 'alternating';
   const parayaRahu = calculationSettings.parayaRahu ?? 'alternating';
+  const parayaRetro = calculationSettings.parayaRetro ?? 'previous';
   const effectiveNadiParayaHouses = useMemo(
-    () => calculateParayaHouses(chartData, bnnAge, { saturn: parayaSaturn, rahu: parayaRahu }, true),
-    [chartData, bnnAge, parayaSaturn, parayaRahu],
+    () => calculateParayaHouses(chartData, bnnAge, { saturn: parayaSaturn, rahu: parayaRahu, retro: parayaRetro }, true),
+    [chartData, bnnAge, parayaSaturn, parayaRahu, parayaRetro],
   );
 
   // Dasha lords running at the target date, marked on the charts.

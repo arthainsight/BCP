@@ -292,6 +292,20 @@ export default function SettingsPanel(props: Props) {
               </div>
             </div>
             <div>
+              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('paraya retrograde')}</label>
+              <select
+                className={SELECT}
+                value={calculationSettings.parayaRetro ?? 'previous'}
+                onChange={(e) => onUpdateCalculationSettings({ parayaRetro: e.target.value as 'previous' | 'same' })}
+              >
+                <option value="previous">{t('one sign back')}</option>
+                <option value="same">{t('the natal sign')}</option>
+              </select>
+              <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                {t('Where a Paraya Jupiter, Saturn, Mars, Mercury or Venus that was retrograde at birth begins: in the sign before its natal sign, or in the natal sign itself, at its natal degree either way. Rahu and Ketu are not moved.')}
+              </div>
+            </div>
+            <div>
               <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('sunrise for the special sphutas')}</label>
               <select
                 className={SELECT}
