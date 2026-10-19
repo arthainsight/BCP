@@ -115,6 +115,114 @@ test('TIMING Paraya aspects shows who aspects each natal point by sign, when sev
   expect(errors).toEqual([]);
 });
 
+test('TIMING Paraya aspects has a timeline, the exact dates inside a stretch, and the daśā running through it', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Paraya aspects', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'paraya aspects' }));
+  await expect(panel).toBeVisible();
+
+  // The timeline: a row for each sign with natal points (Su, Mo, Me, Ve and Sa share Cancer), stretches shaded by the number of grahas, and a readout.
+  const strip = panel.locator('[data-strip]');
+  await expect(strip).toBeVisible();
+  await expect(strip.locator('[data-strip-row]').first()).toBeVisible();
+  expect(await strip.locator('[data-strip-row]').count()).toBeGreaterThanOrEqual(5);
+  await expect(strip.locator('[data-strip-row="Sun Moon Mercury Venus Saturn"]')).toHaveCount(1);
+  const segment = strip.locator('rect[data-count]').first();
+  await expect(strip.locator('[data-strip-readout]')).toContainText('Hover or focus');
+  await segment.hover();
+  await expect(strip.locator('[data-strip-readout]')).toContainText(/\d{2}\.\d{2}\.\d{4} → \d{2}\.\d{2}\.\d{4}/);
+  await expect(strip.locator('[data-strip-readout]')).not.toContainText('Hover or focus');
+
+  // The daśā running through each stretch, in the first row and then only where the aspected graha is a daśā lord.
+  const together = panel.locator('li[data-together]');
+  await expect(together.first().locator('[data-dasha]')).toContainText(/Vimś\s+\S+–\S+/);
+  const all = await together.count();
+  await panel.getByRole('button', { name: 'show all' }).click().catch(() => {});
+  await panel.getByRole('button', { name: 'MD lord', exact: true }).click();
+  const lords = await together.count();
+  expect(lords).toBeLessThan(all);
+  await panel.getByRole('button', { name: 'MD or AD lord', exact: true }).click();
+  expect(await together.count()).toBeGreaterThanOrEqual(lords);
+  await panel.getByRole('button', { name: 'any time', exact: true }).click();
+  expect(await together.count()).toBe(all);
+  // The daśā line can be switched off, and another system chosen.
+  await panel.getByRole('button', { name: 'daśā', exact: true }).click();
+  await expect(together.first().locator('[data-dasha]')).toHaveCount(0);
+  await panel.getByRole('button', { name: 'daśā', exact: true }).click();
+  await panel.getByLabel('daśā system').selectOption('yogini');
+  await expect(together.first().locator('[data-dasha]')).toContainText('Yog');
+
+  // The exact dates: a row that holds some opens to them, each a day, a graha, the kind of aspect and a natal point, with a button for the target.
+  await panel.getByLabel('daśā system').selectOption('vimshottari');
+  const withDates = together.filter({ has: page.getByRole('button', { name: /exact dates: [1-9]/ }) }).first();
+  await expect(withDates).toBeVisible();
+  await withDates.getByRole('button', { name: /exact dates/ }).click();
+  const exact = withDates.locator('li[data-exact-hit]');
+  expect(await exact.count()).toBeGreaterThan(0);
+  await expect(exact.first()).toContainText(/\d{2}\.\d{2}\.\d{4}/);
+  await expect(exact.first().getByRole('button', { name: 'set target' })).toBeVisible();
+  await withDates.getByRole('button', { name: /exact dates/ }).click();
+  await expect(withDates.locator('[data-exact]')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
+test('TIMING Paraya aspects works on the transits: the same views from the sky', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Paraya aspects', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'paraya aspects' }));
+  await panel.getByRole('button', { name: 'transits', exact: true }).click();
+
+  // The positions come from the ephemeris: wait for them, then the table at the target moment, the timeline and the stretches are there.
+  await expect(panel.locator('[data-strip]')).toBeVisible({ timeout: 30_000 });
+  for (const point of ['Sun', 'Moon', 'Asc']) await expect(panel.locator(`tr[data-now="${point}"]`)).toBeVisible();
+  await expect(panel.locator('tr[data-now]').filter({ hasText: /(Ju|Sa|Ra|Ke) [1579]/ }).first()).toBeVisible();
+  await expect(panel.locator('li[data-together]').first()).toBeVisible();
+  await expect(panel.locator('li[data-together]').first()).toContainText('←');
+
+  // The faster grahas can be added up to ten years and not for thirty.
+  const grahas = panel.getByRole('group', { name: 'transiting grahas' });
+  await expect(grahas.getByRole('button', { name: 'Ma', exact: true })).toBeEnabled();
+  await panel.getByRole('button', { name: '30 yr', exact: true }).click();
+  await expect(grahas.getByRole('button', { name: 'Ma', exact: true })).toBeDisabled();
+
+  // The search: Saturn through the thirty years visits every sign, so it aspects the Moon from the Moon's sign, its 5th, 7th and 9th.
+  await panel.getByRole('button', { name: 'search', exact: true }).click();
+  await panel.getByLabel('transiting graha', { exact: true }).selectOption('Saturn');
+  await panel.getByLabel('natal point', { exact: true }).selectOption('Moon');
+  const aspects = panel.locator('li[data-aspect]');
+  await expect(aspects.first()).toBeVisible({ timeout: 30_000 });
+  expect(await aspects.count()).toBeGreaterThanOrEqual(4);
+  const relations = new Set<string>();
+  for (const row of await aspects.all()) {
+    const key = (await row.getAttribute('data-aspect')) ?? '';
+    expect(key).toMatch(/^Saturn\|Moon\|[1579]$/);
+    relations.add(key.split('|')[2]);
+  }
+  expect([...relations].sort()).toEqual(['1', '5', '7', '9']);
+  // A stay of Saturn that reaches the Moon's degree opens to the days of it (a short stay at the edge of a sign, where Saturn turns back, may not reach it,
+  // and a retrograde loop can pass it three times).
+  const reaching = aspects.filter({ has: page.getByRole('button', { name: /exact dates: [1-9]/ }) }).first();
+  await reaching.getByRole('button', { name: /exact dates/ }).click();
+  const exact = reaching.locator('li[data-exact-hit]');
+  expect(await exact.count()).toBeGreaterThanOrEqual(1);
+  await expect(exact.first()).toHaveAttribute('data-exact-hit', /^Saturn\|Moon\|[1579]$/);
+
+  // Back to the progressions.
+  await panel.getByRole('button', { name: 'progressions (Paraya)', exact: true }).click();
+  await expect(panel.getByRole('group', { name: 'progressing grahas' })).toBeVisible();
+
+  expect(errors).toEqual([]);
+});
+
 test('a graha that was retrograde at birth begins one sign back, or in its natal sign when that is chosen in Settings', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
