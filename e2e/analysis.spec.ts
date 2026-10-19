@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { calculateChart, selectWorkspace, visible } from './helpers';
+import { calculateChart, selectWorkspace, visible, withChartLayers } from './helpers';
 
 // ANALYSIS: the grahas, the yogas, the sphutas and the other analysis views.
 
@@ -465,6 +465,7 @@ test('a sunrise typed in Settings moves the special lagnas of the graha table to
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
+  await withChartLayers(page, { showSpecialLagnas: true });
   await calculateChart(page);
   await selectWorkspace(page, 'ANALYSIS');
   const table = visible(page, page.locator('table', { has: page.locator('th', { hasText: 'Kāraka' }) }));

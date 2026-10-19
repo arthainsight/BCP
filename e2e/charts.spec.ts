@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { calculateChart, selectWorkspace, visible } from './helpers';
+import { calculateChart, selectWorkspace, visible, withChartLayers } from './helpers';
 
 // Charts: North / South / mixed, the layers on them, and what the ··· menu marks.
 
@@ -135,6 +135,7 @@ test('RSN Major and RSN Minor labels render in the North Indian chart', async ({
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
+  await withChartLayers(page, { showBnnMajorHighlight: true, showBnnMinorHighlight: true });
   await calculateChart(page);
 
   await expect(visible(page, page.locator('svg').locator('text', { hasText: /RSN Maj/ }))).toBeVisible();
@@ -147,9 +148,10 @@ test('the Paraya grahas can be drawn one at a time, or all', async ({ page }) =>
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
+  await withChartLayers(page, { showNadiParaya: true });
   await calculateChart(page);
   const chartText = async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
-  // The Paraya labels carry a degree ("Ju 4.5°"); the natal grahas show none by default.
+  // The Paraya labels carry a degree ("Ju 4.5°"); the the natal grahas show degrees and minutes ("5°12'"), which this does not match.
   const parayas = async () => [...new Set([...(await chartText()).matchAll(/(Ju|Sa|Ra|Ke) \d+\.\d°/g)].map(match => match[1]))].sort();
   const all = await parayas();
   expect(all.length).toBeGreaterThanOrEqual(2);
@@ -297,6 +299,7 @@ test('the houses of the running daśā lords get a border that can be switched o
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
+  await withChartLayers(page, { showDashaLords: true, showDashaHouses: true });
   await calculateChart(page);
   const northChart = () => visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
   await expect(northChart().locator('title', { hasText: 'Mahadasha lord' })).toHaveCount(1);
@@ -317,6 +320,7 @@ test('the dasha lords on the chart name their system, which the ··· menu chan
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
+  await withChartLayers(page, { showDashaLords: true, showDashaHouses: true });
   await calculateChart(page);
   const northChart = () => visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'));
   // The hover text of a lord's house names the daśā system the lords come from.
@@ -403,6 +407,29 @@ test('the mixed chart has the D1 chart in the inner part of every house and any 
   await page.reload();
   await calculateChart(page);
   await expect(visible(page, page.locator('[data-chart="nested"]'))).toHaveAttribute('data-nested-shape', 'north');
+
+  expect(errors).toEqual([]);
+});
+
+test('a chart that is opened for the first time shows the signs, the grahas and their degrees and minutes, and no other layer', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  const text = async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
+  // The grahas with their degrees and minutes ("12°18'" for the Ascendant).
+  await expect.poll(text).toMatch(/\d+°\d+'/);
+  // No nakṣatra abbreviations, special lagnas, RSN labels, Paraya degrees (those have one decimal), dasha marks or dasha-lord borders.
+  await expect.poll(text).not.toMatch(/RSN|[ᴹᴬ]/);
+  await expect.poll(text).not.toMatch(/(Ju|Sa|Ra|Ke) \d+\.\d°/);
+  await expect(visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).locator('title', { hasText: 'Mahadasha lord' })).toHaveCount(0);
+  await expect(visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]'))).not.toContainText(/\bHL\b|\bGL\b/);
+
+  // The ··· menu has them all off.
+  await visible(page, page.getByRole('button', { name: '···' })).click();
+  for (const name of ['nakshatra', 'karaka', 'outer planets', 'special lagnas']) {
+    await expect(visible(page, page.getByRole('button', { name, exact: true }))).toHaveAttribute('aria-pressed', 'false');
+  }
 
   expect(errors).toEqual([]);
 });

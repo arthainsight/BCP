@@ -15,6 +15,18 @@ export async function selectWorkspace(page: Page, label: string) {
     .click();
 }
 
+/**
+ * Switches chart layers on before the page loads: a chart starts with every layer off, and some tests look at one. The choice is only
+ * stored when the browser has none yet, so a reload keeps what the page itself has stored.
+ */
+export async function withChartLayers(page: Page, layers: Record<string, boolean>) {
+  await page.addInitScript((stored) => {
+    try {
+      if (!localStorage.getItem('chartDisplaySettings')) localStorage.setItem('chartDisplaySettings', JSON.stringify(stored));
+    } catch {}
+  }, layers);
+}
+
 export async function calculateChart(page: Page) {
   await page.route('**/api/geocode**', (route) =>
     route.fulfill({
