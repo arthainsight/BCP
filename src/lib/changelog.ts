@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.10',
+    date: '2026-10-19',
+    title: 'Paraya progressions for Mars, Mercury and Venus (beta)',
+    changes: [
+      'Mars, Mercury and Venus can be tried as Paraya grahas, moved by age through the signs like Jupiter, Saturn and Rahu: from their natal sign (one sign back for a graha that was retrograde at birth), forward, and as long in each sign as they take in the sky on average, which is the idea of the four (Jupiter a year, Saturn 2½, Rahu 1½): Mars two months (a round in two years), Mercury and Venus a month (a round in a year). The periods are a first try, not a text of the tradition, and are not settings.',
+      'They are off until chosen. The chart display menu (···) has a second row of paraya chips (beta) with Ma, Me and Ve, drawn in their own colours with their sign degrees like the others; the choice is kept with the others, and all still means the four. In TIMING → Transit Hits a beta button counts them in the Paraya hits (the same degree in the 1st, 5th and 9th sign from each natal point and the ascendant); they come round so often that a year holds dozens of hits.',
+      'Fixed: the list of Paraya periods of a graha could in principle repeat the same period for ever when a stay was a fraction of a year that does not add up exactly in floating point (it came up with Mercury and Venus); the periods are now laid out round by round.',
+      'Tests: the durations and the signs and degrees of the three at hand-worked ages (direct and retrograde, a round later), the ages at which a position is reached, the hits of Mars to the Sun (and every hit of the three checked against the Paraya calculation, direct and retrograde), the houses of the three, the stored choice of grahas, and browser tests of the chips and of the beta button of the hits.',
+      'Updated the application version to v3.10.',
+    ],
+  },
+  {
     version: 'v3.09',
     date: '2026-10-19',
     title: 'Sensitive degrees in the tables, charts and vargas, a Yogi layer, and combustion',

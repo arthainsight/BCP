@@ -55,7 +55,7 @@ export function useChartDerived(
   const parayaSaturn = calculationSettings.parayaSaturn ?? 'alternating';
   const parayaRahu = calculationSettings.parayaRahu ?? 'alternating';
   const effectiveNadiParayaHouses = useMemo(
-    () => calculateParayaHouses(chartData, bnnAge, { saturn: parayaSaturn, rahu: parayaRahu }),
+    () => calculateParayaHouses(chartData, bnnAge, { saturn: parayaSaturn, rahu: parayaRahu }, true),
     [chartData, bnnAge, parayaSaturn, parayaRahu],
   );
 

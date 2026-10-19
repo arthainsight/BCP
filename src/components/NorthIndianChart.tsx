@@ -28,12 +28,12 @@ const BNN_MAJOR_DARK  = '#f97316';
 const BNN_MINOR_LIGHT = '#7c3aed';
 const BNN_MINOR_DARK  = '#a78bfa';
 const PARAYA_COLORS_LIGHT: Record<ParayaBody, string> = {
-  Jupiter: '#92400e', Saturn: '#1d4ed8', Rahu: '#6d28d9', Ketu: '#c2410c',
+  Jupiter: '#92400e', Saturn: '#1d4ed8', Rahu: '#6d28d9', Ketu: '#c2410c', Mars: '#be123c', Mercury: '#0f766e', Venus: '#4d7c0f',
 };
 const PARAYA_COLORS_DARK: Record<ParayaBody, string> = {
-  Jupiter: '#fbbf24', Saturn: '#60a5fa', Rahu: '#c084fc', Ketu: '#fb923c',
+  Jupiter: '#fbbf24', Saturn: '#60a5fa', Rahu: '#c084fc', Ketu: '#fb923c', Mars: '#fb7185', Mercury: '#2dd4bf', Venus: '#a3e635',
 };
-const PARAYA_CODES: Record<ParayaBody, string> = { Jupiter: 'Ju', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke' };
+const PARAYA_CODES: Record<ParayaBody, string> = { Jupiter: 'Ju', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Mars: 'Ma', Mercury: 'Me', Venus: 'Ve' };
 
 interface Props {
   activeYearHouse: number;

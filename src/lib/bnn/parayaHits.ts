@@ -1,9 +1,9 @@
 import type { ChartData } from '@/types';
 import { RELATION_OFFSET, type HitRelation } from '@/lib/transitHits';
-import { findParayaAgesForPosition, type ParayaBody, type ParayaOptions } from './nadiParaya';
+import { findParayaAgesForPosition, PARAYA_BETA_BODIES, type ParayaBetaNatal, type ParayaBody, type ParayaOptions } from './nadiParaya';
 import { JULIAN_YEAR_MS } from '../time';
 
-// When the Nāḍī Paraya grahas (Jupiter, Saturn, Rahu and Ketu, moved by age
+// When the Nāḍī Paraya grahas (Jupiter, Saturn, Rahu and Ketu, and Mars, Mercury and Venus as beta, moved by age
 // through the signs) reach a natal graha: the same degree in its own sign, or
 // in its 5th or 9th sign. The Paraya positions follow the age, not the sky, so
 // these dates are worked out from the age rather than from the ephemeris.
@@ -33,8 +33,10 @@ export function findParayaHits(params: {
   toTime: number;
   relations: readonly HitRelation[];
   options?: ParayaOptions;
+  /** The Paraya grahas to count: the four to begin with; Mars, Mercury and Venus (beta) when they are given. */
+  bodies?: readonly ParayaBody[];
 }): ParayaHit[] {
-  const { chart, birthTime, fromTime, toTime, relations, options } = params;
+  const { chart, birthTime, fromTime, toTime, relations, options, bodies = PARAYA_BODIES } = params;
   const jupiter = chart.planets.find(p => p.name === 'Jupiter');
   const saturn = chart.planets.find(p => p.name === 'Saturn');
   const rahu = chart.planets.find(p => p.name === 'Rahu');
@@ -49,8 +51,14 @@ export function findParayaHits(params: {
     { name: 'Asc', signIndex: chart.ascendant.sign - 1, degree: chart.ascendant.degree },
   ];
 
+  const natalBeta: ParayaBetaNatal = {};
+  for (const body of PARAYA_BETA_BODIES) {
+    const planet = chart.planets.find(p => p.name === body);
+    if (planet) natalBeta[body] = { signIndex: planet.sign - 1, retrograde: Boolean(planet.isRetrograde) };
+  }
+
   const hits: ParayaHit[] = [];
-  for (const body of PARAYA_BODIES) {
+  for (const body of bodies) {
     for (const point of natal) {
       for (const relation of relations) {
         const signsOn = RELATION_OFFSET[relation] / 30;
@@ -63,6 +71,7 @@ export function findParayaHits(params: {
           natalRahuSignIndex: rahu.sign - 1,
           jupiterRetrograde: Boolean(jupiter.isRetrograde),
           saturnRetrograde: Boolean(saturn.isRetrograde),
+          natalBeta,
           maxAge: Math.ceil(toAge) + 1,
           options,
         });

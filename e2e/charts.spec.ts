@@ -489,3 +489,45 @@ test('the Yogi, Sahayogi and Avayogi are marked on the grahas of the charts when
 
   expect(errors).toEqual([]);
 });
+
+test('Mars, Mercury and Venus can be tried as Paraya grahas (beta), and are off until they are chosen', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await withChartLayers(page, { showNadiParaya: true });
+  await calculateChart(page);
+  const chartText = async () => (await visible(page, page.locator('svg[aria-label="North Indian Jyotish chart"]')).textContent()) ?? '';
+  const betaLabels = async () => [...new Set([...(await chartText()).matchAll(/(Ma|Me|Ve) \d+\.\d°/g)].map(match => match[1]))].sort();
+  const open = async () => { await visible(page, page.getByRole('button', { name: '···' })).click(); };
+  const close = async () => { await page.keyboard.press('Escape'); await page.mouse.click(2, 2); };
+  const beta = () => visible(page, page.getByRole('group', { name: 'paraya grahas beta', exact: true }));
+
+  // The four are drawn and the three are not.
+  await expect.poll(betaLabels).toEqual([]);
+
+  // A chip of the beta row draws that graha, in the sign and degree its age puts it, with the labels of the others as they were.
+  await open();
+  await expect(beta().getByRole('button', { name: 'Ma', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await beta().getByRole('button', { name: 'Ma', exact: true }).click();
+  await close();
+  await expect.poll(betaLabels).toEqual(['Ma']);
+  await open();
+  await beta().getByRole('button', { name: 'Ve', exact: true }).click();
+  await beta().getByRole('button', { name: 'Me', exact: true }).click();
+  await close();
+  await expect.poll(betaLabels).toEqual(['Ma', 'Me', 'Ve']);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}').parayaBodies)).toEqual(['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Mars', 'Mercury', 'Venus']);
+
+  // "all" is the four, and none clears the lot.
+  await open();
+  await visible(page, page.getByRole('button', { name: 'all', exact: true }).first()).click();
+  await close();
+  await expect.poll(betaLabels).toEqual([]);
+  await open();
+  await beta().getByRole('button', { name: 'Ma', exact: true }).click();
+  await visible(page, page.getByRole('button', { name: 'none', exact: true }).first()).click();
+  await close();
+  await expect.poll(async () => (await chartText()).match(/(Ju|Sa|Ra|Ke|Ma|Me|Ve) \d+\.\d°/)).toBeNull();
+
+  expect(errors).toEqual([]);
+});
