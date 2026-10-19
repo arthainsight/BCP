@@ -7,6 +7,7 @@ import GrahasPanel from './GrahasPanel';
 import VargaGridPanel from './VargaGridPanel';
 import VargaMatrix from './VargaMatrix';
 import BalaPanel from './BalaPanel';
+import SensitiveDegreesPanel from './SensitiveDegreesPanel';
 import NadiAmsaPanel from './NadiAmsaPanel';
 import AshtakavargaPanel from './AshtakavargaPanel';
 import DrishtiPanel from './DrishtiPanel';
@@ -21,12 +22,13 @@ import BhavaChalitPanel from './BhavaChalitPanel';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 
-export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota';
+export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'degrees' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota';
 
 const VIEWS: { key: AnalysisView; label: string }[] = [
   { key: 'grahas', label: 'Grahas' },
   { key: 'varga', label: 'Varga' },
   { key: 'bala', label: 'Bala' },
+  { key: 'degrees', label: 'Sensitive Degrees' },
   { key: 'nadi', label: 'Nāḍī' },
   { key: 'ashtakavarga', label: 'Aṣṭakavarga' },
   { key: 'gochara', label: 'Gochara' },
@@ -104,7 +106,7 @@ export default function AnalysisPanel({
           <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
             {VIEWS.map((item) => (
               <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-                {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' || item.key === 'gochara' ? t(item.label) : item.label}
+                {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' || item.key === 'gochara' || item.key === 'degrees' ? t(item.label) : item.label}
               </button>
             ))}
           </div>
@@ -156,6 +158,8 @@ export default function AnalysisPanel({
       )}
 
       {view === 'bala' && <BalaPanel chart={chart} />}
+
+      {view === 'degrees' && <SensitiveDegreesPanel chart={chart} nakshatraAdjust={nakshatraAdjust} />}
 
       {view === 'nadi' && (
         <div className="min-w-0 overflow-x-auto"><NadiAmsaPanel chart={chart} /></div>

@@ -24,3 +24,11 @@ export const NAKSHATRA_ABBR = [
 export function nakshatraAbbr(longitude: number): string {
   return NAKSHATRA_ABBR[Math.min(Math.floor(longitude / NAKSHATRA_SIZE), 26)] ?? '';
 }
+
+/** The Vimshottari lord of each nakṣatra, from Aśvinī: the nine lords in turn, three times round. */
+export const NAKSHATRA_LORDS = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'] as const;
+
+/** The Vimshottari lord of the nakṣatra a longitude (0-360) falls in. */
+export function nakshatraLordOf(longitude: number): string {
+  return NAKSHATRA_LORDS[Math.min(Math.floor(longitude / NAKSHATRA_SIZE), 26) % 9];
+}

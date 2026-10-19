@@ -401,6 +401,23 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     },
   },
   {
+    id: 'sensitive-degrees',
+    section: 'analysis',
+    q: { en: 'What are Sandhi, Gandanta, Mṛtyu Bhāga and the Puṣkara degrees, and where are the Yogi, Sahayogi and Avayogi?', fi: 'Mitä ovat Sandhi, Gandanta, Mṛtyu Bhāga ja Puṣkara-asteet, ja missä Yogi, Sahayogi ja Avayogi ovat?' },
+    a: {
+      en: [
+        'ANALYSIS → Sensitive Degrees lists the Lagna, the grahas and Māndi with the degrees that weaken or strengthen them, as Jagannatha Hora counts them. Weakening (⚠): Sandhi, a point within 1° of the start or the end of a sign; Gandanta, the last 3°20\' of Cancer, Scorpio and Pisces and the first 3°20\' of Leo, Sagittarius and Aries (the last pada of Ashlesha, Jyeshtha and Revati and the first of Magha, Mula and Ashwini, counted in the nakshatra zodiac of Settings), with the part within 0°26\'40" (two ghatis) of the junction marked as its core; and Mṛtyu Bhāga, the degree of death of the point in its sign (a table for the Sun to Ketu, Māndi and the Lagna, with an orb of ⅓° for the Sun, ⅔° for the Moon, Mercury and the Lagna and ¼° for the others). Strengthening (✦): the Puṣkara Navāṁśa, two navamsas of 3°20\' in each sign (from 20° in fire signs, 6°40\' in earth signs, 16°40\' in air signs and 0° in water signs, and 6°40\' after that), and the Puṣkara Bhāga, one degree in each sign (the 21st, 14th, 24th and 7th in turn).',
+        'The summary above the table names the points that are on a degree, and the folded table under it has the degrees of every sign. Rahu and Ketu are tested like the other grahas, and the Lagna for all five; JHora leaves the Lagna out of the Puṣkara degrees, which the Lagna also has in the classical texts.',
+        'ANALYSIS → Special Sphutas has the Yogi, the Sahayogi and the Avayogi under the sphuṭas: the Yogi point is the Sun + the Moon + 93°20\', the Yogi is the lord of its nakshatra, the Sahayogi the lord of its sign and the Avayogi the lord of the nakshatra of the point 186°40\' after it; each is shown with the sign and house it stands in in the chart.',
+      ],
+      fi: [
+        'ANALYYSI → Sensitive Degrees (Herkät asteet) listaa Lagnan, grahat ja Māndin sekä niitä heikentävät ja vahvistavat asteet Jagannatha Horan tavoin laskettuna. Heikentävät (⚠): Sandhi, piste enintään 1° päässä merkin alusta tai lopusta; Gandanta, Syöpän, Skorpionin ja Kalojen viimeiset 3°20\' sekä Leijonan, Jousimiehen ja Oinaan ensimmäiset 3°20\' (Ashleshan, Jyeshthan ja Revatin viimeinen pada sekä Maghan, Mulan ja Ashwinin ensimmäinen, laskettuna Asetusten nakṣatra-zodiakissa), ja liitoskohdan 0°26\'40":n (kahden ghaṭīn) sisällä oleva osa merkitään sen ytimeksi; sekä Mṛtyu Bhāga, pisteen kuolinaste omassa merkissään (taulukko Auringosta Ketuun, Māndille ja Lagnalle, orbi Auringolle ⅓°, Kuulle, Merkuriukselle ja Lagnalle ⅔° ja muille ¼°). Vahvistavat (✦): Puṣkara Navāṁśa, kaksi 3°20\' navāṁśaa jokaisessa merkissä (tulimerkeissä 20°:sta, maamerkeissä 6°40\':sta, ilmamerkeissä 16°40\':sta ja vesimerkeissä 0°:sta alkaen sekä 6°40\' sen jälkeen), ja Puṣkara Bhāga, yksi aste jokaisessa merkissä (vuorotellen 21., 14., 24. ja 7.).',
+        'Taulukon yläpuolinen yhteenveto nimeää pisteet, jotka ovat jollakin asteella, ja sen alla oleva suljettu taulukko antaa jokaisen merkin asteet. Rahu ja Ketu tutkitaan kuten muut grahat, ja Lagna kaikilla viidellä; JHora jättää Lagnan pois Puṣkara-asteista, jotka klassisissa teksteissä koskevat myös Lagnaa.',
+        'ANALYYSI → Special Sphutas näyttää Yogin, Sahayogin ja Avayogin sphuṭien alla: Yogi-piste on Aurinko + Kuu + 93°20\', Yogi on sen nakṣatran herra, Sahayogi sen merkin herra ja Avayogi sitä 186°40\' myöhemmän pisteen nakṣatran herra; kukin näytetään merkissä ja talossa, jossa se kartassa on.',
+      ],
+    },
+  },
+  {
     id: 'nabhasa-yogas',
     section: 'analysis',
     q: { en: 'Which yogas does the yoga table detect, and what are the Nabhasa yogas?', fi: 'Mitkä yogat yogataulukko tunnistaa, ja mitä ovat Nabhasa-yogat?' },
