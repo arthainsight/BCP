@@ -1,15 +1,16 @@
 'use client';
 
 import type { FeatureResult } from '@/lib/research/eventStudy';
-import { featureId, type FeatureFamily } from '@/lib/research/progressionFeatures';
-import type { ParayaBody } from '@/lib/bnn/nadiParaya';
+import { featureId, kindId, targetKindOf, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
 import { PROGRESSION_NATAL } from '@/lib/bnn/parayaProgression';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 
 type Props = {
+  source: FeatureSource;
   family: FeatureFamily;
-  bodies: readonly ParayaBody[];
+  /** The grahas in the rows: the progressing or transiting ones, or the daśā lords. */
+  bodies: readonly string[];
   results: ReadonlyMap<string, FeatureResult>;
   /** The events that were studied. */
   total: number;
@@ -33,14 +34,15 @@ export const formatP = (p: number) => (p < 0.001 ? '<0.001' : p.toFixed(3));
  * had it, shaded by how many times more often than by chance (a single hue, none at or under the chance level) and in bold when it holds up after the
  * correction for looking at so many. Click a cell to list the events.
  */
-export default function ResearchMatrix({ family, bodies, results, total, focus, onFocus }: Props) {
+export default function ResearchMatrix({ source, family, bodies, results, total, focus, onFocus }: Props) {
   const t = useT();
   const { code } = useGrahaNames();
-  const byHouse = family === 'house' || family === 'aspectHouse';
-  const columns: readonly string[] = byHouse ? HOUSES : PROGRESSION_NATAL;
-  const header = (column: string) => (byHouse ? `H${column}` : code(column));
+  const targetKind = targetKindOf(family);
+  // A house, a natal point, or (the daśā lord as a graha) the one column of the lord.
+  const columns: readonly string[] = targetKind === 'house' ? HOUSES : targetKind === 'natal' ? PROGRESSION_NATAL : ['*'];
+  const header = (column: string) => (targetKind === 'house' ? `H${column}` : targetKind === 'natal' ? code(column) : family.startsWith('md') ? 'MD' : 'AD');
   return (
-    <div className="viz overflow-x-auto" data-research-matrix={family}>
+    <div className="viz overflow-x-auto" data-research-matrix={family} data-research-kind={kindId(source, family)}>
       <table className="w-full min-w-[420px] border-collapse text-[10px] font-mono">
         <thead>
           <tr>
@@ -53,7 +55,7 @@ export default function ResearchMatrix({ family, bodies, results, total, focus, 
             <tr key={body}>
               <th className="p-1 text-left font-bold text-violet-600 dark:text-violet-400" title={body}>{code(body)}</th>
               {columns.map(column => {
-                const id = featureId(family, body, column);
+                const id = featureId(source, family, body, column);
                 const result = results.get(id);
                 const strong = result !== undefined && result.q <= Q_MARK;
                 const title = result

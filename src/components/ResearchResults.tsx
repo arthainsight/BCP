@@ -1,20 +1,21 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { leaveOneChartOut, testFeature, type FeatureResult, type StudyResult } from '@/lib/research/eventStudy';
-import { parseFeatureId, type FeatureFamily } from '@/lib/research/progressionFeatures';
+import { leaveOneChartOut, testFeature, type FeatureKind, type FeatureResult, type StudyResult } from '@/lib/research/eventStudy';
+import { kindId, parseFeatureId } from '@/lib/research/features';
 import { dayText, eventsCsv, resultsCsv, type EventRow } from '@/lib/research/researchCsv';
 import type { ParayaBody } from '@/lib/bnn/nadiParaya';
 import { saveFile } from '@/lib/download';
 import { fill, useT } from '@/lib/i18n';
 import { BODY_CELL, HEAD_CELL, ROW } from './balaShared';
 import ResearchMatrix, { Q_MARK, formatP } from './ResearchMatrix';
-import { FAMILY_LABELS, FeatureLabel, chip, percent } from './researchUi';
+import { FAMILY_LABELS, FeatureLabel, SOURCE_LABELS, chip, percent } from './researchUi';
+import { PROGRESSION_NATAL } from '@/lib/bnn/parayaProgression';
 
 /** What the comparison with chance leaves for the view. */
 export interface ChanceOutcome {
   result: StudyResult;
-  families: FeatureFamily[];
+  kinds: FeatureKind[];
   bodies: ParayaBody[];
   windowDays: number;
   /** A feature chosen before running, as its id, or null. */
@@ -25,6 +26,9 @@ export interface ChanceOutcome {
 }
 
 const FIRST_ROWS = 12;
+/** The nine grahas, the daśā lords; and the slow ones whose transits are looked at. */
+const NINE = PROGRESSION_NATAL.filter(name => name !== 'Asc');
+const SLOW = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'] as const;
 
 /** How a feature fares with each chart left out in turn: a finding that rests on one chart is weaker without it. */
 function LeaveOneOut({ outcome, id }: { outcome: ChanceOutcome; id: string }) {
@@ -51,13 +55,14 @@ function LeaveOneOut({ outcome, id }: { outcome: ChanceOutcome; id: string }) {
 /** The comparison with chance: the summary, a feature chosen beforehand, the matrix, the table of all features and the events behind each. */
 export default function ResearchResults({ outcome }: { outcome: ChanceOutcome }) {
   const t = useT();
-  const { result, families, bodies, windowDays, hypothesis, info, failed } = outcome;
-  const [shown, setShown] = useState<FeatureFamily | null>(families[0] ?? null);
+  const { result, kinds, bodies, windowDays, hypothesis, info, failed } = outcome;
+  const [shown, setShown] = useState<string | null>(kinds[0] ? kindId(kinds[0].source, kinds[0].family) : null);
   const [focus, setFocus] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
   const byId = useMemo(() => new Map(result.results.map(item => [item.id, item])), [result]);
   const rows = showAll ? result.results : result.results.slice(0, FIRST_ROWS);
   const focused: FeatureResult | undefined = focus ? byId.get(focus) : undefined;
+  const shownKind = kinds.find(kind => kindId(kind.source, kind.family) === shown);
   const chosen = useMemo(() => (hypothesis ? testFeature(result.data, hypothesis) : null), [result, hypothesis]);
 
   const exportEvents = () => {
@@ -112,9 +117,12 @@ export default function ResearchResults({ outcome }: { outcome: ChanceOutcome })
           )}
 
           <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('shown in the matrix')}>
-            {families.map(family => <button key={family} type="button" aria-pressed={shown === family} onClick={() => setShown(family)} className={chip(shown === family)}>{t(FAMILY_LABELS[family])}</button>)}
+            {kinds.map(kind => {
+              const id = kindId(kind.source, kind.family);
+              return <button key={id} type="button" aria-pressed={shown === id} onClick={() => setShown(id)} className={chip(shown === id)}>{kinds.some(other => other.source !== kinds[0].source) ? `${t(SOURCE_LABELS[kind.source])} · ` : ''}{t(FAMILY_LABELS[kind.family])}</button>;
+            })}
           </div>
-          {shown && <ResearchMatrix family={shown} bodies={bodies} results={byId} total={result.events} focus={focus} onFocus={setFocus} />}
+          {shownKind && <ResearchMatrix source={shownKind.source} family={shownKind.family} bodies={shownKind.source === 'dasha' ? NINE : shownKind.source === 'transit' ? bodies.filter(body => (SLOW as readonly string[]).includes(body)) : bodies} results={byId} total={result.events} focus={focus} onFocus={setFocus} />}
           <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
             {t('Each cell is the number of events with that feature. Shade: how many times more often than by chance (none at or under the chance level, darkest at three times or more). Bold and underlined: still more than chance after the correction for the number of features looked at (q at most 0.1). Click a cell to list its events.')}
           </p>
