@@ -5,7 +5,6 @@ import type { CalculationSettings, ChartData, ChartDisplaySettings, DashaSetting
 import DashaWorkspace from './DashaWorkspace';
 import TransitHitsPanel from './TransitHitsPanel';
 import SignChangesPanel from './SignChangesPanel';
-import ParayaHitsPanel from './ParayaHitsPanel';
 import ParayaProgressionPanel from './ParayaProgressionPanel';
 import TimingSummary from './TimingSummary';
 import TithiPravesaPanel from './TithiPravesaPanel';
@@ -138,23 +137,12 @@ export default function TimingPanel({
       )}
 
       {view === 'transits' && (
-        <div className="space-y-5">
-          <TransitHitsPanel
-            chart={chart}
-            targetDate={targetDate ?? ''}
-            calculationSettings={calculationSettings}
-            onSetTransit={onSetTransitDatetime}
-          />
-          <div className="border-t border-zinc-200 pt-4 dark:border-zinc-700">
-            <ParayaHitsPanel
-              chart={chart}
-              birthDatetime={birthDatetime}
-              targetDate={targetDate ?? ''}
-              calculationSettings={calculationSettings}
-              onSetTarget={onSetTransitDatetime}
-            />
-          </div>
-        </div>
+        <TransitHitsPanel
+          chart={chart}
+          targetDate={targetDate ?? ''}
+          calculationSettings={calculationSettings}
+          onSetTransit={onSetTransitDatetime}
+        />
       )}
 
       {view === 'paraya' && (

@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.13',
+    date: '2026-10-19',
+    title: 'The old Paraya hits list is gone from Transit Hits; how a retrograde Paraya graha begins',
+    changes: [
+      'The "paraya hits" list under TIMING → Transit Hits is removed: the Paraya tab has all of it (the 1st, 5th, 7th and 9th sign, all seven progressing grahas, the months, the overview). Transit Hits is now the transits only. The Paraya options of Settings (Saturn and Rahu stays) apply to the Paraya tab and the chart.',
+      'The FAQ now says where a Paraya graha begins and what retrograde does: Jupiter, Saturn, Rahu and Ketu begin at the start of the natal sign (the beta grahas at their natal degree), and a graha that was retrograde at birth begins one sign back (Rahu and Ketu, which go backwards, have no such shift).',
+      'Updated the application version to v3.13.',
+    ],
+  },
+  {
     version: 'v3.12',
     date: '2026-10-19',
     title: 'Mars, Mercury and Venus begin at their natal degrees',
