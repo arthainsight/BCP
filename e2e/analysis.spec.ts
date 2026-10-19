@@ -846,7 +846,7 @@ test('the graha table marks the points on sensitive degrees and the combust ones
 
 // Research: the progressions at events across saved charts.
 
-const researchEvent = (id: string, name: string, date: string, category: string, tags: string[] = []) => ({ id, name, date, category, varga: 'D1', notes: '', tags, significance: 3 });
+const researchEvent = (id: string, name: string, date: string, category: string, tags: string[] = [], notes = '') => ({ id, name, date, category, varga: 'D1', notes, tags, significance: 3 });
 const researchChart = (id: string, name: string, birthDatetime: string, client = '') => ({
   id, name, client, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-01T00:00:00.000Z',
   chartData: { birthDatetime, city: 'New Delhi', manualLat: '28.6139', manualLng: '77.209', ianaTimezone: 'Asia/Kolkata', tzOverride: '', targetDate: '2026-10-19', showCoords: true },
@@ -1175,6 +1175,72 @@ test('ANALYSIS Research reads the transits over a window, with exact hits', asyn
   // Over half a year either side Jupiter, Saturn, Rahu and Ketu each make exact hits to some natal point, and a house or two.
   expect(ids.some(id => id.startsWith('transit|exact|'))).toBe(true);
   expect(ids.some(id => id.startsWith('transit|house|'))).toBe(true);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research picks events by words in the name, the tags or the notes, and lists the ones chosen', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // Events that came in with no category (all "other"), as pasted lists do: the words are the way to pick them out.
+  const birth = '15.08.1947 09.15.00';
+  const other = '03.03.1975 06.30.00';
+  await page.addInitScript(({ charts, lists }) => {
+    try {
+      localStorage.setItem('bcp_saved_charts', JSON.stringify(charts));
+      for (const [b, events] of Object.entries(lists)) localStorage.setItem(`bhrigu:dasha-events:${b}`, JSON.stringify(events));
+    } catch {}
+  }, {
+    charts: [researchChart('c1', 'Alpha', birth), researchChart('c2', 'Beta', other)],
+    lists: {
+      [birth]: [
+        researchEvent('a1', 'Muutto Ouluun', '1970-05-01', 'other'), researchEvent('a2', 'Tapaturma: jalka murtui', '1982-09-12', 'other'),
+        researchEvent('a3', 'Uusi työ', '1991-02-03', 'other'), researchEvent('a4', 'Kolari', '2003-07-20', 'other', ['tapaturma']),
+      ],
+      [other]: [
+        researchEvent('b1', 'Muutin Helsinkiin', '1995-06-01', 'other'), researchEvent('b2', 'Putosin pyörältä', '2001-03-14', 'other', [], 'tapaturma, käsi'),
+        researchEvent('b3', 'Muutto ulkomaille', '2010-10-10', 'other'), researchEvent('b4', 'Häät', '2016-04-30', 'other'),
+      ],
+    },
+  });
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await expect(panel.locator('[data-research-selection]')).toContainText('8 events · 2 charts');
+
+  // The words pick the moves: the name has muutto or muutin, in any case, whatever the category.
+  const words = panel.getByRole('searchbox');
+  await words.fill('Muutto, muutin');
+  await expect(panel.locator('[data-research-selection]')).toContainText('3 events · 2 charts');
+  await panel.locator('[data-research-chosen="a"] summary').click();
+  await expect(panel.locator('[data-research-chosen="a"] summary')).toContainText(': 3');
+  const names = await panel.locator('[data-research-chosen="a"] li[data-research-chosen-event]').allInnerTexts();
+  expect(names.join('|')).toMatch(/Muutto Ouluun/);
+  expect(names.join('|')).toMatch(/Muutin Helsinkiin/);
+  expect(names.join('|')).toMatch(/Muutto ulkomaille/);
+  expect(names.join('|')).not.toMatch(/Uusi työ|Kolari/);
+  // They are listed in the order of the days, each with its chart.
+  expect(names[0]).toMatch(/01\.05\.1970/);
+  expect(names[0]).toMatch(/Alpha/);
+
+  // The accidents: a word in a name, a tag or the notes.
+  await words.fill('tapaturma');
+  await expect(panel.locator('[data-research-selection]')).toContainText('3 events · 2 charts');
+  // Nothing fits: the comparison cannot be run.
+  await words.fill('lottovoitto');
+  await expect(panel.locator('[data-research-selection]')).toContainText('0 events · 0 charts');
+  await expect(panel.getByRole('button', { name: 'Run the comparison' })).toBeDisabled();
+  await expect(panel.getByText('None of the saved events fits.')).toBeVisible();
+
+  // Moves against accidents, side by side: the first group by its words, the second by its own.
+  await panel.getByRole('button', { name: 'two kinds of event', exact: true }).click();
+  await panel.getByRole('group', { name: 'first group' }).getByRole('searchbox').fill('muutto, muutin');
+  await panel.getByRole('group', { name: 'second group' }).getByRole('searchbox').fill('tapaturma');
+  await expect(panel.locator('[data-research-selection]')).toContainText('3 + 3 events · 2 charts');
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-groups] [data-research-summary]')).toContainText(/muutto · muutin 3 · tapaturma 3/, { timeout: 30_000 });
 
   expect(errors).toEqual([]);
 });

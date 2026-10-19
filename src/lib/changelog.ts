@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.20',
+    date: '2026-10-19',
+    title: 'Research: pick the events by words, and see the ones chosen',
+    changes: [
+      'A words box for each set of events in Research: the name, the tags or the notes of an event must contain one of the words (separated by commas, semicolons or line breaks, in any case, a word inside a longer one counts). It combines with the category and the tag, so the moves or the accidents can be picked out of events that came in with no category, as a pasted list does. The counts of the category buttons and the list of tags follow the words, and the heading of each set in the comparison of two kinds of event is made of its category, tag and words.',
+      '"The events chosen": under the words, a list of what the comparison will take (the day, the name, the chart and the category, in the order of the days), so that the choice can be checked before the run; "None of the saved events fits" when nothing does, and the run is not offered.',
+      'Tests: the words of a search, the match in a name, a tag or the notes, in any case, one of several words, no words, the three conditions together, the set in words; and a browser test that picks moves and accidents out of events with no category, lists the ones chosen in the order of the days with their charts, finds nothing for a word that is nowhere, and compares moves against accidents.',
+      'Updated the application version to v3.20.',
+    ],
+  },
+  {
     version: 'v3.19',
     date: '2026-10-19',
     title: 'Research: transits and daśā as features, beside the progressions',

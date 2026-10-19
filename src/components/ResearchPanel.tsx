@@ -3,10 +3,11 @@
 import { useMemo, useRef, useState } from 'react';
 import { DEFAULT_CALCULATION_SETTINGS, type CalculationSettings, type ChartData } from '@/types';
 import { loadSavedCharts } from '@/lib/savedCharts';
-import { DASHA_EVENT_CATEGORIES, DASHA_EVENT_CATEGORY_LABELS, type DashaEventCategory, type StoredDashaEvent } from '@/lib/dashaEventStore';
+import { DASHA_EVENT_CATEGORIES, DASHA_EVENT_CATEGORY_LABELS, formatEventDate, type DashaEventCategory, type StoredDashaEvent } from '@/lib/dashaEventStore';
 import { birthTimeOf, chartRequestUrl, readStoredEvents, researchSources, studyEventsOf } from '@/lib/research/studyData';
 import { eventFeatures, runStudy, type FeatureKind, type StudyChart, type StudyOptions } from '@/lib/research/eventStudy';
 import { compareGroups } from '@/lib/research/groupStudy';
+import { eventMatches, filterWords, type EventFilter } from '@/lib/research/eventFilter';
 import { FEATURE_SOURCES, familiesOf, featureId, kindId, targetKindOf, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
 import { GRAHA_DASHA_SYSTEMS, type GrahaDashaSystem } from '@/lib/dashaEvents';
 import { transitSeriesUrl } from '@/lib/apiParams';
@@ -27,7 +28,7 @@ type Props = {
 };
 
 type Mode = 'chance' | 'groups';
-type Filter = { category: 'all' | DashaEventCategory; tag: string };
+type Filter = EventFilter & { category: 'all' | DashaEventCategory };
 type Hypothesis = { on: boolean; source: FeatureSource; family: FeatureFamily; body: string; target: string };
 
 type Run =
@@ -44,8 +45,10 @@ const SLOW = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
 const SKY_MARGIN_DAYS = 200;
 const SKY_STEP_DAYS = 3;
 const DEFAULT_KINDS = ['paraya|house', 'paraya|aspectHouse', 'paraya|aspectNatal'];
-const matches = (event: StoredDashaEvent, filter: Filter) => (filter.category === 'all' || event.category === filter.category) && (!filter.tag || event.tags.includes(filter.tag));
-const filterLabel = (filter: Filter, t: (text: string) => string) => [filter.category === 'all' ? t('all') : t(DASHA_EVENT_CATEGORY_LABELS[filter.category]), filter.tag].filter(Boolean).join(' · ');
+const matches = (event: StoredDashaEvent, filter: Filter) => eventMatches(event, filter);
+/** A set of events in words, for the heading of its column: the category, the tag and the words asked for, or "all". */
+const filterLabel = (filter: Filter, t: (text: string) => string) => [filter.category === 'all' ? '' : t(DASHA_EVENT_CATEGORY_LABELS[filter.category]), ...filterWords({ ...filter, category: 'all' })].filter(Boolean).join(' · ') || t('all');
+const NO_FILTER: Filter = { category: 'all', tag: '', text: '' };
 
 /**
  * Research: do the progressions (Paraya) have something in common at the time of the same kind of event, across several saved charts? The events are
@@ -59,8 +62,8 @@ export default function ResearchPanel({ calculationSettings }: Props) {
   const sources = useMemo(() => researchSources(loadSavedCharts(), readStoredEvents), []);
   const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set(sources.filter(source => source.events.length > 0).map(source => source.id)));
   const [mode, setMode] = useState<Mode>('chance');
-  const [filter, setFilter] = useState<Filter>({ category: 'all', tag: '' });
-  const [filterB, setFilterB] = useState<Filter>({ category: 'all', tag: '' });
+  const [filter, setFilter] = useState<Filter>(NO_FILTER);
+  const [filterB, setFilterB] = useState<Filter>(NO_FILTER);
   const [windowDays, setWindowDays] = useState<number>(0);
   const [kinds, setKinds] = useState<ReadonlySet<string>>(() => new Set(DEFAULT_KINDS));
   const [dashaSystem, setDashaSystem] = useState<GrahaDashaSystem>('vimshottari');
@@ -84,8 +87,10 @@ export default function ResearchPanel({ calculationSettings }: Props) {
   }
   const includedEvents = counts.a + counts.b;
   const ready = grouped ? counts.a > 0 && counts.b > 0 : counts.a > 0;
-  const categoryCountsFor = (current: Filter) => DASHA_EVENT_CATEGORIES.map(key => ({ key, count: chosen.reduce((sum, source) => sum + source.events.filter(event => event.category === key && (!current.tag || event.tags.includes(current.tag))).length, 0) }));
-  const tagsFor = (current: Filter) => [...new Set(chosen.flatMap(source => source.events.filter(event => current.category === 'all' || event.category === current.category).flatMap(event => event.tags)))].sort((a, b) => a.localeCompare(b));
+  const categoryCountsFor = (current: Filter) => DASHA_EVENT_CATEGORIES.map(key => ({ key, count: chosen.reduce((sum, source) => sum + source.events.filter(event => event.category === key && eventMatches(event, { ...current, category: 'all' })).length, 0) }));
+  const tagsFor = (current: Filter) => [...new Set(chosen.flatMap(source => source.events.filter(event => eventMatches(event, { ...current, tag: '' })).flatMap(event => event.tags)))].sort((a, b) => a.localeCompare(b));
+  /** The events of a group, as the preview lists them: the chart, the day and the name, in the order of the days. */
+  const chosenOf = (which: 'a' | 'b') => chosen.flatMap(source => source.events.filter(event => groupOf(event) === which).map(event => ({ id: `${source.id}|${event.id}`, chart: source.name, day: event.date, date: formatEventDate(event.date), name: event.name, category: event.category }))).sort((a, b) => a.day.localeCompare(b.day) || a.chart.localeCompare(b.chart));
   const clients = [...new Set(sources.map(source => source.client))].sort((a, b) => (a === '' ? 1 : b === '' ? -1 : a.localeCompare(b)));
 
   const toggleSource = (id: string) => setSelected(current => { const next = new Set(current); if (!next.delete(id)) next.add(id); return next; });
@@ -188,23 +193,48 @@ export default function ResearchPanel({ calculationSettings }: Props) {
     }
   };
 
-  /** The choice of the kind of event: its category and tag. */
-  const filterControls = (current: Filter, set: (next: Filter) => void, label: string) => {
+  /** The choice of the kind of event: its category, its tag and the words in it; and a list of the events chosen, to see what is to be compared. */
+  const filterControls = (current: Filter, set: (next: Filter) => void, label: string, which: 'a' | 'b') => {
     const categoryCounts = categoryCountsFor(current);
     const tags = tagsFor(current);
+    const list = chosenOf(which);
     return (
-      <div className="flex flex-wrap items-center gap-1" role="group" aria-label={label}>
-        <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{label}</span>
-        <button type="button" aria-pressed={current.category === 'all'} onClick={() => set({ category: 'all', tag: '' })} className={chip(current.category === 'all')}>{t('all')} {categoryCounts.reduce((sum, item) => sum + item.count, 0)}</button>
-        {categoryCounts.filter(item => item.count > 0).map(item => (
-          <button key={item.key} type="button" aria-pressed={current.category === item.key} onClick={() => set({ category: item.key, tag: '' })} className={chip(current.category === item.key)}>{t(DASHA_EVENT_CATEGORY_LABELS[item.key])} {item.count}</button>
-        ))}
-        {tags.length > 0 && (
-          <select value={current.tag} onChange={event => set({ ...current, tag: event.target.value })} aria-label={`${t('event tag')} ${label}`} className="rounded-md border border-zinc-200 bg-white px-1.5 py-1.5 text-[10px] font-mono dark:border-zinc-700 dark:bg-zinc-800">
-            <option value="">{t('any tag')}</option>
-            {tags.map(item => <option key={item} value={item}>{item}</option>)}
-          </select>
-        )}
+      <div className="space-y-1" role="group" aria-label={label}>
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{label}</span>
+          <button type="button" aria-pressed={current.category === 'all'} onClick={() => set({ ...current, category: 'all', tag: '' })} className={chip(current.category === 'all')}>{t('all')} {categoryCounts.reduce((sum, item) => sum + item.count, 0)}</button>
+          {categoryCounts.filter(item => item.count > 0).map(item => (
+            <button key={item.key} type="button" aria-pressed={current.category === item.key} onClick={() => set({ ...current, category: item.key, tag: '' })} className={chip(current.category === item.key)}>{t(DASHA_EVENT_CATEGORY_LABELS[item.key])} {item.count}</button>
+          ))}
+          {tags.length > 0 && (
+            <select value={current.tag} onChange={event => set({ ...current, tag: event.target.value })} aria-label={`${t('event tag')} ${label}`} className="rounded-md border border-zinc-200 bg-white px-1.5 py-1.5 text-[10px] font-mono dark:border-zinc-700 dark:bg-zinc-800">
+              <option value="">{t('any tag')}</option>
+              {tags.map(item => <option key={item} value={item}>{item}</option>)}
+            </select>
+          )}
+        </div>
+        <input
+          type="search"
+          value={current.text}
+          onChange={event => set({ ...current, text: event.target.value })}
+          placeholder={t('words in the name, tags or notes: move, moved, relocation')}
+          aria-label={`${t('words in the events')} · ${label}`}
+          className="w-full max-w-md rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-[11px] font-mono dark:border-zinc-700 dark:bg-zinc-800"
+        />
+        <details className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400" data-research-chosen={which}>
+          <summary className="cursor-pointer select-none">{t('the events chosen')}: {list.length}</summary>
+          {list.length === 0 ? <p className="py-1 text-zinc-400">{t('None of the saved events fits.')}</p> : (
+            <ul className="max-h-48 divide-y divide-zinc-100 overflow-y-auto dark:divide-zinc-800">
+              {list.map(item => (
+                <li key={item.id} className="flex flex-wrap items-baseline gap-x-3 py-0.5 text-[11px]" data-research-chosen-event>
+                  <span className="w-20 shrink-0 text-zinc-500 dark:text-zinc-400">{item.date}</span>
+                  <span className="min-w-0 flex-1 text-zinc-700 dark:text-zinc-200">{item.name}</span>
+                  <span className="text-zinc-400">{item.chart} · {t(DASHA_EVENT_CATEGORY_LABELS[item.category as DashaEventCategory] ?? 'Other')}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </details>
       </div>
     );
   };
@@ -253,8 +283,8 @@ export default function ResearchPanel({ calculationSettings }: Props) {
           </div>
 
           <div className="space-y-1">
-            {filterControls(filter, setFilter, grouped ? t('first group') : t('events'))}
-            {grouped && filterControls(filterB, setFilterB, t('second group'))}
+            {filterControls(filter, setFilter, grouped ? t('first group') : t('events'), 'a')}
+            {grouped && filterControls(filterB, setFilterB, t('second group'), 'b')}
           </div>
 
           <div className="space-y-1">

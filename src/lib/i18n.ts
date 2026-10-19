@@ -230,6 +230,10 @@ export const FI: Record<string, string> = {
   'p corrected for the number of features looked at (false discovery rate)': 'p korjattuna tarkasteltujen ominaisuuksien määrällä (false discovery rate)',
   'Each cell is the number of events with that feature. Shade: how many times more often than by chance (none at or under the chance level, darkest at three times or more). Bold and underlined: still more than chance after the correction for the number of features looked at (q at most 0.1). Click a cell to list its events.': 'Jokainen solu on niiden tapahtumien määrä, joilla ominaisuus oli. Sävy: montako kertaa useammin kuin sattumalta (ei sävyä sattuman tasolla tai alle, tummin kolminkertaisena tai enemmän). Lihavoitu ja alleviivattu: yhä enemmän kuin sattuma tarkasteltujen ominaisuuksien määrän korjauksen jälkeen (q enintään 0,1). Napsauta solua nähdäksesi sen tapahtumat.',
   // Research: window, hypothesis, two kinds of event
+  'words in the name, tags or notes: move, moved, relocation': 'sanoja nimessä, tunnisteissa tai muistiinpanoissa: muutto, muutin, tapaturma',
+  'words in the events': 'sanoja tapahtumissa',
+  'the events chosen': 'valitut tapahtumat',
+  'None of the saved events fits.': 'Yksikään tallennettu tapahtuma ei sovi.',
   'Calculating the transits…': 'Lasketaan transiitteja…',
   'The transits are those of Jupiter, Saturn, Rahu and Ketu (sampled every three days); of the daśā every lord is looked at, whichever grahas are chosen here.': 'Transiitit ovat Jupiterin, Saturnuksen, Rahun ja Ketun (otettu kolmen päivän välein); daśāsta katsotaan jokainen herra, mitkä grahat tässä onkaan valittu.',
   'source of the feature': 'ominaisuuden lähde',
