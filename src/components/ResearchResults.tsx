@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { leaveOneChartOut, testFeature, type FeatureKind, type FeatureResult, type StudyResult } from '@/lib/research/eventStudy';
+import { leaveOneChartOut, testFeature, type FeatureKind, type FeatureResult, type StudyResult, type WindowChoice } from '@/lib/research/eventStudy';
 import { kindId, parseFeatureId } from '@/lib/research/features';
 import { dayText, eventsCsv, resultsCsv, type EventRow } from '@/lib/research/researchCsv';
 import type { ParayaBody } from '@/lib/bnn/nadiParaya';
@@ -17,7 +17,7 @@ export interface ChanceOutcome {
   result: StudyResult;
   kinds: FeatureKind[];
   bodies: ParayaBody[];
-  windowDays: number;
+  windowDays: WindowChoice;
   /** A feature chosen before running, as its id, or null. */
   hypothesis: string | null;
   /** The event of each chart and event id: the chart, the moment, the name, the category and the tags. */
@@ -29,6 +29,18 @@ const FIRST_ROWS = 12;
 /** The nine grahas, the daśā lords; and the slow ones whose transits are looked at. */
 const NINE = PROGRESSION_NATAL.filter(name => name !== 'Asc');
 const SLOW = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'] as const;
+
+/** The grahas in the rows of the matrix of a kind: the progressing grahas, the slow ones for the transits and the gochara (Jupiter and Saturn for what only they have), the daśā lords. */
+function matrixRows(kind: FeatureKind, bodies: readonly string[]): readonly string[] {
+  if (kind.source === 'dasha') return NINE;
+  const slow = bodies.filter(body => (SLOW as readonly string[]).includes(body));
+  if (kind.source === 'transit') return slow;
+  if (kind.source === 'gochara') {
+    if (kind.family === 'rule') return ['Saturn'];
+    return kind.family === 'favourable' || kind.family === 'bindu' ? slow.filter(body => body === 'Jupiter' || body === 'Saturn') : slow;
+  }
+  return bodies;
+}
 
 /** How a feature fares with each chart left out in turn: a finding that rests on one chart is weaker without it. */
 function LeaveOneOut({ outcome, id }: { outcome: ChanceOutcome; id: string }) {
@@ -122,7 +134,7 @@ export default function ResearchResults({ outcome }: { outcome: ChanceOutcome })
               return <button key={id} type="button" aria-pressed={shown === id} onClick={() => setShown(id)} className={chip(shown === id)}>{kinds.some(other => other.source !== kinds[0].source) ? `${t(SOURCE_LABELS[kind.source])} · ` : ''}{t(FAMILY_LABELS[kind.family])}</button>;
             })}
           </div>
-          {shownKind && <ResearchMatrix source={shownKind.source} family={shownKind.family} bodies={shownKind.source === 'dasha' ? NINE : shownKind.source === 'transit' ? bodies.filter(body => (SLOW as readonly string[]).includes(body)) : bodies} results={byId} total={result.events} focus={focus} onFocus={setFocus} />}
+          {shownKind && <ResearchMatrix source={shownKind.source} family={shownKind.family} bodies={matrixRows(shownKind, bodies)} results={byId} total={result.events} focus={focus} onFocus={setFocus} />}
           <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
             {t('Each cell is the number of events with that feature. Shade: how many times more often than by chance (none at or under the chance level, darkest at three times or more). Bold and underlined: still more than chance after the correction for the number of features looked at (q at most 0.1). Click a cell to list its events.')}
           </p>
@@ -166,7 +178,8 @@ export default function ResearchResults({ outcome }: { outcome: ChanceOutcome })
             )}
             <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
               {t('p is the chance that as many events would have the feature if they were moved to random moments of their own chart (a permutation test); q corrects p for the number of features looked at, because among many some always look striking by chance. This shows what the events have in common, not why; a handful of events can only hint.')}
-              {windowDays > 0 && ` ${fill(t('Every moment, of the events and of the random ones, was read over a window of {days} days either side.'), { days: String(windowDays) })}`}
+              {windowDays === 'auto' && ` ${t('Each event was read over a window that follows how exactly its date is known (to the day: the day; to the month: 15 days either side; to the year: 182), and the random moments over the same windows.')}`}
+              {typeof windowDays === 'number' && windowDays > 0 && ` ${fill(t('Every moment, of the events and of the random ones, was read over a window of {days} days either side.'), { days: String(windowDays) })}`}
             </p>
           </div>
 

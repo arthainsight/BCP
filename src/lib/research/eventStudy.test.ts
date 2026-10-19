@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { ChartData, PlanetData } from '@/types';
-import { eventFeatures, featureExtractor, leaveOneChartOut, runStudy, testFeature, type StudyChart } from './eventStudy';
+import { AUTO_WINDOW_DAYS, eventFeatures, featureExtractor, leaveOneChartOut, runStudy, testFeature, windowOfEvent, type StudyChart } from './eventStudy';
 import { adjustedQValues } from './stats';
 import { featureId, featuresOf, parseFeatureId, type FeatureFamily } from './features';
 import { hashText, seededRandom } from './random';
@@ -282,6 +282,102 @@ const jupiterInCancer = (years: number) => birth + (3.5 + 12 * years) * JULIAN_Y
   assert.equal(study.events, 9);
   assert.deepEqual([...new Set(study.results.map(result => result.source))].sort(), ['dasha', 'paraya', 'transit']);
   assert.ok(study.results.filter(result => result.source === 'dasha').every(result => result.family === 'mdGraha' && result.target === '*'));
+}
+
+// --- The window that follows the accuracy of the date ---------------------------------------------------------------------------------------------------
+assert.deepEqual(AUTO_WINDOW_DAYS, { day: 0, month: 15, year: 182 });
+assert.equal(windowOfEvent({ accuracy: 'year' }, 'auto'), 182);
+assert.equal(windowOfEvent({ accuracy: 'month' }, 'auto'), 15);
+assert.equal(windowOfEvent({ accuracy: 'day' }, 'auto'), 0);
+assert.equal(windowOfEvent({}, 'auto'), 0, 'a day when nothing is said');
+assert.equal(windowOfEvent({ accuracy: 'year' }, 30), 30, 'a fixed window is the same for all');
+assert.equal(windowOfEvent({ accuracy: 'year' }, undefined), 0);
+assert.equal(windowOfEvent({ accuracy: 'year' }, -5), 0, 'never negative');
+{
+  // Three events of one chart, to the day, to the month and to the year: each is read over its own window, and each window has its own random moments.
+  const item: StudyChart = {
+    id: 'a', name: 'A', chart: natal(1, 1), birthTime: birth,
+    events: [
+      { id: 'd', name: 'day', time: jupiterInCancer(0), category: 'home', tags: [], accuracy: 'day' },
+      { id: 'm', name: 'month', time: jupiterInCancer(1), category: 'home', tags: [], accuracy: 'month' },
+      { id: 'y', name: 'year', time: jupiterInCancer(2), category: 'home', tags: [], accuracy: 'year' },
+      { id: 'n', name: 'no accuracy given', time: jupiterInCancer(3), category: 'home', tags: [] },
+    ],
+  };
+  const study = runStudy([item], { bodies: ['Jupiter'], kinds: para('house'), untilTime, windowDays: 'auto', permutations: 100, baselineSamples: 80 });
+  assert.equal(study.events, 4);
+  assert.deepEqual(study.data.events.map(entry => [entry.event.id, entry.windowDays]), [['d', 0], ['m', 15], ['y', 182], ['n', 0]]);
+  assert.deepEqual([...study.data.pool.keys()].sort(), ['a|0', 'a|15', 'a|182']);
+  // The year-long window sees more of Jupiter's houses than the day does, at the random moments as at the events: Jupiter changes sign every year.
+  const seen = (window: number) => [...study.data.names].filter((_, at) => (study.data.pool.get(`a|${window}`)?.counts[at] ?? 0) > 0).length;
+  assert.ok(seen(182) >= seen(0), 'a wide window holds more houses at once');
+  const wide = study.data.events.find(entry => entry.windowDays === 182)!;
+  const narrow = study.data.events.find(entry => entry.windowDays === 0 && entry.event.id === 'd')!;
+  assert.ok(wide.features.length > narrow.features.length, 'the event known to the year holds several houses of Jupiter, the one known to the day only one');
+  // The exact test of a feature uses the pool of each event's own window.
+  const test = testFeature(study.data, featureId('paraya', 'house', 'Jupiter', 4));
+  assert.equal(test.total, 4);
+  assert.ok(test.p >= 0 && test.p <= 1);
+  // A fixed window reads all events over it, whatever their accuracy.
+  const fixed = runStudy([item], { bodies: ['Jupiter'], kinds: para('house'), untilTime, windowDays: 90, permutations: 50, baselineSamples: 50 });
+  assert.deepEqual([...new Set(fixed.data.events.map(entry => entry.windowDays))], [90]);
+  assert.deepEqual([...fixed.data.pool.keys()], ['a|90']);
+  // And without one, the day.
+  assert.deepEqual([...new Set(runStudy([item], { bodies: ['Jupiter'], kinds: para('house'), untilTime, permutations: 20, baselineSamples: 20 }).data.events.map(entry => entry.windowDays))], [0]);
+  // The features of events with their own windows, without a comparison with chance.
+  const { events } = eventFeatures([item], { bodies: ['Jupiter'], kinds: para('house'), untilTime, windowDays: 'auto' });
+  assert.deepEqual([events[0].features.length, events[3].features.length], [1, 1], 'to the day: one house');
+  assert.ok(events[2].features.length > 1, 'to the year: the houses of half a year either side');
+  assert.ok(events[1].features.length >= events[0].features.length && events[1].features.length <= events[2].features.length, 'to the month: between');
+}
+
+// --- The gochara: the transits read from the natal Moon and the Aṣṭakavarga ---------------------------------------------------------------------------------
+{
+  const from = birth - 30 * DAY_MS;
+  const to = untilTime + 30 * DAY_MS;
+  const steps = Math.round((to - from) / (3 * DAY_MS)) + 1;
+  const still = (longitude: number) => ({ start: from, step: 3 * DAY_MS, longitudes: Array(steps).fill(longitude) });
+  const item: StudyChart = { id: 'g', name: 'G', chart: natal(1, 1), birthTime: birth, events: [] };
+  const kinds = (...families: ('fromMoon' | 'favourable' | 'bindu' | 'sav' | 'rule')[]) => families.map(family => ({ source: 'gochara' as const, family }));
+  const time = birth + 20 * JULIAN_YEAR_MS;
+  const at = (saturn: number, jupiter: number, ...families: ('fromMoon' | 'favourable' | 'bindu' | 'sav' | 'rule')[]) =>
+    featureExtractor(item, { bodies: ['Jupiter', 'Saturn', 'Rahu', 'Ketu'], kinds: kinds(...families), untilTime, transitSeries: { Jupiter: still(jupiter), Saturn: still(saturn), Rahu: still(100), Ketu: still(280) } })(time)!;
+  // The natal Moon is in Sagittarius (sign 9). Saturn in Sagittarius (255°) is on the Moon: the 1st from it, in the middle of Sade Sati.
+  let found = at(255, 315, 'fromMoon', 'rule', 'favourable');
+  assert.ok(found.includes(featureId('gochara', 'fromMoon', 'Saturn', 1)));
+  assert.ok(found.includes(featureId('gochara', 'rule', 'Saturn', 'sadeSati')));
+  assert.ok(found.every(id => id.startsWith('gochara|')));
+  // Saturn in Capricorn (285°) is the 2nd from it (Sade Sati), in Scorpio (225°) the 12th (Sade Sati), in Libra (195°) the 11th (favourable for Saturn), in Pisces the 4th, in Cancer the 8th.
+  assert.ok(at(285, 315, 'rule').includes(featureId('gochara', 'rule', 'Saturn', 'sadeSati')));
+  assert.ok(at(225, 315, 'rule').includes(featureId('gochara', 'rule', 'Saturn', 'sadeSati')), 'the 12th from the Moon');
+  assert.ok(at(195, 315, 'favourable').includes(featureId('gochara', 'favourable', 'Saturn', 'favourable')), 'Saturn is favourable in the 11th from the Moon');
+  assert.ok(at(345, 315, 'rule').includes(featureId('gochara', 'rule', 'Saturn', 'kantaka')), 'the 4th from the Moon');
+  assert.ok(at(105, 315, 'rule').includes(featureId('gochara', 'rule', 'Saturn', 'ashtama')), 'the 8th from the Moon');
+  assert.ok(!at(105, 315, 'rule').includes(featureId('gochara', 'rule', 'Saturn', 'sadeSati')));
+  assert.deepEqual(at(105, 315, 'rule').filter(id => !id.includes('Saturn')), [], 'the rules are Saturn\'s alone');
+  // Jupiter in Aquarius (315°) is the 3rd from the Moon: not one of its favourable houses; Saturn in Libra is.
+  found = at(195, 315, 'favourable');
+  assert.ok(found.includes(featureId('gochara', 'favourable', 'Jupiter', 'unfavourable')));
+  assert.ok(found.every(id => !id.includes('Rahu') && !id.includes('Ketu')), 'Rahu and Ketu have no favourable houses of their own');
+  // The house from the Moon for every slow graha; the Aṣṭakavarga for the grahas that have one, and the Sarvāṣṭakavarga for all four.
+  const all = at(195, 315, 'fromMoon', 'bindu', 'sav');
+  assert.equal(all.filter(id => id.startsWith('gochara|fromMoon|')).length, 4);
+  assert.equal(all.filter(id => id.startsWith('gochara|bindu|')).length, 2, 'Jupiter and Saturn only');
+  assert.ok(all.filter(id => id.startsWith('gochara|bindu|')).every(id => ['strong', 'average', 'weak'].includes(parseFeatureId(id).target)));
+  assert.equal(all.filter(id => id.startsWith('gochara|sav|')).length, 4);
+  assert.ok(all.filter(id => id.startsWith('gochara|sav|')).every(id => ['high', 'low'].includes(parseFeatureId(id).target)));
+  // Over a window the signs that Saturn passes through all count: Saturn at 29.9° of Libra crossing into Scorpio within a month.
+  const crossing = { start: from, step: 3 * DAY_MS, longitudes: Array.from({ length: steps }, (_, i) => 209.9 + Math.max(0, Math.min(1, (i * 3 - (time - from) / DAY_MS + 15) / 30))) };
+  const sky = { Jupiter: still(315), Saturn: crossing, Rahu: still(100), Ketu: still(280) };
+  const wide = featureExtractor(item, { bodies: ['Saturn'], kinds: kinds('fromMoon'), untilTime, transitSeries: sky, windowDays: 30 })(time)!;
+  const narrow = featureExtractor(item, { bodies: ['Saturn'], kinds: kinds('fromMoon'), untilTime, transitSeries: sky })(time)!;
+  assert.ok(wide.length >= narrow.length && wide.length <= 2);
+  // Nothing outside the sampled time, and no features without the sampled sky.
+  assert.equal(featureExtractor(item, { bodies: ['Saturn'], kinds: kinds('fromMoon'), untilTime, transitSeries: sky })(to + 5 * DAY_MS), null);
+  assert.deepEqual(featureExtractor(item, { bodies: ['Saturn'], kinds: kinds('fromMoon'), untilTime })(time), []);
+  // A chart with no Moon has nothing to read it from.
+  const moonless: StudyChart = { ...item, chart: { ...item.chart, planets: item.chart.planets.filter(p => p.name !== 'Moon') } as unknown as ChartData };
+  assert.deepEqual(featureExtractor(moonless, { bodies: ['Saturn'], kinds: kinds('fromMoon'), untilTime, transitSeries: sky })(time), []);
 }
 
 console.log('Event study tests passed');

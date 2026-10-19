@@ -12,6 +12,7 @@ import { eventIdentity, parseDashaEventImport, type ImportedEvent } from '@/lib/
 import { DASHA_EVENT_CATEGORY_LABELS, parseEventDate, type StoredDashaEvent } from '@/lib/dashaEventStore';
 import { fill, useT } from '@/lib/i18n';
 import DashaEventBulkBar from './DashaEventBulkBar';
+import DashaEventClassify from './DashaEventClassify';
 import DashaEventCard from './DashaEventCard';
 import DashaEventForm, { type NewEvent } from './DashaEventForm';
 import DashaEventPaste from './DashaEventPaste';
@@ -192,6 +193,7 @@ export default function DashaEventList({
               </select>
             </label>
           </div>
+          {events.length > 0 && <DashaEventClassify events={events} onApply={commit} />}
           {events.length > 0 && <DashaEventBulkBar shown={filteredEvents.length} selected={chosen.size} groupByYear={groupByYear} onGroupByYear={setGroupByYear} onToggleAll={toggleAllShown} onChange={bulkChange} onDelete={bulkDelete} />}
           {!events.length ? <p className="py-3 text-center text-xs italic text-zinc-400">{t('No saved events yet.')}</p>
             : !filteredEvents.length ? <p className="py-3 text-center text-xs italic text-zinc-400">{t('No events match the filters.')}</p>

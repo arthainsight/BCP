@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v3.21',
+    date: '2026-10-19',
+    title: 'Research: the window by the accuracy of the date, a check on data not looked at, the Paraya settings compared, the gochara; Event List: classify by words',
+    changes: [
+      'Window "by the accuracy of the date": an event whose date is known to the day is read for that day, one known to the month for 15 days either side, one known to the year for 182. Dates imported with only a month or a year (marked "approx.") are read that way. The random moments the events are set against are drawn and read for each window on its own, so the comparison stays fair when the windows differ from event to event.',
+      'Training and test: the best features (the smallest p, more often than chance) are found in a part of the data and then tested exactly in another part that they were not chosen from, with a correction only for the number carried over. The data is split by charts (the stricter test) or by events (for few charts), with a training share of 50, 60 or 70 % and the best 5, 10 or 20 features carried over; Another split draws a different division. The table shows each feature in the two parts, the corrected p and whether it held, and the summary says how many of them held and how many would pass by chance alone.',
+      'The Paraya settings compared: the same study under each of the eight combinations (a retrograde graha beginning one sign back or in its natal sign, Saturn alternating or even, Rahu alternating or even), the strongest first. Strength is the mean of −log10 of the exact p of the five strongest features (a permutation test cannot tell a strong result from a stronger one), and the strongest feature of each setting is shown with its p corrected for the eight tried; when every setting found exactly the same, it says so.',
+      'Gochara as a fourth source of features: the house of each slow graha from the natal Moon, whether it is a favourable house (Jupiter and Saturn), the strength of the bindus of its own Bhinnāṣṭakavarga in the sign (Jupiter and Saturn), the high or low Sarvāṣṭakavarga of the sign, and the rules of Saturn from the Moon (Sade Sati, the 4th and the 8th). The tables are those of each chart, worked out once per chart from the same code as the Gochara view, and a feature can be chosen beforehand like any other.',
+      'Event List: Classify events by words. Choose a set (moves, marriages, divorces, accidents, illnesses and surgery, jobs, births of children, deaths, in English and Finnish words) or write words, pick the category and the tag to give, and see how many events they find and which before anything changes. By default only the events still in the category Other are taken, so what was sorted by hand stays as it is; Undo brings the old list back.',
+      'Tests: the windows by accuracy and the pools for each window, the gochara features against a chart with the Moon in Sagittarius (houses from the Moon, favourable houses, the rules of Saturn), the accuracy of an imported date, the split by charts and by events, the training and test check (a pattern that is in every chart holds, one that is only in the training part does not), the eight settings and the strength of a result, and the classifying of events; and browser tests for the window by accuracy, the check by charts and by events, the eight settings, the gochara matrix and a feature chosen beforehand, and the classifying in the Event List.',
+      'Updated the application version to v3.21.',
+    ],
+  },
+  {
     version: 'v3.20',
     date: '2026-10-19',
     title: 'Research: pick the events by words, and see the ones chosen',

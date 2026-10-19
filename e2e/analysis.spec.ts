@@ -1244,3 +1244,141 @@ test('ANALYSIS Research picks events by words in the name, the tags or the notes
 
   expect(errors).toEqual([]);
 });
+
+test('ANALYSIS Research can read each event over a window that follows the accuracy of its date', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+
+  // The window by the accuracy of the date, with its note.
+  await panel.getByRole('group', { name: 'window around an event' }).getByRole('button', { name: 'by the accuracy of the date', exact: true }).click();
+  await expect(panel.locator('[data-research-auto-window]')).toContainText('15 days either side');
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 60_000 });
+  await expect(panel.locator('[data-research-result]')).toContainText('follows how exactly its date is known');
+  expect(await panel.locator('tr[data-feature]').count()).toBeGreaterThan(5);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research finds features in one part of the data and tests them in another', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: 'training and test', exact: true }).click();
+  const split = panel.getByRole('group', { name: 'the split into training and test' });
+  await expect(split).toBeVisible();
+  // The feature chosen beforehand is for the comparison with chance alone.
+  await expect(panel.getByRole('group', { name: 'a feature chosen beforehand' })).toHaveCount(0);
+
+  // By charts: Alpha and Beta, one in each part.
+  await panel.getByRole('button', { name: 'Run the check' }).click();
+  const result = panel.locator('[data-research-validation]');
+  await expect(result.locator('[data-research-summary]')).toContainText(/training: \d+ events · 1 charts · test: \d+ events · 1 charts/, { timeout: 60_000 });
+  // Whatever was carried over, each feature is in the table with its two parts, and the line above it counts how many held.
+  const held = result.locator('[data-research-held]');
+  if (await held.count() > 0) {
+    await expect(held).toContainText(/of \d+ features held in the test part/);
+    expect(await result.locator('tr[data-feature]').count()).toBeGreaterThan(0);
+  } else {
+    await expect(result.locator('[data-research-validation-none]')).toBeVisible();
+  }
+
+  // By events: both charts are in both parts, the events are shared.
+  await split.getByRole('button', { name: 'events', exact: true }).click();
+  await panel.getByRole('button', { name: 'Run the check' }).click();
+  await expect(result.locator('[data-research-summary]')).toContainText(/training: \d+ events · [12] charts · test: \d+ events · [12] charts/, { timeout: 60_000 });
+  // Another split runs it again with a different division.
+  await result.getByRole('button', { name: 'Another split' }).click();
+  await expect(result.locator('[data-research-summary]')).toContainText(/training: \d+ events/, { timeout: 60_000 });
+
+  // With one chart there is nothing to split by charts.
+  await panel.getByRole('checkbox', { name: 'Beta' }).uncheck();
+  await split.getByRole('button', { name: 'charts', exact: true }).click();
+  await panel.getByRole('button', { name: 'Run the check' }).click();
+  await expect(result.locator('[data-research-validation-empty]')).toContainText('Too few charts to split in two', { timeout: 60_000 });
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research compares the eight settings of the Paraya progressions', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+  await panel.getByRole('button', { name: 'the Paraya settings', exact: true }).click();
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+
+  const result = panel.locator('[data-research-settings]');
+  await expect(result.locator('[data-research-summary]')).toContainText('8 events · 8 settings', { timeout: 120_000 });
+  const rows = result.locator('tr[data-setting]');
+  await expect(rows).toHaveCount(8);
+  // All eight combinations, once each, the strongest first.
+  const settings = await rows.evaluateAll(all => all.map(row => row.getAttribute('data-setting') ?? ''));
+  expect(new Set(settings).size).toBe(8);
+  expect(settings.every(setting => /^(previous|same)\|(alternating|even)\|(alternating|even)$/.test(setting))).toBe(true);
+  const scores = await rows.evaluateAll(all => all.map(row => Number(row.querySelectorAll('td')[1].textContent)));
+  expect(scores).toEqual([...scores].sort((a, b) => b - a));
+  // The strongest feature of each setting is named, with its corrected p.
+  await expect(rows.first().locator('td').nth(4)).not.toHaveText('—');
+  await expect(rows.first().locator('td').nth(5)).not.toHaveText('—');
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research reads the gochara: houses from the Moon, the rules of Saturn, and a feature chosen beforehand', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+  await panel.getByRole('group', { name: 'window around an event' }).getByRole('button', { name: '±90 days', exact: true }).click();
+  // The gochara alone: the progressions off, the houses from the Moon and the rules of Saturn on.
+  for (const family of ['in house', 'aspects house', 'aspects natal']) await panel.getByRole('group', { name: 'progressions', exact: true }).getByRole('button', { name: family, exact: true }).click();
+  const gochara = panel.getByRole('group', { name: 'gochara (traditional)', exact: true });
+  await gochara.getByRole('button', { name: 'house from the Moon', exact: true }).click();
+  await gochara.getByRole('button', { name: 'Saturn rules from the Moon', exact: true }).click();
+  await expect(panel.locator('[data-research-gochara-note]')).toBeVisible();
+
+  // One feature chosen beforehand: Saturn in the 4th house from the Moon.
+  await panel.getByRole('checkbox', { name: 'Test one feature chosen beforehand' }).check();
+  await panel.getByLabel('source of the feature').selectOption({ label: 'gochara (traditional)' });
+  await expect(panel.getByLabel('kind of the feature')).toHaveValue('fromMoon');
+  await expect(panel.getByLabel('house or natal point of the feature')).toHaveValue('4');
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 60_000 });
+  await expect(panel.locator('[data-research-hypothesis="gochara|fromMoon|Saturn|4"]')).toBeVisible();
+
+  // Every feature in the table is a gochara one; the matrix has the houses from the Moon, and the rules of Saturn are in a matrix of their own.
+  const ids = await panel.locator('tr[data-feature]').evaluateAll(all => all.map(row => row.getAttribute('data-feature') ?? ''));
+  expect(ids.length).toBeGreaterThan(3);
+  expect(ids.every(id => id.startsWith('gochara|'))).toBe(true);
+  await expect(panel.locator('[data-research-matrix="fromMoon"] [data-cell="Saturn|4"]')).toHaveCount(1);
+  await panel.getByRole('group', { name: 'shown in the matrix' }).getByRole('button', { name: 'Saturn rules from the Moon', exact: true }).click();
+  const rules = panel.locator('[data-research-matrix="rule"]');
+  await expect(rules).toContainText('Sade Sati');
+  await expect(rules).toContainText('4th (kantaka)');
+  await expect(rules).toContainText('8th (ashtama)');
+
+  expect(errors).toEqual([]);
+});

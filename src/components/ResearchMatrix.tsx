@@ -1,7 +1,7 @@
 'use client';
 
 import type { FeatureResult } from '@/lib/research/eventStudy';
-import { featureId, kindId, targetKindOf, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
+import { TARGET_LISTS, featureId, kindId, targetKindOf, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
 import { PROGRESSION_NATAL } from '@/lib/bnn/parayaProgression';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
@@ -19,6 +19,11 @@ type Props = {
 };
 
 const HOUSES = Array.from({ length: 12 }, (_, i) => String(i + 1));
+/** What the named targets of the gochara are called in a heading. */
+const LIST_HEADERS: Record<string, string> = {
+  favourable: 'favourable', unfavourable: 'unfavourable', strong: 'strong', average: 'average', weak: 'weak', high: 'high', low: 'low',
+  sadeSati: 'Sade Sati', kantaka: '4th (kantaka)', ashtama: '8th (ashtama)',
+};
 /** A feature at or under this q-value (false discovery rate) is marked as one that may be more than chance. */
 export const Q_MARK = 0.1;
 /** The shading reaches its darkest at this many times the chance level. */
@@ -39,8 +44,8 @@ export default function ResearchMatrix({ source, family, bodies, results, total,
   const { code } = useGrahaNames();
   const targetKind = targetKindOf(family);
   // A house, a natal point, or (the daśā lord as a graha) the one column of the lord.
-  const columns: readonly string[] = targetKind === 'house' ? HOUSES : targetKind === 'natal' ? PROGRESSION_NATAL : ['*'];
-  const header = (column: string) => (targetKind === 'house' ? `H${column}` : targetKind === 'natal' ? code(column) : family.startsWith('md') ? 'MD' : 'AD');
+  const columns: readonly string[] = targetKind === 'house' ? HOUSES : targetKind === 'natal' ? PROGRESSION_NATAL : targetKind === 'list' ? TARGET_LISTS[family as keyof typeof TARGET_LISTS] : ['*'];
+  const header = (column: string) => (targetKind === 'house' ? `H${column}` : targetKind === 'natal' ? code(column) : targetKind === 'list' ? t(LIST_HEADERS[column] ?? column) : family.startsWith('md') ? 'MD' : 'AD');
   return (
     <div className="viz overflow-x-auto" data-research-matrix={family} data-research-kind={kindId(source, family)}>
       <table className="w-full min-w-[420px] border-collapse text-[10px] font-mono">

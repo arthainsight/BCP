@@ -3,6 +3,7 @@
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { targetKindOf, type Feature, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
+import type { WindowChoice } from '@/lib/research/eventStudy';
 
 // What the parts of the Research view share.
 
@@ -18,6 +19,11 @@ export const FAMILY_LABELS: Record<FeatureFamily, string> = {
   adGraha: 'AD lord',
   adRules: 'AD rules house',
   adPlaced: 'AD placed in house',
+  fromMoon: 'house from the Moon',
+  favourable: 'favourable from the Moon',
+  bindu: 'own bindus in the sign',
+  sav: 'Sarvāṣṭakavarga of the sign',
+  rule: 'Saturn rules from the Moon',
 };
 
 /** What each source of features is called. */
@@ -25,10 +31,11 @@ export const SOURCE_LABELS: Record<FeatureSource, string> = {
   paraya: 'progressions',
   transit: 'transits',
   dasha: 'daśā',
+  gochara: 'gochara (traditional)',
 };
 
-/** The windows around an event, in days either side; 0 is the day itself. */
-export const WINDOWS = [0, 30, 90, 180] as const;
+/** The windows around an event, in days either side (0 is the day itself), or 'auto': the one that the accuracy of each event's date gives. */
+export const WINDOWS: readonly WindowChoice[] = [0, 30, 90, 180, 'auto'];
 
 export const chip = (on: boolean) =>
   `rounded-md border px-2.5 py-1.5 text-[10px] font-mono sm:px-2 sm:py-1 ${on
@@ -46,6 +53,13 @@ export function FeatureLabel({ feature }: { feature: Pick<Feature, 'source' | 'f
     const level = feature.family.startsWith('md') ? 'MD' : 'AD';
     if (feature.family.endsWith('Graha')) return <>{`${level} ${t('lord')} `}{graha}</>;
     return <>{`${level} `}{graha}{` ${feature.family.endsWith('Rules') ? t('rules house') : t('placed in house')} `}<span className="font-bold">{feature.target}</span></>;
+  }
+  if (feature.source === 'gochara') {
+    if (feature.family === 'fromMoon') return <>{graha}{` ${t('in house')} `}<span className="font-bold">{feature.target}</span>{` ${t('from the Moon')}`}</>;
+    if (feature.family === 'favourable') return <>{graha}{` ${t(feature.target === 'favourable' ? 'in a favourable house from the Moon' : 'in an unfavourable house from the Moon')}`}</>;
+    if (feature.family === 'bindu') return <>{graha}{` ${t('own bindus in its sign')} `}<span className="font-bold">{t(feature.target)}</span></>;
+    if (feature.family === 'sav') return <>{graha}{` ${t('in a sign with a Sarvāṣṭakavarga')} `}<span className="font-bold">{t(feature.target)}</span></>;
+    return <span className="font-bold">{t(feature.target === 'sadeSati' ? 'Sade Sati' : feature.target === 'kantaka' ? 'Saturn 4th from the Moon (kantaka)' : 'Saturn 8th from the Moon (ashtama)')}</span>;
   }
   return (
     <>

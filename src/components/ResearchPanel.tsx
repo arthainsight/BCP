@@ -5,10 +5,12 @@ import { DEFAULT_CALCULATION_SETTINGS, type CalculationSettings, type ChartData 
 import { loadSavedCharts } from '@/lib/savedCharts';
 import { DASHA_EVENT_CATEGORIES, DASHA_EVENT_CATEGORY_LABELS, formatEventDate, type DashaEventCategory, type StoredDashaEvent } from '@/lib/dashaEventStore';
 import { birthTimeOf, chartRequestUrl, readStoredEvents, researchSources, studyEventsOf } from '@/lib/research/studyData';
-import { eventFeatures, runStudy, type FeatureKind, type StudyChart, type StudyOptions } from '@/lib/research/eventStudy';
+import { eventFeatures, runStudy, type FeatureKind, type StudyChart, type StudyOptions, type WindowChoice } from '@/lib/research/eventStudy';
+import { validateStudy, type SplitBy } from '@/lib/research/validation';
+import { compareParayaSettings } from '@/lib/research/settingsStudy';
 import { compareGroups } from '@/lib/research/groupStudy';
 import { eventMatches, filterWords, type EventFilter } from '@/lib/research/eventFilter';
-import { FEATURE_SOURCES, familiesOf, featureId, kindId, targetKindOf, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
+import { FEATURE_SOURCES, TARGET_LISTS, familiesOf, featureId, kindId, targetKindOf, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
 import { GRAHA_DASHA_SYSTEMS, type GrahaDashaSystem } from '@/lib/dashaEvents';
 import { transitSeriesUrl } from '@/lib/apiParams';
 import { DAY_MS } from '@/lib/time';
@@ -21,13 +23,15 @@ import { useGrahaNames } from '@/lib/grahaNames';
 import { Heading } from './balaShared';
 import ResearchResults, { type ChanceOutcome } from './ResearchResults';
 import ResearchGroups, { type GroupOutcome } from './ResearchGroups';
+import ResearchValidation, { type ValidationOutcome } from './ResearchValidation';
+import ResearchSettings, { type SettingsOutcome } from './ResearchSettings';
 import { FAMILY_LABELS, SOURCE_LABELS, WINDOWS, chip } from './researchUi';
 
 type Props = {
   calculationSettings?: CalculationSettings;
 };
 
-type Mode = 'chance' | 'groups';
+type Mode = 'chance' | 'groups' | 'validate' | 'settings';
 type Filter = EventFilter & { category: 'all' | DashaEventCategory };
 type Hypothesis = { on: boolean; source: FeatureSource; family: FeatureFamily; body: string; target: string };
 
@@ -36,12 +40,27 @@ type Run =
   | { status: 'running'; message: string }
   | { status: 'error'; message: string }
   | { status: 'chance'; outcome: ChanceOutcome }
-  | { status: 'groups'; outcome: GroupOutcome };
+  | { status: 'groups'; outcome: GroupOutcome }
+  | { status: 'validate'; outcome: ValidationOutcome }
+  | { status: 'settings'; outcome: SettingsOutcome };
 
 const HOUSES = Array.from({ length: 12 }, (_, i) => String(i + 1));
 /** The nine grahas, which can be daśā lords; the four whose transits are looked at; the days either side of the first birth that the sky is sampled for. */
 const NINE = PROGRESSION_NATAL.filter(name => name !== 'Asc');
 const SLOW = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
+/** The grahas a gochara feature is looked at for: the rules are Saturn's, the favourable houses and the bindus those of Jupiter and Saturn. */
+const gocharaBodiesOf = (family: FeatureFamily) => (family === 'rule' ? ['Saturn'] : family === 'favourable' || family === 'bindu' ? ['Jupiter', 'Saturn'] : SLOW);
+/** The first target of a family. */
+const firstTargetOf = (family: FeatureFamily) => { const kind = targetKindOf(family); return kind === 'house' ? '4' : kind === 'natal' ? 'Moon' : kind === 'list' ? TARGET_LISTS[family as keyof typeof TARGET_LISTS][0] : '*'; };
+/** The shares of the data that can go to the training, and how many of its best features are carried over, in the check on a part not looked at. */
+/** What the named targets of the gochara are called in a list. */
+const LIST_TARGET_LABELS: Record<string, string> = {
+  favourable: 'favourable', unfavourable: 'unfavourable', strong: 'strong', average: 'average', weak: 'weak', high: 'high', low: 'low',
+  sadeSati: 'Sade Sati', kantaka: 'Saturn 4th from the Moon (kantaka)', ashtama: 'Saturn 8th from the Moon (ashtama)',
+};
+const SHARES = [0.5, 0.6, 0.7];
+const TOPS = [5, 10, 20];
+const hasSky = (kind: FeatureKind) => kind.source === 'transit' || kind.source === 'gochara';
 const SKY_MARGIN_DAYS = 200;
 const SKY_STEP_DAYS = 3;
 const DEFAULT_KINDS = ['paraya|house', 'paraya|aspectHouse', 'paraya|aspectNatal'];
@@ -64,7 +83,8 @@ export default function ResearchPanel({ calculationSettings }: Props) {
   const [mode, setMode] = useState<Mode>('chance');
   const [filter, setFilter] = useState<Filter>(NO_FILTER);
   const [filterB, setFilterB] = useState<Filter>(NO_FILTER);
-  const [windowDays, setWindowDays] = useState<number>(0);
+  const [windowDays, setWindowDays] = useState<WindowChoice>(0);
+  const [split, setSplit] = useState<{ by: SplitBy; share: number; top: number; seed: number }>({ by: 'charts', share: 0.6, top: 10, seed: 1 });
   const [kinds, setKinds] = useState<ReadonlySet<string>>(() => new Set(DEFAULT_KINDS));
   const [dashaSystem, setDashaSystem] = useState<GrahaDashaSystem>('vimshottari');
   const [bodies, setBodies] = useState<readonly ParayaBody[]>(PARAYA_BODIES);
@@ -77,6 +97,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
   const settings = calculationSettings ?? DEFAULT_CALCULATION_SETTINGS;
   const chosen = sources.filter(source => selected.has(source.id));
   const grouped = mode === 'groups';
+  const settingsMode = mode === 'settings';
   // In the comparison of two sets, an event that fits both belongs to the first.
   const groupOf = (event: StoredDashaEvent): 'a' | 'b' | null => (matches(event, filter) ? 'a' : grouped && matches(event, filterB) ? 'b' : null);
   const counts = { a: 0, b: 0 };
@@ -98,16 +119,20 @@ export default function ResearchPanel({ calculationSettings }: Props) {
   const toggleKind = (source: FeatureSource, family: FeatureFamily) => setKinds(current => { const next = new Set(current); const id = kindId(source, family); if (!next.delete(id)) next.add(id); return next; });
   const toggleBody = (body: ParayaBody) => setBodies(current => (current.includes(body) ? current.filter(item => item !== body) : [...PARAYA_BODIES, ...PARAYA_BETA_BODIES].filter(item => item === body || current.includes(item))));
   const targetKind = targetKindOf(hypothesis.family);
-  const targets = targetKind === 'house' ? HOUSES : targetKind === 'natal' ? [...PROGRESSION_NATAL] : ['*'];
-  const hypothesisBodies = hypothesis.source === 'dasha' ? NINE : hypothesis.source === 'transit' ? SLOW : [...PARAYA_BODIES, ...PARAYA_BETA_BODIES];
+  const targets = targetKind === 'house' ? HOUSES : targetKind === 'natal' ? [...PROGRESSION_NATAL] : targetKind === 'list' ? [...TARGET_LISTS[hypothesis.family as keyof typeof TARGET_LISTS]] : ['*'];
+  const hypothesisBodies = hypothesis.source === 'dasha' ? NINE : hypothesis.source === 'transit' ? SLOW : hypothesis.source === 'gochara' ? gocharaBodiesOf(hypothesis.family) : [...PARAYA_BODIES, ...PARAYA_BETA_BODIES];
   const setHypothesisSource = (source: FeatureSource) => setHypothesis(current => {
     const family = familiesOf(source)[0];
-    const kind = targetKindOf(family);
-    return { ...current, source, family, body: source === 'dasha' ? 'Jupiter' : 'Saturn', target: kind === 'house' ? '4' : kind === 'natal' ? 'Moon' : '*' };
+    return { ...current, source, family, body: source === 'dasha' ? 'Jupiter' : 'Saturn', target: firstTargetOf(family) };
   });
-  const setHypothesisFamily = (family: FeatureFamily) => setHypothesis(current => ({ ...current, family, target: targetKindOf(family) === 'house' ? '4' : targetKindOf(family) === 'natal' ? 'Moon' : '*' }));
+  const setHypothesisFamily = (family: FeatureFamily) => setHypothesis(current => ({
+    ...current,
+    family,
+    body: current.source === 'gochara' && !gocharaBodiesOf(family).includes(current.body) ? 'Saturn' : current.body,
+    target: firstTargetOf(family),
+  }));
 
-  const start = async (now: number) => {
+  const start = async (now: number, seed = split.seed) => {
     setRun({ status: 'running', message: t('Calculating the charts…') });
     setRuns(count => count + 1);
     try {
@@ -143,16 +168,18 @@ export default function ResearchPanel({ calculationSettings }: Props) {
       const order = new Map(included.map((source, i) => [source.id, i]));
       charts.sort((a, b) => (order.get(a.id) ?? 0) - (order.get(b.id) ?? 0));
       // A feature chosen beforehand is always among those looked at.
-      const wanted = !grouped && hypothesis.on;
-      const useKinds: FeatureKind[] = wanted && !kinds.has(kindId(hypothesis.source, hypothesis.family))
+      const wanted = mode === 'chance' && hypothesis.on;
+      const wantedKinds: FeatureKind[] = wanted && !kinds.has(kindId(hypothesis.source, hypothesis.family))
         ? FEATURE_SOURCES.flatMap(source => familiesOf(source).filter(family => (source === hypothesis.source && family === hypothesis.family) || kinds.has(kindId(source, family))).map(family => ({ source, family })))
         : kindList;
+      // Only the progressions depend on their settings: the others are not looked at when the settings are compared.
+      const useKinds = settingsMode ? wantedKinds.filter(kind => kind.source === 'paraya') : wantedKinds;
       const needsBody = wanted && hypothesis.source !== 'dasha' && !bodies.includes(hypothesis.body as ParayaBody);
       const useBodies = needsBody ? [...PARAYA_BODIES, ...PARAYA_BETA_BODIES].filter(item => item === hypothesis.body || bodies.includes(item)) : [...bodies];
 
       // The sky of the transits is the same for every chart: one table of the slow grahas from the first birth to now, sampled every few days.
       let transitSeries: Record<string, LongitudeSeries> | undefined;
-      if (useKinds.some(kind => kind.source === 'transit') && charts.length > 0) {
+      if (useKinds.some(hasSky) && charts.length > 0) {
         setRun({ status: 'running', message: t('Calculating the transits…') });
         const first = Math.min(...charts.map(item => item.birthTime)) - SKY_MARGIN_DAYS * DAY_MS;
         const startDay = new Date(first).toISOString().slice(0, 10);
@@ -168,7 +195,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
         }
       }
       await new Promise(resolve => window.setTimeout(resolve, 0));
-      setRun({ status: 'running', message: grouped ? t('Comparing the two sets…') : t('Comparing with chance…') });
+      setRun({ status: 'running', message: grouped ? t('Comparing the two sets…') : mode === 'validate' ? t('Checking on the test part…') : settingsMode ? t('Comparing the settings…') : t('Comparing with chance…') });
       await new Promise(resolve => window.setTimeout(resolve, 0));
       const options: StudyOptions = {
         bodies: useBodies,
@@ -179,7 +206,16 @@ export default function ResearchPanel({ calculationSettings }: Props) {
         untilTime: now,
         windowDays,
       };
-      if (grouped) {
+      if (mode === 'validate') {
+        const result = validateStudy(charts, options, { by: split.by, share: split.share, seed, top: split.top });
+        setRun({ status: 'validate', outcome: { result, by: split.by, share: split.share, top: split.top, seed, windowDays, failed } });
+      } else if (settingsMode) {
+        const rows = await compareParayaSettings(charts, options, async (index, total) => {
+          setRun({ status: 'running', message: `${t('Comparing the settings…')} ${index + 1}/${total}` });
+          await new Promise(resolve => window.setTimeout(resolve, 0));
+        });
+        setRun({ status: 'settings', outcome: { rows, windowDays, failed } });
+      } else if (grouped) {
         const { events, skipped } = eventFeatures(charts, options);
         const inA = events.filter(item => group.get(`${item.chartId}|${item.event.id}`) === 'a');
         const inB = events.filter(item => group.get(`${item.chartId}|${item.event.id}`) === 'b');
@@ -280,6 +316,8 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('compare')}</span>
             <button type="button" aria-pressed={mode === 'chance'} onClick={() => { setMode('chance'); setRun({ status: 'idle' }); }} className={chip(mode === 'chance')}>{t('with chance')}</button>
             <button type="button" aria-pressed={mode === 'groups'} onClick={() => { setMode('groups'); setRun({ status: 'idle' }); }} className={chip(mode === 'groups')}>{t('two kinds of event')}</button>
+            <button type="button" aria-pressed={mode === 'validate'} onClick={() => { setMode('validate'); setRun({ status: 'idle' }); }} className={chip(mode === 'validate')}>{t('training and test')}</button>
+            <button type="button" aria-pressed={mode === 'settings'} onClick={() => { setMode('settings'); setRun({ status: 'idle' }); }} className={chip(mode === 'settings')}>{t('the Paraya settings')}</button>
           </div>
 
           <div className="space-y-1">
@@ -291,9 +329,10 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('window around an event')}>
               <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('window')}</span>
               {WINDOWS.map(days => (
-                <button key={days} type="button" aria-pressed={windowDays === days} onClick={() => setWindowDays(days)} className={chip(windowDays === days)}>{days === 0 ? t('the day') : `±${days} ${t('days')}`}</button>
+                <button key={days} type="button" aria-pressed={windowDays === days} onClick={() => setWindowDays(days)} className={chip(windowDays === days)}>{days === 0 ? t('the day') : days === 'auto' ? t('by the accuracy of the date') : `±${days} ${t('days')}`}</button>
               ))}
             </div>
+            {windowDays === 'auto' && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600" data-research-auto-window>{t('A date known to the day is read for that day, one known to the month for 15 days either side, one known to the year for 182. The random moments they are set against are read over the same windows. Dates imported with only a month or a year are marked "approx.".')}</p>}
             <div className="space-y-1" role="group" aria-label={t('features')}>
               {FEATURE_SOURCES.map(source => (
                 <div key={source} className="flex flex-wrap items-center gap-1" role="group" aria-label={t(SOURCE_LABELS[source])}>
@@ -320,12 +359,13 @@ export default function ResearchPanel({ calculationSettings }: Props) {
               {PARAYA_BETA_BODIES.map(body => <button key={body} type="button" aria-pressed={bodies.includes(body)} title={body} onClick={() => toggleBody(body)} className={chip(bodies.includes(body))}>{code(body)}</button>)}
             </div>
             <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('The transits are those of Jupiter, Saturn, Rahu and Ketu (sampled every three days); of the daśā every lord is looked at, whichever grahas are chosen here.')}</p>
+            {kindList.some(kind => kind.source === 'gochara') && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600" data-research-gochara-note>{t('The gochara counts the houses of the slow grahas from the natal Moon: the traditional favourable houses of Jupiter and Saturn, the bindus of their own Bhinnāṣṭakavarga in the sign, the Sarvāṣṭakavarga of the sign, and Saturn over the Moon (Sade Sati, the 4th and the 8th).')}</p>}
             <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
               {fill(t('A house is counted from the ascendant, so charts with different ascendants can be compared. "Aspects" are by sign (the same sign, or the 5th, 7th or 9th from it); "exact" is within {orb}° of the natal degree, or, over a window, an exact hit inside it.'), { orb: String(EXACT_ORB) })}
             </p>
           </div>
 
-          {!grouped && (
+          {mode === 'chance' && (
             <div className="space-y-1 rounded border border-zinc-200 p-2 dark:border-zinc-700" role="group" aria-label={t('a feature chosen beforehand')}>
               <label className="flex items-center gap-2 text-[11px] font-mono text-zinc-700 dark:text-zinc-200">
                 <input type="checkbox" checked={hypothesis.on} onChange={event => setHypothesis(current => ({ ...current, on: event.target.checked }))} className="h-4 w-4 accent-emerald-600" />
@@ -344,7 +384,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
                   </select>
                   {targetKind !== 'none' && (
                     <select value={hypothesis.target} onChange={event => setHypothesis(current => ({ ...current, target: event.target.value }))} aria-label={t('house or natal point of the feature')} className={select}>
-                      {targets.map(target => <option key={target} value={target}>{targetKind === 'house' ? target : `${code(target)} · ${target}`}</option>)}
+                      {targets.map(target => <option key={target} value={target}>{targetKind === 'house' ? target : targetKind === 'list' ? t(LIST_TARGET_LABELS[target] ?? target) : `${code(target)} · ${target}`}</option>)}
                     </select>
                   )}
                 </div>
@@ -353,6 +393,21 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             </div>
           )}
 
+          {mode === 'validate' && (
+            <div className="space-y-1 rounded border border-zinc-200 p-2 dark:border-zinc-700" role="group" aria-label={t('the split into training and test')}>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('split by')}</span>
+                {(['charts', 'events'] as const).map(by => <button key={by} type="button" aria-pressed={split.by === by} onClick={() => setSplit(current => ({ ...current, by }))} className={chip(split.by === by)}>{t(by)}</button>)}
+                <span className="ml-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('training share')}</span>
+                {SHARES.map(share => <button key={share} type="button" aria-pressed={split.share === share} onClick={() => setSplit(current => ({ ...current, share }))} className={chip(split.share === share)}>{Math.round(share * 100)} %</button>)}
+                <span className="ml-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('carried over')}</span>
+                {TOPS.map(top => <button key={top} type="button" aria-pressed={split.top === top} onClick={() => setSplit(current => ({ ...current, top }))} className={chip(split.top === top)}>{top}</button>)}
+              </div>
+              <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('The best features are found in the training part and then tested on the other part, which they were not chosen from. Splitting by charts is the stricter test; with few charts split by events.')}</p>
+            </div>
+          )}
+          {settingsMode && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('The same study is run eight times: the progressions of a retrograde graha beginning one sign back or in the natal sign, Saturn and Rahu staying by turns or evenly. Only the features of the progressions are used.')}</p>}
+
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
@@ -360,7 +415,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
               disabled={!ready || kindList.length === 0 || bodies.length === 0 || run.status === 'running'}
               className="rounded-md border border-emerald-500 bg-emerald-500 px-3 py-1.5 text-[11px] font-mono text-white disabled:opacity-40 dark:border-green-600 dark:bg-green-600"
             >
-              {t('Run the comparison')}
+              {mode === 'validate' ? t('Run the check') : t('Run the comparison')}
             </button>
             <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400" data-research-selection>
               {grouped ? `${counts.a} + ${counts.b} ${t('events')} · ${includedCharts.size} ${t('charts')}` : `${includedEvents} ${t('events')} · ${includedCharts.size} ${t('charts')}`}
@@ -374,6 +429,8 @@ export default function ResearchPanel({ calculationSettings }: Props) {
 
       {run.status === 'chance' && <ResearchResults key={runs} outcome={run.outcome} />}
       {run.status === 'groups' && <ResearchGroups key={runs} outcome={run.outcome} />}
+      {run.status === 'validate' && <ResearchValidation key={runs} outcome={run.outcome} onAnother={() => { const seed = split.seed + 1; setSplit(current => ({ ...current, seed })); void start(Date.now(), seed); }} />}
+      {run.status === 'settings' && <ResearchSettings key={runs} outcome={run.outcome} />}
     </section>
   );
 }

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { GroupComparison, GroupRow } from '@/lib/research/groupStudy';
 import { dayText, eventsCsv, groupsCsv, type EventRow } from '@/lib/research/researchCsv';
-import type { EventFeatures } from '@/lib/research/eventStudy';
+import type { EventFeatures, WindowChoice } from '@/lib/research/eventStudy';
 import { saveFile } from '@/lib/download';
 import { fill, useT } from '@/lib/i18n';
 import { BODY_CELL, HEAD_CELL, ROW } from './balaShared';
@@ -18,7 +18,7 @@ export interface GroupOutcome {
   events: EventFeatures[];
   groupOf: ReadonlyMap<string, 'a' | 'b'>;
   info: ReadonlyMap<string, { chart: string; time: number; name: string; category: string; tags: string[] }>;
-  windowDays: number;
+  windowDays: WindowChoice;
   skipped: number;
   failed: string[];
 }
@@ -113,7 +113,8 @@ export default function ResearchGroups({ outcome }: { outcome: GroupOutcome }) {
           )}
           <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
             {t('Each feature is counted in both groups and compared with the Fisher exact test; q corrects p for the number of features looked at, because among many some always look striking by chance. This shows how the two groups differ, not why; a handful of events can only hint.')}
-            {windowDays > 0 && ` ${fill(t('Every event was read over a window of {days} days either side.'), { days: String(windowDays) })}`}
+            {windowDays === 'auto' && ` ${t('Each event was read over a window that follows how exactly its date is known (to the day: the day; to the month: 15 days either side; to the year: 182).')}`}
+            {typeof windowDays === 'number' && windowDays > 0 && ` ${fill(t('Every event was read over a window of {days} days either side.'), { days: String(windowDays) })}`}
           </p>
         </div>
       )}

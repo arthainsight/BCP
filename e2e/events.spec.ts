@@ -185,6 +185,64 @@ test('events can be pasted with periods and loose dates, and changed or deleted 
   expect(errors).toEqual([]);
 });
 
+test('events can be sorted by the words in them, with a preview, and Undo', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Paste', exact: true })).click();
+  const box = visible(page, page.getByRole('group', { name: 'Paste many events' }));
+  // Pasted as they come: no category, no tags.
+  await box.getByRole('textbox', { name: 'Events to add' }).fill([
+    '1.5.2010 Muutto Ouluun',
+    '3.6.2012 Muutin Helsinkiin',
+    '4.7.2014 Tapaturma: jalka murtui',
+    '5.8.2016 Uusi työ',
+  ].join('\n'));
+  await box.getByRole('button', { name: 'Add 4 events' }).click();
+  await expect(visible(page, page.getByText('Added 4 events.'))).toBeVisible();
+  const card = (name: string) => visible(page, page.locator('details').filter({ hasText: name }));
+  await expect(card('Muutto Ouluun')).toContainText('Other');
+
+  // The panel is closed at first; a set of words fills in the words, the category and the tag, and the preview says what they find before anything changes.
+  await visible(page, page.getByRole('button', { name: 'Classify events by words' })).click();
+  const panel = visible(page, page.getByRole('group', { name: 'Classify events by words' }));
+  await expect(panel.locator('[data-classify-preview]')).toContainText('Write some words');
+  await panel.getByRole('button', { name: 'Moves', exact: true }).click();
+  await expect(panel.getByLabel('Words to look for')).toHaveValue(/muutto/);
+  await expect(panel.locator('[data-classify-preview]')).toContainText('2 events found, 2 would change.');
+  await expect(panel.locator('[data-classify-preview]')).toContainText('Muutto Ouluun');
+  await expect(panel.locator('[data-classify-preview]')).not.toContainText('Uusi työ');
+  await expect(card('Muutto Ouluun')).toContainText('Other');
+
+  // Sorted: the two moves have the category Home and the tag, and the others stay as they were.
+  await panel.getByRole('button', { name: 'Sort 2 events' }).click();
+  await expect(visible(page, page.getByText('Sorted 2 events.'))).toBeVisible();
+  await expect(card('Muutto Ouluun')).toContainText('Home');
+  await expect(card('Muutin Helsinkiin')).toContainText('Home');
+  await expect(card('Uusi työ')).toContainText('Other');
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('move');
+  await expect(card('Muutto Ouluun')).toBeVisible();
+  await expect(page.locator('details').filter({ hasText: 'Uusi työ' })).toHaveCount(0);
+  await visible(page, page.getByPlaceholder('Search names, notes or tags')).fill('');
+
+  // Only the events still in Other are taken, so the same set finds none now; without that choice it finds the two, which have the category and the tag already.
+  await panel.getByRole('button', { name: 'Moves', exact: true }).click();
+  await expect(panel.locator('[data-classify-preview]')).toContainText('0 events found, 0 would change.');
+  await panel.getByRole('checkbox', { name: 'Only the events still in the category Other' }).uncheck();
+  await expect(panel.locator('[data-classify-preview]')).toContainText('2 events found, 0 would change.');
+  await expect(panel.getByRole('button', { name: /^Sort 0 events$/ })).toBeDisabled();
+
+  // Undo brings the old list back.
+  await visible(page, page.getByRole('button', { name: 'Undo', exact: true })).click();
+  await expect(card('Muutto Ouluun')).toContainText('Other');
+  await expect(card('Muutin Helsinkiin')).toContainText('Other');
+
+  expect(errors).toEqual([]);
+});
+
 test('an event opens the Matrix of the Varga view in ANALYSIS', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { SavedChart, SavedChartData } from '@/lib/savedCharts';
 import { DEFAULT_CALCULATION_SETTINGS } from '@/types';
-import { birthTimeOf, chartRequestUrl, researchSources, studyEventsOf } from './studyData';
+import { accuracyOf, birthTimeOf, chartRequestUrl, researchSources, studyEventsOf } from './studyData';
 
 const data = (over: Partial<SavedChartData> = {}): SavedChartData => ({
   birthDatetime: '15.08.1947 09.15.00', city: 'New Delhi', manualLat: '28.6139', manualLng: '77.209', ianaTimezone: 'Asia/Kolkata', tzOverride: '',
@@ -59,6 +59,23 @@ assert.equal(birthTimeOf(data({ birthDatetime: 'nonsense' })), null);
   assert.equal(chartRequestUrl(data({ manualLat: '' })), null);
   assert.equal(chartRequestUrl(data({ birthDatetime: '1947' })), null);
   assert.equal(chartRequestUrl(data({ ianaTimezone: '', tzOverride: '' })), null);
+}
+
+// --- How exactly the day of an event is known -----------------------------------------------------------------------------------------------------------
+assert.equal(accuracyOf({ date: '2015-06-15', tags: [] }), 'day');
+assert.equal(accuracyOf({ date: '2015-06-15', tags: ['approx. date'] }), 'month', 'the middle of a month');
+assert.equal(accuracyOf({ date: '2015-07-01', tags: ['approx. date'] }), 'year', 'the middle of a year');
+assert.equal(accuracyOf({ date: '2015-07-01', tags: [] }), 'day', 'a true first of July with no tag is a day');
+assert.equal(accuracyOf({ date: '2015-03-01', tags: ['Approx. Date', 'x'] }), 'month', 'the tag in any case, the first of a month in a period');
+assert.equal(accuracyOf({ date: '2015-03-20', tags: ['approx. year'] }), 'year', 'said outright');
+assert.equal(accuracyOf({ date: '2015-07-01', tags: ['approx. month'] }), 'month', 'said outright, whatever the day');
+{
+  const [month, day, year] = studyEventsOf([
+    { id: 'a', name: 'a', date: '2015-06-15', category: 'home', varga: 'D1', notes: '', tags: ['approx. date'], significance: 3 },
+    { id: 'b', name: 'b', date: '2016-02-03', category: 'home', varga: 'D1', notes: '', tags: [], significance: 3 },
+    { id: 'c', name: 'c', date: '2017-07-01', category: 'home', varga: 'D1', notes: '', tags: ['approx. date'], significance: 3 },
+  ]);
+  assert.deepEqual([month.accuracy, day.accuracy, year.accuracy], ['month', 'day', 'year']);
 }
 
 console.log('Research data tests passed');
