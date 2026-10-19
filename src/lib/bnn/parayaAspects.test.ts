@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import type { ParayaBody, ParayaPeriod } from './nadiParaya';
 import { aspectPeriodsOf, aspectRelationOf, aspectsAt, convergencesOf, groupBySign, hitsWithin, overlapping, stripRows, type AspectPeriod, type ExactHit } from './parayaAspects';
+import { transitRelationsOf } from '@/lib/transitHits';
 
 const stay = (body: ParayaBody, signIndex: number, startAge: number, endAge: number): ParayaPeriod =>
   ({ body, signIndex, signName: '', startAge, endAge, durationYears: endAge - startAge, cycleNumber: 1, degree: 0 });
@@ -13,6 +14,35 @@ assert.equal(aspectRelationOf(2, 8), 7, 'round the end of the zodiac: Gemini is 
 assert.equal(aspectRelationOf(0, 8), 5, 'and Aries the 5th');
 assert.equal(aspectRelationOf(4, 8), 9);
 assert.equal(aspectRelationOf(8, 8), 1);
+
+// --- The transiting grahas have aspects of their own, counted from the graha ------------------------------------------------------------------------
+// The sign a graha in Aries (0) aspects, and the relation: the natal point is that house from the graha.
+const aspectedFromAries = (body: string) => Array.from({ length: 12 }, (_, natalSign) => [natalSign, aspectRelationOf(0, natalSign, transitRelationsOf, body)] as const).filter(([, relation]) => relation !== null);
+assert.deepEqual(aspectedFromAries('Saturn'), [[0, 1], [2, 3], [6, 7], [9, 10]], 'Saturn: Aries itself, the 3rd (Gemini), the 7th (Libra), the 10th (Capricorn)');
+assert.deepEqual(aspectedFromAries('Jupiter'), [[0, 1], [4, 5], [6, 7], [8, 9]], 'Jupiter: the 5th (Leo), the 7th, the 9th (Sagittarius)');
+assert.deepEqual(aspectedFromAries('Mars'), [[0, 1], [3, 4], [6, 7], [7, 8]], 'Mars: the 4th (Cancer), the 7th, the 8th (Scorpio)');
+assert.deepEqual(aspectedFromAries('Rahu'), [[0, 1], [4, 5], [8, 9]]);
+assert.deepEqual(aspectedFromAries('Ketu'), [[0, 1], [4, 5], [8, 9]]);
+assert.deepEqual(aspectedFromAries('Venus'), [[0, 1], [6, 7]]);
+// Round the end of the zodiac: Saturn in Sagittarius (8) aspects Aquarius (10, the 3rd), Gemini (2, the 7th) and Virgo (5, the 10th), and not Pisces (11, the 4th).
+assert.equal(aspectRelationOf(8, 10, transitRelationsOf, 'Saturn'), 3, 'Aquarius is the 3rd from Sagittarius');
+assert.equal(aspectRelationOf(8, 2, transitRelationsOf, 'Saturn'), 7);
+assert.equal(aspectRelationOf(8, 5, transitRelationsOf, 'Saturn'), 10, 'Virgo is the 10th from Sagittarius');
+assert.equal(aspectRelationOf(8, 11, transitRelationsOf, 'Saturn'), null, 'Pisces is the 4th, which Saturn does not aspect');
+// The periods and the moment, graha by graha: natal Aries is aspected by Saturn from Aquarius (the 3rd from it), Libra (the 7th), Cancer (the 10th) and from Aries itself.
+{
+  const natalAries = { name: 'Moon', signIndex: 0 };
+  const saturnStays = [stay('Saturn', 10, 0, 1), stay('Saturn', 6, 1, 2), stay('Saturn', 3, 2, 3), stay('Saturn', 0, 3, 4), stay('Saturn', 8, 4, 5)];
+  assert.deepEqual(aspectPeriodsOf(saturnStays, natalAries, transitRelationsOf).map(item => [item.relation, item.startAge]), [[3, 0], [7, 1], [10, 2], [1, 3]], 'Aquarius (3rd), Libra (7th), Cancer (10th), Aries (itself); Sagittarius is not an aspect');
+  // The same stays seen by Jupiter's rule: the signs from which Jupiter aspects Aries are Aries, Sagittarius (5th), Libra, Leo (9th).
+  const jupiterStays = saturnStays.map(item => ({ ...item, body: 'Jupiter' as const }));
+  assert.deepEqual(aspectPeriodsOf(jupiterStays, natalAries, transitRelationsOf).map(item => [item.relation, item.startAge]), [[7, 1], [1, 3], [5, 4]], 'Libra (7th), Aries (itself), Sagittarius (5th)');
+  // Only the relations that are chosen, of the graha's own.
+  const onlySeventh = (body: string) => transitRelationsOf(body).filter(item => item === 7);
+  assert.deepEqual(aspectPeriodsOf(saturnStays, natalAries, onlySeventh).map(item => item.relation), [7]);
+  // At one moment, both grahas by their own rules.
+  assert.deepEqual(aspectsAt([{ body: 'Saturn', signIndex: 10 }, { body: 'Jupiter', signIndex: 10 }, { body: 'Mars', signIndex: 9 }], 0, transitRelationsOf).map(item => `${item.body}${item.relation}`), ['Saturn3', 'Mars4']);
+}
 
 // --- The periods of one graha ---------------------------------------------------------------------------------------------------
 const jupiter = [stay('Jupiter', 0, -0.5, 1), stay('Jupiter', 1, 1, 2), stay('Jupiter', 4, 2, 3), stay('Jupiter', 6, 3, 4), stay('Jupiter', 8, 4, 5), stay('Jupiter', 10, 5, 6)];

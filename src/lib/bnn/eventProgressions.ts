@@ -1,5 +1,5 @@
 import type { ChartData } from '@/types';
-import type { HitRelation } from '@/lib/transitHits';
+import { PROGRESSION_RELATIONS, type HitRelation, type RelationsOf } from '@/lib/transitHits';
 import { JULIAN_YEAR_MS } from '@/lib/time';
 import { parayaPeriodsOf } from './bnnHouses';
 import { aspectRelationOf } from './parayaAspects';
@@ -38,9 +38,10 @@ export interface GrahaPosition {
 
 /**
  * What the places of some grahas mean for a chart: each one's house from the ascendant, and which natal points it aspects by sign (the same sign, or the 5th, 7th
- * or 9th from it) with how far from the natal degree it stands. The grahas can be the progressing ones or the transiting ones.
+ * or 9th from it, for the progressions; the transiting grahas have their own aspects, given in `relations`) with how far from the natal degree it stands. The grahas can
+ * be the progressing ones or the transiting ones.
  */
-export function describePositions(chart: ChartData, positions: readonly GrahaPosition[]): EventProgression[] {
+export function describePositions(chart: ChartData, positions: readonly GrahaPosition[], relations: RelationsOf = PROGRESSION_RELATIONS): EventProgression[] {
   const natal = PROGRESSION_NATAL.flatMap(name => {
     const point = name === 'Asc' ? chart.ascendant : chart.planets.find(planet => planet.name === name);
     return point ? [{ name, signIndex: point.sign - 1, degree: point.degree }] : [];
@@ -51,7 +52,7 @@ export function describePositions(chart: ChartData, positions: readonly GrahaPos
     degree: position.degree,
     house: ((position.signIndex + 1 - chart.ascendant.sign + 12) % 12) + 1,
     aspects: natal.flatMap(point => {
-      const relation = aspectRelationOf(position.signIndex, point.signIndex);
+      const relation = aspectRelationOf(position.signIndex, point.signIndex, relations, position.body);
       if (!relation) return [];
       const orb = Math.abs(position.degree - point.degree);
       return [{ natal: point.name, relation, orb, exact: orb <= EXACT_ORB }];

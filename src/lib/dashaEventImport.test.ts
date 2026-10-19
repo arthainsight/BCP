@@ -83,6 +83,11 @@ assert.equal(parseDashaEventText('2015-06-155 Too long', defaults).events.length
 const withHeader = parseDashaEventText('Date\tEvent\tCategory\n15.6.2015\tMoved\thome', defaults);
 assert.equal(withHeader.format, 'lines'); assert.deepEqual(withHeader.invalid, []); assert.equal(withHeader.events[0].category, 'home');
 
+// A month or a year in a line gives the event its accuracy (a period does not: it has two dates); a column of a file can say it.
+const accuracies = parseDashaEventText('3/2015 Month\n2016 Year\n15.6.2017 Day\n2018 - 2019 Period', defaults).events;
+assert.deepEqual(accuracies.map(event => event.accuracy), ['month', 'year', undefined, undefined]);
+assert.deepEqual(parseDashaEventImport('name,date,accuracy\nA,2015-06-15,Year\nB,2015-06-16,hour', 'x.csv').events.map(event => event.accuracy), ['year', undefined]);
+
 // CSV with a header (quotes and all) and JSON are read as the files are.
 const pastedCsv = parseDashaEventText('event,date,end_date,category\n"Move, abroad",2015-06-15,2017-08-20,Home\nBroken,not a date,,Work', defaults);
 assert.equal(pastedCsv.format, 'CSV'); assert.equal(pastedCsv.events[0].name, 'Move, abroad'); assert.equal(pastedCsv.events[0].endDate, '2017-08-20'); assert.equal(pastedCsv.events[0].category, 'home');

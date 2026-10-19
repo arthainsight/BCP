@@ -331,6 +331,35 @@ assert.equal(windowOfEvent({ accuracy: 'year' }, -5), 0, 'never negative');
   assert.ok(events[1].features.length >= events[0].features.length && events[1].features.length <= events[2].features.length, 'to the month: between');
 }
 
+// --- The transiting grahas aspect by their own rules; the progressions keep the Nāḍī 1st, 5th, 7th and 9th for every graha ------------------------------------------
+{
+  const from = birth - 30 * DAY_MS;
+  const to = untilTime + 30 * DAY_MS;
+  const steps = Math.round((to - from) / (3 * DAY_MS)) + 1;
+  // Every slow graha stands still at 10° Aries; the ascendant is Aries too, so the houses are the signs from Aries.
+  const still = { start: from, step: 3 * DAY_MS, longitudes: Array(steps).fill(10) };
+  const sky = { Jupiter: still, Saturn: still, Mars: still, Rahu: still };
+  const item: StudyChart = { id: 'o', name: 'O', chart: natal(1, 1), birthTime: birth, events: [] };
+  const found = featureExtractor(item, { bodies: ['Jupiter', 'Saturn', 'Mars', 'Rahu'], kinds: [{ source: 'transit', family: 'aspectHouse' }], untilTime, transitSeries: sky })(birth + 20 * JULIAN_YEAR_MS)!;
+  const houses = (body: string) => found.filter(id => id.startsWith(`transit|aspectHouse|${body}|`)).map(id => Number(id.split('|')[3])).sort((a, b) => a - b);
+  assert.deepEqual(houses('Saturn'), [1, 3, 7, 10], 'Saturn aspects the 3rd, 7th and 10th from Aries, and its own sign');
+  assert.deepEqual(houses('Jupiter'), [1, 5, 7, 9]);
+  assert.deepEqual(houses('Mars'), [1, 4, 7, 8]);
+  assert.deepEqual(houses('Rahu'), [1, 5, 9]);
+  // The natal points: Saturn at 10° Aries aspects Gemini, Libra and Capricorn, so a natal point in Gemini or Capricorn is aspected and one in Leo is not.
+  const withPoints: StudyChart = { ...item, chart: { ...natal(1, 1), planets: [planet('Moon', 3, 4), planet('Sun', 5, 4), planet('Venus', 10, 4), planet('Jupiter', 1, 5)] } as unknown as ChartData };
+  const points = featureExtractor(withPoints, { bodies: ['Jupiter', 'Saturn', 'Mars'], kinds: [{ source: 'transit', family: 'aspectNatal' }], untilTime, transitSeries: sky })(birth + 20 * JULIAN_YEAR_MS)!;
+  const natalOf = (body: string) => points.filter(id => id.startsWith(`transit|aspectNatal|${body}|`)).map(id => id.split('|')[3]).sort();
+  assert.deepEqual(natalOf('Saturn'), ['Asc', 'Jupiter', 'Moon', 'Venus'], 'the Moon in Gemini (3rd), Venus in Capricorn (10th), and what is in Aries itself; not the Sun in Leo');
+  assert.deepEqual(natalOf('Jupiter'), ['Asc', 'Jupiter', 'Sun'], 'Jupiter aspects the 5th: the Sun in Leo, and what is in its own sign');
+  assert.deepEqual(natalOf('Mars'), ['Asc', 'Jupiter'], 'Mars aspects the 4th, 7th and 8th: none of Gemini, Leo or Capricorn');
+  // The progressions give every graha the same four.
+  const sampled = progressionsAt({ chart: natal(1, 1), birthTime: birth, time: birth + 3.5 * JULIAN_YEAR_MS, bodies: ['Saturn'] })!;
+  const progressed = featuresOf(sampled, ['aspectHouse'], 1).map(id => Number(id.split('|')[3])).sort((a, b) => a - b);
+  const stands = sampled[0].house;
+  assert.deepEqual(progressed, [0, 4, 6, 8].map(away => ((stands - 1 + away) % 12) + 1).sort((a, b) => a - b), 'the house it stands in, its trines and the opposite');
+}
+
 // --- The gochara: the transits read from the natal Moon and the Aṣṭakavarga ---------------------------------------------------------------------------------
 {
   const from = birth - 30 * DAY_MS;

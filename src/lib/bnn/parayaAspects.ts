@@ -1,4 +1,4 @@
-import type { HitRelation } from '@/lib/transitHits';
+import { PROGRESSION_RELATIONS, RELATION_AT_SIGNS_ON, relationsOfBody, type HitRelation, type RelationsOf } from '@/lib/transitHits';
 
 // Which grahas aspect a natal point by sign, and when: a graha in the same sign as the natal point (1) or in its 5th, 7th or 9th sign aspects it,
 // wherever in the sign it stands. Not the exact degree (that is the hits of the Paraya tab), the sign: the whole stay of the graha in such a sign.
@@ -14,10 +14,16 @@ export interface Stay {
   endAge: number;
 }
 
-/** The relation of a graha's sign to a natal point's sign, 1, 5, 7 or 9; null when the graha does not aspect it. Signs are 0–11. */
-export function aspectRelationOf(bodySign: number, natalSign: number): HitRelation | null {
-  const difference = (((bodySign - natalSign) % 12) + 12) % 12;
-  return difference === 0 ? 1 : difference === 4 ? 5 : difference === 6 ? 7 : difference === 8 ? 9 : null;
+/**
+ * The relation of a graha's sign to a natal point's sign among those of `relations` (the 1st, 5th, 7th and 9th of the Nāḍī method to begin with, which every graha has in
+ * the progressions, counted as the house of the graha from the natal point); null when the graha does not aspect it. With a function that gives each graha its own aspects
+ * (the transits) the relation is counted the other way, as the house of the natal point from the graha: Saturn in Aries aspects Gemini, Libra and Capricorn, the 3rd, 7th
+ * and 10th. Signs are 0–11.
+ */
+export function aspectRelationOf(bodySign: number, natalSign: number, relations: RelationsOf = PROGRESSION_RELATIONS, body = ''): HitRelation | null {
+  const own = typeof relations === 'function';
+  const relation = RELATION_AT_SIGNS_ON[((((own ? natalSign - bodySign : bodySign - natalSign) % 12) + 12) % 12)];
+  return relation !== undefined && relationsOfBody(relations, body).includes(relation) ? relation : null;
 }
 
 export interface AspectPeriod {
@@ -34,12 +40,12 @@ export interface AspectPeriod {
 export function aspectPeriodsOf(
   stays: readonly Stay[],
   natal: { name: string; signIndex: number },
-  relations: readonly HitRelation[],
+  relations: RelationsOf,
 ): AspectPeriod[] {
   const periods: AspectPeriod[] = [];
   for (const stay of stays) {
-    const relation = aspectRelationOf(stay.signIndex, natal.signIndex);
-    if (relation && relations.includes(relation)) periods.push({ body: stay.body, natal: natal.name, relation, startAge: stay.startAge, endAge: stay.endAge });
+    const relation = aspectRelationOf(stay.signIndex, natal.signIndex, relations, stay.body);
+    if (relation) periods.push({ body: stay.body, natal: natal.name, relation, startAge: stay.startAge, endAge: stay.endAge });
   }
   return periods;
 }
@@ -85,12 +91,12 @@ export function convergencesOf(periods: readonly AspectPeriod[], min: number): C
 export function aspectsAt(
   current: readonly Pick<Stay, 'body' | 'signIndex'>[],
   natalSignIndex: number,
-  relations: readonly HitRelation[],
+  relations: RelationsOf,
 ): { body: string; relation: HitRelation }[] {
   const aspects: { body: string; relation: HitRelation }[] = [];
   for (const stay of current) {
-    const relation = aspectRelationOf(stay.signIndex, natalSignIndex);
-    if (relation && relations.includes(relation)) aspects.push({ body: stay.body, relation });
+    const relation = aspectRelationOf(stay.signIndex, natalSignIndex, relations, stay.body);
+    if (relation) aspects.push({ body: stay.body, relation });
   }
   return aspects;
 }

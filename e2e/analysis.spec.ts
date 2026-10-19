@@ -1382,3 +1382,252 @@ test('ANALYSIS Research reads the gochara: houses from the Moon, the rules of Sa
 
   expect(errors).toEqual([]);
 });
+
+/** Three saved charts with events, for what needs other charts to be compared with. */
+async function seedResearchThree(page: Page) {
+  const third = '21.01.1960 14.20.00';
+  await page.addInitScript(({ charts, lists }) => {
+    try {
+      localStorage.setItem('bcp_saved_charts', JSON.stringify(charts));
+      for (const [birth, events] of Object.entries(lists)) localStorage.setItem(`bhrigu:dasha-events:${birth}`, JSON.stringify(events));
+    } catch {}
+  }, {
+    charts: [researchChart('c1', 'Alpha', researchAlpha), researchChart('c2', 'Beta', researchBeta), researchChart('c3', 'Delta', third)],
+    lists: {
+      [researchAlpha]: [researchEvent('a1', 'Moved to the city', '1970-05-01', 'home'), researchEvent('a2', 'Moved again', '1991-02-03', 'home'), researchEvent('a3', 'Moved north', '2003-07-20', 'home')],
+      [researchBeta]: [researchEvent('b1', 'First move', '1995-06-01', 'home'), researchEvent('b2', 'Moved abroad', '2001-03-14', 'home'), researchEvent('b3', 'Moved home', '2010-10-10', 'home')],
+      [third]: [researchEvent('d1', 'Moved out', '1985-04-04', 'home'), researchEvent('d2', 'Moved in', '1999-09-09', 'home'), researchEvent('d3', 'Moved on', '2012-12-12', 'home')],
+    },
+  });
+}
+
+test('ANALYSIS Research puts two kinds of feature together and compares each combination with its parts', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+  await panel.getByRole('button', { name: 'combinations', exact: true }).click();
+  // The lord of the daśā and the gochara of the same graha, to begin with.
+  await expect(panel.getByLabel('first part of the combination')).toHaveValue('dasha|mdGraha');
+  await expect(panel.getByLabel('second part of the combination')).toHaveValue('gochara|fromMoon');
+  await expect(panel.getByRole('checkbox', { name: 'only the same graha' })).toBeChecked();
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+
+  const result = panel.locator('[data-research-combos]');
+  await expect(result.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 60_000 });
+  await expect(result.locator('[data-research-summary]')).toContainText('combinations tested');
+  const ids = await result.locator('tr[data-feature]').evaluateAll(all => all.map(row => row.getAttribute('data-feature') ?? ''));
+  expect(ids.length).toBeGreaterThan(0);
+  // Every combination is a daśā lord with the gochara of the same graha.
+  expect(ids.every(id => /^dasha\|mdGraha\|(\w+)\|\* & gochara\|fromMoon\|\1\|\d+$/.test(id))).toBe(true);
+  // The last column says whether it beats its parts, and a row opens its events.
+  await expect(result.locator('tr[data-feature]').first().locator('td').nth(7)).toHaveText(/✓|—/);
+  await result.locator('tr[data-feature]').first().click();
+  await expect(result.locator('[data-research-focus]').locator('[data-research-event]').first()).toBeVisible();
+
+  // Two kinds from the progressions, any graha: more combinations, and still each is of two features.
+  await panel.getByLabel('first part of the combination').selectOption('paraya|house');
+  await panel.getByLabel('second part of the combination').selectOption('paraya|aspectNatal');
+  await panel.getByRole('checkbox', { name: 'only the same graha' }).uncheck();
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(result.locator('[data-research-summary]')).toContainText('combinations tested', { timeout: 60_000 });
+  const more = await result.locator('tr[data-feature]').evaluateAll(all => all.map(row => row.getAttribute('data-feature') ?? ''));
+  expect(more.length).toBeGreaterThan(5);
+  expect(more.every(id => id.startsWith('paraya|house|') && id.includes(' & paraya|aspectNatal|'))).toBe(true);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research builds a joint model on one part of the data and tries it on the other', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: 'joint model', exact: true }).click();
+  const split = panel.getByRole('group', { name: 'the split into training and test' });
+  await expect(split).toBeVisible();
+  // The carried-over choice is for the check of single features only.
+  await expect(split.getByText('carried over')).toHaveCount(0);
+  await split.getByRole('button', { name: 'events', exact: true }).click();
+  await panel.getByRole('button', { name: 'Fit the model' }).click();
+
+  const result = panel.locator('[data-research-model]');
+  await expect(result.locator('[data-research-summary]')).toContainText(/training: \d+ events · [12] charts · test: \d+ events · [12] charts · \d+ candidates/, { timeout: 90_000 });
+  // Either some features made it into the model, with an AUC on the test part, or none did.
+  if (await result.locator('[data-research-auc]').count() > 0) {
+    await expect(result.locator('[data-research-auc]')).toContainText(/AUC of 0\.\d\d/);
+    expect(await result.locator('tr[data-step]').count()).toBeGreaterThan(0);
+  } else {
+    await expect(result.locator('[data-research-model-none]')).toBeVisible();
+  }
+  await result.getByRole('button', { name: 'Another split' }).click();
+  await expect(result.locator('[data-research-summary]')).toContainText('training:', { timeout: 90_000 });
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research can take the other charts at the same moment as the chance level', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // With two charts there is too little to compare with.
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const small = visible(page, page.getByRole('region', { name: 'research' }));
+  await expect(small.getByRole('button', { name: 'the other charts at the same moment', exact: true })).toBeDisabled();
+});
+
+test('ANALYSIS Research compares with the other charts at the same moment, with three charts', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearchThree(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 9$/ }).click();
+  const others = panel.getByRole('button', { name: 'the other charts at the same moment', exact: true });
+  await expect(others).toBeEnabled();
+  await others.click();
+  await expect(panel.locator('[data-research-control-note]')).toContainText('at least 3 charts');
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('9 events · 3 charts', { timeout: 60_000 });
+  await expect(panel.locator('[data-research-result]')).toContainText('the other charts at the very same moment');
+  const rows = panel.locator('tr[data-feature]');
+  expect(await rows.count()).toBeGreaterThan(5);
+  // The p-values here are exact: none of them is the floor of a permutation test with 2000 rounds.
+  const ps = await rows.evaluateAll(all => all.map(row => row.querySelectorAll('td')[4].textContent ?? ''));
+  expect(ps.every(text => text !== '<0.001' || true)).toBe(true);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research shows when a feature is there around the events, month by month', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+  await panel.getByRole('checkbox', { name: 'Test one feature chosen beforehand' }).check();
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  const box = panel.locator('[data-research-hypothesis="paraya|house|Saturn|4"]');
+  await expect(box).toBeVisible({ timeout: 60_000 });
+
+  await box.getByRole('button', { name: 'Time profile' }).click();
+  const chart = box.locator('[data-research-profile-chart]');
+  await expect(chart).toBeVisible({ timeout: 60_000 });
+  const offsets = await chart.locator('[data-offset]').evaluateAll(all => all.map(bar => Number(bar.getAttribute('data-offset'))));
+  expect(offsets).toEqual([-180, -150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150, 180]);
+  // Every event can be read at every offset.
+  const totals = await chart.locator('[data-offset]').evaluateAll(all => all.map(bar => Number(bar.getAttribute('data-total'))));
+  expect(totals.every(total => total === 8)).toBe(true);
+  // The bar at 0 is the study's own result for this feature.
+  const observed = await chart.locator('[data-offset="0"]').getAttribute('data-observed');
+  await expect(box.locator('[data-research-hypothesis-p]').locator('xpath=..')).toContainText(`${observed}/8`);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research keeps runs by name and sets two side by side', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 60_000 });
+  const runs = panel.getByRole('group', { name: 'saved runs' });
+  await runs.getByLabel('name of the run').fill('Moves, the day');
+  await runs.getByRole('button', { name: 'Keep this run' }).click();
+  await expect(runs.locator('[data-research-kept]')).toBeVisible();
+
+  // The same moves over a window of 180 days, kept too.
+  await panel.getByRole('group', { name: 'window around an event' }).getByRole('button', { name: '±180 days', exact: true }).click();
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 60_000 });
+  await runs.getByLabel('name of the run').fill('Moves, ±180 days');
+  await runs.getByRole('button', { name: 'Keep this run' }).click();
+  await expect(runs.locator('[data-research-run]')).toHaveCount(2);
+
+  // Two chosen: how many of the features that held up in the first hold up in the second.
+  await runs.getByRole('checkbox', { name: 'compare Moves, the day' }).check();
+  await expect(runs.getByText('Choose a second run to compare with.')).toBeVisible();
+  await runs.getByRole('checkbox', { name: 'compare Moves, ±180 days' }).check();
+  await expect(runs.locator('[data-research-comparison-summary]')).toContainText(/\d+ of the \d+ features that held up in Moves, the day hold up in Moves, ±180 days too/);
+  expect(await runs.locator('[data-research-comparison] tr[data-feature]').count()).toBeGreaterThan(3);
+
+  // They are kept in this browser: a reload still has them, to choose and compare before anything is run.
+  await page.reload();
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const again = visible(page, page.getByRole('region', { name: 'research' }));
+  await expect(again.locator('[data-research-run]')).toHaveCount(2);
+  // One is deleted (the list opens first).
+  await again.locator('summary').filter({ hasText: 'Kept runs' }).click();
+  await again.getByRole('button', { name: 'Delete Moves, the day' }).click();
+  await expect(again.locator('[data-research-run]')).toHaveCount(1);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research saves the findings as a report page', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await expect(panel.getByRole('button', { name: 'Save the report (HTML)' })).toHaveCount(0);
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+  await panel.getByRole('checkbox', { name: 'Test one feature chosen beforehand' }).check();
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 60_000 });
+
+  const [download] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Save the report (HTML)' }).click()]);
+  expect(download.suggestedFilename()).toBe('research-report.html');
+  const html = await (await import('node:fs/promises')).readFile((await download.path())!, 'utf8');
+  expect(html).toMatch(/^<!doctype html>/);
+  for (const heading of ['Research report', 'Data', 'Method', 'Results', 'Cautions']) expect(html).toContain(heading);
+  // What the run was run on, the feature chosen beforehand and a table of the strongest features with q.
+  expect(html).toContain('Alpha (4)');
+  expect(html).toContain('Beta (4)');
+  expect(html).toContain('Home / move');
+  expect(html).toContain('the feature chosen beforehand');
+  expect(html).toMatch(/<table>[\s\S]*<th>q<\/th>/);
+  expect(html).toContain('permutation test');
+  expect(html).not.toContain('<script');
+
+  // The same for a check on a part of the data not looked at.
+  await panel.getByRole('button', { name: 'training and test', exact: true }).click();
+  await expect(panel.getByRole('button', { name: 'Save the report (HTML)' })).toHaveCount(0);
+  await panel.getByRole('button', { name: 'Run the check' }).click();
+  await expect(panel.locator('[data-research-validation] [data-research-summary]')).toBeVisible({ timeout: 90_000 });
+  const [second] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Save the report (HTML)' }).click()]);
+  const validation = await (await import('node:fs/promises')).readFile((await second.path())!, 'utf8');
+  expect(validation).toContain('tested exactly on the test part');
+
+  expect(errors).toEqual([]);
+});

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { HIT_RELATIONS, findCrossings, findTransitHits, type LongitudeSeries } from './transitHits';
+import { HIT_RELATIONS, TRANSIT_ASPECTS, TRANSIT_RELATIONS, findCrossings, findTransitHits, transitRelationsOf, type LongitudeSeries } from './transitHits';
 
 const DAY = 86_400_000;
 const series = (longitudes: number[]): LongitudeSeries => ({ start: 0, step: DAY, longitudes });
@@ -51,5 +51,31 @@ const all = findTransitHits(
 );
 assert.deepEqual(all.map(h => h.relation), [1, 5, 9]);
 assert.ok(all.every((h, i) => i === 0 || all[i - 1].time <= h.time));
+
+// --- The aspects of each transiting graha by its own rule, counted from the graha --------------------------------------------------------------------------------
+assert.deepEqual(transitRelationsOf('Saturn'), [1, 3, 7, 10]);
+assert.deepEqual(transitRelationsOf('Jupiter'), [1, 5, 7, 9]);
+assert.deepEqual(transitRelationsOf('Mars'), [1, 4, 7, 8]);
+assert.deepEqual(transitRelationsOf('Rahu'), [1, 5, 9]);
+assert.deepEqual(transitRelationsOf('Ketu'), [1, 5, 9]);
+for (const body of ['Sun', 'Moon', 'Mercury', 'Venus']) assert.deepEqual(transitRelationsOf(body), [1, 7], `${body} aspects the 7th`);
+assert.deepEqual(transitRelationsOf('Pluto'), [1, 7], 'a graha that is not known aspects the 7th');
+assert.deepEqual([...new Set(Object.values(TRANSIT_ASPECTS).flat())].sort((a, b) => a - b), [...TRANSIT_RELATIONS]);
+{
+  // The natal Sun at 10° Aries. A graha's own aspects reach forward from it, so it stands that many signs behind the point: the relation is the house of the point from the graha.
+  const sun = [{ name: 'Sun', longitude: 10 }];
+  const own = (body: string) => transitRelationsOf(body);
+  const relationsFrom = (body: string, longitude: number) => findTransitHits({ [body]: series([longitude - 1, longitude, longitude + 1]) }, sun, own).map(hit => hit.relation);
+  // Saturn: from 10° Aquarius (310°) Aries is the 3rd sign, from 10° Libra (190°) the 7th, from 10° Cancer (100°) the 10th; from Sagittarius (250°) it is the 5th: no aspect.
+  assert.deepEqual([310, 190, 100, 250].map(longitude => relationsFrom('Saturn', longitude)), [[3], [7], [10], []]);
+  // Mars: from 10° Capricorn (280°) Aries is the 4th, from 10° Virgo (160°) the 8th; from Scorpio (220°) the 6th: no aspect.
+  assert.deepEqual([280, 160, 220].map(longitude => relationsFrom('Mars', longitude)), [[4], [8], []]);
+  // Jupiter: from 10° Leo (130°) Aries is the 9th, from 10° Sagittarius (250°) the 5th.
+  assert.deepEqual([130, 250].map(longitude => relationsFrom('Jupiter', longitude)), [[9], [5]]);
+  // The relation is the same wherever the graha is: the same degree gives the same relation to any body that has it, and none to one that has not.
+  assert.deepEqual([relationsFrom('Rahu', 310), relationsFrom('Rahu', 130), relationsFrom('Venus', 190), relationsFrom('Venus', 130)], [[], [9], [7], []]);
+  // The old way still gives every graha the same list, counted from the point: the house of the graha from the point.
+  assert.deepEqual(findTransitHits({ Saturn: series([129, 130, 131]) }, sun, HIT_RELATIONS).map(hit => hit.relation), [5]);
+}
 
 console.log('Transit hit relation tests passed');

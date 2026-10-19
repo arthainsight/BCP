@@ -12,7 +12,7 @@ import {
   type AspectPeriod, type Convergence, type ExactHit, type Stay,
 } from '@/lib/bnn/parayaAspects';
 import { PROGRESSION_NATAL, formatHitDay } from '@/lib/bnn/parayaProgression';
-import { findTransitHits, PROGRESSION_RELATIONS, type HitRelation, type LongitudeSeries } from '@/lib/transitHits';
+import { findTransitHits, PROGRESSION_RELATIONS, TRANSIT_RELATIONS, transitRelationsOf, type HitRelation, type LongitudeSeries, type RelationsOf } from '@/lib/transitHits';
 import { transitStays } from '@/lib/transitAspects';
 import { GRAHA_DASHA_SYSTEMS, grahaDashaTable, type GrahaDashaSystem } from '@/lib/dashaEvents';
 import { dashaLordsDuring, hasLord, type DashaStretch, type LordLevel } from '@/lib/dashaDuring';
@@ -77,7 +77,7 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
   const [source, setSource] = useState<Source>('paraya');
   const [years, setYears] = useState(10);
   const [selected, setSelected] = useState<Record<Source, readonly string[]>>({ paraya: PARAYA_BODIES, transit: TRANSIT_SLOW });
-  const [relations, setRelations] = useState<readonly HitRelation[]>(PROGRESSION_RELATIONS);
+  const [relationChoice, setRelationChoice] = useState<Record<Source, readonly HitRelation[]>>({ paraya: PROGRESSION_RELATIONS, transit: TRANSIT_RELATIONS });
   const [minimum, setMinimum] = useState(2);
   const [mode, setMode] = useState<'several' | 'search'>('several');
   const [searchBody, setSearchBody] = useState('');
@@ -93,6 +93,10 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
   const progression = source === 'paraya';
   const allBodies: readonly string[] = progression ? ALL_PARAYA_BODIES : TRANSIT_BODIES;
   const bodies = selected[source];
+  const choices = progression ? PROGRESSION_RELATIONS : TRANSIT_RELATIONS;
+  const relations = relationChoice[source];
+  /** What is looked at for each graha: the relations chosen, and in the transits only those the graha has (Saturn the 3rd, 7th and 10th, Jupiter the 5th, 7th and 9th, and so on). */
+  const relationsOf = useMemo<RelationsOf>(() => (progression ? relations : (body: string) => transitRelationsOf(body).filter(item => relations.includes(item))), [progression, relations]);
 
   const birth = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const from = useMemo(() => parseTargetDateString(targetDate), [targetDate]);
@@ -141,10 +145,10 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
   const periodsByNatal = useMemo(() => {
     const byNatal = new Map<string, AspectPeriod[]>();
     for (const point of natal) {
-      byNatal.set(point.name, bodies.flatMap(body => aspectPeriodsOf(stays[body] ?? [], point, relations)));
+      byNatal.set(point.name, bodies.flatMap(body => aspectPeriodsOf(stays[body] ?? [], point, relationsOf)));
     }
     return byNatal;
-  }, [natal, bodies, stays, relations]);
+  }, [natal, bodies, stays, relationsOf]);
 
   // At the target moment.
   const nowRows = useMemo(() => {
@@ -152,10 +156,10 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
     const current: { body: string; signIndex: number }[] = progression
       ? parayaPeriodsOf(chart, nowAge, options, true).filter(period => bodies.includes(period.body))
       : bodies.flatMap(body => (stays[body] ?? []).filter(stay => stay.startAge <= nowAge && nowAge < stay.endAge));
-    return natal.map(point => ({ ...point, aspects: aspectsAt(current, point.signIndex, relations) }));
-  }, [chart, birth, from, nowAge, options, bodies, natal, relations, progression, stays]);
+    return natal.map(point => ({ ...point, aspects: aspectsAt(current, point.signIndex, relationsOf) }));
+  }, [chart, birth, from, nowAge, options, bodies, natal, relationsOf, progression, stays]);
 
-  // The exact degree: when each graha stands at the degree of a natal point, in its own sign or the 5th, 7th or 9th from it.
+  // The exact degree: when each graha stands at the degree of a natal point, in its own sign or in a sign it aspects.
   const exactHits = useMemo<ExactHit[]>(() => {
     if (!birth || !from) return [];
     if (progression) {
@@ -167,9 +171,9 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
       { name: 'Asc', longitude: chart.ascendant.longitude },
     ];
     const chosen = Object.fromEntries(Object.entries(transitSeries).filter(([body]) => bodies.includes(body)));
-    return findTransitHits(chosen, points, relations).map(hit => ({ body: hit.transit, natal: hit.natal, relation: hit.relation, time: hit.time, retrograde: hit.retrograde }));
+    return findTransitHits(chosen, points, relationsOf).map(hit => ({ body: hit.transit, natal: hit.natal, relation: hit.relation, time: hit.time, retrograde: hit.retrograde }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart, birth, from, toAge, relations, options, bodies, progression, transitSeries]);
+  }, [chart, birth, from, toAge, relations, relationsOf, options, bodies, progression, transitSeries]);
 
   // The daśā lords through each stretch.
   const dashaTable = useMemo(
@@ -220,7 +224,8 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
   const strip = useMemo(() => stripRows(natal, periodsByNatal, nowAge, toAge), [natal, periodsByNatal, nowAge, toAge]);
 
   const natalCodes = (names: string[]) => names.map(name => code(name)).join(' ');
-  const relationText = (relation: HitRelation) => (relation === 1 ? t('over natal') : `${ordinal(relation, language)} ${t('from natal')}`);
+  // The progressions have the house of the graha from the natal point; the transits have the grahas' own aspects, counted from the graha.
+  const relationText = (relation: HitRelation) => (relation === 1 ? t('over natal') : `${ordinal(relation, language)} ${progression ? t('from natal') : t('aspect on')}`);
   const chip = (on: boolean) =>
     `rounded-md border px-2.5 py-1.5 text-[10px] font-mono sm:px-2 sm:py-1 ${on
       ? 'border-emerald-500 bg-emerald-500 text-white dark:border-green-600 dark:bg-green-600'
@@ -233,7 +238,7 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
     setShowAll(false);
   };
   const toggleRelation = (relation: HitRelation) => {
-    setRelations(current => (current.includes(relation) ? current.filter(item => item !== relation) : PROGRESSION_RELATIONS.filter(item => item === relation || current.includes(item))));
+    setRelationChoice(current => ({ ...current, [source]: current[source].includes(relation) ? current[source].filter(item => item !== relation) : choices.filter(item => item === relation || current[source].includes(item)) }));
     setShowAll(false);
   };
   const chooseSource = (next: Source) => {
@@ -280,7 +285,7 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
       <Heading command="paraya.aspects">
         {progression
           ? t('Which progressing (Paraya) grahas aspect a natal graha or the ascendant by sign, not by degree: a graha in the same sign as the point, or in its 5th, 7th or 9th sign, aspects it for the whole of its stay there.')
-          : t('Which transiting grahas aspect a natal graha or the ascendant by sign, not by degree: a graha in the same sign as the point, or in its 5th, 7th or 9th sign, aspects it for as long as it is there, and a graha that turns retrograde can leave a sign and come back to it.')}
+          : t('Which transiting grahas aspect a natal graha or the ascendant by sign, not by degree: a graha in the same sign as the point, or in a sign it aspects (Saturn the 3rd, 7th and 10th, Jupiter the 5th, 7th and 9th, Mars the 4th, 7th and 8th, Rahu and Ketu the 5th and 9th, the others the 7th), aspects it for as long as it is there, and a graha that turns retrograde can leave a sign and come back to it.')}
       </Heading>
 
       <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('aspects of')}>
@@ -294,7 +299,7 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
           </button>
         ))}
         <span className="mx-1 text-zinc-300 dark:text-zinc-600">·</span>
-        {PROGRESSION_RELATIONS.map(relation => (
+        {choices.map(relation => (
           <button key={relation} type="button" aria-pressed={relations.includes(relation)} title={relationText(relation)} onClick={() => toggleRelation(relation)} className={chip(relations.includes(relation))}>
             {relation}
           </button>

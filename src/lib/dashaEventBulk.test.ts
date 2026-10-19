@@ -19,6 +19,9 @@ assert.equal(changed[1], events[1], 'an event that was not chosen is the same ob
 assert.equal(events[0].endDate, '2017-08-20', 'the list that was given is not changed');
 assert.equal(applyBulkChange(events, new Set(['b']), { varga: 'D9' })[1].varga, 'D9');
 
+const accurate = applyBulkChange(events, new Set(['b']), { accuracy: 'month' });
+assert.equal(accurate[1].accuracy, 'month'); assert.equal('accuracy' in accurate[0], false, 'only the chosen events change');
+
 assert.deepEqual(removeEvents(events, new Set(['a', 'c'])).map(item => item.id), ['b']);
 assert.deepEqual(sortEvents([make('x', '2020-01-01'), make('y', '2010-01-01'), make('z', '2020-01-01')]).map(item => item.id), ['y', 'x', 'z']);
 assert.deepEqual([...countByYear(events)], [['2015', 1], ['2018', 2]]);

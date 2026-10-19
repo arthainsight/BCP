@@ -2,7 +2,8 @@
 
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
-import { targetKindOf, type Feature, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
+import { parseFeatureId, targetKindOf, type Feature, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
+import { parseComboId } from '@/lib/research/combos';
 import type { WindowChoice } from '@/lib/research/eventStudy';
 
 // What the parts of the Research view share.
@@ -69,4 +70,28 @@ export function FeatureLabel({ feature }: { feature: Pick<Feature, 'source' | 'f
       <span className="font-bold">{targetKindOf(feature.family) === 'house' ? feature.target : code(feature.target)}</span>
     </>
   );
+}
+
+/** A feature in plain words, as `FeatureLabel` puts it, for a text that is not on the screen (the report). `code` gives the name of a graha. */
+export function featureText(feature: Pick<Feature, 'source' | 'family' | 'body' | 'target'>, t: (text: string) => string, code: (body: string) => string): string {
+  const graha = code(feature.body);
+  if (feature.source === 'dasha') {
+    const level = feature.family.startsWith('md') ? 'MD' : 'AD';
+    if (feature.family.endsWith('Graha')) return `${level} ${t('lord')} ${graha}`;
+    return `${level} ${graha} ${feature.family.endsWith('Rules') ? t('rules house') : t('placed in house')} ${feature.target}`;
+  }
+  if (feature.source === 'gochara') {
+    if (feature.family === 'fromMoon') return `${graha} ${t('in house')} ${feature.target} ${t('from the Moon')}`;
+    if (feature.family === 'favourable') return `${graha} ${t(feature.target === 'favourable' ? 'in a favourable house from the Moon' : 'in an unfavourable house from the Moon')}`;
+    if (feature.family === 'bindu') return `${graha} ${t('own bindus in its sign')} ${t(feature.target)}`;
+    if (feature.family === 'sav') return `${graha} ${t('in a sign with a Sarvāṣṭakavarga')} ${t(feature.target)}`;
+    return t(feature.target === 'sadeSati' ? 'Sade Sati' : feature.target === 'kantaka' ? 'Saturn 4th from the Moon (kantaka)' : 'Saturn 8th from the Moon (ashtama)');
+  }
+  return `${graha}${feature.source === 'transit' ? ` (${t('transit')})` : ''} ${t(FAMILY_LABELS[feature.family])} ${targetKindOf(feature.family) === 'house' ? feature.target : code(feature.target)}`;
+}
+
+/** A feature or a combination of two (the ids `a & b`) in plain words. */
+export function featureIdText(id: string, t: (text: string) => string, code: (body: string) => string): string {
+  const parts = parseComboId(id);
+  return parts ? `${featureText(parseFeatureId(parts[0]), t, code)} + ${featureText(parseFeatureId(parts[1]), t, code)}` : featureText(parseFeatureId(id), t, code);
 }

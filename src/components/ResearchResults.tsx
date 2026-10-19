@@ -5,11 +5,14 @@ import { leaveOneChartOut, testFeature, type FeatureKind, type FeatureResult, ty
 import { kindId, parseFeatureId } from '@/lib/research/features';
 import { dayText, eventsCsv, resultsCsv, type EventRow } from '@/lib/research/researchCsv';
 import type { ParayaBody } from '@/lib/bnn/nadiParaya';
+import type { ProfilePoint } from '@/lib/research/timeProfile';
+import type { RunSettings } from '@/lib/research/researchRuns';
 import { saveFile } from '@/lib/download';
 import { fill, useT } from '@/lib/i18n';
 import { BODY_CELL, HEAD_CELL, ROW } from './balaShared';
 import ResearchMatrix, { Q_MARK, formatP } from './ResearchMatrix';
 import { FAMILY_LABELS, FeatureLabel, SOURCE_LABELS, chip, percent } from './researchUi';
+import ResearchProfile from './ResearchProfile';
 import { PROGRESSION_NATAL } from '@/lib/bnn/parayaProgression';
 
 /** What the comparison with chance leaves for the view. */
@@ -18,6 +21,12 @@ export interface ChanceOutcome {
   kinds: FeatureKind[];
   bodies: ParayaBody[];
   windowDays: WindowChoice;
+  /** Where the chance level came from: the same chart at random moments of its life, or the other charts at the same moment. */
+  control: 'life' | 'others';
+  /** What the run was run on, for keeping it by name. */
+  runSettings: RunSettings;
+  /** The feature around the events, month by month (the study's charts and options are kept by the panel that made the outcome). */
+  profile: (id: string) => ProfilePoint[];
   /** A feature chosen before running, as its id, or null. */
   hypothesis: string | null;
   /** The event of each chart and event id: the chart, the moment, the name, the category and the tags. */
@@ -125,6 +134,7 @@ export default function ResearchResults({ outcome }: { outcome: ChanceOutcome })
               </div>
               <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('One feature chosen before looking at the results needs no correction for the number of features: p is the exact chance of as many events with it as there are, by chance.')}</p>
               <LeaveOneOut outcome={outcome} id={hypothesis} />
+              <ResearchProfile id={hypothesis} load={outcome.profile} />
             </div>
           )}
 
@@ -178,6 +188,7 @@ export default function ResearchResults({ outcome }: { outcome: ChanceOutcome })
             )}
             <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
               {t('p is the chance that as many events would have the feature if they were moved to random moments of their own chart (a permutation test); q corrects p for the number of features looked at, because among many some always look striking by chance. This shows what the events have in common, not why; a handful of events can only hint.')}
+              {outcome.control === 'others' && ` ${t('Here the chance level is the other charts at the very same moment (each event is compared with the share of the other charts that have the feature then), p is the exact chance of as many events as there are, not a permutation test, and with few charts it is coarse and cautious.')}`}
               {windowDays === 'auto' && ` ${t('Each event was read over a window that follows how exactly its date is known (to the day: the day; to the month: 15 days either side; to the year: 182), and the random moments over the same windows.')}`}
               {typeof windowDays === 'number' && windowDays > 0 && ` ${fill(t('Every moment, of the events and of the random ones, was read over a window of {days} days either side.'), { days: String(windowDays) })}`}
             </p>
@@ -188,6 +199,7 @@ export default function ResearchResults({ outcome }: { outcome: ChanceOutcome })
               <div className="text-[11px] font-mono text-zinc-700 dark:text-zinc-200"><FeatureLabel feature={focused} /> · {focused.observed} {t('events')}</div>
               {eventList(focused.events)}
               <LeaveOneOut outcome={outcome} id={focused.id} />
+              <ResearchProfile id={focused.id} load={outcome.profile} />
             </div>
           )}
         </>

@@ -1,6 +1,7 @@
 import type { ChartData } from '@/types';
 import type { EventProgression } from '@/lib/bnn/eventProgressions';
 import { aspectRelationOf } from '@/lib/bnn/parayaAspects';
+import { PROGRESSION_RELATIONS, transitRelationsOf } from '@/lib/transitHits';
 import { SIGN_LORDS } from '@/lib/signs';
 import { gocharaRowOf, type GocharaPlanet, type GocharaTables } from '@/lib/gochara';
 
@@ -70,8 +71,9 @@ export const TARGET_LISTS: Record<'favourable' | 'bindu' | 'sav' | 'rule', reado
 };
 
 /**
- * The features that positions have at a moment: for each graha, its house; each house whose sign it aspects (it is in the same sign, or the 5th, 7th or 9th
- * sign from it); each natal point it aspects by sign; and each natal point it stands within a degree of in an aspecting sign. `ascendantSign` is 1–12.
+ * The features that positions have at a moment: for each graha, its house; each house whose sign it aspects (it is in the same sign, or in a sign it aspects: the 5th,
+ * 7th or 9th for a progressing graha, and for a transiting one its own aspects, Saturn the 3rd, 7th and 10th and so on); each natal point it aspects by sign; and each
+ * natal point it stands within a degree of in an aspecting sign. `ascendantSign` is 1–12.
  */
 export function featuresOf(rows: readonly EventProgression[], families: readonly FeatureFamily[], ascendantSign: number, source: 'paraya' | 'transit' = 'paraya'): string[] {
   const wanted = new Set(families);
@@ -80,7 +82,7 @@ export function featuresOf(rows: readonly EventProgression[], families: readonly
     if (wanted.has('house')) features.push(featureId(source, 'house', row.body, row.house));
     if (wanted.has('aspectHouse')) {
       for (let house = 1; house <= 12; house++) {
-        if (aspectRelationOf(row.signIndex, (ascendantSign - 1 + house - 1) % 12)) features.push(featureId(source, 'aspectHouse', row.body, house));
+        if (aspectRelationOf(row.signIndex, (ascendantSign - 1 + house - 1) % 12, source === 'transit' ? transitRelationsOf : PROGRESSION_RELATIONS, row.body)) features.push(featureId(source, 'aspectHouse', row.body, house));
       }
     }
     for (const aspect of row.aspects) {
