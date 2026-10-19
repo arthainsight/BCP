@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { calculateSignChangeSeries, SIGN_CHANGE_STEP_HOURS, type SignChangeBody } from '@/lib/ephemeris';
 
 const MAX_DAYS = 31 * 366;
+// With a coarser step (a day count of 2 to 7) a table can run to a long life, as the research needs it.
+const MAX_DAYS_COARSE = 140 * 366;
 // What one request may sample: Jupiter, Saturn, Rahu and Ketu for thirty years, or the four faster grahas for ten, take a second or two.
 const MAX_SAMPLES = 160_000;
 // The Moon changes sign every two or three days and would be hundreds of stays a year.
@@ -13,7 +15,8 @@ const BODIES = (Object.keys(SIGN_CHANGE_STEP_HOURS) as SignChangeBody[]).filter(
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const start = Date.parse(`${searchParams.get('start') ?? ''}T00:00:00Z`);
-  const days = Math.min(MAX_DAYS, Math.max(1, parseInt(searchParams.get('days') || '366')));
+  const stepDays = Math.min(7, Math.max(0, parseInt(searchParams.get('step') || '0') || 0));
+  const days = Math.min(stepDays > 1 ? MAX_DAYS_COARSE : MAX_DAYS, Math.max(1, parseInt(searchParams.get('days') || '366')));
   if (Number.isNaN(start)) {
     return NextResponse.json({ error: 'start must be YYYY-MM-DD' }, { status: 400 });
   }
@@ -23,7 +26,8 @@ export async function GET(request: NextRequest) {
   if (bodies.length === 0) {
     return NextResponse.json({ error: 'bodies must name at least one graha' }, { status: 400 });
   }
-  const samples = bodies.reduce((sum, body) => sum + (days * 24) / SIGN_CHANGE_STEP_HOURS[body], 0);
+  const stepHours = stepDays > 0 ? stepDays * 24 : undefined;
+  const samples = bodies.reduce((sum, body) => sum + (days * 24) / (stepHours ?? SIGN_CHANGE_STEP_HOURS[body]), 0);
   if (samples > MAX_SAMPLES) {
     return NextResponse.json({ error: 'That many grahas for that many years is too much to calculate at once' }, { status: 400 });
   }
@@ -35,7 +39,10 @@ export async function GET(request: NextRequest) {
       searchParams.get('ayanamsa') || 'lahiri',
       searchParams.get('nodeMode') || 'mean',
       parseFloat(searchParams.get('ayanamsaOffset') || '0'),
+      stepHours,
     );
+    // A coarse table is long: four decimals (a few seconds of arc) are plenty for the signs and the exact hits.
+    if (stepHours) for (const sample of Object.values(series)) sample.longitudes = sample.longitudes.map(longitude => Math.round(longitude * 10_000) / 10_000);
     return NextResponse.json({ start, series });
   } catch (error) {
     console.error('Transit series error:', error);

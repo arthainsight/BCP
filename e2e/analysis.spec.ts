@@ -978,7 +978,7 @@ test('ANALYSIS Research: a window, a feature chosen beforehand and without each 
   await expect(window.getByRole('button', { name: 'the day', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await window.getByRole('button', { name: '±90 days', exact: true }).click();
   await expect(window.getByRole('button', { name: '±90 days', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await panel.getByRole('group', { name: 'features', exact: true }).getByRole('button', { name: 'exact on natal' }).click();
+  await panel.getByRole('group', { name: 'progressions', exact: true }).getByRole('button', { name: 'exact on natal' }).click();
 
   // One feature chosen beforehand: Saturn in house 4.
   await panel.getByLabel('Test one feature chosen beforehand').check();
@@ -989,7 +989,7 @@ test('ANALYSIS Research: a window, a feature chosen beforehand and without each 
   await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 30_000 });
 
   // Its own box: how many events, how many by chance, an exact p without a correction, and without each chart in turn.
-  const box = panel.locator('[data-research-hypothesis="house|Saturn|4"]');
+  const box = panel.locator('[data-research-hypothesis="paraya|house|Saturn|4"]');
   await expect(box).toBeVisible();
   await expect(box).toContainText(/\d+\/8 events/);
   await expect(box).toContainText('by chance');
@@ -1070,6 +1070,111 @@ test('ANALYSIS Research compares two kinds of event side by side', async ({ page
   const text = (await (await import('node:fs/promises')).readFile((await download.path())!, 'utf8')).replace(/^﻿/, '');
   expect(text.split('\n')[0]).toContain('"group"');
   expect(text.split('\n')).toHaveLength(11);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research reads the transits and the daśā of the events too', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+
+  // Three sources of features, each with its own kinds: the progressions are on to begin with; the transits and the daśā are added.
+  const transits = panel.getByRole('group', { name: 'transits', exact: true });
+  const dasha = panel.getByRole('group', { name: 'daśā', exact: true });
+  await expect(panel.getByRole('group', { name: 'progressions', exact: true }).getByRole('button', { name: 'in house', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(transits.getByRole('button', { name: 'in house', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await transits.getByRole('button', { name: 'in house', exact: true }).click();
+  await transits.getByRole('button', { name: 'aspects natal', exact: true }).click();
+  await dasha.getByRole('button', { name: 'MD lord', exact: true }).click();
+  await dasha.getByRole('button', { name: 'MD rules house', exact: true }).click();
+  await dasha.getByRole('button', { name: 'AD placed in house', exact: true }).click();
+  await panel.getByLabel('daśā system').first().selectOption('yogini');
+  await panel.getByLabel('daśā system').first().selectOption('vimshottari');
+
+  // One feature chosen beforehand from the daśā: Venus as the lord of the mahādaśā.
+  await panel.getByLabel('Test one feature chosen beforehand').check();
+  await panel.getByLabel('source of the feature').selectOption('dasha');
+  await panel.getByLabel('graha of the feature').selectOption('Venus');
+  await panel.getByLabel('kind of the feature').selectOption('mdGraha');
+  await expect(panel.getByLabel('house or natal point of the feature')).toHaveCount(0);
+
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 60_000 });
+  await expect(panel.locator('[data-research-hypothesis="dasha|mdGraha|Venus|*"]')).toBeVisible();
+
+  // The matrix of each kind carries its source when there are several.
+  const shown = panel.getByRole('group', { name: 'shown in the matrix' });
+  await expect(shown.getByRole('button', { name: 'progressions · in house', exact: true })).toBeVisible();
+  const rowSum = async (matrix: ReturnType<typeof panel.locator>, row: number, columns: number) => {
+    const counts = await matrix.locator('[data-cell]').evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-count'))));
+    return counts.slice(row * columns, row * columns + columns).reduce((sum, n) => sum + n, 0);
+  };
+
+  // The transits: the four slow grahas in the rows, a house in each column; each graha is in one house at each event.
+  await shown.getByRole('button', { name: 'transits · in house', exact: true }).click();
+  const sky = panel.locator('[data-research-kind="transit|house"]');
+  await expect(sky.locator('tbody tr')).toHaveCount(4);
+  for (let row = 0; row < 4; row++) expect(await rowSum(sky, row, 12)).toBe(8);
+
+  // The daśā lord of each event: nine grahas, one column, and every event has one mahādaśā lord.
+  await shown.getByRole('button', { name: 'daśā · MD lord', exact: true }).click();
+  const lords = panel.locator('[data-research-kind="dasha|mdGraha"]');
+  await expect(lords.locator('tbody tr')).toHaveCount(9);
+  const lordCounts = await lords.locator('[data-cell]').evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-count'))));
+  expect(lordCounts.reduce((sum, n) => sum + n, 0)).toBe(8);
+  // What the lord rules: at most two houses each (Rahu and Ketu none), so up to sixteen in all.
+  await shown.getByRole('button', { name: 'daśā · MD rules house', exact: true }).click();
+  const rules = panel.locator('[data-research-kind="dasha|mdRules"]');
+  const ruled = await rules.locator('[data-cell]').evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-count'))));
+  expect(ruled).toHaveLength(9 * 12);
+  expect(ruled.reduce((sum, n) => sum + n, 0)).toBeGreaterThan(0);
+  expect(ruled.reduce((sum, n) => sum + n, 0)).toBeLessThanOrEqual(16);
+
+  // The table names the source of each feature, and the events file has a column for each.
+  const rows = panel.locator('tr[data-feature]');
+  const sources = new Set((await rows.evaluateAll(all => all.map(row => row.getAttribute('data-feature')?.split('|')[0] ?? ''))));
+  expect([...sources].sort()).toEqual(['dasha', 'paraya', 'transit']);
+  const [download] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Export the events (CSV)' }).click()]);
+  const header = (await (await import('node:fs/promises')).readFile((await download.path())!, 'utf8')).replace(/^\uFEFF/, '').split('\n')[0];
+  expect(header).toContain('"transit|house|');
+  expect(header).toContain('"dasha|mdGraha|');
+  expect(header).toContain('"paraya|house|');
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research reads the transits over a window, with exact hits', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+  await panel.getByRole('group', { name: 'window around an event' }).getByRole('button', { name: '±180 days', exact: true }).click();
+  // The transits alone: the progressions off, the transits' exact hits on.
+  for (const family of ['in house', 'aspects house', 'aspects natal']) await panel.getByRole('group', { name: 'progressions', exact: true }).getByRole('button', { name: family, exact: true }).click();
+  const transits = panel.getByRole('group', { name: 'transits', exact: true });
+  await transits.getByRole('button', { name: 'in house', exact: true }).click();
+  await transits.getByRole('button', { name: 'exact on natal', exact: true }).click();
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 60_000 });
+  const rows = panel.locator('tr[data-feature]');
+  expect(await rows.count()).toBeGreaterThan(5);
+  const ids = await rows.evaluateAll(all => all.map(row => row.getAttribute('data-feature') ?? ''));
+  expect(ids.every(id => id.startsWith('transit|'))).toBe(true);
+  // Over half a year either side Jupiter, Saturn, Rahu and Ketu each make exact hits to some natal point, and a house or two.
+  expect(ids.some(id => id.startsWith('transit|exact|'))).toBe(true);
+  expect(ids.some(id => id.startsWith('transit|house|'))).toBe(true);
 
   expect(errors).toEqual([]);
 });

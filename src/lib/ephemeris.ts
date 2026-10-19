@@ -300,6 +300,8 @@ export async function calculateSignChangeSeries(
   ayanamsaSetting: string = 'lahiri',
   nodeModeSetting: string = 'mean',
   ayanamsaOffsetDegrees: number = 0,
+  /** One step in hours for every graha, in place of the one that suits each (a coarser table for a long time). */
+  stepHoursOverride?: number,
 ): Promise<Record<string, { step: number; longitudes: number[] }>> {
   const ayanamsaMode = resolveAyanamsaMode(ayanamsaSetting);
   const useTropical = ayanamsaMode === 'tropical';
@@ -311,7 +313,7 @@ export async function calculateSignChangeSeries(
   );
   const result: Record<string, { step: number; longitudes: number[] }> = {};
   for (const body of bodies) {
-    const stepHours = SIGN_CHANGE_STEP_HOURS[body];
+    const stepHours = stepHoursOverride ?? SIGN_CHANGE_STEP_HOURS[body];
     const longitudes: number[] = [];
     for (let i = 0; i <= (days * 24) / stepHours; i++) {
       const jd = startJd + (i * stepHours) / 24;

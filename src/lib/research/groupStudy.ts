@@ -1,5 +1,5 @@
 import type { EventFeatures } from './eventStudy';
-import { parseFeatureId, type Feature } from './progressionFeatures';
+import { parseFeatureId, type Feature } from './features';
 import { adjustedQValues, fisherExactTwoSided } from './stats';
 
 // Two sets of events side by side (moves and weddings, say): which features does one have more often than the other? Each feature is counted in both sets and

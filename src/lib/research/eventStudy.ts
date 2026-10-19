@@ -2,9 +2,13 @@ import type { ChartData } from '@/types';
 import { progressionsAt } from '@/lib/bnn/eventProgressions';
 import type { ParayaBody, ParayaOptions } from '@/lib/bnn/nadiParaya';
 import { findParayaHits } from '@/lib/bnn/parayaHits';
-import { PROGRESSION_RELATIONS } from '@/lib/transitHits';
+import { PROGRESSION_RELATIONS, type LongitudeSeries } from '@/lib/transitHits';
+import { grahaDashaTable, type GrahaDashaSystem } from '@/lib/dashaEvents';
+import { dashaLordsDuring } from '@/lib/dashaDuring';
+import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { DAY_MS } from '@/lib/time';
-import { featureId, featuresOf, parseFeatureId, type Feature, type FeatureFamily } from './progressionFeatures';
+import { dashaFeaturesOf, featureId, featuresOf, parseFeatureId, type DashaFamily, type Feature, type FeatureFamily, type FeatureSource } from './features';
+import { transitHitsOf, transitRowsAt } from './transitPositions';
 import { hashText, seededRandom } from './random';
 import { adjustedQValues, poissonBinomialTail } from './stats';
 
@@ -31,10 +35,23 @@ export interface StudyChart {
   events: StudyEvent[];
 }
 
+/** A kind of feature to look at: where it comes from and which family of features. */
+export interface FeatureKind {
+  source: FeatureSource;
+  family: FeatureFamily;
+}
+
 export interface StudyOptions {
+  /** The grahas whose progressions (and, of the slow four, transits) are looked at. */
   bodies: readonly ParayaBody[];
-  families: readonly FeatureFamily[];
+  /** The kinds of feature to look at. */
+  kinds: readonly FeatureKind[];
   paraya?: ParayaOptions;
+  /** The sampled longitudes of the slow grahas, the same for every chart (the sky is the same): needed for the transits. */
+  transitSeries?: Record<string, LongitudeSeries>;
+  /** The daśā system whose lords are looked at (Vimśottarī to begin with), and the variant it starts from. */
+  dashaSystem?: GrahaDashaSystem;
+  variantChoice?: VimshottariVariantChoice;
   /** The end of the life the random moments are drawn from, usually now. */
   untilTime: number;
   /**
@@ -102,50 +119,76 @@ const DEFAULT_PERMUTATIONS = 2000;
 /** The moments looked at over a window: every window / 6 days, so thirteen. */
 const WINDOW_STEPS = 6;
 
+/** The families of one source among the kinds. */
+const familiesFrom = (kinds: readonly FeatureKind[], source: FeatureSource) => kinds.filter(kind => kind.source === source).map(kind => kind.family);
+
 /**
- * Finds the features at a moment of one chart, or null before its birth. With a window the features of the moments within it are put together, and the exact
- * hits of the whole life (found once, the first time they are needed) that fall inside it.
+ * Finds the features at a moment of one chart, or null before its birth (or where the transits are not sampled). With a window the features of the moments within
+ * it are put together, and the exact hits of the whole life (found once, the first time they are needed) that fall inside it.
  */
 export function featureExtractor(item: StudyChart, options: StudyOptions): (time: number) => string[] | null {
-  const { bodies, families, paraya } = options;
+  const { bodies, kinds, paraya } = options;
   const windowMs = Math.max(0, options.windowDays ?? 0) * DAY_MS;
-  const sampled = windowMs > 0 ? families.filter(family => family !== 'exact') : families;
-  const wantsHits = windowMs > 0 && families.includes('exact');
-  let hits: { time: number; id: string }[] | null = null;
-  const lifeHits = (latest: number) => {
-    if (!hits) {
-      hits = findParayaHits({ chart: item.chart, birthTime: item.birthTime, fromTime: item.birthTime, toTime: latest, relations: PROGRESSION_RELATIONS, options: paraya, bodies })
-        .map(hit => ({ time: hit.time, id: featureId('exact', hit.body, hit.natal) }));
-    }
-    return hits;
-  };
+  const ascendant = item.chart.ascendant.sign;
   const latestEvent = Math.max(options.untilTime, ...item.events.map(event => event.time)) + windowMs;
 
-  const rowsAt = (time: number) => progressionsAt({ chart: item.chart, birthTime: item.birthTime, time, options: paraya, bodies });
+  // The progressions and the transits both give positions: the houses and aspects by sign at moments, and, over a window, the exact hits inside it.
+  const positionSources = (['paraya', 'transit'] as const).flatMap(source => {
+    const families = familiesFrom(kinds, source);
+    if (families.length === 0 || (source === 'transit' && !options.transitSeries)) return [];
+    const sampled = windowMs > 0 ? families.filter(family => family !== 'exact') : families;
+    const wantsHits = windowMs > 0 && families.includes('exact');
+    const slow = bodies.filter(body => options.transitSeries && body in options.transitSeries);
+    const rowsAt = (time: number) => (source === 'paraya'
+      ? progressionsAt({ chart: item.chart, birthTime: item.birthTime, time, options: paraya, bodies })
+      : transitRowsAt(item.chart, options.transitSeries!, slow, time));
+    let hits: { time: number; id: string }[] | null = null;
+    const lifeHits = () => {
+      if (!hits) {
+        hits = (source === 'paraya'
+          ? findParayaHits({ chart: item.chart, birthTime: item.birthTime, fromTime: item.birthTime, toTime: latestEvent, relations: PROGRESSION_RELATIONS, options: paraya, bodies })
+            .map(hit => ({ time: hit.time, id: featureId('paraya', 'exact', hit.body, hit.natal) }))
+          : transitHitsOf(item.chart, options.transitSeries!, slow).map(hit => ({ time: hit.time, id: featureId('transit', 'exact', hit.body, hit.natal) })));
+      }
+      return hits;
+    };
+    return [{ source, sampled, wantsHits, rowsAt, lifeHits }];
+  });
+
+  // The daśā: the lords running at a moment, or in a window, from the stretches of the whole life.
+  const dashaFamilies = familiesFrom(kinds, 'dasha') as DashaFamily[];
+  const dashaTable = dashaFamilies.length > 0
+    ? grahaDashaTable(options.dashaSystem ?? 'vimshottari', { birthDate: new Date(item.birthTime), planets: item.chart.planets, ascendant: item.chart.ascendant, variantChoice: options.variantChoice })
+    : null;
+
   return (time: number) => {
     if (time < item.birthTime) return null;
     const found = new Set<string>();
-    if (windowMs === 0) {
-      const rows = rowsAt(time);
-      if (rows) for (const id of featuresOf(rows, sampled, item.chart.ascendant.sign)) found.add(id);
-      return [...found];
-    }
-    if (sampled.length > 0) {
-      for (let step = -WINDOW_STEPS; step <= WINDOW_STEPS; step++) {
-        const rows = rowsAt(time + (step * windowMs) / WINDOW_STEPS);
-        if (rows) for (const id of featuresOf(rows, sampled, item.chart.ascendant.sign)) found.add(id);
+    for (const part of positionSources) {
+      const moments = windowMs === 0 ? [time] : Array.from({ length: 2 * WINDOW_STEPS + 1 }, (_, i) => time + ((i - WINDOW_STEPS) * windowMs) / WINDOW_STEPS);
+      if (part.sampled.length > 0) {
+        for (const moment of moments) {
+          const rows = part.rowsAt(moment);
+          // A moment outside the sampled time of the transits cannot be read: neither can an event there.
+          if (!rows) { if (part.source === 'transit' && moment === time) return null; continue; }
+          for (const id of featuresOf(rows, part.sampled, ascendant, part.source)) found.add(id);
+        }
+      }
+      if (part.wantsHits) {
+        const all = part.lifeHits();
+        // The hits are in time order: find the first one inside the window.
+        let low = 0;
+        let high = all.length;
+        while (low < high) {
+          const middle = (low + high) >> 1;
+          if (all[middle].time < time - windowMs) low = middle + 1; else high = middle;
+        }
+        for (let i = low; i < all.length && all[i].time <= time + windowMs; i++) found.add(all[i].id);
       }
     }
-    if (wantsHits) {
-      const all = lifeHits(latestEvent);
-      // The hits are in time order: find the first one inside the window.
-      let low = 0;
-      let high = all.length;
-      while (low < high) {
-        const middle = (low + high) >> 1;
-        if (all[middle].time < time - windowMs) low = middle + 1; else high = middle;
-      }
-      for (let i = low; i < all.length && all[i].time <= time + windowMs; i++) found.add(all[i].id);
+    if (dashaTable) {
+      const running = dashaLordsDuring(dashaTable, time - windowMs, time + windowMs + 1);
+      for (const id of dashaFeaturesOf(running, item.chart, dashaFamilies)) found.add(id);
     }
     return [...found];
   };

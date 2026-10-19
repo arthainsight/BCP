@@ -2,16 +2,29 @@
 
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
-import type { Feature, FeatureFamily } from '@/lib/research/progressionFeatures';
+import { targetKindOf, type Feature, type FeatureFamily, type FeatureSource } from '@/lib/research/features';
 
 // What the parts of the Research view share.
 
-/** What each kind of feature is called in a row: "Sa" + "in house" + "4". */
+/** What each family of features is called. */
 export const FAMILY_LABELS: Record<FeatureFamily, string> = {
   house: 'in house',
   aspectHouse: 'aspects house',
   aspectNatal: 'aspects natal',
   exact: 'exact on natal',
+  mdGraha: 'MD lord',
+  mdRules: 'MD rules house',
+  mdPlaced: 'MD placed in house',
+  adGraha: 'AD lord',
+  adRules: 'AD rules house',
+  adPlaced: 'AD placed in house',
+};
+
+/** What each source of features is called. */
+export const SOURCE_LABELS: Record<FeatureSource, string> = {
+  paraya: 'progressions',
+  transit: 'transits',
+  dasha: 'daśā',
 };
 
 /** The windows around an event, in days either side; 0 is the day itself. */
@@ -25,14 +38,21 @@ export const chip = (on: boolean) =>
 export const percent = (value: number, of: number) => (of > 0 ? `${Math.round((100 * value) / of)} %` : '—');
 
 /** A feature in words: the graha, what it does and where. */
-export function FeatureLabel({ feature }: { feature: Pick<Feature, 'family' | 'body' | 'target'> }) {
+export function FeatureLabel({ feature }: { feature: Pick<Feature, 'source' | 'family' | 'body' | 'target'> }) {
   const t = useT();
   const { code } = useGrahaNames();
+  const graha = <span className="font-bold text-violet-600 dark:text-violet-400">{code(feature.body)}</span>;
+  if (feature.source === 'dasha') {
+    const level = feature.family.startsWith('md') ? 'MD' : 'AD';
+    if (feature.family.endsWith('Graha')) return <>{`${level} ${t('lord')} `}{graha}</>;
+    return <>{`${level} `}{graha}{` ${feature.family.endsWith('Rules') ? t('rules house') : t('placed in house')} `}<span className="font-bold">{feature.target}</span></>;
+  }
   return (
     <>
-      <span className="font-bold text-violet-600 dark:text-violet-400">{code(feature.body)}</span>
+      {graha}
+      {feature.source === 'transit' && <span className="text-zinc-400 dark:text-zinc-500">{` (${t('transit')})`}</span>}
       {` ${t(FAMILY_LABELS[feature.family])} `}
-      <span className="font-bold">{feature.family === 'house' || feature.family === 'aspectHouse' ? feature.target : code(feature.target)}</span>
+      <span className="font-bold">{targetKindOf(feature.family) === 'house' ? feature.target : code(feature.target)}</span>
     </>
   );
 }

@@ -39,15 +39,15 @@ const number = (value: number | null, digits: number) => (value === null ? '' : 
 /** The table of the comparison with chance: a row for each feature. */
 export function resultsCsv(results: readonly FeatureResult[], total: number): string {
   return csvText([
-    ['feature', 'family', 'graha', 'target', 'events with it', 'events', 'expected by chance', 'ratio', 'p', 'q'],
-    ...results.map(result => [result.id, result.family, result.body, result.target, result.observed, total, number(result.expected, 3), number(result.lift, 3), number(result.p, 5), number(result.q, 5)]),
+    ['feature', 'source', 'family', 'graha', 'target', 'events with it', 'events', 'expected by chance', 'ratio', 'p', 'q'],
+    ...results.map(result => [result.id, result.source, result.family, result.body, result.target, result.observed, total, number(result.expected, 3), number(result.lift, 3), number(result.p, 5), number(result.q, 5)]),
   ]);
 }
 
 /** The table of the comparison of two groups: a row for each feature. */
 export function groupsCsv(comparison: GroupComparison, labelA: string, labelB: string): string {
   return csvText([
-    ['feature', 'family', 'graha', 'target', `${labelA} (${comparison.totalA})`, `${labelB} (${comparison.totalB})`, `share ${labelA}`, `share ${labelB}`, 'difference', 'p', 'q'],
-    ...comparison.rows.map(row => [row.id, row.family, row.body, row.target, row.a, row.b, number(row.shareA, 4), number(row.shareB, 4), number(row.difference, 4), number(row.p, 5), number(row.q, 5)]),
+    ['feature', 'source', 'family', 'graha', 'target', `${labelA} (${comparison.totalA})`, `${labelB} (${comparison.totalB})`, `share ${labelA}`, `share ${labelB}`, 'difference', 'p', 'q'],
+    ...comparison.rows.map(row => [row.id, row.source, row.family, row.body, row.target, row.a, row.b, number(row.shareA, 4), number(row.shareB, 4), number(row.difference, 4), number(row.p, 5), number(row.q, 5)]),
   ]);
 }

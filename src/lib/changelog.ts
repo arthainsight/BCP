@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.19',
+    date: '2026-10-19',
+    title: 'Research: transits and daśā as features, beside the progressions',
+    changes: [
+      'Three sources of features, each with its own row of buttons: the progressions (Paraya) as before, the transits and the daśā. The transits give the same kinds of feature (a graha in a house, aspecting a house or a natal point by sign, within a degree of a natal point or, over a window, an exact hit) for Jupiter, Saturn, Rahu and Ketu. The daśā gives, for the lord of the mahādaśā (MD) and of the antardaśā (AD) running at the moment, the lord as a graha, the houses it rules from the ascendant (Rahu and Ketu rule none) and the house it stands in at birth, in the Vimśottarī, Utpanna/Kṣema/Ādhāna, Original, Yoginī, Aṣṭottarī or Naisargika system.',
+      'The sky of the transits is the same for every chart, so it is fetched once for the whole run: the slow grahas from the first birth (and 200 days before it, for the windows) to a year after now, a position every three days. For that /api/transit-series takes a step of 2 to 7 days and then allows a long time (up to 140 years, with the same cap on the number of samples), with the longitudes rounded to four decimals. A moment the sky was not sampled for is left out like one before birth.',
+      'Every feature id now names its source (paraya|house|Jupiter|4, transit|…, dasha|mdRules|Venus|7), so the table, the matrices, the choice of one feature beforehand (now with a source of its own), the two-group comparison and the CSV files all carry the source, and the matrices have a button for each source and kind (a row for each daśā lord, one column for the lord as a graha).',
+      'Tests: the interpolation of the sampled sky (a straight line between samples, the short way over 0° Aries, nothing outside the sampled time), the transiting grahas as houses and aspects of a chart and their exact hits, the transit features of a graha standing still and of one passing a natal degree inside a window of 60 and not of 30 days, the daśā features against the lords running at the moment (what each rules from a Virgo ascendant, where each stands, the union over a window, another system), a study over all three sources; and browser tests of the three sources, the daśā as a feature chosen beforehand, the matrices of each, the table with sources, the events file, and the transits over a window of 180 days.',
+      'Updated the application version to v3.19.',
+    ],
+  },
+  {
     version: 'v3.18',
     date: '2026-10-19',
     title: 'Research: a window around the events, a feature chosen beforehand, two kinds of event side by side, CSV files',

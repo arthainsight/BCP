@@ -29,6 +29,36 @@ export interface EventProgression {
   aspects: EventAspect[];
 }
 
+/** A graha's place: its sign (0–11) and the degree within it. */
+export interface GrahaPosition {
+  body: string;
+  signIndex: number;
+  degree: number;
+}
+
+/**
+ * What the places of some grahas mean for a chart: each one's house from the ascendant, and which natal points it aspects by sign (the same sign, or the 5th, 7th
+ * or 9th from it) with how far from the natal degree it stands. The grahas can be the progressing ones or the transiting ones.
+ */
+export function describePositions(chart: ChartData, positions: readonly GrahaPosition[]): EventProgression[] {
+  const natal = PROGRESSION_NATAL.flatMap(name => {
+    const point = name === 'Asc' ? chart.ascendant : chart.planets.find(planet => planet.name === name);
+    return point ? [{ name, signIndex: point.sign - 1, degree: point.degree }] : [];
+  });
+  return positions.map(position => ({
+    body: position.body as ParayaBody,
+    signIndex: position.signIndex,
+    degree: position.degree,
+    house: ((position.signIndex + 1 - chart.ascendant.sign + 12) % 12) + 1,
+    aspects: natal.flatMap(point => {
+      const relation = aspectRelationOf(position.signIndex, point.signIndex);
+      if (!relation) return [];
+      const orb = Math.abs(position.degree - point.degree);
+      return [{ natal: point.name, relation, orb, exact: orb <= EXACT_ORB }];
+    }),
+  }));
+}
+
 /** The progressing grahas at a moment, in the order Jupiter, Saturn, Rahu, Ketu (then Mars, Mercury, Venus); null before birth. */
 export function progressionsAt(params: {
   chart: ChartData;
@@ -39,23 +69,6 @@ export function progressionsAt(params: {
 }): EventProgression[] | null {
   const { chart, birthTime, time, options, bodies } = params;
   if (time < birthTime) return null;
-  const natal = PROGRESSION_NATAL.flatMap(name => {
-    const point = name === 'Asc' ? chart.ascendant : chart.planets.find(planet => planet.name === name);
-    return point ? [{ name, signIndex: point.sign - 1, degree: point.degree }] : [];
-  });
   const ageYears = (time - birthTime) / JULIAN_YEAR_MS;
-  return parayaPeriodsOf(chart, ageYears, options, true)
-    .filter(period => bodies.includes(period.body))
-    .map(period => ({
-      body: period.body,
-      signIndex: period.signIndex,
-      degree: period.degree,
-      house: ((period.signIndex + 1 - chart.ascendant.sign + 12) % 12) + 1,
-      aspects: natal.flatMap(point => {
-        const relation = aspectRelationOf(period.signIndex, point.signIndex);
-        if (!relation) return [];
-        const orb = Math.abs(period.degree - point.degree);
-        return [{ natal: point.name, relation, orb, exact: orb <= EXACT_ORB }];
-      }),
-    }));
+  return describePositions(chart, parayaPeriodsOf(chart, ageYears, options, true).filter(period => bodies.includes(period.body)));
 }
