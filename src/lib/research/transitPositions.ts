@@ -1,7 +1,7 @@
 import type { ChartData } from '@/types';
 import { describePositions, type EventProgression } from '@/lib/bnn/eventProgressions';
 import { normalizeDegrees } from '@/lib/angles';
-import { findTransitHits, PROGRESSION_RELATIONS, type LongitudeSeries } from '@/lib/transitHits';
+import { findTransitHits, transitRelationsOf, type LongitudeSeries } from '@/lib/transitHits';
 import { PROGRESSION_NATAL } from '@/lib/bnn/parayaProgression';
 
 // The transiting grahas at any moment, from a table of sampled longitudes: between two samples the longitude is taken to change in a straight line (a few
@@ -33,15 +33,15 @@ export function transitRowsAt(chart: ChartData, series: Record<string, Longitude
     if (longitude === null) return null;
     positions.push({ body, signIndex: Math.floor(longitude / 30), degree: longitude % 30 });
   }
-  return describePositions(chart, positions);
+  return describePositions(chart, positions, transitRelationsOf);
 }
 
-/** The moments each transiting graha stands at the exact degree of a natal point of the chart (in its own sign or the 5th, 7th or 9th from it), in time order. */
+/** The moments each transiting graha stands at the exact degree of a natal point of the chart (in its own sign or in a sign it aspects), in time order. */
 export function transitHitsOf(chart: ChartData, series: Record<string, LongitudeSeries>, bodies: readonly string[]): { time: number; body: string; natal: string }[] {
   const chosen = Object.fromEntries(Object.entries(series).filter(([body]) => bodies.includes(body)));
   const natal = [
     ...chart.planets.filter(planet => (PROGRESSION_NATAL as readonly string[]).includes(planet.name)).map(planet => ({ name: planet.name, longitude: planet.longitude })),
     { name: 'Asc', longitude: chart.ascendant.longitude },
   ];
-  return findTransitHits(chosen, natal, PROGRESSION_RELATIONS).map(hit => ({ time: hit.time, body: hit.transit, natal: hit.natal }));
+  return findTransitHits(chosen, natal, transitRelationsOf).map(hit => ({ time: hit.time, body: hit.transit, natal: hit.natal }));
 }

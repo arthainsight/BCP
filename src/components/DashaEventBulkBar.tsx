@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { parseTagInput, type BulkChange } from '@/lib/dashaEventBulk';
 import { fill, useT } from '@/lib/i18n';
-import { DASHA_EVENT_CATEGORY_LABELS, DASHA_EVENT_VARGAS, type DashaEventCategory, type DashaEventVarga } from '@/lib/dashaEventStore';
+import { DASHA_EVENT_ACCURACIES, DASHA_EVENT_ACCURACY_LABELS, DASHA_EVENT_CATEGORY_LABELS, DASHA_EVENT_VARGAS, type DashaEventAccuracy, type DashaEventCategory, type DashaEventVarga } from '@/lib/dashaEventStore';
 
 interface Props {
   /** How many events the list shows, and how many of them are selected. */
@@ -49,6 +49,10 @@ export default function DashaEventBulkBar({ shown, selected, groupByYear, onGrou
           <select value="" onChange={event => event.target.value && onChange({ varga: event.target.value as DashaEventVarga })} aria-label={t('Set varga of the selected events')} className={FIELD}>
             <option value="">{t('Set varga…')}</option>
             {DASHA_EVENT_VARGAS.map(item => <option key={item} value={item}>{item}</option>)}
+          </select>
+          <select value="" onChange={event => event.target.value && onChange({ accuracy: event.target.value as DashaEventAccuracy })} aria-label={t('Set date accuracy of the selected events')} className={FIELD}>
+            <option value="">{t('Set date accuracy…')}</option>
+            {DASHA_EVENT_ACCURACIES.map(item => <option key={item} value={item}>{t(DASHA_EVENT_ACCURACY_LABELS[item])}</option>)}
           </select>
           <select value="" onChange={event => event.target.value && onChange({ significance: Number(event.target.value) })} aria-label={t('Set significance of the selected events')} className={FIELD}>
             <option value="">{t('Set significance…')}</option>

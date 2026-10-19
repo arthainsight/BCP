@@ -1,10 +1,12 @@
-import type { DashaEventCategory, DashaEventVarga, StoredDashaEvent } from './dashaEventStore';
+import type { DashaEventAccuracy, DashaEventCategory, DashaEventVarga, StoredDashaEvent } from './dashaEventStore';
 
 /** What is done to many events at once. Only what is given changes. */
 export interface BulkChange {
   category?: DashaEventCategory;
   varga?: DashaEventVarga;
   significance?: number;
+  /** How exactly the day is known. */
+  accuracy?: DashaEventAccuracy;
   addTags?: string[];
   removeTags?: string[];
   /** Make them single days again. */
@@ -34,6 +36,7 @@ export function applyBulkChange(events: StoredDashaEvent[], ids: ReadonlySet<str
     if (change.category) next.category = change.category;
     if (change.varga) next.varga = change.varga;
     if (change.significance !== undefined) next.significance = Math.min(5, Math.max(1, Math.round(change.significance)));
+    if (change.accuracy) next.accuracy = change.accuracy;
     if (change.clearEnd) delete next.endDate;
     if (remove.size) next.tags = next.tags.filter(tag => !remove.has(tag.toLocaleLowerCase()));
     if (change.addTags?.length) {

@@ -6,6 +6,11 @@ import { loadSavedCharts } from '@/lib/savedCharts';
 import { DASHA_EVENT_CATEGORIES, DASHA_EVENT_CATEGORY_LABELS, formatEventDate, type DashaEventCategory, type StoredDashaEvent } from '@/lib/dashaEventStore';
 import { birthTimeOf, chartRequestUrl, readStoredEvents, researchSources, studyEventsOf } from '@/lib/research/studyData';
 import { eventFeatures, runStudy, type FeatureKind, type StudyChart, type StudyOptions, type WindowChoice } from '@/lib/research/eventStudy';
+import { runControlStudy } from '@/lib/research/controlStudy';
+import { comboStudy, type ComboSpec } from '@/lib/research/combos';
+import { fitJointModel } from '@/lib/research/jointModel';
+import { timeProfile } from '@/lib/research/timeProfile';
+import type { RunSettings } from '@/lib/research/researchRuns';
 import { validateStudy, type SplitBy } from '@/lib/research/validation';
 import { compareParayaSettings } from '@/lib/research/settingsStudy';
 import { compareGroups } from '@/lib/research/groupStudy';
@@ -18,20 +23,26 @@ import type { LongitudeSeries } from '@/lib/transitHits';
 import { PARAYA_BETA_BODIES, PARAYA_BODIES, type ParayaBody } from '@/lib/bnn/nadiParaya';
 import { EXACT_ORB } from '@/lib/bnn/eventProgressions';
 import { PROGRESSION_NATAL } from '@/lib/bnn/parayaProgression';
-import { fill, useT } from '@/lib/i18n';
+import { saveFile } from '@/lib/download';
+import { APP_VERSION } from '@/lib/config';
+import { fill, useLanguage, useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { Heading } from './balaShared';
 import ResearchResults, { type ChanceOutcome } from './ResearchResults';
 import ResearchGroups, { type GroupOutcome } from './ResearchGroups';
 import ResearchValidation, { type ValidationOutcome } from './ResearchValidation';
 import ResearchSettings, { type SettingsOutcome } from './ResearchSettings';
+import ResearchCombos, { kindText, type ComboOutcome } from './ResearchCombos';
+import ResearchModel, { type ModelOutcome } from './ResearchModel';
+import ResearchRuns from './ResearchRuns';
+import { buildReport, type ReportBody, type ReportContext } from './researchReport';
 import { FAMILY_LABELS, SOURCE_LABELS, WINDOWS, chip } from './researchUi';
 
 type Props = {
   calculationSettings?: CalculationSettings;
 };
 
-type Mode = 'chance' | 'groups' | 'validate' | 'settings';
+type Mode = 'chance' | 'groups' | 'validate' | 'settings' | 'combine' | 'model';
 type Filter = EventFilter & { category: 'all' | DashaEventCategory };
 type Hypothesis = { on: boolean; source: FeatureSource; family: FeatureFamily; body: string; target: string };
 
@@ -42,7 +53,9 @@ type Run =
   | { status: 'chance'; outcome: ChanceOutcome }
   | { status: 'groups'; outcome: GroupOutcome }
   | { status: 'validate'; outcome: ValidationOutcome }
-  | { status: 'settings'; outcome: SettingsOutcome };
+  | { status: 'settings'; outcome: SettingsOutcome }
+  | { status: 'combine'; outcome: ComboOutcome }
+  | { status: 'model'; outcome: ModelOutcome };
 
 const HOUSES = Array.from({ length: 12 }, (_, i) => String(i + 1));
 /** The nine grahas, which can be daśā lords; the four whose transits are looked at; the days either side of the first birth that the sky is sampled for. */
@@ -58,6 +71,11 @@ const LIST_TARGET_LABELS: Record<string, string> = {
   favourable: 'favourable', unfavourable: 'unfavourable', strong: 'strong', average: 'average', weak: 'weak', high: 'high', low: 'low',
   sadeSati: 'Sade Sati', kantaka: 'Saturn 4th from the Moon (kantaka)', ashtama: 'Saturn 8th from the Moon (ashtama)',
 };
+/** Every kind of feature, for choosing the two parts of a combination. */
+const ALL_KINDS: FeatureKind[] = FEATURE_SOURCES.flatMap(source => familiesOf(source).map(family => ({ source, family })));
+const kindFromId = (id: string): FeatureKind => ALL_KINDS.find(kind => kindId(kind.source, kind.family) === id) ?? ALL_KINDS[0];
+/** The fewest charts for taking the other charts at the same moment as the chance level: each event then has at least two to be compared with. */
+const MIN_CONTROL_CHARTS = 3;
 const SHARES = [0.5, 0.6, 0.7];
 const TOPS = [5, 10, 20];
 const hasSky = (kind: FeatureKind) => kind.source === 'transit' || kind.source === 'gochara';
@@ -85,12 +103,17 @@ export default function ResearchPanel({ calculationSettings }: Props) {
   const [filterB, setFilterB] = useState<Filter>(NO_FILTER);
   const [windowDays, setWindowDays] = useState<WindowChoice>(0);
   const [split, setSplit] = useState<{ by: SplitBy; share: number; top: number; seed: number }>({ by: 'charts', share: 0.6, top: 10, seed: 1 });
+  const [control, setControl] = useState<'life' | 'others'>('life');
+  const [combo, setCombo] = useState<{ left: string; right: string; sameGraha: boolean }>({ left: 'dasha|mdGraha', right: 'gochara|fromMoon', sameGraha: true });
   const [kinds, setKinds] = useState<ReadonlySet<string>>(() => new Set(DEFAULT_KINDS));
   const [dashaSystem, setDashaSystem] = useState<GrahaDashaSystem>('vimshottari');
   const [bodies, setBodies] = useState<readonly ParayaBody[]>(PARAYA_BODIES);
   const [hypothesis, setHypothesis] = useState<Hypothesis>({ on: false, source: 'paraya', family: 'house', body: 'Saturn', target: '4' });
   const [run, setRun] = useState<Run>({ status: 'idle' });
   const [runs, setRuns] = useState(0);
+  const language = useLanguage();
+  /** What the last run was run on, for the report. */
+  const [reportContext, setReportContext] = useState<ReportContext | null>(null);
   const fetched = useRef(new Map<string, ChartData>());
   const sky = useRef(new Map<string, Record<string, LongitudeSeries>>());
 
@@ -98,6 +121,8 @@ export default function ResearchPanel({ calculationSettings }: Props) {
   const chosen = sources.filter(source => selected.has(source.id));
   const grouped = mode === 'groups';
   const settingsMode = mode === 'settings';
+  const comboMode = mode === 'combine';
+  const needsSplit = mode === 'validate' || mode === 'model';
   // In the comparison of two sets, an event that fits both belongs to the first.
   const groupOf = (event: StoredDashaEvent): 'a' | 'b' | null => (matches(event, filter) ? 'a' : grouped && matches(event, filterB) ? 'b' : null);
   const counts = { a: 0, b: 0 };
@@ -131,6 +156,15 @@ export default function ResearchPanel({ calculationSettings }: Props) {
     body: current.source === 'gochara' && !gocharaBodiesOf(family).includes(current.body) ? 'Saturn' : current.body,
     target: firstTargetOf(family),
   }));
+
+  /** The run on the screen as the report takes it, or null when there is none. */
+  const report: ReportBody | null = run.status === 'chance' ? { mode: 'chance', outcome: run.outcome }
+    : run.status === 'groups' ? { mode: 'groups', outcome: run.outcome }
+    : run.status === 'validate' ? { mode: 'validate', outcome: run.outcome }
+    : run.status === 'settings' ? { mode: 'settings', outcome: run.outcome }
+    : run.status === 'combine' ? { mode: 'combine', outcome: run.outcome }
+    : run.status === 'model' ? { mode: 'model', outcome: run.outcome }
+    : null;
 
   const start = async (now: number, seed = split.seed) => {
     setRun({ status: 'running', message: t('Calculating the charts…') });
@@ -173,7 +207,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
         ? FEATURE_SOURCES.flatMap(source => familiesOf(source).filter(family => (source === hypothesis.source && family === hypothesis.family) || kinds.has(kindId(source, family))).map(family => ({ source, family })))
         : kindList;
       // Only the progressions depend on their settings: the others are not looked at when the settings are compared.
-      const useKinds = settingsMode ? wantedKinds.filter(kind => kind.source === 'paraya') : wantedKinds;
+      const useKinds = comboMode ? [kindFromId(combo.left), kindFromId(combo.right)] : settingsMode ? wantedKinds.filter(kind => kind.source === 'paraya') : wantedKinds;
       const needsBody = wanted && hypothesis.source !== 'dasha' && !bodies.includes(hypothesis.body as ParayaBody);
       const useBodies = needsBody ? [...PARAYA_BODIES, ...PARAYA_BETA_BODIES].filter(item => item === hypothesis.body || bodies.includes(item)) : [...bodies];
 
@@ -195,7 +229,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
         }
       }
       await new Promise(resolve => window.setTimeout(resolve, 0));
-      setRun({ status: 'running', message: grouped ? t('Comparing the two sets…') : mode === 'validate' ? t('Checking on the test part…') : settingsMode ? t('Comparing the settings…') : t('Comparing with chance…') });
+      setRun({ status: 'running', message: grouped ? t('Comparing the two sets…') : mode === 'validate' ? t('Checking on the test part…') : mode === 'model' ? t('Fitting the model…') : comboMode ? t('Looking at the combinations…') : settingsMode ? t('Comparing the settings…') : control === 'others' ? t('Comparing with the other charts…') : t('Comparing with chance…') });
       await new Promise(resolve => window.setTimeout(resolve, 0));
       const options: StudyOptions = {
         bodies: useBodies,
@@ -206,9 +240,30 @@ export default function ResearchPanel({ calculationSettings }: Props) {
         untilTime: now,
         windowDays,
       };
+      const paraya = options.paraya!;
+      const runSettings: RunSettings = { charts: charts.map(item => item.name), events: filterLabel(filter, t), window: windowDays, kinds: useKinds.map(kind => kindId(kind.source, kind.family)), bodies: [...useBodies], dashaSystem, control: mode === 'chance' ? control : 'life' };
+      setReportContext({
+        generated: new Date(now),
+        version: APP_VERSION,
+        charts: charts.map(item => ({ name: item.name, events: item.events.length })),
+        events: filterLabel(filter, t),
+        ...(grouped ? { eventsB: filterLabel(filterB, t) } : {}),
+        window: windowDays,
+        kinds: comboMode ? [`${kindText(useKinds[0], t)} + ${kindText(useKinds[1], t)}${combo.sameGraha ? ` · ${t('the same graha')}` : ''}`] : useKinds.map(kind => kindText(kind, t)),
+        bodies: [...useBodies],
+        dashaSystem: GRAHA_DASHA_SYSTEMS.find(item => item.key === dashaSystem)?.label ?? dashaSystem,
+        paraya: `${t(paraya.retro === 'same' ? 'retrograde: the natal sign' : 'retrograde: the sign before')} · ${t(paraya.saturn === 'even' ? 'Saturn even' : 'Saturn alternating')} · ${t(paraya.rahu === 'even' ? 'Rahu even' : 'Rahu alternating')}`,
+        control: runSettings.control,
+      });
       if (mode === 'validate') {
         const result = validateStudy(charts, options, { by: split.by, share: split.share, seed, top: split.top });
         setRun({ status: 'validate', outcome: { result, by: split.by, share: split.share, top: split.top, seed, windowDays, failed } });
+      } else if (mode === 'model') {
+        const result = fitJointModel(charts, options, { by: split.by, share: split.share, seed });
+        setRun({ status: 'model', outcome: { result, by: split.by, share: split.share, seed, windowDays, failed } });
+      } else if (comboMode) {
+        const spec: ComboSpec = { left: useKinds[0], right: useKinds[1], sameGraha: combo.sameGraha };
+        setRun({ status: 'combine', outcome: { result: comboStudy(charts, options, spec), spec, windowDays, info, failed } });
       } else if (settingsMode) {
         const rows = await compareParayaSettings(charts, options, async (index, total) => {
           setRun({ status: 'running', message: `${t('Comparing the settings…')} ${index + 1}/${total}` });
@@ -221,8 +276,8 @@ export default function ResearchPanel({ calculationSettings }: Props) {
         const inB = events.filter(item => group.get(`${item.chartId}|${item.event.id}`) === 'b');
         setRun({ status: 'groups', outcome: { comparison: compareGroups(inA, inB), labels: { a: filterLabel(filter, t), b: filterLabel(filterB, t) }, events, groupOf: group, info, windowDays, skipped, failed } });
       } else {
-        const result = runStudy(charts, options);
-        setRun({ status: 'chance', outcome: { result, kinds: useKinds, bodies: useBodies, windowDays, hypothesis: wanted ? featureId(hypothesis.source, hypothesis.family, hypothesis.body, hypothesis.target) : null, info, failed } });
+        const result = control === 'others' ? runControlStudy(charts, options) : runStudy(charts, options);
+        setRun({ status: 'chance', outcome: { result, kinds: useKinds, bodies: useBodies, windowDays, control, runSettings, profile: id => timeProfile(charts, options, id), hypothesis: wanted ? featureId(hypothesis.source, hypothesis.family, hypothesis.body, hypothesis.target) : null, info, failed } });
       }
     } catch (error) {
       setRun({ status: 'error', message: error instanceof Error ? error.message : String(error) });
@@ -318,6 +373,8 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             <button type="button" aria-pressed={mode === 'groups'} onClick={() => { setMode('groups'); setRun({ status: 'idle' }); }} className={chip(mode === 'groups')}>{t('two kinds of event')}</button>
             <button type="button" aria-pressed={mode === 'validate'} onClick={() => { setMode('validate'); setRun({ status: 'idle' }); }} className={chip(mode === 'validate')}>{t('training and test')}</button>
             <button type="button" aria-pressed={mode === 'settings'} onClick={() => { setMode('settings'); setRun({ status: 'idle' }); }} className={chip(mode === 'settings')}>{t('the Paraya settings')}</button>
+            <button type="button" aria-pressed={mode === 'combine'} onClick={() => { setMode('combine'); setRun({ status: 'idle' }); }} className={chip(mode === 'combine')}>{t('combinations')}</button>
+            <button type="button" aria-pressed={mode === 'model'} onClick={() => { setMode('model'); setRun({ status: 'idle' }); }} className={chip(mode === 'model')}>{t('joint model')}</button>
           </div>
 
           <div className="space-y-1">
@@ -334,7 +391,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             </div>
             {windowDays === 'auto' && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600" data-research-auto-window>{t('A date known to the day is read for that day, one known to the month for 15 days either side, one known to the year for 182. The random moments they are set against are read over the same windows. Dates imported with only a month or a year are marked "approx.".')}</p>}
             <div className="space-y-1" role="group" aria-label={t('features')}>
-              {FEATURE_SOURCES.map(source => (
+              {!comboMode && FEATURE_SOURCES.map(source => (
                 <div key={source} className="flex flex-wrap items-center gap-1" role="group" aria-label={t(SOURCE_LABELS[source])}>
                   <span className="w-24 shrink-0 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t(SOURCE_LABELS[source])}</span>
                   {familiesOf(source).map(family => {
@@ -343,7 +400,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
                   })}
                 </div>
               ))}
-              {kindList.some(kind => kind.source === 'dasha') && (
+              {(comboMode ? [kindFromId(combo.left), kindFromId(combo.right)] : kindList).some(kind => kind.source === 'dasha') && (
                 <label className="flex items-center gap-1 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
                   {t('daśā system')}
                   <select value={dashaSystem} onChange={event => setDashaSystem(event.target.value as GrahaDashaSystem)} aria-label={t('daśā system')} className={select}>
@@ -359,11 +416,42 @@ export default function ResearchPanel({ calculationSettings }: Props) {
               {PARAYA_BETA_BODIES.map(body => <button key={body} type="button" aria-pressed={bodies.includes(body)} title={body} onClick={() => toggleBody(body)} className={chip(bodies.includes(body))}>{code(body)}</button>)}
             </div>
             <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('The transits are those of Jupiter, Saturn, Rahu and Ketu (sampled every three days); of the daśā every lord is looked at, whichever grahas are chosen here.')}</p>
-            {kindList.some(kind => kind.source === 'gochara') && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600" data-research-gochara-note>{t('The gochara counts the houses of the slow grahas from the natal Moon: the traditional favourable houses of Jupiter and Saturn, the bindus of their own Bhinnāṣṭakavarga in the sign, the Sarvāṣṭakavarga of the sign, and Saturn over the Moon (Sade Sati, the 4th and the 8th).')}</p>}
+            {(comboMode ? [kindFromId(combo.left), kindFromId(combo.right)] : kindList).some(kind => kind.source === 'transit') && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600" data-research-transit-aspects-note>{t('For the transits the aspects are those of each graha by its own rule, counted from the graha: Saturn the 3rd, 7th and 10th, Jupiter the 5th, 7th and 9th, Mars the 4th, 7th and 8th, Rahu and Ketu the 5th and 9th, the others the 7th. The progressions have the 1st, 5th, 7th and 9th for every graha.')}</p>}
+            {(comboMode ? [kindFromId(combo.left), kindFromId(combo.right)] : kindList).some(kind => kind.source === 'gochara') && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600" data-research-gochara-note>{t('The gochara counts the houses of the slow grahas from the natal Moon: the traditional favourable houses of Jupiter and Saturn, the bindus of their own Bhinnāṣṭakavarga in the sign, the Sarvāṣṭakavarga of the sign, and Saturn over the Moon (Sade Sati, the 4th and the 8th).')}</p>}
             <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
               {fill(t('A house is counted from the ascendant, so charts with different ascendants can be compared. "Aspects" are by sign (the same sign, or the 5th, 7th or 9th from it); "exact" is within {orb}° of the natal degree, or, over a window, an exact hit inside it.'), { orb: String(EXACT_ORB) })}
             </p>
           </div>
+
+          {mode === 'chance' && (
+            <div className="space-y-1" role="group" aria-label={t('chance level')}>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('chance level from')}</span>
+                <button type="button" aria-pressed={control === 'life'} onClick={() => setControl('life')} className={chip(control === 'life')}>{t('the same chart at random moments')}</button>
+                <button type="button" aria-pressed={control === 'others'} disabled={includedCharts.size < MIN_CONTROL_CHARTS} onClick={() => setControl('others')} className={`${chip(control === 'others')} disabled:opacity-40`}>{t('the other charts at the same moment')}</button>
+              </div>
+              {control === 'others' && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600" data-research-control-note>{fill(t('Each event is compared with the same moment in the other charts: it asks whether the date is unusual, not only the moment in the life. It needs at least {count} charts, and with few the chance level is coarse and the p-values cautious.'), { count: String(MIN_CONTROL_CHARTS) })}</p>}
+            </div>
+          )}
+
+          {comboMode && (
+            <div className="space-y-1 rounded border border-zinc-200 p-2 dark:border-zinc-700" role="group" aria-label={t('the two parts of a combination')}>
+              <div className="flex flex-wrap items-center gap-1">
+                <select value={combo.left} onChange={event => setCombo(current => ({ ...current, left: event.target.value }))} aria-label={t('first part of the combination')} className={select}>
+                  {ALL_KINDS.map(kind => <option key={kindId(kind.source, kind.family)} value={kindId(kind.source, kind.family)}>{kindText(kind, t)}</option>)}
+                </select>
+                <span className="text-[10px] font-mono text-zinc-400">+</span>
+                <select value={combo.right} onChange={event => setCombo(current => ({ ...current, right: event.target.value }))} aria-label={t('second part of the combination')} className={select}>
+                  {ALL_KINDS.map(kind => <option key={kindId(kind.source, kind.family)} value={kindId(kind.source, kind.family)}>{kindText(kind, t)}</option>)}
+                </select>
+                <label className="flex min-h-8 items-center gap-1.5 text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
+                  <input type="checkbox" checked={combo.sameGraha} onChange={event => setCombo(current => ({ ...current, sameGraha: event.target.checked }))} className="h-4 w-4 accent-emerald-600" />
+                  {t('only the same graha')}
+                </label>
+              </div>
+              <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('Two kinds of feature that are there at the same time, for example the lord of the daśā and the gochara of the same graha. Each combination is set against how often both are there at random moments of the chart, and is of interest only if it is more unusual than each part.')}</p>
+            </div>
+          )}
 
           {mode === 'chance' && (
             <div className="space-y-1 rounded border border-zinc-200 p-2 dark:border-zinc-700" role="group" aria-label={t('a feature chosen beforehand')}>
@@ -393,15 +481,15 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             </div>
           )}
 
-          {mode === 'validate' && (
+          {needsSplit && (
             <div className="space-y-1 rounded border border-zinc-200 p-2 dark:border-zinc-700" role="group" aria-label={t('the split into training and test')}>
               <div className="flex flex-wrap items-center gap-1">
                 <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('split by')}</span>
                 {(['charts', 'events'] as const).map(by => <button key={by} type="button" aria-pressed={split.by === by} onClick={() => setSplit(current => ({ ...current, by }))} className={chip(split.by === by)}>{t(by)}</button>)}
                 <span className="ml-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('training share')}</span>
                 {SHARES.map(share => <button key={share} type="button" aria-pressed={split.share === share} onClick={() => setSplit(current => ({ ...current, share }))} className={chip(split.share === share)}>{Math.round(share * 100)} %</button>)}
-                <span className="ml-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('carried over')}</span>
-                {TOPS.map(top => <button key={top} type="button" aria-pressed={split.top === top} onClick={() => setSplit(current => ({ ...current, top }))} className={chip(split.top === top)}>{top}</button>)}
+                {mode === 'validate' && <span className="ml-2 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('carried over')}</span>}
+                {mode === 'validate' && TOPS.map(top => <button key={top} type="button" aria-pressed={split.top === top} onClick={() => setSplit(current => ({ ...current, top }))} className={chip(split.top === top)}>{top}</button>)}
               </div>
               <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('The best features are found in the training part and then tested on the other part, which they were not chosen from. Splitting by charts is the stricter test; with few charts split by events.')}</p>
             </div>
@@ -412,10 +500,10 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             <button
               type="button"
               onClick={() => { void start(Date.now()); }}
-              disabled={!ready || kindList.length === 0 || bodies.length === 0 || run.status === 'running'}
+              disabled={!ready || (!comboMode && kindList.length === 0) || bodies.length === 0 || run.status === 'running' || (mode === 'chance' && control === 'others' && includedCharts.size < MIN_CONTROL_CHARTS)}
               className="rounded-md border border-emerald-500 bg-emerald-500 px-3 py-1.5 text-[11px] font-mono text-white disabled:opacity-40 dark:border-green-600 dark:bg-green-600"
             >
-              {mode === 'validate' ? t('Run the check') : t('Run the comparison')}
+              {mode === 'validate' ? t('Run the check') : mode === 'model' ? t('Fit the model') : t('Run the comparison')}
             </button>
             <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400" data-research-selection>
               {grouped ? `${counts.a} + ${counts.b} ${t('events')} · ${includedCharts.size} ${t('charts')}` : `${includedEvents} ${t('events')} · ${includedCharts.size} ${t('charts')}`}
@@ -428,9 +516,19 @@ export default function ResearchPanel({ calculationSettings }: Props) {
       )}
 
       {run.status === 'chance' && <ResearchResults key={runs} outcome={run.outcome} />}
+      {run.status === 'chance' && <ResearchRuns key={`runs-${runs}`} current={run.outcome} settings={run.outcome.runSettings} />}
+      {run.status === 'idle' && mode === 'chance' && <ResearchRuns current={null} settings={null} />}
       {run.status === 'groups' && <ResearchGroups key={runs} outcome={run.outcome} />}
       {run.status === 'validate' && <ResearchValidation key={runs} outcome={run.outcome} onAnother={() => { const seed = split.seed + 1; setSplit(current => ({ ...current, seed })); void start(Date.now(), seed); }} />}
       {run.status === 'settings' && <ResearchSettings key={runs} outcome={run.outcome} />}
+      {run.status === 'combine' && <ResearchCombos key={runs} outcome={run.outcome} />}
+      {run.status === 'model' && <ResearchModel key={runs} outcome={run.outcome} onAnother={() => { const seed = split.seed + 1; setSplit(current => ({ ...current, seed })); void start(Date.now(), seed); }} />}
+      {report && reportContext && (
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => saveFile('research-report.html', buildReport(report, reportContext, t, code, language), 'text/html')} className={chip(false)} data-research-report>{t('Save the report (HTML)')}</button>
+          <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('One page with the data, the method, the strongest results and the cautions; open it in a browser to print it or save it as a PDF.')}</span>
+        </div>
+      )}
     </section>
   );
 }

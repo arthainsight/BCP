@@ -75,6 +75,13 @@ export interface StudyOptions {
    * cannot.
    */
   windowDays?: WindowChoice;
+  /**
+   * Features made from the features a moment has (a combination of two, say): given the ids found at a moment, it returns more ids to add. It is applied to the
+   * events and to the random moments alike, so what it makes has its chance level like any other feature.
+   */
+  combine?: (ids: string[]) => string[];
+  /** Keep the features of each random moment (for models that need the moments themselves, not only how often each feature is there). */
+  keepMoments?: boolean;
   /** Random moments for each chart (the chance level); 600 to begin with. */
   baselineSamples?: number;
   /** How many times the events are moved at random for the p-values; 2000 to begin with. */
@@ -112,9 +119,24 @@ export interface StudyData {
   /** The feature ids, in the order the counts below are. */
   names: string[];
   index: ReadonlyMap<string, number>;
-  events: { chartId: string; chartName: string; event: StudyEvent; /** The window the event was read over, in days either side. */ windowDays: number; features: Int32Array }[];
+  events: {
+    chartId: string; chartName: string; event: StudyEvent;
+    /** The window the event was read over, in days either side. */
+    windowDays: number;
+    features: Int32Array;
+    /** The key of the pool that gives the event its chance level (the chart and the window, when not given). */
+    poolKey?: string;
+  }[];
   /** For each chart and window ("chart id|days"), at how many of its random moments each feature was present, and how many moments there were. */
   pool: ReadonlyMap<string, { counts: Int32Array; size: number }>;
+  /** The features of each random moment of each pool, when they were asked to be kept. */
+  moments?: ReadonlyMap<string, Int32Array[]>;
+  /**
+   * How a pool's share becomes a chance in the exact test. With the hundreds of random moments of a chart a little is added to both counts ('laplace'), which only keeps a
+   * feature never seen at random from being taken for impossible. With the few charts of a control the share is used as it is, and only a feature never seen is given
+   * a small chance ('floor'): adding to both counts would make a feature that every control has look less than certain, and so make a chance of it.
+   */
+  smoothing?: 'laplace' | 'floor';
 }
 
 export interface StudyResult {
@@ -227,7 +249,8 @@ export function featureExtractor(item: StudyChart, options: StudyOptions): (time
       const running = dashaLordsDuring(dashaTable, time - windowMs, time + windowMs + 1);
       for (const id of dashaFeaturesOf(running, item.chart, dashaFamilies)) found.add(id);
     }
-    return [...found];
+    const ids = [...found];
+    return options.combine ? [...ids, ...options.combine(ids)] : ids;
   };
 }
 
@@ -295,12 +318,14 @@ export function runStudy(charts: readonly StudyChart[], options: StudyOptions): 
   const expected = new Float64Array(size);
   const eventsWith: { chartId: string; eventId: string }[][] = Array.from({ length: size }, () => []);
   const poolData = new Map<string, { counts: Int32Array; size: number }>();
+  const moments = options.keepMoments ? new Map<string, Int32Array[]>() : undefined;
   for (const item of prepared) {
     // At how many of this chart's random moments each feature is present, for each window: the chance for each of its events of that window.
     for (const [window, pool] of item.pools) {
       const counts = new Int32Array(size);
       for (const features of pool) for (const f of features) counts[f]++;
       poolData.set(`${item.chart.id}|${window}`, { counts, size: pool.length });
+      moments?.set(`${item.chart.id}|${window}`, pool);
     }
     for (const { event, window, features } of item.events) {
       const { counts, size: poolSize } = poolData.get(`${item.chart.id}|${window}`)!;
@@ -344,6 +369,7 @@ export function runStudy(charts: readonly StudyChart[], options: StudyOptions): 
     index,
     events: prepared.flatMap(item => item.events.map(({ event, window, features }) => ({ chartId: item.chart.id, chartName: item.chart.name, event, windowDays: window, features }))),
     pool: poolData,
+    ...(moments ? { moments } : {}),
   };
   return { charts: prepared.length, events: total, skipped, tested: tested.length, results, data };
 }
@@ -374,10 +400,10 @@ export function testFeature(data: StudyData, id: string, exclude: ReadonlySet<st
   let expected = 0;
   for (const item of data.events) {
     if (exclude.has(item.chartId)) continue;
-    const pool = data.pool.get(`${item.chartId}|${item.windowDays}`);
+    const pool = data.pool.get(item.poolKey ?? `${item.chartId}|${item.windowDays}`);
     const count = at === undefined || !pool ? 0 : pool.counts[at];
     const size = pool?.size ?? 0;
-    chances.push((count + 1) / (size + 2));
+    chances.push(data.smoothing === 'floor' ? (count > 0 ? count / size : 1 / (size + 2)) : (count + 1) / (size + 2));
     expected += size > 0 ? count / size : 0;
     if (at !== undefined && item.features.includes(at)) { observed++; events.push({ chartId: item.chartId, eventId: item.event.id }); }
   }

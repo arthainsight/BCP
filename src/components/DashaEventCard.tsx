@@ -3,7 +3,7 @@
 import type { CalculationSettings, ChartData, ChartDisplaySettings, PlanetData } from '@/types';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 import type { DashaEventSnapshot } from '@/lib/dashaEvents';
-import { DASHA_EVENT_CATEGORY_LABELS, DASHA_EVENT_VARGAS, formatEventDate, type DashaEventCategory, type DashaEventVarga, type StoredDashaEvent } from '@/lib/dashaEventStore';
+import { DASHA_EVENT_ACCURACIES, DASHA_EVENT_ACCURACY_LABELS, DASHA_EVENT_CATEGORY_LABELS, DASHA_EVENT_VARGAS, accuracyOf, formatEventDate, type DashaEventAccuracy, type DashaEventCategory, type DashaEventVarga, type StoredDashaEvent } from '@/lib/dashaEventStore';
 import { fill, useT } from '@/lib/i18n';
 import { translateDashaText } from '@/lib/dashaText';
 import { SIGN_ABBR } from '@/lib/signs';
@@ -104,6 +104,11 @@ export default function DashaEventCard({
           <label className="min-w-0 text-[10px] text-zinc-500">{t('Category')}
             <select value={item.category} onChange={event => onChange({ category: event.target.value as DashaEventCategory })} className={SELECT}>
               {Object.entries(DASHA_EVENT_CATEGORY_LABELS).map(([key, label]) => <option key={key} value={key}>{t(label)}</option>)}
+            </select>
+          </label>
+          <label className="min-w-0 text-[10px] text-zinc-500">{t('Date accuracy')}
+            <select value={accuracyOf(item)} onChange={event => onChange({ accuracy: event.target.value as DashaEventAccuracy })} title={t('How exactly the day is known: Research reads an event to the month or to the year over a window')} className={SELECT}>
+              {DASHA_EVENT_ACCURACIES.map(value => <option key={value} value={value}>{t(DASHA_EVENT_ACCURACY_LABELS[value])}</option>)}
             </select>
           </label>
           <label className="min-w-0 text-[10px] text-zinc-500">{t('Varga')}

@@ -1,4 +1,4 @@
-import { DASHA_EVENT_VARGAS, type DashaEventCategory, type DashaEventVarga, type StoredDashaEvent } from './dashaEventStore';
+import { DASHA_EVENT_ACCURACIES, DASHA_EVENT_VARGAS, type DashaEventAccuracy, type DashaEventCategory, type DashaEventVarga, type StoredDashaEvent } from './dashaEventStore';
 
 export type ImportedCategory = DashaEventCategory;
 export type ImportedVarga = DashaEventVarga;
@@ -23,7 +23,9 @@ const normalize = (item: Record<string, unknown>): ImportedEvent | null => {
   const notes = String(item.notes ?? item.description ?? '').trim();
   const tags = Array.isArray(item.tags) ? item.tags.map(String).map(tag => tag.trim()).filter(Boolean) : String(item.tags ?? '').split(/[;,]/).map(tag => tag.trim()).filter(Boolean);
   const rawSignificance = Number(item.significance ?? 3); const significance = Number.isFinite(rawSignificance) ? Math.min(5, Math.max(1, Math.round(rawSignificance))) : 3;
-  return name && validDate(date) ? { name, date, ...(endDate ? { endDate } : {}), category, varga, notes, tags, significance } : null;
+  const accuracyText = String(item.accuracy ?? item['date accuracy'] ?? '').trim().toLocaleLowerCase();
+  const accuracy = DASHA_EVENT_ACCURACIES.includes(accuracyText as DashaEventAccuracy) ? accuracyText as DashaEventAccuracy : undefined;
+  return name && validDate(date) ? { name, date, ...(endDate ? { endDate } : {}), category, varga, notes, tags, significance, ...(accuracy ? { accuracy } : {}) } : null;
 };
 export function eventIdentity(item: ImportedEvent): string { return `${item.name.trim().toLocaleLowerCase()}|${item.date}|${item.endDate ?? ''}|${item.category}|${item.varga}`; }
 const unique = (events: ImportedEvent[]) => [...new Map(events.map(item => [eventIdentity(item), item])).values()];
@@ -156,7 +158,7 @@ export function parseDashaEventText(text: string, defaults: TextImportDefaults):
     const [name = '', categoryText = '', vargaText = '', significanceText = '', ...noteParts] = columns;
     const category = CATEGORY_ALIASES[categoryText.toLocaleLowerCase()] ?? defaults.category;
     const varga = DASHA_EVENT_VARGAS.includes(vargaText.toUpperCase() as ImportedVarga) ? vargaText.toUpperCase() : defaults.varga;
-    const event = normalize({ name, date, endDate, category, varga, significance: significanceText === '' ? 3 : significanceText, notes: noteParts.join('; '), tags: parts.some(part => part.kind !== 'day') ? [APPROXIMATE_TAG] : [] });
+    const event = normalize({ name, date, endDate, category, varga, significance: significanceText === '' ? 3 : significanceText, notes: noteParts.join('; '), tags: parts.some(part => part.kind !== 'day') ? [APPROXIMATE_TAG] : [], accuracy: !to && from.kind !== 'day' ? from.kind : undefined });
     if (event) events.push(event); else invalid.push(trimmed);
   }
   return { events: unique(events), invalid, format: 'lines' };

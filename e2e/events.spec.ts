@@ -243,6 +243,49 @@ test('events can be sorted by the words in them, with a preview, and Undo', asyn
   expect(errors).toEqual([]);
 });
 
+test('how exactly the date of an event is known can be chosen, one by one or for many at once', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Events', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Paste', exact: true })).click();
+  const box = visible(page, page.getByRole('group', { name: 'Paste many events' }));
+  // A month and a year come in with their accuracy; a day is a day.
+  await box.getByRole('textbox', { name: 'Events to add' }).fill(['3/2015 Rough month', '2016 Rough year', '15.6.2017 Exact day'].join('\n'));
+  await box.getByRole('button', { name: 'Add 3 events' }).click();
+  await expect(visible(page, page.getByText('Added 3 events.'))).toBeVisible();
+  const card = (name: string) => visible(page, page.locator('details').filter({ hasText: name }));
+  const accuracy = async (name: string) => {
+    const open = card(name);
+    if ((await open.getAttribute('open')) === null) await open.locator('summary').first().click();
+    return open.getByLabel('Date accuracy');
+  };
+  await expect(await accuracy('Rough month')).toHaveValue('month');
+  await expect(await accuracy('Rough year')).toHaveValue('year');
+  await expect(await accuracy('Exact day')).toHaveValue('day');
+
+  // One event is changed by hand: the day known only to the year.
+  await (await accuracy('Exact day')).selectOption('year');
+  await expect(await accuracy('Exact day')).toHaveValue('year');
+
+  // Many at once, with the bulk bar.
+  const bar = visible(page, page.getByRole('group', { name: 'Bulk editing' }));
+  await bar.getByRole('checkbox', { name: /Select all shown/ }).check();
+  await bar.getByLabel('Set date accuracy of the selected events').selectOption('month');
+  await expect(visible(page, page.getByText('Changed 3 events.'))).toBeVisible();
+  for (const name of ['Rough month', 'Rough year', 'Exact day']) await expect(await accuracy(name)).toHaveValue('month');
+
+  // The form that adds one event has it too: an event known to the month stays so.
+  await visible(page, page.getByLabel('Event name', { exact: true })).fill('Added by hand');
+  await visible(page, page.getByLabel('Event date accuracy')).selectOption('month');
+  await visible(page, page.getByRole('button', { name: 'Add', exact: true })).click();
+  await expect(await accuracy('Added by hand')).toHaveValue('month');
+
+  expect(errors).toEqual([]);
+});
+
 test('an event opens the Matrix of the Varga view in ANALYSIS', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

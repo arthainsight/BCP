@@ -36,7 +36,7 @@ const chart = {
   assert.deepEqual(rows.map(row => [row.body, row.signIndex, row.house]), [['Jupiter', 0, 1], ['Saturn', 3, 4]]);
   const sun = rows[0].aspects.find(aspect => aspect.natal === 'Sun')!;
   assert.ok(sun.exact && sun.relation === 1 && sun.orb < 1e-9);
-  assert.equal(rows[0].aspects.find(aspect => aspect.natal === 'Moon')!.relation, 5, 'Aries is the 5th sign from Sagittarius');
+  assert.equal(rows[0].aspects.find(aspect => aspect.natal === 'Moon')!.relation, 9, 'the Moon in Sagittarius is the 9th sign from Jupiter in Aries: counted from the graha, as its own aspects are');
   // Only the grahas asked for and sampled.
   assert.deepEqual(transitRowsAt(chart, { Jupiter: series([15, 15]), Saturn: series([100, 100]) }, ['Saturn'], 0)!.map(row => row.body), ['Saturn']);
   assert.deepEqual(transitRowsAt(chart, { Jupiter: series([15, 15]) }, ['Jupiter', 'Mars'], 0)!.map(row => row.body), ['Jupiter'], 'Mars has no samples');

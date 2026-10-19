@@ -76,6 +76,9 @@ assert.equal(accuracyOf({ date: '2015-07-01', tags: ['approx. month'] }), 'month
     { id: 'c', name: 'c', date: '2017-07-01', category: 'home', varga: 'D1', notes: '', tags: ['approx. date'], significance: 3 },
   ]);
   assert.deepEqual([month.accuracy, day.accuracy, year.accuracy], ['month', 'day', 'year']);
+  // What was chosen outweighs the tags.
+  const [chosen] = studyEventsOf([{ id: 'd', name: 'd', date: '2015-06-15', category: 'home', varga: 'D1', notes: '', tags: ['approx. date'], significance: 3, accuracy: 'year' }]);
+  assert.equal(chosen.accuracy, 'year');
 }
 
 console.log('Research data tests passed');
