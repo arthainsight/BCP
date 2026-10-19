@@ -194,6 +194,11 @@ export const FI: Record<string, string> = {
   'This daśā system does not apply to this chart.': 'Tämä daśā-järjestelmä ei koske tätä karttaa.',
   'exact dates': 'tarkat päivät',
   'No exact degree is reached inside this stretch.': 'Tarkkaa astetta ei saavuteta tämän jakson aikana.',
+  // Event List: progressions of an event's day
+  'event progressions': 'tapahtuman progressiot',
+  'Progressions (Paraya)': 'Progressiot (Paraya)',
+  '{degrees}° from the natal degree': '{degrees}° natal-asteesta',
+  'The natal points each aspects by sign (1 = its own sign, 5, 7, 9 = counted from it). ● = within {orb}° of the natal degree.': 'Natal-pisteet, joita kukin aspektoi merkin mukaan (1 = pisteen oma merkki, 5, 7, 9 = siitä lukien). ● = enintään {orb}° natal-asteesta.',
   // Paraya tab
   'from natal': 'natalista',
   'paraya progressions': 'paraya-progressiot',

@@ -224,6 +224,7 @@ export default function DashaEventList({
                         chartDisplaySettings={chartDisplaySettings}
                         transitLocation={transitLocation}
                         calculationSettings={calculationSettings}
+                        birthDatetime={birthDatetime}
                       />
                     </div>
                   );

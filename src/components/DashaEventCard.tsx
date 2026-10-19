@@ -9,6 +9,8 @@ import { translateDashaText } from '@/lib/dashaText';
 import { SIGN_ABBR } from '@/lib/signs';
 import { getVargaSignIndex } from '@/lib/varga';
 import EventTransits from './EventTransits';
+import EventProgressions from './EventProgressions';
+import { PARAYA_BODIES } from '@/lib/bnn/parayaHits';
 
 const SELECT = 'mt-1 min-h-11 w-full min-w-0 rounded border border-zinc-300 bg-white px-1.5 py-2 dark:border-zinc-700 dark:bg-zinc-900';
 const ACTION = 'min-h-11 rounded border px-2 py-2 text-[10px]';
@@ -60,16 +62,19 @@ interface Props {
   chartDisplaySettings?: ChartDisplaySettings;
   transitLocation?: TransitLocation;
   calculationSettings?: CalculationSettings;
+  /** The birth moment, for the progressions of the event's days. */
+  birthDatetime: string;
 }
 
 /** One event of the list: its name, days, category and stars on a line, and under it the details to change and the daśās of its days. */
 export default function DashaEventCard({
   item, open, selected, hovered, onSelect, onChange, onDelete, onHover, planets, startSnapshots, endSnapshots,
-  transitDatetime, transitPlanets, onSetTransitDatetime, onOpenVargaMatrix, onOpenDateInChart, chart, chartDisplaySettings, transitLocation, calculationSettings,
+  transitDatetime, transitPlanets, onSetTransitDatetime, onOpenVargaMatrix, onOpenDateInChart, chart, chartDisplaySettings, transitLocation, calculationSettings, birthDatetime,
 }: Props) {
   const t = useT();
   const division = Number(item.varga.slice(1));
   const transitIsOnTheDay = transitDatetime.startsWith(formatEventDate(item.date));
+  const paraya = chartDisplaySettings?.parayaBodies ?? PARAYA_BODIES;
 
   return (
     <details open={open} onMouseEnter={() => onHover(true)} onMouseLeave={() => onHover(false)} className="group min-w-0 rounded-md border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
@@ -128,10 +133,12 @@ export default function DashaEventCard({
         )}
         {item.endDate && <div className={CAPTION}>{t('At the start')} · {formatEventDate(item.date)}</div>}
         <Snapshots snapshots={startSnapshots} />
+        <EventProgressions date={item.date} chart={chart} birthDatetime={birthDatetime} calculationSettings={calculationSettings} bodies={paraya} />
         {item.endDate && (
           <>
             <div className={CAPTION}>{t('At the end')} · {formatEventDate(item.endDate)}</div>
             <Snapshots snapshots={endSnapshots} />
+            <EventProgressions date={item.endDate} chart={chart} birthDatetime={birthDatetime} calculationSettings={calculationSettings} bodies={paraya} />
           </>
         )}
       </div>

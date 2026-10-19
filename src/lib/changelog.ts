@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.16',
+    date: '2026-10-19',
+    title: 'The progressions (Paraya) of an event\'s day in the Event List',
+    changes: [
+      'Every event card in TIMING → Dasha → Events now shows the progressions (Paraya) of its day under the daśās: for each progressing graha chosen for the chart (Jupiter, Saturn, Rahu and Ketu to begin with; Mars, Mercury and Venus when they are chosen) the sign and degree it stood at, its house from the ascendant, and the natal points it aspected by sign (1 for the point\'s own sign, 5, 7 and 9 for the signs counted from it), with a ● for a graha within a degree of the natal degree. An event with an end date has them for its last day too.',
+      'They follow the Paraya options of Settings (the Saturn and Rahu stays and the retrograde choice) and are what the Paraya and Paraya aspects tabs show when the event is set as the target. A date before birth says so.',
+      'Tests: the progressions at a moment against the Paraya calculation at several ages, the kinds of aspect, the exactness within a degree, the houses and the date before birth; and a browser test that the card has them for both days and that the sign and degree of each equal the Paraya tab\'s for the same day.',
+      'Updated the application version to v3.16.',
+    ],
+  },
+  {
     version: 'v3.15',
     date: '2026-10-19',
     title: 'Paraya aspects: transits, a timeline, the exact dates and the daśā',
