@@ -765,3 +765,44 @@ test('ANALYSIS Bala has a diagram and a table for the Ṣaḍbala, the Bhāva Ba
 
   expect(errors).toEqual([]);
 });
+
+test('ANALYSIS Sensitive Degrees marks Sandhi, Gandanta, Mṛtyu Bhāga and the Puṣkara degrees of the Lagna, the grahas and Māndi', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Sensitive Degrees', exact: true })).click();
+
+  const row = (point: string) => visible(page, page.locator(`tr[data-point="${point}"]`));
+  for (const point of ['Lagna', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu', 'Maandi']) await expect(row(point)).toBeVisible();
+
+  // 15.08.1947: the Sun is at 28°21' of Cancer, 1°38' before the end of Ashlesha, in its last pada: Gandanta (and not Sandhi, which is within 1°).
+  await expect(row('Sun').locator('[data-mark="gandanta"]')).toContainText('Ashlesha → Magha, 1°38\' from the junction');
+  await expect(row('Sun').locator('[data-mark="sandhi"]')).not.toContainText('⚠');
+  // The Moon at 9°48' of Cancer is in the Puṣkara navāṁśa 6°40'–10° (the 3rd), Jupiter at 25°54' of Libra in the 23°20'–26°40' one (the 8th).
+  await expect(row('Moon').locator('[data-mark="pushkaraNavamsa"]')).toContainText("3rd navamsa (6°40'–10°)");
+  await expect(row('Jupiter').locator('[data-mark="pushkaraNavamsa"]')).toContainText("8th navamsa (23°20'–26°40')");
+  // Māndi at 29°44' of Leo: 0°15' from the end of the sign, and in the last Puṣkara navāṁśa of a fire sign.
+  await expect(row('Maandi').locator('[data-mark="sandhi"]')).toContainText("0°15' from the end of the sign");
+  await expect(row('Maandi').locator('[data-mark="pushkaraNavamsa"]')).toContainText('9th navamsa');
+  // The Lagna (Virgo 12°18') is on none of them.
+  await expect(row('Lagna')).not.toContainText(/⚠|✦/);
+
+  // The summary names the points, and the table of every sign is under it.
+  await expect(visible(page, page.locator('[data-sensitive-summary]'))).toContainText('On a weakening degree: Sun, Maandi');
+  await expect(visible(page, page.locator('[data-sensitive-summary]'))).toContainText('On a Puṣkara degree: Moon, Jupiter, Maandi');
+  await visible(page, page.getByText('The sensitive degrees of every sign')).click();
+  await expect(visible(page, page.getByRole('cell', { name: "20°–23°20' · 26°40'–30°" }))).toBeVisible();
+
+  // Special Sphutas has the Yogi, the Sahayogi and the Avayogi: Sun + Moon + 93°20' is Aquarius 11°29', in Shatabhisha (Rahu's).
+  await visible(page, page.getByRole('button', { name: 'Special Sphutas', exact: true })).click();
+  const yogi = visible(page, page.locator('[data-yogi]'));
+  await expect(yogi.locator('[data-yogi-role="Yogi"]')).toContainText('Rahu');
+  await expect(yogi.locator('[data-yogi-role="Yogi"]')).toContainText('Shatabhisha');
+  await expect(yogi.locator('[data-yogi-role="Sahayogi"]')).toContainText('Saturn');
+  await expect(yogi.locator('[data-yogi-role="Avayogi"]')).toContainText('Venus');
+  await expect(yogi.locator('[data-yogi-role="Avayogi"]')).toContainText('Purva Phalguni');
+
+  expect(errors).toEqual([]);
+});

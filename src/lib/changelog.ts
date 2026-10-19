@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.08',
+    date: '2026-10-19',
+    title: 'Sensitive degrees, and the Yogi, Sahayogi and Avayogi',
+    changes: [
+      'New ANALYSIS → Sensitive Degrees (Herkät asteet): the Lagna, the grahas and Māndi, each tested for the degrees that weaken (⚠) and strengthen (✦) as Jagannatha Hora counts them. Sandhi: within 1° of the start or the end of a sign. Gandanta: the last 3°20\' of Cancer, Scorpio and Pisces and the first 3°20\' of Leo, Sagittarius and Aries (the last pada of Ashlesha, Jyeshtha and Revati and the first of Magha, Mula and Ashwini, counted in the nakṣatra zodiac of Settings), the part within two ghaṭis (0°26\'40") of the junction marked as its core. Mṛtyu Bhāga: the degree of death of each point in its sign (the table of JHora, with its orbs: the Sun ⅓°, the Moon, Mercury and the Lagna ⅔°, the others ¼°). Puṣkara Navāṁśa: two navamsas of 3°20\' in every sign, and Puṣkara Bhāga: one degree in every sign (the 21st, 14th, 24th and 7th in turn).',
+      'A summary names the points that are on a degree, and a folded table has the degrees of every sign. Rahu, Ketu and the Lagna are tested like the grahas; the Lagna is also given the Puṣkara degrees, which JHora leaves out for it.',
+      'ANALYSIS → Special Sphutas has the Yogi, the Sahayogi and the Avayogi: the Yogi point is the Sun + the Moon + 93°20\', the Yogi the lord of its nakṣatra, the Sahayogi the lord of its sign and the Avayogi the lord of the nakṣatra of the point 186°40\' after it, each with the sign and house it stands in. A new FAQ entry explains both.',
+      'Tests: the Sandhi, Gandanta (all three junctions, round the end of the zodiac, the core and the nakṣatra offset), Mṛtyu Bhāga (the orbs and the columns), Puṣkara Navāṁśa (all four kinds of sign) and Puṣkara Bhāga on hand-made longitudes, the Yogi points worked out by hand, and a browser test of the new view and the Yogi table on the 15.08.1947 chart.',
+      'Updated the application version to v3.08.',
+    ],
+  },
+  {
     version: 'v3.07',
     date: '2026-10-19',
     title: 'A chart opens plain: signs, grahas and their degrees and minutes',

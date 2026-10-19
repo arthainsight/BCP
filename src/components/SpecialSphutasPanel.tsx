@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
 import { formatClock, formatDms, nakshatraAndPada } from '@/lib/specialSphutas';
 import { calculateArudhaPadas } from '@/lib/arudhaPadas';
+import { calculateYogi } from '@/lib/yogiPoints';
 import { calculateCharaKarakas } from '@/lib/karakas';
 import { karakamsa as karakamsaOf, upagrahaPoints } from '@/lib/chartPoints';
 import { setGulikaMoment, setMaandiMoment, useChartPoints } from '@/hooks/useChartPoints';
@@ -70,6 +71,23 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
     [chart],
   );
 
+  // The Yogi, the Sahayogi and the Avayogi: from the Sun and the Moon, with where those grahas stand in the chart.
+  const yogi = useMemo(() => {
+    const sun = chart.planets.find(planet => planet.name === 'Sun');
+    const moon = chart.planets.find(planet => planet.name === 'Moon');
+    if (!sun || !moon) return null;
+    const found = calculateYogi(sun.longitude, moon.longitude, nakshatraAdjust);
+    const placed = (name: string) => chart.planets.find(planet => planet.name === name);
+    return {
+      found,
+      rows: [
+        { role: 'Yogi', graha: found.yogi.nakshatraLord, point: found.yogi },
+        { role: 'Sahayogi', graha: found.sahayogi, point: null },
+        { role: 'Avayogi', graha: found.avayogi.nakshatraLord, point: found.avayogi },
+      ].map(row => ({ ...row, planet: placed(row.graha) })),
+    };
+  }, [chart, nakshatraAdjust]);
+
   if (!sphutas || !timing) return <p className="text-xs font-mono text-zinc-400">{t('Calculate a chart to see the special sphutas.')}</p>;
 
   return (
@@ -118,6 +136,45 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
           <div>{t('The 22nd Drekkana and the 64th Navamsa are the Lagna turned 210°: the sign is the D3 / D9 sign of that point, and its nakshatra and pada are those of the point in the zodiac.')}</div>
         )}
       </div>
+
+      {yogi && (
+        <div className="space-y-2" data-yogi>
+          <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('Yogi, Sahayogi and Avayogi')}</div>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse font-mono text-xs">
+              <thead>
+                <tr className="bg-zinc-100 text-left dark:bg-zinc-800">
+                  <th className="p-2">{t('Role')}</th>
+                  <th className="p-2">{t('Graha')}</th>
+                  <th className="p-2">{t('Stands in')}</th>
+                  <th className="p-2">{t('Sphuta point')}</th>
+                  <th className="p-2">{t('Nakshatra')}</th>
+                  <th className="p-2">{t('Pada')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {yogi.rows.map(row => (
+                  <tr key={row.role} data-yogi-role={row.role} className="border-b border-zinc-100 dark:border-zinc-800">
+                    <td className="whitespace-nowrap p-2 font-bold text-emerald-700 dark:text-green-400">{row.role}</td>
+                    <td className="whitespace-nowrap p-2 font-bold text-zinc-800 dark:text-zinc-100">{row.graha}</td>
+                    <td className="whitespace-nowrap p-2 text-zinc-700 dark:text-zinc-300">
+                      {row.planet ? `${SIGN_NAMES[row.planet.sign - 1]}, ${t('house')} ${row.planet.house}` : '—'}
+                    </td>
+                    <td className="whitespace-nowrap p-2 text-zinc-700 dark:text-zinc-300">
+                      {row.point ? `${SIGN_NAMES[row.point.sign - 1]} ${formatDms(row.point.degree)}` : `${SIGN_NAMES[yogi.found.yogi.sign - 1]} (${t('sign of the Yogi point')})`}
+                    </td>
+                    <td className="whitespace-nowrap p-2 text-cyan-700 dark:text-cyan-300">{row.point?.nakshatra ?? '—'}</td>
+                    <td className="p-2 text-zinc-600 dark:text-zinc-300">{row.point?.pada ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="space-y-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+            <div>{t("The Yogi point is the Sun + the Moon + 93°20'. The Yogi is the lord of its nakshatra, the Sahayogi the lord of its sign, and the Avayogi the lord of the nakshatra of the point 186°40' after it.")}</div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-2">
         <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('Upagrahas')}</div>
