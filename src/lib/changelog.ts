@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.17',
+    date: '2026-10-19',
+    title: 'Research: the progressions at the time of the same kind of event, across several charts',
+    changes: [
+      'New ANALYSIS → Research. It takes the saved charts with the events kept for each (a chart saved twice for one birth moment and place counts once), the kind of event (a category such as Home / move or Relationship, and a tag) and the progressions (Paraya) at each event\'s day: the house each progressing graha stood in (from the ascendant, so charts with different ascendants can be compared), the houses and the natal points it aspected by sign, and the natal points it stood within a degree of. Jupiter, Saturn, Rahu and Ketu, and Mars, Mercury and Venus when chosen.',
+      'Set against chance: the same chart is read at 400 random moments of its life for the share of the time each feature is there anyway, and the events are moved to random moments of their own chart 2000 times for the p-value (a permutation test, the random numbers seeded so that the answer is the same each time). A q-value (false discovery rate, Benjamini–Hochberg) corrects p for the number of features looked at, and a q of 0.1 or less is marked.',
+      'A matrix for each kind of feature (a row for each graha, a column for each house or natal point, the number of events in each cell, shaded by the ratio to chance), a table of every feature the events have with the events, the number expected by chance, the ratio, p and q, and the events behind a cell or a row, with the charts they belong to. A note when there are few events.',
+      'Tests: the features of the progressions at a moment (houses from the ascendant, aspected houses, aspected natal points, exactness), the random numbers, the correction on a hand-worked set, studies in which every event is put in one situation (found, and the same in every chart for the natal-point aspects) and in which events fall at random (nothing survives the correction), the repeatability, events before birth, the saved charts with their events and the address of each chart; and a browser test of the selection, the comparison, the matrix and its cells, the table and the repeat.',
+      'Updated the application version to v3.17.',
+    ],
+  },
+  {
     version: 'v3.16',
     date: '2026-10-19',
     title: 'The progressions (Paraya) of an event\'s day in the Event List',

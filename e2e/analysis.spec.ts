@@ -843,3 +843,116 @@ test('the graha table marks the points on sensitive degrees and the combust ones
 
   expect(errors).toEqual([]);
 });
+
+// Research: the progressions at events across saved charts.
+
+const researchEvent = (id: string, name: string, date: string, category: string, tags: string[] = []) => ({ id, name, date, category, varga: 'D1', notes: '', tags, significance: 3 });
+const researchChart = (id: string, name: string, birthDatetime: string, client = '') => ({
+  id, name, client, createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-01T00:00:00.000Z',
+  chartData: { birthDatetime, city: 'New Delhi', manualLat: '28.6139', manualLng: '77.209', ianaTimezone: 'Asia/Kolkata', tzOverride: '', targetDate: '2026-10-19', showCoords: true },
+});
+
+test('ANALYSIS Research compares the progressions at events across saved charts, against chance', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  // Two saved charts with events of their own, kept as the app keeps them.
+  const alpha = '15.08.1947 09.15.00';
+  const beta = '03.03.1975 06.30.00';
+  await page.addInitScript(({ charts, lists }) => {
+    try {
+      localStorage.setItem('bcp_saved_charts', JSON.stringify(charts));
+      for (const [birth, events] of Object.entries(lists)) localStorage.setItem(`bhrigu:dasha-events:${birth}`, JSON.stringify(events));
+    } catch {}
+  }, {
+    charts: [researchChart('c1', 'Alpha', alpha, 'Family'), researchChart('c2', 'Beta', beta, 'Family'), researchChart('c3', 'Gamma without events', '09.09.1999 12.00.00')],
+    lists: {
+      [alpha]: [
+        researchEvent('a1', 'Moved to the city', '1970-05-01', 'home', ['abroad']), researchEvent('a2', 'Bought a flat', '1982-09-12', 'home'),
+        researchEvent('a3', 'Moved again', '1991-02-03', 'home'), researchEvent('a4', 'Moved north', '2003-07-20', 'home', ['abroad']),
+        researchEvent('a5', 'Married', '1972-11-05', 'relationship'), researchEvent('a6', 'New job', '1990-01-01', 'work'),
+      ],
+      [beta]: [
+        researchEvent('b1', 'First move', '1995-06-01', 'home'), researchEvent('b2', 'Moved abroad', '2001-03-14', 'home', ['abroad']),
+        researchEvent('b3', 'Moved home', '2010-10-10', 'home'), researchEvent('b4', 'Moved back', '2016-04-30', 'home'),
+        researchEvent('b5', 'Wedding', '2004-08-21', 'relationship'),
+      ],
+    },
+  });
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await expect(panel).toBeVisible();
+
+  // The charts with events are chosen; the one without can not be.
+  await expect(panel.getByRole('checkbox', { name: 'Alpha' })).toBeChecked();
+  await expect(panel.getByRole('checkbox', { name: 'Beta' })).toBeChecked();
+  await expect(panel.getByRole('checkbox', { name: 'Gamma without events' })).toBeDisabled();
+
+  // The kind of event: the moves, eight of them in the two charts, and the tag narrows them.
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+  await expect(panel.locator('[data-research-selection]')).toContainText('8 events · 2 charts');
+  await panel.getByLabel('event tag').selectOption('abroad');
+  await expect(panel.locator('[data-research-selection]')).toContainText('3 events · 2 charts');
+  await panel.getByLabel('event tag').selectOption('');
+  await expect(panel.locator('[data-research-selection]')).toContainText('8 events · 2 charts');
+
+  // A chart can be left out.
+  await panel.getByRole('checkbox', { name: 'Beta' }).uncheck();
+  await expect(panel.locator('[data-research-selection]')).toContainText('4 events · 1 charts');
+  await panel.getByRole('checkbox', { name: 'Beta' }).check();
+
+  // The comparison: the charts are calculated, the events read and set against chance.
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 30_000 });
+  await expect(panel.locator('[data-research-summary]')).toContainText(/\d+ features tested/);
+  await expect(panel.getByText(/Few events/)).toBeVisible();
+
+  // The matrix: a row for each progressing graha and a column for each house, with the number of events in each cell.
+  const matrix = panel.locator('[data-research-matrix="house"]');
+  await expect(matrix).toBeVisible();
+  await expect(matrix.locator('tbody tr')).toHaveCount(4);
+  await expect(matrix.locator('thead th')).toHaveCount(13);
+  const counts = await matrix.locator('[data-cell]').evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-count'))));
+  expect(counts).toHaveLength(48);
+  // Each graha stands in one house at each event, so a row adds up to the eight events.
+  for (let row = 0; row < 4; row++) expect(counts.slice(row * 12, row * 12 + 12).reduce((sum, n) => sum + n, 0)).toBe(8);
+
+  // A cell lists its events.
+  const cell = matrix.locator('button[data-cell]').first();
+  const inCell = Number(await cell.getAttribute('data-count'));
+  await cell.click();
+  await expect(panel.locator('[data-research-focus]')).toBeVisible();
+  await expect(panel.locator('li[data-research-event]')).toHaveCount(inCell);
+  await cell.click();
+  await expect(panel.locator('[data-research-focus]')).toHaveCount(0);
+
+  // The other kinds of feature, in the matrix and in the table, each with its p and q.
+  await panel.getByRole('group', { name: 'shown in the matrix' }).getByRole('button', { name: 'aspects natal' }).click();
+  await expect(panel.locator('[data-research-matrix="aspectNatal"] thead th')).toHaveCount(11);
+  const rows = panel.locator('tr[data-feature]');
+  expect(await rows.count()).toBeGreaterThan(5);
+  await expect(rows.first()).toContainText(/\d+\/8/);
+  await expect(rows.first()).toContainText(/(<0\.001|0\.\d{3})/);
+  // Most unusual first: the p-values do not fall as the rows go down.
+  const ps = await rows.evaluateAll(all => all.map(row => row.querySelectorAll('td')[4].textContent ?? ''));
+  const asNumber = (text: string) => (text.startsWith('<') ? 0 : Number(text));
+  ps.map(asNumber).forEach((p, i, list) => i > 0 && expect(p).toBeGreaterThanOrEqual(list[i - 1]));
+
+  // The same comparison again gives the same answer.
+  const firstRow = await rows.first().innerText();
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 30_000 });
+  expect(await panel.locator('tr[data-feature]').first().innerText()).toBe(firstRow);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research says so when there are no saved charts', async ({ page }) => {
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await expect(visible(page, page.locator('[data-research-empty]'))).toBeVisible();
+});
