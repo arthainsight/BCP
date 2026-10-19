@@ -518,6 +518,11 @@ test('Mars, Mercury and Venus can be tried as Paraya grahas (beta), and are off 
   await expect.poll(betaLabels).toEqual(['Ma', 'Me', 'Ve']);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}').parayaBodies)).toEqual(['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Mars', 'Mercury', 'Venus']);
 
+  // They start from their natal degrees and move at the same pace, so Venus (23°2' of Cancer) stays 8°40' ahead of Mercury (14°22'), whatever the date.
+  const degreeOf = async (code: string) => Number((await chartText()).match(new RegExp(`${code} (\\d+\\.\\d)°`))![1]);
+  const gap = ((await degreeOf('Ve')) - (await degreeOf('Me')) + 30) % 30;
+  expect(Math.abs(gap - 8.667)).toBeLessThan(0.25);
+
   // "all" is the four, and none clears the lot.
   await open();
   await visible(page, page.getByRole('button', { name: 'all', exact: true }).first()).click();

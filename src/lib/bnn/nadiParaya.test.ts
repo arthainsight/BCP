@@ -135,6 +135,55 @@ assert.deepEqual(marsAt.map(match => match.cycleNumber), [1, 2, 3]);
 assert.deepEqual(findParayaAgesForPosition({ body: 'Mars', targetSignIndex: 4, degree: 15, natalJupiterSignIndex: 0, natalSaturnSignIndex: 0, natalRahuSignIndex: 0, maxAge: 5 }), []);
 // A timeline of Mercury has twelve signs in a year.
 assert.equal(buildParayaTimeline({ body: 'Mercury', natalSignIndex: 0, maxAge: 1.01 }).length, 13);
+// --- The beta grahas begin at their natal degrees: Mercury at 7° and Venus at 18° of Libra are in different places on the way round -----------------
+const libra = (ageYears: number) => calculateBetaParaya({
+  ageYears,
+  natal: { Mercury: { signIndex: 6, degree: 7 }, Venus: { signIndex: 6, degree: 18 } },
+});
+const [mercury0, venus0] = libra(0);
+assert.deepEqual([mercury0.signIndex, mercury0.cycleNumber, venus0.signIndex, venus0.cycleNumber], [6, 1, 6, 1]);
+near(mercury0.degree, 7, 'Mercury at birth');
+near(venus0.degree, 18, 'Venus at birth');
+// A month is 1/12 of a year and 30° of the sign: at 0.02 years (0.24 of a stay) they are 7.2° further on.
+near(libra(0.02)[0].degree, 14.2, 'Mercury at 0.02');
+near(libra(0.02)[1].degree, 25.2, 'Venus at 0.02');
+// Venus reaches Scorpio at 12/30 of a stay, 0.0333 years; Mercury at 23/30 of a stay, 0.0639.
+assert.equal(libra(0.05)[1].signIndex, 7);
+near(libra(0.05)[1].degree, 6, 'Venus in Scorpio at 0.05');
+assert.equal(libra(0.05)[0].signIndex, 6);
+near(libra(0.05)[0].degree, 25, 'Mercury is still in Libra at 0.05');
+near(libra(0.07)[0].degree, (0.07 - 23 / 360) * 360, 'Mercury in Scorpio at 0.07 (2.2° in)');
+assert.equal(libra(0.07)[0].signIndex, 7);
+// The first stay began before birth: its start age is negative.
+near(calculateBetaParaya({ ageYears: 0, natal: { Mercury: { signIndex: 6, degree: 7 } } })[0].startAge, -7 / 360, 'the stay began 7° before birth');
+// A round later (a year on for Mercury) they are where they were.
+near(libra(1)[0].degree, 7, 'Mercury a year on');
+assert.equal(libra(1)[0].cycleNumber, 2);
+// A graha that was retrograde at birth begins one sign back, and at the same degree.
+const backwards = calculateBetaParaya({ ageYears: 0, natal: { Mercury: { signIndex: 6, degree: 7, retrograde: true } } })[0];
+assert.equal(backwards.signIndex, 5);
+near(backwards.degree, 7, 'the degree is kept');
+// The ages a position is reached at: Mercury at 15° Aries (6 stays on) after 6.5 stays less its 7° head start, then every year.
+const mercuryAt = (targetSignIndex: number, degree: number) => findParayaAgesForPosition({
+  body: 'Mercury', targetSignIndex, degree, natalJupiterSignIndex: 0, natalSaturnSignIndex: 0, natalRahuSignIndex: 0,
+  natalBeta: { Mercury: { signIndex: 6, degree: 7 } }, maxAge: 3,
+}).map(match => Math.round(match.ageYears * 1000) / 1000);
+assert.deepEqual(mercuryAt(0, 15), [0.522, 1.522, 2.522]);
+// A degree of its natal sign that it has already passed at birth is reached next round, and not at a negative age.
+assert.deepEqual(mercuryAt(6, 2), [0.986, 1.986, 2.986]);
+assert.deepEqual(mercuryAt(6, 10), [0.008, 1.008, 2.008]);
+// Venus 11° ahead of Mercury gets to the same degree earlier by 11 / 360 years.
+const venusAt = findParayaAgesForPosition({
+  body: 'Venus', targetSignIndex: 0, degree: 15, natalJupiterSignIndex: 0, natalSaturnSignIndex: 0, natalRahuSignIndex: 0,
+  natalBeta: { Venus: { signIndex: 6, degree: 18 } }, maxAge: 3,
+}).map(match => Math.round(match.ageYears * 1000) / 1000);
+assert.deepEqual(venusAt, [0.492, 1.492, 2.492]);
+// A timeline of a beta graha begins with the stay that was going on at birth.
+const timeline = buildParayaTimeline({ body: 'Mercury', natalSignIndex: 6, startDegree: 7, maxAge: 1 });
+near(timeline[0].startAge, -7 / 360, 'the first stay began before birth');
+assert.ok(timeline[0].endAge > 0);
+assert.equal(timeline.length, 13, 'the stay of birth, eleven whole ones and the stay that the year ends in: thirteen touch the first year');
+
 console.log('Nadi paraya tests passed');
 
 // --- Stays in each sign: alternating (the default) or the same in every sign ---------------
