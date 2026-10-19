@@ -3,62 +3,15 @@ import { calculateChart, selectWorkspace, visible } from './helpers';
 
 // TIMING: the daśā systems, the muhurta, the transit hits and the summary.
 
-test('transit.hits also lists the Paraya hits, to the 1st, 5th and 9th from each natal graha', async ({ page }) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-
-  await calculateChart(page);
-  await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Transit Hits', exact: true })).click();
-
-  const paraya = visible(page, page.getByRole('region', { name: 'paraya hits' }));
-  await expect(paraya).toBeVisible();
-
-  // Ten years hold every kind of hit: the point itself and its 5th and 9th sign.
-  await paraya.getByRole('button', { name: '10 yr', exact: true }).click();
-  await paraya.getByRole('button', { name: /^show all/ }).click();
-  await expect(paraya).toContainText('over natal');
-  await expect(paraya).toContainText('5th from natal');
-  await expect(paraya).toContainText('9th from natal');
-  await expect(paraya).toContainText(/age \d+\.\d/);
-
-  expect(errors).toEqual([]);
-});
-
-test('the Paraya hits count Mars, Mercury and Venus (beta) when they are asked for', async ({ page }) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
-
-  await calculateChart(page);
-  await selectWorkspace(page, 'TIMING');
-  await visible(page, page.getByRole('button', { name: 'Transit Hits', exact: true })).click();
-  const paraya = visible(page, page.getByRole('region', { name: 'paraya hits' }));
-  await paraya.getByRole('button', { name: '10 yr', exact: true }).click();
-  const betaHit = /(Ma|Me|Ve) (over natal|5th from natal|9th from natal)/;
-
-  // Not to begin with; the beta button counts them: Mercury and Venus come round every year, so a year holds plenty.
-  await paraya.getByRole('button', { name: /^show all/ }).click();
-  await expect(paraya.getByRole('listitem').filter({ hasText: betaHit })).toHaveCount(0);
-  const beta = paraya.getByRole('button', { name: 'beta: Ma Me Ve', exact: true });
-  await expect(beta).toHaveAttribute('aria-pressed', 'false');
-  await beta.click();
-  await expect(beta).toHaveAttribute('aria-pressed', 'true');
-  await paraya.getByRole('button', { name: /^show all/ }).click();
-  await expect(paraya.getByRole('listitem').filter({ hasText: betaHit }).first()).toBeVisible();
-  expect(await paraya.getByRole('listitem').filter({ hasText: betaHit }).count()).toBeGreaterThan(50);
-  // And off again.
-  await beta.click();
-  await expect(paraya.getByRole('listitem').filter({ hasText: betaHit })).toHaveCount(0);
-
-  expect(errors).toEqual([]);
-});
-
 test('TIMING Paraya shows where the seven progressing grahas stand and every hit to the natal points, in the 1st, 5th, 7th and 9th sign', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await calculateChart(page);
   await selectWorkspace(page, 'TIMING');
+  // Transit Hits is the transits only: the Paraya hits are all in the Paraya tab.
+  await visible(page, page.getByRole('button', { name: 'Transit Hits', exact: true })).click();
+  await expect(page.getByRole('region', { name: 'paraya hits' })).toHaveCount(0);
   await visible(page, page.getByRole('button', { name: 'Paraya', exact: true })).click();
   const panel = visible(page, page.getByRole('region', { name: 'paraya progressions' }));
   await expect(panel).toBeVisible();
@@ -112,11 +65,11 @@ test('the Paraya options in Settings change the Paraya hits', async ({ page }) =
   await calculateChart(page);
   const hitsText = async () => {
     await selectWorkspace(page, 'TIMING');
-    await visible(page, page.getByRole('button', { name: 'Transit Hits', exact: true })).click();
-    const paraya = visible(page, page.getByRole('region', { name: 'paraya hits' }));
-    await paraya.getByRole('button', { name: '10 yr', exact: true }).click();
-    await paraya.getByRole('button', { name: /^show all/ }).click();
-    return (await paraya.locator('ul').innerText()).replace(/\s+/g, ' ');
+    await visible(page, page.getByRole('button', { name: 'Paraya', exact: true })).click();
+    const panel = visible(page, page.getByRole('region', { name: 'paraya progressions' }));
+    await panel.getByRole('button', { name: '10 yr', exact: true }).click();
+    await panel.getByRole('button', { name: /^show all/ }).click();
+    return (await panel.locator('li[data-hit]').allInnerTexts()).join(' ').replace(/\s+/g, ' ');
   };
   const before = await hitsText();
 

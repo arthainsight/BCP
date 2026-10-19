@@ -288,7 +288,7 @@ export default function SettingsPanel(props: Props) {
                 <option value="even">{t('1.5 years per sign')}</option>
               </select>
               <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-                {t('How long the Paraya graha stays in each sign. Either way a round takes 30 years for Saturn and 18 for Rahu; the chart and the Paraya hits follow the choice.')}
+                {t('How long the Paraya graha stays in each sign. Either way a round takes 30 years for Saturn and 18 for Rahu; the chart and the Paraya tab follow the choice.')}
               </div>
             </div>
             <div>
