@@ -6,6 +6,7 @@ import DashaWorkspace from './DashaWorkspace';
 import TransitHitsPanel from './TransitHitsPanel';
 import SignChangesPanel from './SignChangesPanel';
 import ParayaHitsPanel from './ParayaHitsPanel';
+import ParayaProgressionPanel from './ParayaProgressionPanel';
 import TimingSummary from './TimingSummary';
 import TithiPravesaPanel from './TithiPravesaPanel';
 import PraveshaPanel from './PraveshaPanel';
@@ -18,12 +19,13 @@ import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
-type View = 'dasha' | 'summary' | 'transits' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
+type View = 'dasha' | 'summary' | 'transits' | 'paraya' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'dasha', label: 'Dasha' },
   { key: 'summary', label: 'Summary' },
   { key: 'transits', label: 'Transit Hits' },
+  { key: 'paraya', label: 'Paraya' },
   { key: 'signs', label: 'Sign changes' },
   { key: 'muhurta', label: 'Muhurta' },
   { key: 'tithi', label: 'Tithi Praveśa' },
@@ -153,6 +155,16 @@ export default function TimingPanel({
             />
           </div>
         </div>
+      )}
+
+      {view === 'paraya' && (
+        <ParayaProgressionPanel
+          chart={chart}
+          birthDatetime={birthDatetime}
+          targetDate={targetDate ?? ''}
+          calculationSettings={calculationSettings}
+          onSetTarget={onSetTransitDatetime}
+        />
       )}
 
       {view === 'signs' && (

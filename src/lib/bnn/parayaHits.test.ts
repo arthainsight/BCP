@@ -118,4 +118,10 @@ for (const retro of [false, true]) {
 // A chart without Mars has no Mars hits.
 assert.equal(findParayaHits({ ...betaWindow(3, ['Mars']), chart: { ...betaChart, planets: betaChart.planets.filter(p => p.name !== 'Mars') } as ChartData, relations: [1] }).length, 0);
 
+// --- The 7th sign: Paraya Jupiter is at 15° Libra (the 7th from the Sun at 15° Aries) at age 6.5 and again at 18.5 ------------------
+const seventh = findParayaHits({ ...window(20), relations: [7] }).filter(hit => hit.body === 'Jupiter' && hit.natal === 'Sun');
+assert.deepEqual(seventh.map(hit => [hit.relation, Math.round(hit.ageYears * 100) / 100]), [[7, 6.5], [7, 18.5]]);
+const four = findParayaHits({ ...window(10), relations: [1, 5, 7, 9] }).filter(hit => hit.body === 'Jupiter' && hit.natal === 'Sun');
+assert.deepEqual(four.map(hit => hit.relation), [1, 5, 7, 9], 'the 1st, 5th, 7th and 9th come in the order of time: 0.5, 4.5, 6.5 and 8.5');
+
 console.log('Paraya hit tests passed');

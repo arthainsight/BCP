@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.11',
+    date: '2026-10-19',
+    title: 'The Paraya tab: every progression hit to the natal points, at a glance',
+    changes: [
+      'New TIMING → Paraya tab. It shows, without anything to switch on, where the seven progressing grahas (Jupiter, Saturn, Rahu and Ketu, and Mars, Mercury and Venus in beta) stand at the target moment (sign, degree and house) and the date and kind of the next hit of each; an overview of the seven against the ten natal points (the nine grahas and the ascendant), each cell with the date of the first hit of the pair and the number of hits; and every hit in the order of time, in months, with the sign and degree it falls on and the age.',
+      'The hits are the same degree as the natal point in its own sign (1) or in the 5th, 7th or 9th sign from it: the 7th is new. The range (1, 3, 10 or 30 years from the target moment), the kinds of hit and the progressing grahas are chosen with buttons; a cell of the overview shows only the hits of its pair; Set target moves the target moment to the hit. Transit Hits → paraya hits is as it was (1st, 5th and 9th, the four grahas, the beta ones on a button).',
+      'Tests: the 7th sign of the hits, the filter, the overview, the next hit, the months and the rows shown, on hand-made hits; and a browser test that goes through the tab, the buttons of the relations and the grahas, and the cells of the overview.',
+      'Updated the application version to v3.11.',
+    ],
+  },
+  {
     version: 'v3.10',
     date: '2026-10-19',
     title: 'Paraya progressions for Mars, Mercury and Venus (beta)',

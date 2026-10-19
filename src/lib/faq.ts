@@ -422,6 +422,21 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     },
   },
   {
+    id: 'paraya-progressions',
+    section: 'timing',
+    q: { en: 'Where do I see when the progressions (Paraya) reach my natal planets?', fi: 'Mistä näen, milloin progressiot (Paraya) osuvat natal-planeettoihin?' },
+    a: {
+      en: [
+        'TIMING → Paraya. The seven progressing grahas are Jupiter, Saturn, Rahu and Ketu and, in beta, Mars, Mercury and Venus (see "What are the Paraya grahas?" for how each is moved by age). The tab lists where each of them stands at the target moment (sign, degree and house) and the date of its next hit, then an overview of the seven against the ten natal points (the nine grahas and the ascendant): the cell has the date of the first hit of that pair in the range and how many there are. Under it come all the hits in the order of time, in months: the progressing graha reaches the same degree as the natal point in its own sign (1) or in the 5th, 7th or 9th sign from it. Nothing has to be switched on or waited for: it is all worked out from the age.',
+        'The range (1, 3, 10 or 30 years from the target moment), the kinds of hit (1, 5, 7, 9) and the progressing grahas are chosen with the buttons above the table; a cell of the overview picks one pair and shows only its hits (the same cell again lets go of it). Set target moves the target moment to the hit, so the charts and the other tabs show that day. The hits of Transit Hits → paraya hits are the same ones without the 7th and the beta grahas.',
+      ],
+      fi: [
+        'AJANKOHTA → Paraya. Seitsemän etenevää grahaa ovat Jupiter, Saturnus, Rahu ja Ketu sekä betana Mars, Merkurius ja Venus (katso "Mitä ovat Paraya-grahat?" siitä, miten kukin kuljetetaan iän mukaan). Välilehti kertoo, missä kukin niistä on tavoitehetkellä (merkki, aste ja talo) ja milloin sen seuraava osuma on, ja sitten yleiskuvan seitsemästä kymmentä natal-pistettä vasten (yhdeksän grahaa ja lagna): solussa on kyseisen parin ensimmäisen osuman päivä jaksossa ja osumien määrä. Sen alla ovat kaikki osumat aikajärjestyksessä kuukausittain: etenevä graha saavuttaa natal-pisteen asteen omassa merkissään (1) tai siitä lukien 5., 7. tai 9. merkissä. Mitään ei tarvitse kytkeä päälle eikä odottaa: kaikki lasketaan iästä.',
+        'Jakso (1, 3, 10 tai 30 vuotta tavoitehetkestä), osumien lajit (1, 5, 7, 9) ja etenevät grahat valitaan taulukon yläpuolisilla painikkeilla; yleiskuvan solu valitsee yhden parin ja näyttää vain sen osumat (sama solu uudestaan päästää irti). Aseta tavoite siirtää tavoitehetken osumaan, jolloin kartat ja muut välilehdet näyttävät sen päivän. Transit Hits → paraya hits -kohdan osumat ovat samat ilman 7. merkkiä ja beta-grahoja.',
+      ],
+    },
+  },
+  {
     id: 'nabhasa-yogas',
     section: 'analysis',
     q: { en: 'Which yogas does the yoga table detect, and what are the Nabhasa yogas?', fi: 'Mitkä yogat yogataulukko tunnistaa, ja mitä ovat Nabhasa-yogat?' },
