@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v3.18',
+    date: '2026-10-19',
+    title: 'Research: a window around the events, a feature chosen beforehand, two kinds of event side by side, CSV files',
+    changes: [
+      'Window: the day of an event, or 30, 90 or 180 days either side. Over a window a house, an aspect or a degree counts if it holds at any time within it, and "exact on natal" is an exact hit (the same degree as a natal point) inside it, found once for the whole life of each chart. The random moments of the chance level are read over the same window, so the comparison stays fair for events whose dates are only approximate.',
+      'A feature chosen beforehand: tick "Test one feature chosen beforehand" and choose a graha, a kind and a house or natal point before the run. It gets its own box with the events that have it, the number expected by chance, the ratio and an exact p (the Poisson-binomial chance of as many events with it as there are, each event having the chance its own chart gives it) with no correction, because it was not picked out of the results. The same exact test is shown with each chart left out in turn, for that feature and for any feature clicked, to see whether a finding rests on one chart.',
+      'Two kinds of event: "two kinds of event" compares two sets (for example moves and weddings, or two tags) side by side instead of one against chance. Every feature that either set has is counted in both and compared with the Fisher exact test (two-sided), with q (false discovery rate) for the number of features, the share of each, the difference, and the events of both sets that have a feature.',
+      'CSV files: the table of the comparison, and the events with a 0 or 1 for each feature (and the group, when there are two), saved with a byte-order mark so that a spreadsheet reads them as UTF-8.',
+      'Tests: the exact tails (Poisson-binomial on hand-worked cases and the binomial, Fisher on the tea-tasting table and a 2 × 2 of 8 and 2 in 10), the windows (a sign crossed within the window, a hit within 60 days and not within 20, before birth), the exact test of a feature chosen beforehand, a finding that rests on one chart being seen as such, the comparison of two sets (a difference found, alike sets finding nothing, empty sets), the CSV text; and browser tests of the window, the feature chosen beforehand with its robustness check, the two kinds of event and the three files.',
+      'Updated the application version to v3.18.',
+    ],
+  },
+  {
     version: 'v3.17',
     date: '2026-10-19',
     title: 'Research: the progressions at the time of the same kind of event, across several charts',

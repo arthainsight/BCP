@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { calculateChart, selectWorkspace, visible, withChartLayers } from './helpers';
 
 // ANALYSIS: the grahas, the yogas, the sphutas and the other analysis views.
@@ -852,33 +852,38 @@ const researchChart = (id: string, name: string, birthDatetime: string, client =
   chartData: { birthDatetime, city: 'New Delhi', manualLat: '28.6139', manualLng: '77.209', ianaTimezone: 'Asia/Kolkata', tzOverride: '', targetDate: '2026-10-19', showCoords: true },
 });
 
-test('ANALYSIS Research compares the progressions at events across saved charts, against chance', async ({ page }) => {
-  const errors: string[] = [];
-  page.on('pageerror', (error) => errors.push(error.message));
+const researchAlpha = '15.08.1947 09.15.00';
+const researchBeta = '03.03.1975 06.30.00';
 
-  // Two saved charts with events of their own, kept as the app keeps them.
-  const alpha = '15.08.1947 09.15.00';
-  const beta = '03.03.1975 06.30.00';
+/** Two saved charts with events of their own, kept as the app keeps them, and a third chart without events. */
+async function seedResearch(page: Page) {
   await page.addInitScript(({ charts, lists }) => {
     try {
       localStorage.setItem('bcp_saved_charts', JSON.stringify(charts));
       for (const [birth, events] of Object.entries(lists)) localStorage.setItem(`bhrigu:dasha-events:${birth}`, JSON.stringify(events));
     } catch {}
   }, {
-    charts: [researchChart('c1', 'Alpha', alpha, 'Family'), researchChart('c2', 'Beta', beta, 'Family'), researchChart('c3', 'Gamma without events', '09.09.1999 12.00.00')],
+    charts: [researchChart('c1', 'Alpha', researchAlpha, 'Family'), researchChart('c2', 'Beta', researchBeta, 'Family'), researchChart('c3', 'Gamma without events', '09.09.1999 12.00.00')],
     lists: {
-      [alpha]: [
+      [researchAlpha]: [
         researchEvent('a1', 'Moved to the city', '1970-05-01', 'home', ['abroad']), researchEvent('a2', 'Bought a flat', '1982-09-12', 'home'),
         researchEvent('a3', 'Moved again', '1991-02-03', 'home'), researchEvent('a4', 'Moved north', '2003-07-20', 'home', ['abroad']),
         researchEvent('a5', 'Married', '1972-11-05', 'relationship'), researchEvent('a6', 'New job', '1990-01-01', 'work'),
       ],
-      [beta]: [
+      [researchBeta]: [
         researchEvent('b1', 'First move', '1995-06-01', 'home'), researchEvent('b2', 'Moved abroad', '2001-03-14', 'home', ['abroad']),
         researchEvent('b3', 'Moved home', '2010-10-10', 'home'), researchEvent('b4', 'Moved back', '2016-04-30', 'home'),
         researchEvent('b5', 'Wedding', '2004-08-21', 'relationship'),
       ],
     },
   });
+}
+
+test('ANALYSIS Research compares the progressions at events across saved charts, against chance', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
 
   await calculateChart(page);
   await selectWorkspace(page, 'ANALYSIS');
@@ -955,4 +960,116 @@ test('ANALYSIS Research says so when there are no saved charts', async ({ page }
   await selectWorkspace(page, 'ANALYSIS');
   await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
   await expect(visible(page, page.locator('[data-research-empty]'))).toBeVisible();
+});
+
+test('ANALYSIS Research: a window, a feature chosen beforehand and without each chart in turn, and the CSV files', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
+
+  // A window of 90 days either side, and exact hits among the features.
+  const window = panel.getByRole('group', { name: 'window around an event' });
+  await expect(window.getByRole('button', { name: 'the day', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await window.getByRole('button', { name: '±90 days', exact: true }).click();
+  await expect(window.getByRole('button', { name: '±90 days', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await panel.getByRole('group', { name: 'features', exact: true }).getByRole('button', { name: 'exact on natal' }).click();
+
+  // One feature chosen beforehand: Saturn in house 4.
+  await panel.getByLabel('Test one feature chosen beforehand').check();
+  await panel.getByLabel('graha of the feature').selectOption('Saturn');
+  await panel.getByLabel('kind of the feature').selectOption('house');
+  await panel.getByLabel('house or natal point of the feature').selectOption('4');
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8 events · 2 charts', { timeout: 30_000 });
+
+  // Its own box: how many events, how many by chance, an exact p without a correction, and without each chart in turn.
+  const box = panel.locator('[data-research-hypothesis="house|Saturn|4"]');
+  await expect(box).toBeVisible();
+  await expect(box).toContainText(/\d+\/8 events/);
+  await expect(box).toContainText('by chance');
+  await expect(box.locator('[data-research-hypothesis-p]')).toContainText(/^p (<0\.001|\d\.\d{3})$/);
+  const loco = box.locator('[data-research-loco-row]');
+  await expect(loco).toHaveCount(2);
+  await expect(loco.first()).toContainText(/without .+\d+\/\d+\s*p \S+/);
+  // Without a chart there are fewer events than with both.
+  const totals = await loco.evaluateAll(rows => rows.map(row => Number(/(\d+)\/(\d+)/.exec(row.textContent ?? '')?.[2])));
+  for (const total of totals) expect(total).toBeLessThan(8);
+  expect(totals.reduce((sum, total) => sum + total, 0)).toBe(8);
+
+  // The exact family shows in the matrix over a window, and a feature of the table opens with the same robustness check.
+  await panel.getByRole('group', { name: 'shown in the matrix' }).getByRole('button', { name: 'exact on natal' }).click();
+  await expect(panel.locator('[data-research-matrix="exact"]')).toBeVisible();
+  await panel.locator('tr[data-feature]').first().click();
+  await expect(panel.locator('[data-research-focus] [data-research-loco-row]')).toHaveCount(2);
+
+  // The two CSV files: the table, and one row for each event with a column for each feature.
+  const [tableDownload] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Export the table (CSV)' }).click()]);
+  expect(tableDownload.suggestedFilename()).toBe('research-table.csv');
+  const [eventsDownload] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Export the events (CSV)' }).click()]);
+  expect(eventsDownload.suggestedFilename()).toBe('research-events.csv');
+  const lines = (await (await import('node:fs/promises')).readFile((await eventsDownload.path())!, 'utf8')).replace(/^﻿/, '').split('\n');
+  expect(lines).toHaveLength(9);
+  expect(lines[0]).toMatch(/^"chart","event","date","name","category","tags","/);
+  expect(lines[1]).toMatch(/^"(Alpha|Beta)","[ab]\d","\d{2}\.\d{2}\.\d{4}",/);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Research compares two kinds of event side by side', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await seedResearch(page);
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'research' }));
+  await panel.getByRole('button', { name: 'two kinds of event', exact: true }).click();
+
+  // With the same kind in both groups the second has no events of its own.
+  await expect(panel.locator('[data-research-selection]')).toContainText('11 + 0 events');
+  await expect(panel.getByRole('button', { name: 'Run the comparison' })).toBeDisabled();
+  await expect(panel.getByText(/second group has no events of its own/)).toBeVisible();
+
+  // Moves against weddings and the like: the second group is the weddings.
+  await panel.getByRole('group', { name: 'first group' }).getByRole('button', { name: /^Home \/ move 8$/ }).click();
+  await panel.getByRole('group', { name: 'second group' }).getByRole('button', { name: /^Relationship 2$/ }).click();
+  await expect(panel.locator('[data-research-selection]')).toContainText('8 + 2 events · 2 charts');
+  await panel.getByRole('button', { name: 'Run the comparison' }).click();
+  await expect(panel.locator('[data-research-summary]')).toContainText('8', { timeout: 30_000 });
+  await expect(panel.locator('[data-research-summary]')).toContainText(/features tested/);
+  await expect(panel.locator('[data-research-groups]')).toBeVisible();
+  await expect(panel.getByText(/Few events in a group/)).toBeVisible();
+
+  // Every feature with how many of each group have it, the difference, p and q.
+  const rows = panel.locator('tr[data-feature]');
+  expect(await rows.count()).toBeGreaterThan(5);
+  await expect(rows.first()).toContainText(/\d+\/8/);
+  await expect(rows.first()).toContainText(/\d+\/2/);
+  await expect(rows.first()).toContainText(/(<0\.001|\d\.\d{3})/);
+  // Most different first: p does not fall down the table.
+  const ps = await rows.evaluateAll(all => all.map(row => row.querySelectorAll('td')[4].textContent ?? ''));
+  const asNumber = (text: string) => (text.startsWith('<') ? 0 : Number(text));
+  ps.map(asNumber).forEach((p, i, list) => i > 0 && expect(p).toBeGreaterThanOrEqual(list[i - 1]));
+
+  // A feature lists the events of both groups that have it.
+  await rows.first().click();
+  await expect(panel.locator('[data-research-focus]')).toBeVisible();
+  const first = (await rows.first().innerText()).match(/(\d+)\/8[\s\S]*?(\d+)\/2/)!;
+  await expect(panel.locator('[data-research-focus] li[data-research-event]')).toHaveCount(Number(first[1]) + Number(first[2]));
+
+  // The files carry the group of each event.
+  const [download] = await Promise.all([page.waitForEvent('download'), panel.getByRole('button', { name: 'Export the events (CSV)' }).click()]);
+  expect(download.suggestedFilename()).toBe('research-group-events.csv');
+  const text = (await (await import('node:fs/promises')).readFile((await download.path())!, 'utf8')).replace(/^﻿/, '');
+  expect(text.split('\n')[0]).toContain('"group"');
+  expect(text.split('\n')).toHaveLength(11);
+
+  expect(errors).toEqual([]);
 });

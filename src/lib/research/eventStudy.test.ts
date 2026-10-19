@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import type { ChartData, PlanetData } from '@/types';
-import { adjustedQValues, runStudy, type StudyChart } from './eventStudy';
+import { eventFeatures, featureExtractor, leaveOneChartOut, runStudy, testFeature, type StudyChart } from './eventStudy';
+import { adjustedQValues } from './stats';
 import { featureId, featuresOf, parseFeatureId } from './progressionFeatures';
 import { hashText, seededRandom } from './random';
 import { progressionsAt } from '@/lib/bnn/eventProgressions';
@@ -124,7 +125,72 @@ const jupiterInCancer = (years: number) => birth + (3.5 + 12 * years) * JULIAN_Y
   assert.equal(study.skipped, 1);
   assert.equal(study.events, 1);
   assert.equal(study.charts, 1);
-  assert.deepEqual(runStudy([], { bodies: ['Jupiter'], families: ['house'], untilTime }), { charts: 0, events: 0, skipped: 0, tested: 0, results: [] });
+  const empty = runStudy([], { bodies: ['Jupiter'], families: ['house'], untilTime });
+  assert.deepEqual([empty.charts, empty.events, empty.skipped, empty.tested, empty.results], [0, 0, 0, 0, []]);
+}
+
+// --- A window: a feature counts if it holds at any time within it -------------------------------------------------------------------------------
+{
+  const item: StudyChart = { id: 'w', name: 'W', chart: natal(1, 1), birthTime: birth, events: [] };
+  const at = (years: number) => birth + years * JULIAN_YEAR_MS;
+  const options = (windowDays: number, families: ('house' | 'exact')[]) => ({ bodies: ['Jupiter'] as const, families, untilTime, windowDays });
+  // Jupiter (5° Aries) leaves Aries at age 5/6 (a stay of a year, the first sixth of it gone at birth); a month before that it is in Aries alone.
+  const before = at(0.8);
+  assert.deepEqual(featureExtractor(item, options(0, ['house']))(before), [featureId('house', 'Jupiter', 1)]);
+  assert.deepEqual(featureExtractor(item, options(30, ['house']))(before)!.sort(), [featureId('house', 'Jupiter', 1), featureId('house', 'Jupiter', 2)], 'a window of 30 days reaches Taurus');
+  assert.deepEqual(featureExtractor(item, options(5, ['house']))(before), [featureId('house', 'Jupiter', 1)], 'a short window does not');
+  // Before birth there is nothing, whatever the window.
+  assert.equal(featureExtractor(item, options(30, ['house']))(birth - 1000), null);
+  // "Exact" over a window is an exact hit inside it: Jupiter is over the Sun (15° Aries) at age 1/3. At 0.2 it is 4° short: not within a degree, but a window of 60 days holds the hit.
+  assert.ok(!featureExtractor(item, options(0, ['exact']))(at(0.2))!.includes(featureId('exact', 'Jupiter', 'Sun')));
+  assert.ok(featureExtractor(item, options(60, ['exact']))(at(0.2))!.includes(featureId('exact', 'Jupiter', 'Sun')), 'the hit is within 60 days');
+  assert.ok(!featureExtractor(item, options(20, ['exact']))(at(0.2))!.includes(featureId('exact', 'Jupiter', 'Sun')), 'and not within 20');
+  // The same hit counts from after it too.
+  assert.ok(featureExtractor(item, options(60, ['exact']))(at(0.45))!.includes(featureId('exact', 'Jupiter', 'Sun')));
+}
+
+// --- The features of the events alone, and the events before birth ------------------------------------------------------------------------------
+{
+  const list = charts(index => (index === 0 ? [birth - 1000, jupiterInCancer(0)] : [jupiterInCancer(1)]));
+  const { events, skipped } = eventFeatures(list, { bodies: ['Jupiter'], families: ['house'], untilTime });
+  assert.equal(skipped, 1);
+  assert.equal(events.length, 3);
+  assert.ok(events.every(item => item.features.length === 1 && item.features[0].startsWith('house|Jupiter|')));
+  assert.deepEqual(events.map(item => item.chartName), ['Chart 0', 'Chart 1', 'Chart 2']);
+}
+
+// --- A study over a window finds the same situation, and the exact test of a chosen feature -------------------------------------------------------
+{
+  const study = runStudy(charts(() => [jupiterInCancer(0), jupiterInCancer(1), jupiterInCancer(2)]), { bodies: ['Jupiter'], families: ['aspectNatal'], untilTime, permutations: 500, windowDays: 30 });
+  assert.equal(study.events, 9);
+  const id = featureId('aspectNatal', 'Jupiter', 'Rahu');
+  const test = testFeature(study.data, id);
+  assert.deepEqual([test.total, test.observed], [9, 9]);
+  assert.ok(test.p < 0.01 && test.lift! > 1.5, `chosen beforehand, it is far from chance (p ${test.p}, ×${test.lift})`);
+  assert.equal(test.events.length, 9);
+  // A feature never seen anywhere cannot be more than chance.
+  const nothing = testFeature(study.data, 'aspectNatal|Jupiter|Nobody');
+  assert.deepEqual([nothing.total, nothing.observed, nothing.p, nothing.lift], [9, 0, 1, null]);
+  // Leaving a chart out leaves six events, still all with the feature and still far from chance; leaving them all out but one leaves three.
+  const without = leaveOneChartOut(study.data, id);
+  assert.deepEqual(without.map(item => item.chartName), ['Chart 0', 'Chart 1', 'Chart 2']);
+  for (const item of without) assert.deepEqual([item.test.total, item.test.observed], [6, 6]);
+  assert.ok(without.every(item => item.test.p < 0.05), 'the finding does not rest on one chart');
+  assert.ok(testFeature(study.data, id, new Set(['chart-0', 'chart-1'])).total === 3);
+  assert.ok(testFeature(study.data, id).p < testFeature(study.data, id, new Set(['chart-0'])).p, 'more events with the feature, a smaller p');
+}
+
+// --- A feature that rests on one chart is seen as such ---------------------------------------------------------------------------------------------
+{
+  // Chart 0 has all of its events in Cancer; the others have them at random moments.
+  const random = seededRandom(5);
+  const list = charts(index => (index === 0 ? [jupiterInCancer(0), jupiterInCancer(1), jupiterInCancer(2), jupiterInCancer(3), jupiterInCancer(0) + 5 * JULIAN_YEAR_MS * 0.01] : Array.from({ length: 4 }, () => birth + random() * (untilTime - birth))));
+  const study = runStudy(list, { bodies: ['Jupiter'], families: ['aspectNatal'], untilTime, permutations: 200 });
+  const id = featureId('aspectNatal', 'Jupiter', 'Rahu');
+  const all = testFeature(study.data, id);
+  const withoutFirst = testFeature(study.data, id, new Set(['chart-0']));
+  assert.ok(all.p < 0.01, `with the first chart it looks strong (${all.p})`);
+  assert.ok(withoutFirst.p > 0.1, `without it, nothing (${withoutFirst.p})`);
 }
 
 console.log('Event study tests passed');
