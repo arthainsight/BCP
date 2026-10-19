@@ -5,7 +5,7 @@ import { dashaEventsStorageKey, parseEventDate, parseStoredDashaEvents, type Sto
 import type { SavedChart, SavedChartData } from '@/lib/savedCharts';
 import { parseClock } from '@/lib/specialSphutas';
 import { localToUtcOffsetHours, parseBirthDatetimeForTz } from '@/lib/timezone';
-import type { StudyEvent } from './eventStudy';
+import type { DateAccuracy, StudyEvent } from './eventStudy';
 
 // What the research needs from what the user has saved: the charts and, for each, the events of its birth moment, and the address of the chart to calculate.
 
@@ -44,11 +44,23 @@ export function readStoredEvents(birthDatetime: string): string | null {
   try { return localStorage.getItem(dashaEventsStorageKey(birthDatetime)); } catch { return null; }
 }
 
-/** The events as the study takes them: their day at noon; one that is not a real day is left out. */
+/**
+ * How exactly the day of an event is known. An event pasted with only a month or a year is tagged "approx. date" and given the middle of it (the 15th of the month,
+ * 1 July for a year), so that tag tells month from year by the day; "approx. month" and "approx. year" say it outright. Any other event is to the day.
+ */
+export function accuracyOf(event: { date: string; tags: readonly string[] }): DateAccuracy {
+  const tags = event.tags.map(tag => tag.trim().toLocaleLowerCase());
+  if (tags.includes('approx. year')) return 'year';
+  if (tags.includes('approx. month')) return 'month';
+  if (tags.includes('approx. date')) return event.date.endsWith('-07-01') ? 'year' : 'month';
+  return 'day';
+}
+
+/** The events as the study takes them: their day at noon, with how exactly it is known; one that is not a real day is left out. */
 export function studyEventsOf(events: readonly StoredDashaEvent[]): StudyEvent[] {
   return events.flatMap(event => {
     const day = parseEventDate(event.date);
-    return day ? [{ id: event.id, name: event.name, time: day.getTime(), category: event.category, tags: event.tags }] : [];
+    return day ? [{ id: event.id, name: event.name, time: day.getTime(), category: event.category, tags: event.tags, accuracy: accuracyOf(event) }] : [];
   });
 }
 

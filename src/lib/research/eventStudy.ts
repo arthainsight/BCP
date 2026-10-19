@@ -7,8 +7,9 @@ import { grahaDashaTable, type GrahaDashaSystem } from '@/lib/dashaEvents';
 import { dashaLordsDuring } from '@/lib/dashaDuring';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { DAY_MS } from '@/lib/time';
-import { dashaFeaturesOf, featureId, featuresOf, parseFeatureId, type DashaFamily, type Feature, type FeatureFamily, type FeatureSource } from './features';
-import { transitHitsOf, transitRowsAt } from './transitPositions';
+import { gocharaTables } from '@/lib/gochara';
+import { dashaFeaturesOf, featureId, featuresOf, gocharaFeaturesOf, parseFeatureId, type DashaFamily, type Feature, type FeatureFamily, type FeatureSource } from './features';
+import { longitudeAt, transitHitsOf, transitRowsAt } from './transitPositions';
 import { hashText, seededRandom } from './random';
 import { adjustedQValues, poissonBinomialTail } from './stats';
 
@@ -18,6 +19,15 @@ import { adjustedQValues, poissonBinomialTail } from './stats';
 // that gives as many as were seen. With many features some will look striking by chance, so a q-value (false discovery rate, Benjamini–Hochberg) goes with it.
 // A feature chosen beforehand needs no correction, and its p-value is worked out exactly (`testFeature`), also without any one of the charts.
 
+/** How exactly the day of an event is known: to the day, to the month (the middle of it is used) or to the year (the middle of it is used). */
+export type DateAccuracy = 'day' | 'month' | 'year';
+
+/** The window, in days either side, that each accuracy gets when the window follows the accuracy of the date: half a month, half a year. */
+export const AUTO_WINDOW_DAYS: Record<DateAccuracy, number> = { day: 0, month: 15, year: 182 };
+
+/** A window in days either side of an event, or 'auto': the window that the accuracy of each event's date gives. */
+export type WindowChoice = number | 'auto';
+
 export interface StudyEvent {
   id: string;
   name: string;
@@ -25,7 +35,12 @@ export interface StudyEvent {
   time: number;
   category: string;
   tags: string[];
+  /** How exactly the day is known; the day when not given. */
+  accuracy?: DateAccuracy;
 }
+
+/** The window of an event, in days either side, under a choice of window. */
+export const windowOfEvent = (event: Pick<StudyEvent, 'accuracy'>, choice: WindowChoice | undefined): number => (choice === 'auto' ? AUTO_WINDOW_DAYS[event.accuracy ?? 'day'] : Math.max(0, choice ?? 0));
 
 export interface StudyChart {
   id: string;
@@ -59,7 +74,7 @@ export interface StudyOptions {
    * holds at any time within it, and "exact" is an exact hit (the same degree as a natal point) inside it, which a window of days can hold and a moment
    * cannot.
    */
-  windowDays?: number;
+  windowDays?: WindowChoice;
   /** Random moments for each chart (the chance level); 600 to begin with. */
   baselineSamples?: number;
   /** How many times the events are moved at random for the p-values; 2000 to begin with. */
@@ -97,8 +112,8 @@ export interface StudyData {
   /** The feature ids, in the order the counts below are. */
   names: string[];
   index: ReadonlyMap<string, number>;
-  events: { chartId: string; chartName: string; event: StudyEvent; features: Int32Array }[];
-  /** For each chart, at how many of its random moments each feature was present, and how many moments there were. */
+  events: { chartId: string; chartName: string; event: StudyEvent; /** The window the event was read over, in days either side. */ windowDays: number; features: Int32Array }[];
+  /** For each chart and window ("chart id|days"), at how many of its random moments each feature was present, and how many moments there were. */
   pool: ReadonlyMap<string, { counts: Int32Array; size: number }>;
 }
 
@@ -124,21 +139,21 @@ const familiesFrom = (kinds: readonly FeatureKind[], source: FeatureSource) => k
 
 /**
  * Finds the features at a moment of one chart, or null before its birth (or where the transits are not sampled). With a window the features of the moments within
- * it are put together, and the exact hits of the whole life (found once, the first time they are needed) that fall inside it.
+ * it are put together, and the exact hits of the whole life (found once, the first time they are needed) that fall inside it. The window is given with each moment
+ * (in days either side) and is otherwise that of the options, when it is a number.
  */
-export function featureExtractor(item: StudyChart, options: StudyOptions): (time: number) => string[] | null {
+export function featureExtractor(item: StudyChart, options: StudyOptions): (time: number, windowDays?: number) => string[] | null {
   const { bodies, kinds, paraya } = options;
-  const windowMs = Math.max(0, options.windowDays ?? 0) * DAY_MS;
+  const defaultWindow = typeof options.windowDays === 'number' ? options.windowDays : 0;
   const ascendant = item.chart.ascendant.sign;
-  const latestEvent = Math.max(options.untilTime, ...item.events.map(event => event.time)) + windowMs;
+  // The hits of the whole life are found for the latest moment asked, and a margin that holds the widest window.
+  const latestEvent = Math.max(options.untilTime, ...item.events.map(event => event.time)) + 200 * DAY_MS;
+  const slow = bodies.filter(body => options.transitSeries && body in options.transitSeries);
 
   // The progressions and the transits both give positions: the houses and aspects by sign at moments, and, over a window, the exact hits inside it.
   const positionSources = (['paraya', 'transit'] as const).flatMap(source => {
     const families = familiesFrom(kinds, source);
     if (families.length === 0 || (source === 'transit' && !options.transitSeries)) return [];
-    const sampled = windowMs > 0 ? families.filter(family => family !== 'exact') : families;
-    const wantsHits = windowMs > 0 && families.includes('exact');
-    const slow = bodies.filter(body => options.transitSeries && body in options.transitSeries);
     const rowsAt = (time: number) => (source === 'paraya'
       ? progressionsAt({ chart: item.chart, birthTime: item.birthTime, time, options: paraya, bodies })
       : transitRowsAt(item.chart, options.transitSeries!, slow, time));
@@ -152,8 +167,21 @@ export function featureExtractor(item: StudyChart, options: StudyOptions): (time
       }
       return hits;
     };
-    return [{ source, sampled, wantsHits, rowsAt, lifeHits }];
+    return [{ source, families, rowsAt, lifeHits }];
   });
+
+  // The gochara: the transits of the slow grahas read the traditional way, against the tables of the chart (found once).
+  const gocharaFamilies = familiesFrom(kinds, 'gochara');
+  const tables = gocharaFamilies.length > 0 && options.transitSeries ? gocharaTables(item.chart) : null;
+  const gocharaAt = (time: number) => {
+    const positions: { body: string; sign: number }[] = [];
+    for (const body of slow) {
+      const longitude = longitudeAt(options.transitSeries![body], time);
+      if (longitude === null) return null;
+      positions.push({ body, sign: Math.floor(longitude / 30) + 1 });
+    }
+    return positions;
+  };
 
   // The daśā: the lords running at a moment, or in a window, from the stretches of the whole life.
   const dashaFamilies = familiesFrom(kinds, 'dasha') as DashaFamily[];
@@ -161,20 +189,22 @@ export function featureExtractor(item: StudyChart, options: StudyOptions): (time
     ? grahaDashaTable(options.dashaSystem ?? 'vimshottari', { birthDate: new Date(item.birthTime), planets: item.chart.planets, ascendant: item.chart.ascendant, variantChoice: options.variantChoice })
     : null;
 
-  return (time: number) => {
+  return (time: number, windowDays: number = defaultWindow) => {
     if (time < item.birthTime) return null;
+    const windowMs = Math.max(0, windowDays) * DAY_MS;
     const found = new Set<string>();
+    const moments = windowMs === 0 ? [time] : Array.from({ length: 2 * WINDOW_STEPS + 1 }, (_, i) => time + ((i - WINDOW_STEPS) * windowMs) / WINDOW_STEPS);
     for (const part of positionSources) {
-      const moments = windowMs === 0 ? [time] : Array.from({ length: 2 * WINDOW_STEPS + 1 }, (_, i) => time + ((i - WINDOW_STEPS) * windowMs) / WINDOW_STEPS);
-      if (part.sampled.length > 0) {
+      const sampled = windowMs > 0 ? part.families.filter(family => family !== 'exact') : part.families;
+      if (sampled.length > 0) {
         for (const moment of moments) {
           const rows = part.rowsAt(moment);
           // A moment outside the sampled time of the transits cannot be read: neither can an event there.
           if (!rows) { if (part.source === 'transit' && moment === time) return null; continue; }
-          for (const id of featuresOf(rows, part.sampled, ascendant, part.source)) found.add(id);
+          for (const id of featuresOf(rows, sampled, ascendant, part.source)) found.add(id);
         }
       }
-      if (part.wantsHits) {
+      if (windowMs > 0 && part.families.includes('exact')) {
         const all = part.lifeHits();
         // The hits are in time order: find the first one inside the window.
         let low = 0;
@@ -184,6 +214,13 @@ export function featureExtractor(item: StudyChart, options: StudyOptions): (time
           if (all[middle].time < time - windowMs) low = middle + 1; else high = middle;
         }
         for (let i = low; i < all.length && all[i].time <= time + windowMs; i++) found.add(all[i].id);
+      }
+    }
+    if (tables) {
+      for (const moment of moments) {
+        const positions = gocharaAt(moment);
+        if (!positions) { if (moment === time) return null; continue; }
+        for (const id of gocharaFeaturesOf(tables, positions, gocharaFamilies)) found.add(id);
       }
     }
     if (dashaTable) {
@@ -201,7 +238,7 @@ export function eventFeatures(charts: readonly StudyChart[], options: StudyOptio
   for (const item of charts) {
     const extract = featureExtractor(item, options);
     for (const event of item.events) {
-      const features = extract(event.time);
+      const features = extract(event.time, windowOfEvent(event, options.windowDays));
       if (features) events.push({ chartId: item.id, chartName: item.name, event, features });
       else skipped++;
     }
@@ -222,26 +259,34 @@ export function runStudy(charts: readonly StudyChart[], options: StudyOptions): 
     return at;
   }));
 
-  // For each chart the features of its events and of its random moments.
-  interface Prepared { chart: StudyChart; events: { event: StudyEvent; features: Int32Array }[]; pool: Int32Array[] }
+  // For each chart the features of its events, and of its random moments for each window its events are read over (the window follows the accuracy of the date).
+  interface Prepared { chart: StudyChart; events: { event: StudyEvent; window: number; features: Int32Array }[]; pools: Map<number, Int32Array[]> }
   const prepared: Prepared[] = [];
   let skipped = 0;
   for (const item of charts) {
     const extract = featureExtractor(item, options);
     const events: Prepared['events'] = [];
     for (const event of item.events) {
-      const features = extract(event.time);
-      if (features) events.push({ event, features: intern(features) });
+      const window = windowOfEvent(event, options.windowDays);
+      const features = extract(event.time, window);
+      if (features) events.push({ event, window, features: intern(features) });
       else skipped++;
     }
     if (events.length === 0 || untilTime <= item.birthTime) continue;
-    const random = seededRandom(seed ^ hashText(item.id));
-    const pool: Int32Array[] = [];
-    for (let i = 0; i < samplesPerChart; i++) {
-      const features = extract(item.birthTime + random() * (untilTime - item.birthTime));
-      if (features) pool.push(intern(features));
+    const pools = new Map<number, Int32Array[]>();
+    for (const window of new Set(events.map(entry => entry.window))) {
+      const random = seededRandom(seed ^ hashText(`${item.id}|${window}`));
+      const pool: Int32Array[] = [];
+      for (let i = 0; i < samplesPerChart; i++) {
+        const features = extract(item.birthTime + random() * (untilTime - item.birthTime), window);
+        if (features) pool.push(intern(features));
+      }
+      if (pool.length > 0) pools.set(window, pool);
     }
-    if (pool.length > 0) prepared.push({ chart: item, events, pool });
+    // An event whose window has no random moments to be set against (the transits not sampled) cannot be compared: it is left out like one before birth.
+    const usable = events.filter(entry => pools.has(entry.window));
+    skipped += events.length - usable.length;
+    if (usable.length > 0) prepared.push({ chart: item, events: usable, pools });
   }
 
   const size = index.size;
@@ -251,13 +296,16 @@ export function runStudy(charts: readonly StudyChart[], options: StudyOptions): 
   const eventsWith: { chartId: string; eventId: string }[][] = Array.from({ length: size }, () => []);
   const poolData = new Map<string, { counts: Int32Array; size: number }>();
   for (const item of prepared) {
-    // At how many of this chart's random moments each feature is present, which gives the chance for each of its events.
-    const counts = new Int32Array(size);
-    for (const features of item.pool) for (const f of features) counts[f]++;
-    poolData.set(item.chart.id, { counts, size: item.pool.length });
-    for (const { event, features } of item.events) {
+    // At how many of this chart's random moments each feature is present, for each window: the chance for each of its events of that window.
+    for (const [window, pool] of item.pools) {
+      const counts = new Int32Array(size);
+      for (const features of pool) for (const f of features) counts[f]++;
+      poolData.set(`${item.chart.id}|${window}`, { counts, size: pool.length });
+    }
+    for (const { event, window, features } of item.events) {
+      const { counts, size: poolSize } = poolData.get(`${item.chart.id}|${window}`)!;
       for (const f of features) { observed[f]++; eventsWith[f].push({ chartId: item.chart.id, eventId: event.id }); }
-      for (let f = 0; f < size; f++) expected[f] += counts[f] / item.pool.length;
+      for (let f = 0; f < size; f++) expected[f] += counts[f] / poolSize;
     }
   }
 
@@ -268,7 +316,10 @@ export function runStudy(charts: readonly StudyChart[], options: StudyOptions): 
   for (let round = 0; round < permutations; round++) {
     simulated.fill(0);
     for (const item of prepared) {
-      for (let i = 0; i < item.events.length; i++) for (const f of item.pool[Math.floor(random() * item.pool.length)]) simulated[f]++;
+      for (const entry of item.events) {
+        const pool = item.pools.get(entry.window)!;
+        for (const f of pool[Math.floor(random() * pool.length)]) simulated[f]++;
+      }
     }
     for (let f = 0; f < size; f++) if (observed[f] > 0 && simulated[f] >= observed[f]) atLeast[f]++;
   }
@@ -291,7 +342,7 @@ export function runStudy(charts: readonly StudyChart[], options: StudyOptions): 
   const data: StudyData = {
     names,
     index,
-    events: prepared.flatMap(item => item.events.map(({ event, features }) => ({ chartId: item.chart.id, chartName: item.chart.name, event, features }))),
+    events: prepared.flatMap(item => item.events.map(({ event, window, features }) => ({ chartId: item.chart.id, chartName: item.chart.name, event, windowDays: window, features }))),
     pool: poolData,
   };
   return { charts: prepared.length, events: total, skipped, tested: tested.length, results, data };
@@ -323,7 +374,7 @@ export function testFeature(data: StudyData, id: string, exclude: ReadonlySet<st
   let expected = 0;
   for (const item of data.events) {
     if (exclude.has(item.chartId)) continue;
-    const pool = data.pool.get(item.chartId);
+    const pool = data.pool.get(`${item.chartId}|${item.windowDays}`);
     const count = at === undefined || !pool ? 0 : pool.counts[at];
     const size = pool?.size ?? 0;
     chances.push((count + 1) / (size + 2));
