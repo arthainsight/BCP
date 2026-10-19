@@ -89,6 +89,7 @@ Overlap and Systems), among them:
 ### Research tools
 
 * Nāḍī paraya progressions for Jupiter, Saturn, Rahu and Ketu, and for Mars, Mercury and Venus as a beta (off until chosen)
+* A Paraya tab in TIMING: where the seven progressing grahas stand and every hit to the natal points (1st, 5th, 7th and 9th sign) in the order of time, with an overview of the seven against the ten natal points
 * Nāḍī aṁśa (Deva Keralam and Siddhar)
 * Local backup and restore of every saved chart, event list, setting and,
   optionally, palm photograph; a backup can be encrypted with a password

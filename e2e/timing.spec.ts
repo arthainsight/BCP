@@ -53,6 +53,58 @@ test('the Paraya hits count Mars, Mercury and Venus (beta) when they are asked f
   expect(errors).toEqual([]);
 });
 
+test('TIMING Paraya shows where the seven progressing grahas stand and every hit to the natal points, in the 1st, 5th, 7th and 9th sign', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Paraya', exact: true })).click();
+  const panel = visible(page, page.getByRole('region', { name: 'paraya progressions' }));
+  await expect(panel).toBeVisible();
+
+  // The seven progressing grahas, each with the sign it stands in; the three of the beta are marked.
+  for (const body of ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Mars', 'Mercury', 'Venus']) {
+    await expect(panel.locator(`tr[data-progressing="${body}"]`)).toBeVisible();
+  }
+  await expect(panel.locator('tr[data-progressing="Jupiter"]')).toContainText(/Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces/);
+  await expect(panel.locator('tr[data-progressing="Mars"]')).toContainText('β');
+  await expect(panel.locator('tr[data-progressing="Jupiter"]')).not.toContainText('β');
+
+  // Ten years hold hits of all four kinds, in months.
+  await panel.getByRole('button', { name: '10 yr', exact: true }).click();
+  await expect(panel.locator('div[data-month]').first()).toBeVisible();
+  const hits = (filter = '') => panel.locator(`li[data-hit${filter}]`);
+  for (const relation of ['1', '5', '7', '9']) await expect(hits(`$="|${relation}"`).first()).toBeAttached();
+  await panel.getByRole('button', { name: /^show all/ }).click();
+  await expect(panel).toContainText('7th from natal');
+
+  // The 7th can be left out, and so can the beta grahas.
+  const seventh = panel.getByRole('button', { name: '7', exact: true });
+  await expect(seventh).toHaveAttribute('aria-pressed', 'true');
+  await seventh.click();
+  await expect(hits('$="|7"')).toHaveCount(0);
+  await seventh.click();
+  await expect(hits('$="|7"').first()).toBeAttached();
+  await expect(hits('^="Mercury|"').first()).toBeAttached();
+  for (const code of ['Ma', 'Me', 'Ve']) await panel.getByRole('group', { name: 'progressing grahas' }).getByRole('button', { name: code, exact: true }).click();
+  await expect(hits('^="Mercury|"')).toHaveCount(0);
+  await expect(panel.locator('tr[data-progressing="Mercury"]')).toHaveCount(0);
+  await expect(hits('^="Jupiter|"').first()).toBeAttached();
+
+  // A cell of the overview picks one pair; the same cell again, or the chip, lets go of it.
+  const cell = panel.locator('button[data-cell]').first();
+  const pair = (await cell.getAttribute('data-cell'))!;
+  await cell.click();
+  await expect(cell).toHaveAttribute('aria-pressed', 'true');
+  await expect(hits(`^="${pair}|"`).first()).toBeAttached();
+  expect(await hits().count()).toBe(await hits(`^="${pair}|"`).count());
+  await cell.click();
+  await expect(cell).toHaveAttribute('aria-pressed', 'false');
+
+  expect(errors).toEqual([]);
+});
+
 test('the Paraya options in Settings change the Paraya hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

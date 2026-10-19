@@ -19,13 +19,17 @@ export interface NatalPoint {
   longitude: number;
 }
 
-/** Which house from the natal point the transiting graha stands in: 1 is the point itself, 5 and 9 are its trines. */
-export type HitRelation = 1 | 5 | 9;
+/** Which house from the natal point the transiting graha stands in: 1 is the point itself, 5 and 9 are its trines, 7 is the opposite sign. */
+export type HitRelation = 1 | 5 | 7 | 9;
 
-/** Degrees ahead of the natal point, in the zodiac: the 5th sign is 120° on, the 9th 240°. */
-export const RELATION_OFFSET: Record<HitRelation, number> = { 1: 0, 5: 120, 9: 240 };
+/** Degrees ahead of the natal point, in the zodiac: the 5th sign is 120° on, the 7th 180°, the 9th 240°. */
+export const RELATION_OFFSET: Record<HitRelation, number> = { 1: 0, 5: 120, 7: 180, 9: 240 };
 
+/** The hits of the transits and of the Paraya hits of Transit Hits: the point itself and its trines. */
 export const HIT_RELATIONS: readonly HitRelation[] = [1, 5, 9];
+
+/** The hits of the progressions (the Paraya tab): the point itself, its trines and the opposite sign. */
+export const PROGRESSION_RELATIONS: readonly HitRelation[] = [1, 5, 7, 9];
 
 export interface TransitHit {
   transit: string;
