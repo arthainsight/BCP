@@ -191,6 +191,9 @@ export type GrahaNameStyle = 'english' | 'sanskrit';
 /** How the Nāḍī Paraya walks a graha through the signs: alternating long and short stays (Saturn 3 / 2 years, Rahu 2 / 1) or the same stay in every sign (2.5 and 1.5 years). */
 export type ParayaSpeed = 'alternating' | 'even';
 
+/** Where a Paraya graha that was retrograde at birth begins: one sign before its natal sign, or in the natal sign itself. */
+export type ParayaRetro = 'previous' | 'same';
+
 export interface CalculationSettings {
   ayanamsa: string;
   ayanamsaOffsetDegrees: number;
@@ -204,6 +207,8 @@ export interface CalculationSettings {
   parayaSaturn: ParayaSpeed;
   /** Paraya Rahu and Ketu: 2 / 1 years alternating, or 1.5 years in every sign. */
   parayaRahu: ParayaSpeed;
+  /** Paraya Jupiter, Saturn, Mars, Mercury and Venus that were retrograde at birth: begin in the previous sign (the default), or in the same sign. */
+  parayaRetro: ParayaRetro;
   /** The sunrise the special lagnas count from: true (the default), or mean-time (true sunrise plus the equation of time). */
   sunriseMode: 'true' | 'mean';
   /** A sunrise typed in (HH:MM:SS, for example the one another program shows); it replaces the calculated sunrise when it is a time of day. */
@@ -219,6 +224,7 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   charaKarakaCount: 8,
   parayaSaturn: 'alternating',
   parayaRahu: 'alternating',
+  parayaRetro: 'previous',
   sunriseMode: 'true',
   sunriseManual: '',
 };

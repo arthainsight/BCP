@@ -184,6 +184,77 @@ near(timeline[0].startAge, -7 / 360, 'the first stay began before birth');
 assert.ok(timeline[0].endAge > 0);
 assert.equal(timeline.length, 13, 'the stay of birth, eleven whole ones and the stay that the year ends in: thirteen touch the first year');
 
+// --- Jupiter, Saturn, Rahu and Ketu begin at their natal degrees too, and a graha that was retrograde at birth can begin in its own sign ---------------
+const at = (ageYears: number, options?: Parameters<typeof calculateNadiParaya>[0]['options'], retro = false) => calculateNadiParaya({
+  ageYears,
+  natalJupiterSignIndex: 6, natalJupiterDegree: 7, // Jupiter 7° Libra
+  natalSaturnSignIndex: 3, natalSaturnDegree: 20, // Saturn 20° Cancer
+  natalRahuSignIndex: 3, natalRahuDegree: 20, // Rahu 20° Cancer (Ketu 20° Capricorn)
+  jupiterRetrograde: retro, saturnRetrograde: retro,
+  options,
+});
+const four0 = at(0);
+assert.deepEqual([four0.jupiter.signIndex, four0.saturn.signIndex, four0.rahu.signIndex, four0.ketu.signIndex], [6, 3, 3, 9]);
+near(four0.jupiter.degree, 7, 'Jupiter at birth');
+near(four0.saturn.degree, 20, 'Saturn at birth');
+near(four0.rahu.degree, 20, 'Rahu at birth');
+near(four0.ketu.degree, 20, 'Ketu at birth');
+assert.equal(four0.jupiter.cycleNumber, 1);
+// Jupiter goes on a sign a year, 30° a year: half a year later it is at 22°, and at 0.8 years it has gone 24° and is 1° into Scorpio.
+near(at(0.5).jupiter.degree, 22, 'Jupiter at 0.5');
+assert.equal(at(0.8).jupiter.signIndex, 7);
+near(at(0.8).jupiter.degree, 1, 'Jupiter at 0.8');
+// Saturn (3 and 2 years) has two thirds of its first stay gone: 2 years of 3 are gone, and it leaves the sign at age 1.
+assert.equal(at(0.9).saturn.signIndex, 3);
+assert.equal(at(1.1).saturn.signIndex, 4);
+near(at(1.1).saturn.degree, 0.1 / 2 * 30, 'Saturn 0.1 years into its 2 year stay in Leo');
+near(four0.saturn.startAge, -2, 'its first stay began 2 years before birth');
+// Rahu goes backwards: the third of its 2 year stay that is left (20° of 30° to go back) is 1⅓ years... 20° left of 30° is two thirds of the stay: 1⅓ years gone ago, 2/3 left to run.
+near(at(0.5).rahu.degree, 12.5, 'Rahu at 0.5 going back');
+assert.equal(at(0.5).rahu.signIndex, 3);
+assert.equal(at(1.4).rahu.signIndex, 2, 'Gemini, the sign before Cancer');
+near(at(1.4).rahu.degree, 28, 'Rahu 0.0667 years into its 1 year stay in Gemini');
+assert.equal(at(1.4).ketu.signIndex, 8, 'Ketu is six signs on from Rahu');
+// The speed options still change when the signs change: Saturn (20° of its sign gone) leaves Cancer at age 1 with stays of 3 and 2 years, and at 5/6 with 2½ a sign.
+const evenSaturn = { saturn: 'even', rahu: 'alternating' } as const;
+assert.equal(at(0.9).saturn.signIndex, 3, 'alternating: still in Cancer at 0.9');
+assert.equal(at(0.9, evenSaturn).saturn.signIndex, 4, 'even: already in Leo at 0.9');
+assert.equal(at(0.8, evenSaturn).saturn.signIndex, 3, 'even: still in Cancer at 0.8');
+
+// A graha that was retrograde at birth: one sign back (as it always was) or, as chosen, in its own sign. Rahu and Ketu are never moved.
+const back = at(0, undefined, true);
+assert.equal(back.jupiter.signIndex, 5, 'Virgo, the sign before Libra');
+near(back.jupiter.degree, 7, 'the degree is kept');
+assert.equal(back.saturn.signIndex, 2);
+assert.equal(back.rahu.signIndex, 3);
+for (const options of [{ saturn: 'alternating', rahu: 'alternating', retro: 'previous' }, { saturn: 'alternating', rahu: 'alternating' }] as const) {
+  assert.equal(at(0, options, true).jupiter.signIndex, 5, 'previous is the default');
+}
+const same = at(0, { saturn: 'alternating', rahu: 'alternating', retro: 'same' }, true);
+assert.equal(same.jupiter.signIndex, 6, 'the natal sign');
+near(same.jupiter.degree, 7, 'at the natal degree');
+assert.equal(same.saturn.signIndex, 3);
+assert.equal(same.rahu.signIndex, 3);
+assert.equal(at(0, { saturn: 'alternating', rahu: 'alternating', retro: 'same' }, false).jupiter.signIndex, 6, 'a direct graha is not affected by the choice');
+// The same for the beta grahas.
+const betaRetro = (retro: 'previous' | 'same') => calculateBetaParaya({ ageYears: 0, natal: { Mercury: { signIndex: 6, degree: 7, retrograde: true } }, options: { saturn: 'alternating', rahu: 'alternating', retro } })[0];
+assert.equal(betaRetro('previous').signIndex, 5);
+assert.equal(betaRetro('same').signIndex, 6);
+// The ages a position is reached at, for Jupiter from 7°: a degree it has passed at birth comes next round (12 years on), and a later one soon.
+const jupiterAt = (degree: number, retrograde = false, retro?: 'previous' | 'same') => findParayaAgesForPosition({
+  body: 'Jupiter', targetSignIndex: 6, degree, natalJupiterSignIndex: 6, natalSaturnSignIndex: 0, natalRahuSignIndex: 0,
+  natalDegrees: { Jupiter: 7 }, jupiterRetrograde: retrograde, options: retro ? { saturn: 'alternating', rahu: 'alternating', retro } : undefined, maxAge: 25,
+}).map(match => Math.round(match.ageYears * 1000) / 1000);
+assert.deepEqual(jupiterAt(2), [11.833, 23.833]);
+assert.deepEqual(jupiterAt(10), [0.1, 12.1, 24.1]);
+// Retrograde at birth: Libra comes a year later (one sign back) or at once (the same sign).
+assert.deepEqual(jupiterAt(10, true), [1.1, 13.1]);
+assert.deepEqual(jupiterAt(10, true, 'same'), [0.1, 12.1, 24.1]);
+// Rahu from 20° of Cancer: it passes 15° of Cancer 5/30 of a 2 year stay (1/3 year) later, then every 18 years.
+const rahuAt = findParayaAgesForPosition({ body: 'Rahu', targetSignIndex: 3, degree: 15, natalJupiterSignIndex: 0, natalSaturnSignIndex: 0, natalRahuSignIndex: 3, natalDegrees: { Rahu: 20 }, maxAge: 40 })
+  .map(match => Math.round(match.ageYears * 1000) / 1000);
+assert.deepEqual(rahuAt, [0.333, 18.333, 36.333]);
+
 console.log('Nadi paraya tests passed');
 
 // --- Stays in each sign: alternating (the default) or the same in every sign ---------------

@@ -1,7 +1,8 @@
 import type { ChartData } from '@/types';
+import { SIGN_NAMES } from '@/lib/signs';
 import { calculateJupiterianRounds } from './jupiterianRounds';
 import { calculateMinorProgression } from './jupiterMinorProgression';
-import { calculateBetaParaya, calculateNadiParaya, PARAYA_BETA_BODIES, type NadiParayaHouseActivation, type ParayaBetaNatal, type ParayaOptions, type ParayaPeriod } from './nadiParaya';
+import { buildParayaTimeline, calculateBetaParaya, calculateNadiParaya, PARAYA_BETA_BODIES, type NadiParayaHouseActivation, type ParayaBetaNatal, type ParayaBody, type ParayaOptions, type ParayaPeriod } from './nadiParaya';
 
 // Where the BNN progressions and the Nāḍī Paraya points fall in a natal chart,
 // as houses counted from the ascendant. The chart highlights and the legend
@@ -50,6 +51,9 @@ export function parayaPeriodsOf(chart: ChartData | null, ageYears: number, optio
     natalJupiterSignIndex: jupiter.sign - 1,
     natalSaturnSignIndex: saturn.sign - 1,
     natalRahuSignIndex: rahu.sign - 1,
+    natalJupiterDegree: jupiter.degree,
+    natalSaturnDegree: saturn.degree,
+    natalRahuDegree: rahu.degree,
     jupiterRetrograde: Boolean(jupiter.isRetrograde),
     saturnRetrograde: Boolean(saturn.isRetrograde),
     options,
@@ -61,7 +65,7 @@ export function parayaPeriodsOf(chart: ChartData | null, ageYears: number, optio
       const planet = chart.planets.find(p => p.name === body);
       if (planet) natal[body] = { signIndex: planet.sign - 1, degree: planet.degree, retrograde: Boolean(planet.isRetrograde) };
     }
-    periods.push(...calculateBetaParaya({ ageYears, natal }));
+    periods.push(...calculateBetaParaya({ ageYears, natal, options }));
   }
   return periods;
 }
@@ -75,4 +79,24 @@ export function calculateParayaHouses(chart: ChartData | null, ageYears: number,
     house: houseOf(period.signIndex, asc),
     degree: period.degree,
   }));
+}
+
+/**
+ * Every stay of a Paraya graha in a sign up to an age, in order: the natal sign it begins in at its natal degree (the first stay begins before birth),
+ * and so on. Ketu is Rahu six signs on. Empty when the chart has not the graha.
+ */
+export function parayaTimelineOf(chart: ChartData | null, body: ParayaBody, maxAge: number, options?: ParayaOptions): ParayaPeriod[] {
+  if (!chart) return [];
+  const source = body === 'Ketu' ? 'Rahu' : body;
+  const planet = chart.planets.find(p => p.name === source);
+  if (!planet) return [];
+  const periods = buildParayaTimeline({
+    body: source,
+    natalSignIndex: planet.sign - 1,
+    startDegree: planet.degree,
+    maxAge,
+    retrograde: Boolean(planet.isRetrograde),
+    options,
+  });
+  return body === 'Ketu' ? periods.map(period => ({ ...period, body: 'Ketu' as const, signIndex: (period.signIndex + 6) % 12, signName: SIGN_NAMES[(period.signIndex + 6) % 12] })) : periods;
 }

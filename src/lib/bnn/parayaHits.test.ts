@@ -17,13 +17,13 @@ const chart = {
 const birth = Date.UTC(2000, 0, 1);
 const window = (years: number) => ({ chart, birthTime: birth, fromTime: birth, toTime: birth + years * YEAR });
 
-// --- Paraya Jupiter walks Aries, Taurus, … one sign a year from its natal sign ------
-// It stands at 15° Aries at age 0.5, at 15° Leo (the 5th) at 4.5 and at 15° Sagittarius (the 9th) at 8.5.
+// --- Paraya Jupiter walks Aries, Taurus, … one sign a year from its natal sign, beginning at its natal degree (5°) ------
+// It stands at 15° Aries 10° on, at age 1/3, at 15° Leo (the 5th) at 4⅓ and at 15° Sagittarius (the 9th) at 8⅓.
 const jupiterToSun = findParayaHits({ ...window(10), relations: [1, 5, 9] })
   .filter(hit => hit.body === 'Jupiter' && hit.natal === 'Sun');
 assert.deepEqual(jupiterToSun.map(hit => hit.relation), [1, 5, 9]);
-assert.deepEqual(jupiterToSun.map(hit => Math.round(hit.ageYears * 100) / 100), [0.5, 4.5, 8.5]);
-assert.equal(jupiterToSun[0].time, birth + 0.5 * YEAR);
+assert.deepEqual(jupiterToSun.map(hit => Math.round(hit.ageYears * 100) / 100), [0.33, 4.33, 8.33]);
+assert.ok(Math.abs(jupiterToSun[0].time - (birth + (10 / 30) * YEAR)) < 1000);
 
 // --- The 1st, 5th and 9th are chosen separately ---------------------------------------
 const first = findParayaHits({ ...window(10), relations: [1] }).filter(hit => hit.body === 'Jupiter' && hit.natal === 'Sun');
@@ -32,11 +32,11 @@ assert.deepEqual(first.map(hit => hit.relation), [1]);
 // --- A window leaves out hits before and after it ---------------------------------------
 const later = findParayaHits({ chart, birthTime: birth, fromTime: birth + 4 * YEAR, toTime: birth + 5 * YEAR, relations: [1, 5, 9] })
   .filter(hit => hit.body === 'Jupiter' && hit.natal === 'Sun');
-assert.deepEqual(later.map(hit => hit.relation), [5], 'only the hit at age 4.5');
+assert.deepEqual(later.map(hit => hit.relation), [5], 'only the hit at age 4⅓');
 
-// --- The round repeats: Jupiter is back at 15° Aries at age 12.5 -------------------------
+// --- The round repeats: Jupiter is back at 15° Aries at age 12⅓ -------------------------
 const second = findParayaHits({ ...window(13), relations: [1] }).filter(hit => hit.body === 'Jupiter' && hit.natal === 'Sun');
-assert.deepEqual(second.map(hit => Math.round(hit.ageYears * 10) / 10), [0.5, 12.5]);
+assert.deepEqual(second.map(hit => Math.round(hit.ageYears * 10) / 10), [0.3, 12.3]);
 
 // --- Every Paraya graha is covered and the hits come out in time order --------------------
 const all = findParayaHits({ ...window(30), relations: [1, 5, 9] });
@@ -68,6 +68,7 @@ for (const options of optionSets) for (const retro of [false, true]) {
     const paraya = calculateNadiParaya({
       ageYears: hit.ageYears,
       natalJupiterSignIndex: 0, natalSaturnSignIndex: 5, natalRahuSignIndex: 3,
+      natalJupiterDegree: 5, natalSaturnDegree: 10, natalRahuDegree: 20,
       jupiterRetrograde: retro, saturnRetrograde: retro, options,
     });
     const period = { Jupiter: paraya.jupiter, Saturn: paraya.saturn, Rahu: paraya.rahu, Ketu: paraya.ketu }[hit.body as 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu'];
@@ -77,8 +78,8 @@ for (const options of optionSets) for (const retro of [false, true]) {
   }
 }
 
-// --- The choice changes the dates: Saturn reaches its second sign at 3 years, or at 2.5 --------------
-const saturnToSun = (saturn: 'alternating' | 'even') => findParayaHits({ ...window(5), relations: [1, 5, 9], options: { saturn, rahu: 'alternating' } })
+// --- The choice changes the dates: Saturn (from 10° Virgo) leaves its first sign at 2 years, or at 1⅔ --------------
+const saturnToSun = (saturn: 'alternating' | 'even') => findParayaHits({ ...window(12), relations: [1, 5, 9], options: { saturn, rahu: 'alternating' } })
   .filter(hit => hit.body === 'Saturn').map(hit => hit.time);
 assert.notDeepEqual(saturnToSun('alternating'), saturnToSun('even'));
 
@@ -119,10 +120,10 @@ for (const retro of [false, true]) {
 // A chart without Mars has no Mars hits.
 assert.equal(findParayaHits({ ...betaWindow(3, ['Mars']), chart: { ...betaChart, planets: betaChart.planets.filter(p => p.name !== 'Mars') } as ChartData, relations: [1] }).length, 0);
 
-// --- The 7th sign: Paraya Jupiter is at 15° Libra (the 7th from the Sun at 15° Aries) at age 6.5 and again at 18.5 ------------------
+// --- The 7th sign: Paraya Jupiter is at 15° Libra (the 7th from the Sun at 15° Aries) at age 6⅓ and again at 18⅓ ------------------
 const seventh = findParayaHits({ ...window(20), relations: [7] }).filter(hit => hit.body === 'Jupiter' && hit.natal === 'Sun');
-assert.deepEqual(seventh.map(hit => [hit.relation, Math.round(hit.ageYears * 100) / 100]), [[7, 6.5], [7, 18.5]]);
+assert.deepEqual(seventh.map(hit => [hit.relation, Math.round(hit.ageYears * 100) / 100]), [[7, 6.33], [7, 18.33]]);
 const four = findParayaHits({ ...window(10), relations: [1, 5, 7, 9] }).filter(hit => hit.body === 'Jupiter' && hit.natal === 'Sun');
-assert.deepEqual(four.map(hit => hit.relation), [1, 5, 7, 9], 'the 1st, 5th, 7th and 9th come in the order of time: 0.5, 4.5, 6.5 and 8.5');
+assert.deepEqual(four.map(hit => hit.relation), [1, 5, 7, 9], 'the 1st, 5th, 7th and 9th come in the order of time: 1/3, 4⅓, 6⅓ and 8⅓');
 
 console.log('Paraya hit tests passed');
