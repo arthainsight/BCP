@@ -20,6 +20,7 @@ import { ARUDHA_PADAS, arudhaName, calculateArudhaPadas } from '@/lib/arudhaPada
 import { PARAYA_BODIES, type ParayaBody } from '@/lib/bnn/nadiParaya';
 import ParayaChips from './ParayaChips';
 import { ChartFontScaleField, DashaMarkSelect, DegreePrecisionPicker } from './ChartDisplayControls';
+import { annotatePlanets } from '@/lib/planetMarks';
 import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
@@ -199,6 +200,7 @@ export default function ChartSection({
     bnnMajor: bnnHouses.major > 0,
     bnnMinor: bnnHouses.minor > 0,
     paraya: nadiParayaHousesFromParent.length > 0,
+    yogi: true,
   }, onToggleChartDisplay);
 
   // The props of the D1 chart with all its layers; the mixed style draws it in the middle.
@@ -207,7 +209,7 @@ export default function ChartSection({
     activeMonthHouse: monthHouse,
     ascendantSign: chart.ascendant.sign,
     ascendantDegree: chart.ascendant.degree,
-    planets: chart.planets,
+    planets: annotatePlanets(chart.planets, 1, nakshatraAdjust),
     specialLagnas: d1SpecialLagnas,
     transitPlanets: transitPlanets,
     showSigns: chartDisplaySettings.showSigns,

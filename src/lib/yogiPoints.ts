@@ -54,3 +54,15 @@ export function calculateYogi(sunLongitude: number, moonLongitude: number, adjus
     sahayogi: SIGN_LORDS[yogi.sign - 1],
   };
 }
+
+export type YogiRole = 'Yogi' | 'Sahayogi' | 'Avayogi';
+
+/** The grahas that hold the three roles, each with the roles it holds (a graha can hold more than one). */
+export function yogiRoles(sunLongitude: number, moonLongitude: number, adjust = 0): Record<string, YogiRole[]> {
+  const { yogi, sahayogi, avayogi } = calculateYogi(sunLongitude, moonLongitude, adjust);
+  const roles: Record<string, YogiRole[]> = {};
+  for (const [graha, role] of [[yogi.nakshatraLord, 'Yogi'], [sahayogi, 'Sahayogi'], [avayogi.nakshatraLord, 'Avayogi']] as const) {
+    (roles[graha] ??= []).push(role);
+  }
+  return roles;
+}

@@ -3,7 +3,7 @@ import { signDignity } from '@/lib/dignity';
 
 // The coloured chart layers a viewer can switch on and off, from the Settings
 // panel or by clicking their entry in the chart legend.
-export type ChartLayerKey = 'bcp' | 'dasha' | 'dashaHouses' | 'transit' | 'bnnMajor' | 'bnnMinor' | 'paraya';
+export type ChartLayerKey = 'bcp' | 'dasha' | 'dashaHouses' | 'transit' | 'bnnMajor' | 'bnnMinor' | 'paraya' | 'yogi';
 
 export const CHART_LAYER_SETTINGS: Record<ChartLayerKey, keyof ChartDisplaySettings> = {
   bcp: 'showBcpHighlight',
@@ -13,6 +13,7 @@ export const CHART_LAYER_SETTINGS: Record<ChartLayerKey, keyof ChartDisplaySetti
   bnnMajor: 'showBnnMajorHighlight',
   bnnMinor: 'showBnnMinorHighlight',
   paraya: 'showNadiParaya',
+  yogi: 'showYogiMarks',
 };
 
 export const CHART_LAYER_LABELS: Record<ChartLayerKey, string> = {
@@ -23,6 +24,7 @@ export const CHART_LAYER_LABELS: Record<ChartLayerKey, string> = {
   bnnMajor: 'RSN major',
   bnnMinor: 'RSN minor',
   paraya: 'paraya Ju Sa Ke Ra',
+  yogi: 'yogi ʸ sahayogi ˢ avayogi ᵃ',
 };
 
 /** Running Vimshottari lords, marked on the natal planets. */

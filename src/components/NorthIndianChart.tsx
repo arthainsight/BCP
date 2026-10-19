@@ -11,6 +11,8 @@ import { FILL_MAX_WIDTH, useChartFill } from './chartFill';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { useChartFontScale } from '@/lib/chartFont';
 import { dashaHouseBorders, dashaMark, dignityColor, type DashaLordMarks } from './chartLayers';
+import { useGrahaRoles, yogiMarkOf } from '@/lib/grahaMarks';
+import { usePlanetHover } from '@/lib/planetHover';
 import { layoutHouseLabels, polygonSpanAt, type ExclusionBox, type LabelToken, type Point } from '@/lib/chartLabelLayout';
 import { SIGN_ABBR } from '@/lib/signs';
 import { nakshatraAbbr } from '@/lib/nakshatras';
@@ -307,8 +309,10 @@ export default function NorthIndianChart({
 
 
   const { code: grahaCode } = useGrahaNames();
+  const grahaRoles = useGrahaRoles();
+  const planetHover = usePlanetHover();
   const natalLabel = (planet: PlanetData) => {
-    const parts = [grahaCode(planet.name) + (planet.isRetrograde ? '℞' : '') + dashaMark(planet.name, dashaLords)];
+    const parts = [grahaCode(planet.name) + (planet.isRetrograde ? '℞' : '') + dashaMark(planet.name, dashaLords) + yogiMarkOf(grahaRoles, planet.name)];
     if (degreePrecision !== 'off') parts.push(formatDegree(planet.degree, degreePrecision));
     if (showCharaKaraka && karakaByPlanet[planet.name]) parts.push(karakaByPlanet[planet.name]);
     if (showNakshatra) parts.push(nakshatraAbbr(normalizeDegrees(planet.longitude + nakshatraAdjust)));
@@ -353,7 +357,7 @@ export default function NorthIndianChart({
             tokens.push({ key: 'asc', group: 'asc', text: `Asc ${formatDegree(ascendantDegree, degreePrecision === 'off' ? 'minute' : degreePrecision)}` });
           }
           parayaHere.forEach(activation => tokens.push({ key: `paraya-${activation.body}`, group: 'paraya', text: `${PARAYA_CODES[activation.body]} ${activation.degree.toFixed(1)}°` }));
-          natalInHouse.forEach(planet => tokens.push({ key: `na-${planet.name}`, group: 'natal', text: natalLabel(planet) }));
+          natalInHouse.forEach(planet => tokens.push({ key: `na-${planet.name}`, group: 'natal', text: natalLabel(planet), title: planetHover(planet) }));
           transitInHouse.forEach(planet => tokens.push({ key: `tr-${planet.name}`, group: 'transit', text: transitLabel(planet) }));
           specialInHouse.forEach((sl, index) => tokens.push({ key: `sl-${sl.name}-${index}`, group: 'special', text: sl.name }));
 
@@ -498,6 +502,7 @@ export default function NorthIndianChart({
                           onClick={clickable ? handleClick : undefined}
                           style={clickable ? { cursor: 'pointer' } : undefined}
                         >
+                          {token.title && <title>{token.title}</title>}
                           {token.text}
                         </tspan>
                       </Fragment>

@@ -2,6 +2,7 @@ import type { ChartData, ChartDisplaySettings, PlanetData } from '@/types';
 import type { DashaLordMarks } from '@/components/chartLayers';
 import { buildVargaChart, project } from './vargaChart';
 import { calculateArudhaPadas } from './arudhaPadas';
+import { annotatePlanets } from './planetMarks';
 import { atmakarakaOf, pointsForDivision, selectedChartPoints, type ChartPointsSelection } from './chartPoints';
 
 interface Options {
@@ -40,7 +41,7 @@ export function vargaChartProps({
     activeYearHouse: 0,
     activeMonthHouse: 0,
     ascendantSign: varga.ascendantSign,
-    planets: varga.planets,
+    planets: annotatePlanets(varga.planets, division, nakshatraAdjust),
     showSigns: chartDisplaySettings.showSigns,
     showNatalPlanets: true,
     showOuterPlanets: chartDisplaySettings.showOuterPlanets,

@@ -78,8 +78,8 @@ Overlap and Systems), among them:
 
 * Varga matrix (D1 → D60)
 * Bala view with a diagram and a table each: Ṣaḍbala (beta; against the required strength and its six parts), Bhāva Bala (beta; a column per house) and Viṁśopaka Bala (four schemes)
-* Sensitive degrees: Sandhi, Gandanta, Mṛtyu Bhāga, Puṣkara Navāṁśa and Puṣkara Bhāga for the Lagna, the grahas and Māndi
-* Yogi, Sahayogi and Avayogi (in the Special Sphutas)
+* Sensitive degrees: Sandhi, Gandanta, Mṛtyu Bhāga, Puṣkara Navāṁśa and Puṣkara Bhāga and combustion for the Lagna, the grahas and Māndi, in the rāśi chart or in any divisional chart; marked in the graha table and in the hover text of the charts
+* Yogi, Sahayogi and Avayogi (in the Special Sphutas, and as a chart layer)
 * Graha dṛṣṭi and rāśi dṛṣṭi (Jaimini)
 * Sarvatobhadra chakra: the 9 × 9 chart of the nakṣatras (with Abhijit), vowels, consonants, signs, tithi groups and weekdays, with the grahas in their squares and their vedha (across the chart and on the two diagonals), the squares the lines cross, the syllable of a name and the birth points a graha pierces
 * Kota Chakra: the 28 nakṣatras (with Abhijit) in the four squares of the fort (Bāhya, Prākāra, Durgāntara, Stambha), counted from the Moon's nakṣatra, with the grahas in their squares, natal and transiting, and the Kota Swāmī and Kota Pāla

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { calculateYogi } from './yogiPoints';
+import { calculateYogi, yogiRoles } from './yogiPoints';
 
 // Sun 0° Aries and Moon 1° Aries: the Yogi point is 94°20' = 4°20' Cancer. Nakṣatras are 13°20' wide, so 93°20' is the end of Punarvasu
 // and the point is 1° into Pushya (the 8th, from Aśvinī), pada 1.
@@ -37,5 +37,10 @@ assert.equal(c.yogi.sign, 4);
 assert.equal(c.sahayogi, 'Moon');
 assert.equal(c.yogi.nakshatra, 'Ashlesha', '94°20\' + 13°20\' = 107°40\', in Ashlesha (106°40\'–120°)');
 assert.equal(c.yogi.nakshatraLord, 'Mercury');
+
+// The roles of the grahas: Sun 0° and Moon 1° give Saturn the Yogi (Pushya), the Moon the Sahayogi (Cancer) and, as the lord of Shravana, the Avayogi too.
+const roles = yogiRoles(0, 1);
+assert.deepEqual(roles, { Saturn: ['Yogi'], Moon: ['Sahayogi', 'Avayogi'] }, 'a graha can hold two roles: the Moon is the Sahayogi, and the lord of Shravana');
+assert.deepEqual(yogiRoles(200, 101), { Sun: ['Yogi'], Venus: ['Sahayogi'], Saturn: ['Avayogi'] });
 
 console.log('Yogi tests passed');

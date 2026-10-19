@@ -1,4 +1,5 @@
 import type { DegreePrecision } from '@/lib/formatDegree';
+import type { PlanetMarks } from '@/lib/planetMarks';
 import type { NakshatraMode } from '@/lib/nakshatraZodiac';
 import type { SaturnPortionLagnas } from '@/lib/upagrahas';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
@@ -34,6 +35,8 @@ export interface PlanetData {
   speed?: number;
   /** True equatorial declination in degrees. Drives Ayana Bala. */
   declination?: number;
+  /** The sensitive degrees and combustion of the planet, set on the planets that a chart draws (for its hover text). */
+  marks?: PlanetMarks;
 }
 
 export interface DebugInfo {
@@ -138,6 +141,8 @@ export interface ChartDisplaySettings {
   parayaBodies: ParayaBody[];
   /** BCP running year and month houses; off by default since v1.80 removed them from the chart. */
   showBcpHighlight: boolean;
+  /** Marks the Yogi (ʸ), the Sahayogi (ˢ) and the Avayogi (ᵃ) graha on the charts. */
+  showYogiMarks: boolean;
   /** Marks the running Vimshottari mahadasha and antardasha lords. */
   showDashaLords: boolean;
   /** Coloured borders on the houses of the running mahadasha and antardasha lords. */
@@ -170,6 +175,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showNadiParaya: false,
   parayaBodies: ['Jupiter', 'Saturn', 'Rahu', 'Ketu'],
   showBcpHighlight: false,
+  showYogiMarks: false,
   showDashaLords: false,
   showDashaHouses: false,
   dashaMarkSystem: 'vimshottari',

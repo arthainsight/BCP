@@ -1,5 +1,19 @@
 export const CHANGELOG = [
   {
+    version: 'v3.09',
+    date: '2026-10-19',
+    title: 'Sensitive degrees in the tables, charts and vargas, a Yogi layer, and combustion',
+    changes: [
+      'Combustion (asta) is new: the Moon within 12° of the Sun, Mars 17°, Mercury 14° (12° when retrograde), Jupiter 11°, Venus 10° (8° when retrograde) and Saturn 15°; the Sun, Rahu and Ketu are never combust. It is a column and a ☼ in the Sensitive Degrees view, and is named in the summary there. The Avasthā (Vikala) of a combust graha and the Sign changes events use the same orbs now, so a retrograde Mercury or Venus between the narrower and the wider orb is no longer taken as combust by the Avasthā.',
+      'ANALYSIS → Grahas: a Marks column with a small ⚠ (Sandhi, Gandanta or Mṛtyu Bhāga), ✦ (Puṣkara Navāṁśa or Bhāga) and ☼ (combust) on every row; hover a mark for the reason.',
+      'The charts: a graha tells its marks when it is hovered, one line each (and the Yogi roles it holds, when that layer is on), in the rāśi chart and the divisional charts, North and South Indian and the mixed style alike. In a divisional chart the tests are made on the sign and degree the graha has there; combustion is only told in the rāśi chart. The labels themselves are as they were.',
+      'ANALYSIS → Sensitive Degrees has a chart selector (D1, D9, D10 and the others): the same tests, made on the position each point has in that chart. The Puṣkara Navāṁśa lines now also name the sign of the navāṁśa.',
+      'A new chart layer: the Yogi (ʸ), Sahayogi (ˢ) and Avayogi (ᵃ) marked after the graha in every chart, switched on in the ··· menu of the chart or in Settings (off to begin with).',
+      'Tests: combustion (the orbs, the end of the zodiac, retrograde, the grahas that cannot be combust), the marks and their words, the roles of the grahas, and the browser tests of the Marks column, the hover text in the rāśi and the Navamsa chart, the Yogi layer, the chart selector and the combust column on the 15.08.1947 chart.',
+      'Updated the application version to v3.09.',
+    ],
+  },
+  {
     version: 'v3.08',
     date: '2026-10-19',
     title: 'Sensitive degrees, and the Yogi, Sahayogi and Avayogi',

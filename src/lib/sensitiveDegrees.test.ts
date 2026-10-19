@@ -74,14 +74,17 @@ assert.equal(mrityuBhagaOf('Mars', 10), null);
 
 // --- Puṣkara navāṁśa -------------------------------------------------------------------------------------------------------------------------
 // Fire signs: 20°–23°20' (the 7th navāṁśa) and 26°40'–30° (the 9th).
-assert.deepEqual(pushkaraNavamsaOf(22), { which: 1, navamsa: 7, from: 20, to: 20 + 10 / 3 });
+assert.deepEqual(pushkaraNavamsaOf(22), { which: 1, navamsa: 7, navamsaSign: 7, from: 20, to: 20 + 10 / 3 });
 assert.equal(pushkaraNavamsaOf(24), null);
 assert.equal(pushkaraNavamsaOf(27)!.which, 2);
 assert.equal(pushkaraNavamsaOf(27)!.navamsa, 9);
+assert.equal(pushkaraNavamsaOf(27)!.navamsaSign, 9, 'the 9th navamsa of Aries is Sagittarius');
 assert.equal(pushkaraNavamsaOf(23.4), null, 'just past the first');
 assert.equal(pushkaraNavamsaOf(120 + 21)!.which, 1, 'Leo is a fire sign too');
 // Earth signs: 6°40'–10° (3rd) and 13°20'–16°40' (5th).
 assert.equal(pushkaraNavamsaOf(30 + 8)!.navamsa, 3);
+assert.equal(pushkaraNavamsaOf(30 + 8)!.navamsaSign, 12, 'the 3rd navamsa of Taurus is Pisces');
+assert.equal(pushkaraNavamsaOf(30 + 14)!.navamsaSign, 2, 'and the 5th is Taurus');
 assert.equal(pushkaraNavamsaOf(30 + 14)!.navamsa, 5);
 assert.equal(pushkaraNavamsaOf(30 + 12), null);
 // Air signs: 16°40'–20° (6th) and 23°20'–26°40' (8th).

@@ -1,5 +1,6 @@
 import { normalizeDegrees as normalize } from './angles';
 import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
+import { getVargaSignIndex } from './varga';
 
 // The sensitive degrees of the signs, as Jagannatha Hora counts them: the junctions of signs (Sandhi) and of water and fire signs
 // (Gandanta), the degrees of death (Mṛtyu Bhāga), and the Puṣkara navāṁśas and degrees.
@@ -119,6 +120,8 @@ export interface PushkaraNavamsaResult {
   which: 1 | 2;
   /** Which navāṁśa of the sign it is, 1–9. */
   navamsa: number;
+  /** The sign of that navāṁśa, 1–12 (the point is in the Navāṁśa chart in this sign). */
+  navamsaSign: number;
   from: number;
   to: number;
 }
@@ -138,7 +141,7 @@ export function pushkaraNavamsaOf(longitude: number): PushkaraNavamsaResult | nu
   const degree = lon % 30;
   const ranges = pushkaraNavamsaRanges(sign);
   for (let i = 0; i < ranges.length; i += 1) {
-    if (degree >= ranges[i].from - 1e-9 && degree < ranges[i].to - 1e-9) return { which: (i + 1) as 1 | 2, ...ranges[i] };
+    if (degree >= ranges[i].from - 1e-9 && degree < ranges[i].to - 1e-9) return { which: (i + 1) as 1 | 2, ...ranges[i], navamsaSign: getVargaSignIndex(lon, 9) + 1 };
   }
   return null;
 }

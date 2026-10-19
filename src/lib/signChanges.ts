@@ -8,6 +8,7 @@
 
 import type { LongitudeSeries } from './transitHits';
 import { normalizeDegrees } from './angles';
+import { COMBUSTION_ORBS } from './combustion';
 
 export interface SignChange {
   body: string;
@@ -100,8 +101,8 @@ export interface CombustChange {
 
 /** Classical combustion orbs in degrees, narrower while the graha is retrograde. */
 export const COMBUST_ORBS: Record<string, { direct: number; retrograde: number }> = {
-  Mercury: { direct: 14, retrograde: 12 },
-  Venus: { direct: 10, retrograde: 8 },
+  Mercury: COMBUSTION_ORBS.Mercury,
+  Venus: COMBUSTION_ORBS.Venus,
 };
 
 /** Moments a graha enters or leaves combustion. Both series must share start, step and length. */

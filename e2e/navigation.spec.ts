@@ -433,7 +433,7 @@ test('TIMING exposes Dasha, Summary, Transit Hits, Sign changes, Tithi, Nakṣat
 
   // Sign changes lists when the grahas move into the next sign.
   await visible(page, page.getByRole('button', { name: 'Sign changes', exact: true })).click();
-  await expect(visible(page, page.getByText('→').first())).toBeVisible({ timeout: 15_000 });
+  await expect(visible(page, page.locator('li').getByText('→').first())).toBeVisible({ timeout: 15_000 });
   // Stations and combustion are listed too (a year is certain to hold Mercury's turns).
   await visible(page, page.getByRole('button', { name: '12 mo', exact: true })).click();
   await expect(visible(page, page.getByText(/turns retrograde/).first())).toBeVisible({ timeout: 15_000 });
