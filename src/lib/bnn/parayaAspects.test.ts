@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { ParayaBody, ParayaPeriod } from './nadiParaya';
-import { aspectPeriodsOf, aspectRelationOf, aspectsAt, convergencesOf, groupBySign, overlapping, type AspectPeriod } from './parayaAspects';
+import { aspectPeriodsOf, aspectRelationOf, aspectsAt, convergencesOf, groupBySign, hitsWithin, overlapping, stripRows, type AspectPeriod, type ExactHit } from './parayaAspects';
 
 const stay = (body: ParayaBody, signIndex: number, startAge: number, endAge: number): ParayaPeriod =>
   ({ body, signIndex, signName: '', startAge, endAge, durationYears: endAge - startAge, cycleNumber: 1, degree: 0 });
@@ -70,5 +70,35 @@ assert.deepEqual(grouped.map(group => group.natals), [['Sun', 'Moon'], ['Mars'],
 assert.deepEqual(grouped.map(group => group.signIndex), [3, 2, 3]);
 assert.equal(grouped[0].item.natal, 'Sun', 'the first of the group stands for it');
 assert.deepEqual(groupBySign([], () => 0, () => ''), []);
+
+// --- The exact dates inside a stretch ------------------------------------------------------------------------------------------------------
+const HOUR = 3_600_000;
+const hit = (body: string, natal: string, relation: 1 | 5 | 7 | 9, time: number): ExactHit => ({ body, natal, relation, time });
+const hits = [
+  hit('Jupiter', 'Sun', 5, 100 * HOUR), hit('Saturn', 'Sun', 9, 400 * HOUR), hit('Jupiter', 'Moon', 5, 200 * HOUR), hit('Jupiter', 'Sun', 1, 300 * HOUR),
+  hit('Jupiter', 'Sun', 5, 900 * HOUR), hit('Jupiter', 'Sun', 5, 600 * HOUR),
+];
+const stretch = { natals: ['Sun', 'Mars'], aspects: [{ body: 'Jupiter', relation: 5 as const }, { body: 'Saturn', relation: 9 as const }], startTime: 50 * HOUR, endTime: 700 * HOUR };
+assert.deepEqual(hitsWithin(hits, stretch).map(item => [item.body, item.natal, item.relation, item.time / HOUR]), [['Jupiter', 'Sun', 5, 100], ['Saturn', 'Sun', 9, 400], ['Jupiter', 'Sun', 5, 600]],
+  'the natal points and the kinds of aspect of the stretch, within its time, in time order: not Jupiter to the Moon, not the 1st, not the hit after the end');
+assert.deepEqual(hitsWithin(hits, { ...stretch, natals: ['Moon'] }).map(item => item.time / HOUR), [200], 'a row of the Moon alone counts Jupiter 5 to the Moon, and nothing of the Sun');
+assert.equal(hitsWithin(hits, { ...stretch, startTime: 102 * HOUR }).length, 2, 'a hit two hours before the start is not in the stretch');
+assert.equal(hitsWithin(hits, { ...stretch, startTime: 100 * HOUR + 1000 }).length, 3, 'a hit a moment before the start is still counted, so that one at the very edge is not lost');
+assert.deepEqual(hitsWithin([], stretch), []);
+
+// --- The timeline: a row for each sign that holds natal points -----------------------------------------------------------------------------
+{
+  const natalPoints = [{ name: 'Sun', signIndex: 3 }, { name: 'Moon', signIndex: 3 }, { name: 'Mars', signIndex: 0 }, { name: 'Asc', signIndex: 5 }];
+  const periods = new Map<string, AspectPeriod[]>([
+    ['Sun', [{ body: 'Jupiter', natal: 'Sun', relation: 1, startAge: 0, endAge: 6 }, { body: 'Saturn', natal: 'Sun', relation: 5, startAge: 4, endAge: 10 }]],
+    ['Moon', [{ body: 'Jupiter', natal: 'Moon', relation: 1, startAge: 0, endAge: 6 }, { body: 'Saturn', natal: 'Moon', relation: 5, startAge: 4, endAge: 10 }]],
+    ['Mars', [{ body: 'Rahu', natal: 'Mars', relation: 9, startAge: -3, endAge: 2 }]],
+  ]);
+  const rows = stripRows(natalPoints, periods, 1, 8);
+  assert.deepEqual(rows.map(row => [row.natals, row.signIndex]), [[['Sun', 'Moon'], 3], [['Mars'], 0], [['Asc'], 5]], 'Sun and Moon share Cancer; the order is that of the natal points');
+  assert.deepEqual(rows[0].segments.map(segment => [segment.startAge, segment.endAge, segment.aspects.length]), [[1, 4, 1], [4, 6, 2], [6, 8, 1]], 'the stretches are cut to the range, with the number of grahas in each');
+  assert.deepEqual(rows[1].segments.map(segment => [segment.startAge, segment.endAge]), [[1, 2]], 'a stay that began before the range is cut at its start');
+  assert.deepEqual(rows[2].segments, [], 'a point nobody aspects has an empty row');
+}
 
 console.log('Paraya aspect tests passed');

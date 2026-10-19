@@ -1,9 +1,18 @@
 import type { HitRelation } from '@/lib/transitHits';
-import type { ParayaBody, ParayaPeriod } from './nadiParaya';
 
-// Which progressing (Paraya) grahas aspect a natal point by sign, and when: a graha in the same sign as the natal point (1) or in its 5th, 7th or 9th
-// sign aspects it, wherever in the sign it stands. Not the exact degree (that is the hits of the Paraya tab), the sign: the whole stay of the graha
-// in such a sign. Nothing here knows about screens.
+// Which grahas aspect a natal point by sign, and when: a graha in the same sign as the natal point (1) or in its 5th, 7th or 9th sign aspects it,
+// wherever in the sign it stands. Not the exact degree (that is the hits of the Paraya tab), the sign: the whole stay of the graha in such a sign.
+// The grahas are the progressing (Paraya) ones, whose stays are laid out by age, or the transiting ones, whose stays come from the sky; both are
+// stays on one axis, the age in years since birth. Nothing here knows about screens.
+
+/** A graha's stay in one sign (signs are 0–11), from age `startAge` to `endAge` in years. */
+export interface Stay {
+  body: string;
+  signIndex: number;
+  /** The start of the first stay of a progressing graha that begins part of the way through it is before birth. */
+  startAge: number;
+  endAge: number;
+}
 
 /** The relation of a graha's sign to a natal point's sign, 1, 5, 7 or 9; null when the graha does not aspect it. Signs are 0–11. */
 export function aspectRelationOf(bodySign: number, natalSign: number): HitRelation | null {
@@ -12,7 +21,7 @@ export function aspectRelationOf(bodySign: number, natalSign: number): HitRelati
 }
 
 export interface AspectPeriod {
-  body: ParayaBody;
+  body: string;
   /** The natal point aspected. */
   natal: string;
   relation: HitRelation;
@@ -23,7 +32,7 @@ export interface AspectPeriod {
 
 /** The stays of a graha (its timeline) in which it aspects a natal point, with the relation of each. */
 export function aspectPeriodsOf(
-  stays: readonly ParayaPeriod[],
+  stays: readonly Stay[],
   natal: { name: string; signIndex: number },
   relations: readonly HitRelation[],
 ): AspectPeriod[] {
@@ -40,7 +49,7 @@ export interface Convergence {
   startAge: number;
   endAge: number;
   /** The grahas that aspect the point through the whole time, each with its relation. */
-  aspects: { body: ParayaBody; relation: HitRelation }[];
+  aspects: { body: string; relation: HitRelation }[];
 }
 
 /** Shorter than this (a few minutes) a stretch of time is the same moment seen by two grahas that change sign together, and is left out. */
@@ -74,11 +83,11 @@ export function convergencesOf(periods: readonly AspectPeriod[], min: number): C
 
 /** The grahas that aspect a natal sign at one moment, from their current stays. */
 export function aspectsAt(
-  current: readonly ParayaPeriod[],
+  current: readonly Pick<Stay, 'body' | 'signIndex'>[],
   natalSignIndex: number,
   relations: readonly HitRelation[],
-): { body: ParayaBody; relation: HitRelation }[] {
-  const aspects: { body: ParayaBody; relation: HitRelation }[] = [];
+): { body: string; relation: HitRelation }[] {
+  const aspects: { body: string; relation: HitRelation }[] = [];
   for (const stay of current) {
     const relation = aspectRelationOf(stay.signIndex, natalSignIndex);
     if (relation && relations.includes(relation)) aspects.push({ body: stay.body, relation });
@@ -116,4 +125,66 @@ export function groupBySign<T extends { natal: string; startAge: number; endAge:
     else groups.set(key, { natals: [item.natal], signIndex, item });
   }
   return [...groups.values()];
+}
+
+/** The moment a graha stands at the exact degree of a natal point (in its own sign or in the 5th, 7th or 9th from it): a Paraya hit or a transit hit. */
+export interface ExactHit {
+  body: string;
+  natal: string;
+  relation: HitRelation;
+  /** In ms since the epoch. */
+  time: number;
+  /** A transit crossing while the graha moves backwards. */
+  retrograde?: boolean;
+}
+
+/** A moment is counted to a stretch when it falls within this much of it, so that a hit at the very edge of a stay is not lost to rounding. */
+const EDGE_MS = 60 * 60 * 1000;
+
+/**
+ * The exact-degree hits that fall inside one stretch: by one of the grahas that aspect during it, to one of the natal points of the row, in the kind
+ * of aspect it has. A stay of a graha in a sign gives one pass over each degree (a retrograde transit can give three), so this is when, inside the
+ * stretch, the aspect becomes exact.
+ */
+export function hitsWithin(
+  hits: readonly ExactHit[],
+  stretch: { natals: readonly string[]; aspects: readonly { body: string; relation: HitRelation }[]; startTime: number; endTime: number },
+): ExactHit[] {
+  return hits
+    .filter(hit => hit.time >= stretch.startTime - EDGE_MS && hit.time < stretch.endTime + EDGE_MS
+      && stretch.natals.includes(hit.natal)
+      && stretch.aspects.some(aspect => aspect.body === hit.body && aspect.relation === hit.relation))
+    .sort((a, b) => a.time - b.time);
+}
+
+export interface StripRow {
+  /** The natal points of one sign: the same grahas aspect them at the same times. */
+  natals: string[];
+  signIndex: number;
+  /** The stretches in which at least one graha aspects them, with how many and which, clipped to the range. */
+  segments: Convergence[];
+}
+
+/**
+ * For the timeline: a row for each sign that holds natal points, with the stretches of the range and the grahas that aspect during each. The rows keep
+ * the order of the natal points given; the stretches are cut at the edges of the range.
+ */
+export function stripRows(
+  natal: readonly { name: string; signIndex: number }[],
+  periodsByNatal: ReadonlyMap<string, readonly AspectPeriod[]>,
+  fromAge: number,
+  toAge: number,
+): StripRow[] {
+  const rows: StripRow[] = [];
+  for (const point of natal) {
+    const row = rows.find(item => item.signIndex === point.signIndex);
+    if (row) {
+      row.natals.push(point.name);
+      continue;
+    }
+    const segments = overlapping(convergencesOf(periodsByNatal.get(point.name) ?? [], 1), fromAge, toAge)
+      .map(segment => ({ ...segment, startAge: Math.max(segment.startAge, fromAge), endAge: Math.min(segment.endAge, toAge) }));
+    rows.push({ natals: [point.name], signIndex: point.signIndex, segments });
+  }
+  return rows;
 }

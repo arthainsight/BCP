@@ -174,6 +174,55 @@ export const GRAHA_DASHA_SYSTEMS: { key: GrahaDashaSystem; label: string; short:
   { key: 'naisargika', label: 'Naisargika', short: 'Nais' },
 ];
 
+/** A mahādaśā or antardaśā of a graha-based system: its lord and the time it runs. */
+export interface DashaLordEntry { startDate: Date; endDate: Date; lord: string }
+
+/** The mahādaśās of a graha-based system and how to get the antardaśās of one of them. */
+export interface GrahaDashaTable {
+  entries: DashaLordEntry[];
+  children: (md: DashaLordEntry) => DashaLordEntry[];
+}
+
+function lordTable<T extends DashaLordEntry>(entries: T[], children: (md: T) => T[]): GrahaDashaTable {
+  return { entries, children: md => children(md as T) };
+}
+
+/**
+ * The mahādaśās and antardaśās of one graha-based system, or null when the system does not apply (Aṣṭottarī's condition) or the planets lack
+ * what it starts from.
+ */
+export function grahaDashaTable(
+  system: GrahaDashaSystem,
+  input: Omit<SnapshotInput, 'eventDate' | 'charaOptions' | 'rasiOptions'>,
+): GrahaDashaTable | null {
+  const { birthDate, planets, ascendant, variantChoice = 'auto' } = input;
+  const moon = planets.find(p => p.name === 'Moon');
+  const sun = planets.find(p => p.name === 'Sun');
+  if (!moon) return null;
+
+  switch (system) {
+    case 'vimshottari':
+      return lordTable(calculateVimshottari(moon.longitude, birthDate).entries, calculateSubDashas);
+    case 'vimshottariVariant': {
+      const variant = calculateVimshottariVariant(moon.longitude, birthDate, variantChoice, ascendant.sign);
+      return variant ? lordTable(variant.entries, calculateSubDashas) : null;
+    }
+    case 'vds': {
+      if (!sun) return null;
+      const planetLongitudes = Object.fromEntries(planets.map(p => [p.name, p.longitude]));
+      const vds = calculateVds({ moonLongitude: moon.longitude, sunLongitude: sun.longitude, lagnaLongitude: ascendant.longitude, lagnaSign: ascendant.sign, lagnaDegree: ascendant.degree, birthDate, planetLongitudes });
+      return vds ? lordTable(vds.entries, calculateSubDashas) : null;
+    }
+    case 'yogini':
+      return lordTable(calculateYogini(moon.longitude, birthDate).entries, calculateYoginiSubDashas);
+    case 'naisargika':
+      return lordTable(calculateNaisargika(birthDate).entries, md => calculateNaisargikaSubDashas(md, planets, ascendant.sign));
+    case 'ashtottari':
+      if (!evaluateAshtottariEligibility(planets, ascendant.sign).eligible) return null;
+      return lordTable(calculateAshtottari(moon.longitude, birthDate).entries, calculateAshtottariSubDashas);
+  }
+}
+
 /**
  * Lords of the mahadasha and antardasha running at a date in one graha-based
  * system, or null when the system does not apply (Aṣṭottarī's condition) or
@@ -183,37 +232,11 @@ export function runningGrahaDashaLords(
   system: GrahaDashaSystem,
   input: Omit<SnapshotInput, 'charaOptions' | 'rasiOptions'>,
 ): { md: string; ad: string } | null {
-  const { eventDate, birthDate, planets, ascendant, variantChoice = 'auto' } = input;
+  const { eventDate, birthDate } = input;
   if (eventDate < birthDate) return null;
-  const moon = planets.find(p => p.name === 'Moon');
-  const sun = planets.find(p => p.name === 'Sun');
-  if (!moon) return null;
-
-  const fromEntries = <T extends { startDate: Date; endDate: Date; lord: string }>(entries: T[], children: (md: T) => T[]) => {
-    const md = activeEntry(entries, eventDate);
-    const ad = md ? activeEntry(children(md), eventDate) : null;
-    return md && ad ? { md: md.lord, ad: ad.lord } : null;
-  };
-
-  switch (system) {
-    case 'vimshottari':
-      return fromEntries(calculateVimshottari(moon.longitude, birthDate).entries, calculateSubDashas);
-    case 'vimshottariVariant': {
-      const variant = calculateVimshottariVariant(moon.longitude, birthDate, variantChoice, ascendant.sign);
-      return variant ? fromEntries(variant.entries, calculateSubDashas) : null;
-    }
-    case 'vds': {
-      if (!sun) return null;
-      const planetLongitudes = Object.fromEntries(planets.map(p => [p.name, p.longitude]));
-      const vds = calculateVds({ moonLongitude: moon.longitude, sunLongitude: sun.longitude, lagnaLongitude: ascendant.longitude, lagnaSign: ascendant.sign, lagnaDegree: ascendant.degree, birthDate, planetLongitudes });
-      return vds ? fromEntries(vds.entries, calculateSubDashas) : null;
-    }
-    case 'yogini':
-      return fromEntries(calculateYogini(moon.longitude, birthDate).entries, calculateYoginiSubDashas);
-    case 'naisargika':
-      return fromEntries(calculateNaisargika(birthDate).entries, md => calculateNaisargikaSubDashas(md, planets, ascendant.sign));
-    case 'ashtottari':
-      if (!evaluateAshtottariEligibility(planets, ascendant.sign).eligible) return null;
-      return fromEntries(calculateAshtottari(moon.longitude, birthDate).entries, calculateAshtottariSubDashas);
-  }
+  const table = grahaDashaTable(system, input);
+  if (!table) return null;
+  const md = activeEntry(table.entries, eventDate);
+  const ad = md ? activeEntry(table.children(md), eventDate) : null;
+  return md && ad ? { md: md.lord, ad: ad.lord } : null;
 }

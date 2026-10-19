@@ -163,6 +163,7 @@ export default function TimingPanel({
           birthDatetime={birthDatetime}
           targetDate={targetDate ?? ''}
           calculationSettings={calculationSettings}
+          variantChoice={dashaSettings.variantChoice}
           onSetTarget={onSetTransitDatetime}
         />
       )}

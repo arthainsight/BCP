@@ -18,3 +18,8 @@ export function signChangesUrl(start: string, days: number, bodies: readonly str
 export function transitHitsUrl(start: string, settings?: CalculationSettings): string {
   return `/api/transit-hits?${new URLSearchParams({ start, days: '366', ...calculationParams(settings) })}`;
 }
+
+/** The address of the longitudes of some grahas for a number of days from a day on, for the aspect view of the transits. */
+export function transitSeriesUrl(start: string, days: number, bodies: readonly string[], settings?: CalculationSettings): string {
+  return `/api/transit-series?${new URLSearchParams({ start, days: String(days), bodies: bodies.join(','), ...calculationParams(settings) })}`;
+}

@@ -90,7 +90,7 @@ Overlap and Systems), among them:
 
 * Nāḍī paraya progressions for Jupiter, Saturn, Rahu and Ketu, and for Mars, Mercury and Venus as a beta (off until chosen), all beginning at their natal degrees; a graha that was retrograde at birth begins one sign back or in its natal sign, as chosen in Settings
 * A Paraya tab in TIMING: where the seven progressing grahas stand and every hit to the natal points (1st, 5th, 7th and 9th sign) in the order of time, with an overview of the seven against the ten natal points
-* A Paraya aspects tab in TIMING: who aspects each natal point by sign (the 1st, 5th, 7th and 9th), when several progressing grahas do at once, and a search for when a graha aspects another
+* A Paraya aspects tab in TIMING: who aspects each natal point by sign (the 1st, 5th, 7th and 9th) for the progressions or the transits, when several grahas do at once, a timeline of how many aspect through time, a search for when a graha aspects another, the exact-degree dates inside each stretch, and the daśā lords running through it (with a filter for a daśā lord being the aspected graha)
 * Nāḍī aṁśa (Deva Keralam and Siddhar)
 * Local backup and restore of every saved chart, event list, setting and,
   optionally, palm photograph; a backup can be encrypted with a password

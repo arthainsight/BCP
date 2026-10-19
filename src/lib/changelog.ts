@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v3.15',
+    date: '2026-10-19',
+    title: 'Paraya aspects: transits, a timeline, the exact dates and the daśā',
+    changes: [
+      'TIMING → Paraya aspects now has two sources, chosen with the first two buttons: the progressions (Paraya) as before, and the transits. The transits are worked out from the ephemeris (a new API route, transit-series): Jupiter, Saturn, Rahu and Ketu for 1, 3, 10 or 30 years, and Sun, Mars, Mercury and Venus for up to 10 years. The same views work on them: the table at the target moment, several at once and the search. A transiting graha that turns retrograde over a sign boundary leaves the sign and comes back, so a sign can have two stays.',
+      'A timeline: a row for each sign that holds natal points (the points of one sign share a row) and the range across, each stretch shaded by how many grahas aspect it (a single hue, one to four or more), with a readout on hover or focus and a click that moves the target moment to the start of the stretch. The lists under it are the same stretches as text.',
+      'Exact dates: every row opens to the days inside its stretch on which the graha stands at the exact degree of a natal point (for a progression once in a stay, for a transit up to three times when it turns back over the degree, and not at all in a short stay at the edge of a sign), each with its own Set target.',
+      'The daśā: under every row the mahādaśā and antardaśā lords running through the stretch ("Vimś Ju–Sa → Ju–Me", with a lord that is a natal point of the row in bold), for the Vimśottarī, Utpanna/Kṣema/Ādhāna, Original (VDS), Yoginī, Aṣṭottarī or Naisargika system. The filter "MD lord" or "MD or AD lord" leaves only the stretches in which the aspected graha is a daśā lord at some time of them.',
+      'Tests: the stays of a transiting graha from sampled longitudes (a sign crossed, a retrograde loop, the end of the zodiac, ages before birth), the exact dates that belong to a stretch, the rows of the timeline, the daśā lords through a stretch against the lords running at each moment of it in every graha-based system, the marks of the time axis; and browser tests of the timeline and its readout, the exact dates, the daśā line and filter, and of the transits (the faster grahas off for 30 years, Saturn over the Moon through its four signs).',
+      'Updated the application version to v3.15.',
+    ],
+  },
+  {
     version: 'v3.14',
     date: '2026-10-19',
     title: 'Every Paraya graha begins at its natal degree; retrograde at birth is a choice; the Paraya aspects tab',
