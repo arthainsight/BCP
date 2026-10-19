@@ -1,7 +1,7 @@
 import type { ChartData } from '@/types';
 import { calculateJupiterianRounds } from './jupiterianRounds';
 import { calculateMinorProgression } from './jupiterMinorProgression';
-import { calculateNadiParaya, type NadiParayaHouseActivation, type ParayaOptions } from './nadiParaya';
+import { calculateBetaParaya, calculateNadiParaya, PARAYA_BETA_BODIES, type NadiParayaHouseActivation, type ParayaBetaNatal, type ParayaOptions } from './nadiParaya';
 
 // Where the BNN progressions and the Nāḍī Paraya points fall in a natal chart,
 // as houses counted from the ascendant. The chart highlights and the legend
@@ -38,7 +38,8 @@ export function calculateBnnHouses(chart: ChartData | null, ageYears: number): B
   };
 }
 
-export function calculateParayaHouses(chart: ChartData | null, ageYears: number, options?: ParayaOptions): NadiParayaHouseActivation[] {
+/** The houses of the Paraya grahas at an age; with `beta` Mars, Mercury and Venus follow the four. */
+export function calculateParayaHouses(chart: ChartData | null, ageYears: number, options?: ParayaOptions, beta = false): NadiParayaHouseActivation[] {
   if (!chart) return [];
   const jupiter = chart.planets.find(p => p.name === 'Jupiter');
   const saturn = chart.planets.find(p => p.name === 'Saturn');
@@ -54,7 +55,16 @@ export function calculateParayaHouses(chart: ChartData | null, ageYears: number,
     options,
   });
   const asc = chart.ascendant.sign;
-  return [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu].map(period => ({
+  const periods = [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu];
+  if (beta) {
+    const natal: ParayaBetaNatal = {};
+    for (const body of PARAYA_BETA_BODIES) {
+      const planet = chart.planets.find(p => p.name === body);
+      if (planet) natal[body] = { signIndex: planet.sign - 1, retrograde: Boolean(planet.isRetrograde) };
+    }
+    periods.push(...calculateBetaParaya({ ageYears, natal }));
+  }
+  return periods.map(period => ({
     body: period.body,
     house: houseOf(period.signIndex, asc),
     degree: period.degree,

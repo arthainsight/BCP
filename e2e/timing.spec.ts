@@ -25,6 +25,34 @@ test('transit.hits also lists the Paraya hits, to the 1st, 5th and 9th from each
   expect(errors).toEqual([]);
 });
 
+test('the Paraya hits count Mars, Mercury and Venus (beta) when they are asked for', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Transit Hits', exact: true })).click();
+  const paraya = visible(page, page.getByRole('region', { name: 'paraya hits' }));
+  await paraya.getByRole('button', { name: '10 yr', exact: true }).click();
+  const betaHit = /(Ma|Me|Ve) (over natal|5th from natal|9th from natal)/;
+
+  // Not to begin with; the beta button counts them: Mercury and Venus come round every year, so a year holds plenty.
+  await paraya.getByRole('button', { name: /^show all/ }).click();
+  await expect(paraya.getByRole('listitem').filter({ hasText: betaHit })).toHaveCount(0);
+  const beta = paraya.getByRole('button', { name: 'beta: Ma Me Ve', exact: true });
+  await expect(beta).toHaveAttribute('aria-pressed', 'false');
+  await beta.click();
+  await expect(beta).toHaveAttribute('aria-pressed', 'true');
+  await paraya.getByRole('button', { name: /^show all/ }).click();
+  await expect(paraya.getByRole('listitem').filter({ hasText: betaHit }).first()).toBeVisible();
+  expect(await paraya.getByRole('listitem').filter({ hasText: betaHit }).count()).toBeGreaterThan(50);
+  // And off again.
+  await beta.click();
+  await expect(paraya.getByRole('listitem').filter({ hasText: betaHit })).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
+
 test('the Paraya options in Settings change the Paraya hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

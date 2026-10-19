@@ -147,6 +147,11 @@ export const FI: Record<string, string> = {
   'Sphuta point': 'Sphuṭa-piste',
   'sign of the Yogi point': 'Yogi-pisteen merkki',
   "The Yogi point is the Sun + the Moon + 93°20'. The Yogi is the lord of its nakshatra, the Sahayogi the lord of its sign, and the Avayogi the lord of the nakshatra of the point 186°40' after it.": "Yogi-piste on Aurinko + Kuu + 93°20'. Yogi on sen nakṣatran herra, Sahayogi sen merkin herra ja Avayogi sitä 186°40' myöhemmän pisteen nakṣatran herra.",
+  // Paraya beta
+  'paraya grahas beta': 'paraya-grahat (beta)',
+  'beta': 'beta',
+  'Mars two months, Mercury and Venus a month in each sign, moved by age': 'Mars kaksi kuukautta, Merkurius ja Venus kuukauden kussakin merkissä, iän mukaan kuljetettuina',
+  'beta: Ma Me Ve': 'beta: Ma Me Ve',
   '⤢ full': '⤢ koko',
   '✕ close': '✕ sulje',
   'Full screen': 'Koko näyttö',

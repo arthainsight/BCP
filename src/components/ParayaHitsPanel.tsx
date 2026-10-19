@@ -5,6 +5,7 @@ import type { CalculationSettings, ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { findParayaHits } from '@/lib/bnn/parayaHits';
+import { ALL_PARAYA_BODIES, PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
 import { HIT_RELATIONS } from '@/lib/transitHits';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
@@ -33,7 +34,7 @@ const formatMoment = (time: number) => {
 };
 
 /**
- * The Nāḍī Paraya hits: when Jupiter, Saturn, Rahu and Ketu, moved by age
+ * The Nāḍī Paraya hits: when Jupiter, Saturn, Rahu and Ketu (and Mars, Mercury and Venus as beta), moved by age
  * through the signs, reach each natal graha or the ascendant, and the same
  * degree in its 5th and 9th sign. Worked out in the browser from the age.
  */
@@ -42,6 +43,8 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, calc
   const { code } = useGrahaNames();
   const [years, setYears] = useState(1);
   const [showAll, setShowAll] = useState(false);
+  // Mars, Mercury and Venus (beta) move so fast that they hit every natal point every year or two: they are counted when asked for.
+  const [beta, setBeta] = useState(false);
 
   const saturn = calculationSettings?.parayaSaturn ?? 'alternating';
   const rahu = calculationSettings?.parayaRahu ?? 'alternating';
@@ -57,8 +60,9 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, calc
       toTime: from.getTime() + years * JULIAN_YEAR_MS,
       relations: HIT_RELATIONS,
       options: { saturn, rahu },
+      bodies: beta ? ALL_PARAYA_BODIES : PARAYA_BODIES,
     });
-  }, [chart, birthDatetime, targetDate, years, saturn, rahu]);
+  }, [chart, birthDatetime, targetDate, years, saturn, rahu, beta]);
 
   const rows = showAll ? hits : hits.slice(0, FIRST_ROWS);
   const chip = (on: boolean) =>
@@ -80,6 +84,9 @@ export default function ParayaHitsPanel({ chart, birthDatetime, targetDate, calc
             {t(range.label)}
           </button>
         ))}
+        <button type="button" aria-pressed={beta} onClick={() => { setBeta(value => !value); setShowAll(false); }} title={t('Mars two months, Mercury and Venus a month in each sign, moved by age')} className={chip(beta)}>
+          {t('beta: Ma Me Ve')}
+        </button>
       </div>
 
       {hits.length === 0 && <p className="text-[10px] font-mono text-zinc-400">{t('No paraya hits in this period.')}</p>}

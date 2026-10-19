@@ -1,10 +1,29 @@
 import { SIGN_NAMES } from '@/lib/signs';
 import type { ParayaSpeed } from '@/types';
 
-export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu';
+/** The Paraya grahas that are tried out (beta): Mars, Mercury and Venus, moved by age like the four. */
+export type ParayaBetaBody = 'Mars' | 'Mercury' | 'Venus';
+
+export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu' | ParayaBetaBody;
 
 /** The four Paraya grahas, in the order they are listed. */
 export const PARAYA_BODIES: readonly ParayaBody[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
+
+/** The beta Paraya grahas, which are off until they are chosen. */
+export const PARAYA_BETA_BODIES: readonly ParayaBetaBody[] = ['Mars', 'Mercury', 'Venus'];
+
+/** All seven, the four first. */
+export const ALL_PARAYA_BODIES: readonly ParayaBody[] = [...PARAYA_BODIES, ...PARAYA_BETA_BODIES];
+
+/**
+ * Years spent in each sign by the beta grahas: what the graha takes in the sky on average, as the four take theirs (Jupiter a year, Saturn
+ * 2½, Rahu 1½). Mars takes two months, which is two years round the zodiac; Mercury and Venus keep the pace of the Sun, a month a sign and
+ * a year a round.
+ */
+export const PARAYA_BETA_YEARS: Record<ParayaBetaBody, number> = { Mars: 1 / 6, Mercury: 1 / 12, Venus: 1 / 12 };
+
+/** The natal sign (0–11) of a beta graha and whether it was going backwards, which starts its walk one sign back as for Jupiter and Saturn. */
+export type ParayaBetaNatal = Partial<Record<ParayaBetaBody, { signIndex: number; retrograde?: boolean }>>;
 
 /** The choices for how Saturn and Rahu (and so Ketu) stay in each sign. */
 export interface ParayaOptions {
@@ -21,6 +40,7 @@ export const DEFAULT_PARAYA_OPTIONS: ParayaOptions = { saturn: 'alternating', ra
  */
 export function parayaDurations(body: Exclude<ParayaBody, 'Ketu'>, options: ParayaOptions = DEFAULT_PARAYA_OPTIONS): readonly number[] {
   if (body === 'Jupiter') return [1];
+  if (body === 'Mars' || body === 'Mercury' || body === 'Venus') return [PARAYA_BETA_YEARS[body]];
   if (body === 'Saturn') return options.saturn === 'even' ? [2.5] : [3, 2];
   return options.rahu === 'even' ? [1.5] : [2, 1];
 }
@@ -62,17 +82,43 @@ function normalizeSign(signIndex: number): number {
   return ((Math.floor(signIndex) % 12) + 12) % 12;
 }
 
-function periodAtAge(params: {
+type PeriodParams = {
   body: ParayaBody;
   natalSignIndex: number;
-  ageYears: number;
   durations: readonly number[];
   direction: 1 | -1;
   retrogradeStartShift?: boolean;
-}): ParayaPeriod {
-  const ageYears = Math.max(0, params.ageYears);
+};
+
+/** The length of a round, in years: the stays in the twelve signs added up. */
+function cycleLengthOf(durations: readonly number[]): number {
+  return durations.reduce((sum, duration) => sum + duration, 0) * (12 / durations.length);
+}
+
+/** One period: the stay of `step` (0–11) in the round `completedCycles` (from 0), with the Paraya graha `progress` (0–1) of the way through it. */
+function makePeriod(params: PeriodParams, completedCycles: number, step: number, startAgeInCycle: number, progress: number): ParayaPeriod {
   const startSign = normalizeSign(params.natalSignIndex - (params.retrogradeStartShift ? 1 : 0));
-  const cycleLength = params.durations.reduce((sum, duration) => sum + duration, 0) * (12 / params.durations.length);
+  const durationYears = params.durations[step % params.durations.length];
+  const cycleLength = cycleLengthOf(params.durations);
+  const signIndex = normalizeSign(startSign + params.direction * step);
+  const degree = params.direction === 1
+    ? progress * 30
+    : Math.min(29.999999, (1 - progress) * 30);
+  return {
+    body: params.body,
+    signIndex,
+    signName: SIGN_NAMES[signIndex],
+    startAge: completedCycles * cycleLength + startAgeInCycle,
+    endAge: completedCycles * cycleLength + startAgeInCycle + durationYears,
+    durationYears,
+    cycleNumber: completedCycles + 1,
+    degree,
+  };
+}
+
+function periodAtAge(params: PeriodParams & { ageYears: number }): ParayaPeriod {
+  const ageYears = Math.max(0, params.ageYears);
+  const cycleLength = cycleLengthOf(params.durations);
   const completedCycles = Math.floor(ageYears / cycleLength);
   const ageInCycle = ageYears - completedCycles * cycleLength;
 
@@ -81,22 +127,9 @@ function periodAtAge(params: {
     const durationYears = params.durations[step % params.durations.length];
     const endAgeInCycle = startAgeInCycle + durationYears;
     if (ageInCycle < endAgeInCycle || step === 11) {
-      const signIndex = normalizeSign(startSign + params.direction * step);
       const elapsedInPeriod = Math.max(0, ageInCycle - startAgeInCycle);
       const progress = Math.max(0, Math.min(1, elapsedInPeriod / durationYears));
-      const degree = params.direction === 1
-        ? progress * 30
-        : Math.min(29.999999, (1 - progress) * 30);
-      return {
-        body: params.body,
-        signIndex,
-        signName: SIGN_NAMES[signIndex],
-        startAge: completedCycles * cycleLength + startAgeInCycle,
-        endAge: completedCycles * cycleLength + endAgeInCycle,
-        durationYears,
-        cycleNumber: completedCycles + 1,
-        degree,
-      };
+      return makePeriod(params, completedCycles, step, startAgeInCycle, progress);
     }
     startAgeInCycle = endAgeInCycle;
   }
@@ -148,6 +181,23 @@ export function calculateNadiParaya(params: {
   return { ageYears, jupiter, saturn, rahu, ketu };
 }
 
+/** The beta Paraya grahas at an age: Mars, Mercury and Venus, in that order, for those that are given. */
+export function calculateBetaParaya(params: { ageYears: number; natal: ParayaBetaNatal }): ParayaPeriod[] {
+  const ageYears = Math.max(0, params.ageYears);
+  return PARAYA_BETA_BODIES.flatMap(body => {
+    const natal = params.natal[body];
+    if (!natal) return [];
+    return [periodAtAge({
+      body,
+      natalSignIndex: natal.signIndex,
+      ageYears,
+      durations: parayaDurations(body),
+      direction: 1,
+      retrogradeStartShift: natal.retrograde,
+    })];
+  });
+}
+
 export function buildParayaTimeline(params: {
   body: Exclude<ParayaBody, 'Ketu'>;
   natalSignIndex: number;
@@ -155,20 +205,26 @@ export function buildParayaTimeline(params: {
   retrograde?: boolean;
   options?: ParayaOptions;
 }): ParayaPeriod[] {
-  const config = { durations: parayaDurations(params.body, params.options), direction: params.body === 'Rahu' ? -1 as const : 1 as const };
+  const config: PeriodParams = {
+    body: params.body,
+    natalSignIndex: params.natalSignIndex,
+    durations: parayaDurations(params.body, params.options),
+    direction: params.body === 'Rahu' ? -1 : 1,
+    retrogradeStartShift: params.body !== 'Rahu' && params.retrograde,
+  };
+  // The periods are laid out round by round, each from the sum of the ones before it, and not found again from the age at which the one before
+  // ended: a stay of a twelfth of a year does not add up to exactly a year in floating point, and an age that falls a hair short of a boundary
+  // would give the same period again for ever.
   const periods: ParayaPeriod[] = [];
-  let age = 0;
-  while (age < params.maxAge) {
-    const period = periodAtAge({
-      body: params.body,
-      natalSignIndex: params.natalSignIndex,
-      ageYears: age,
-      durations: config.durations,
-      direction: config.direction,
-      retrogradeStartShift: params.body !== 'Rahu' && params.retrograde,
-    });
-    periods.push(period);
-    age = period.endAge;
+  const cycleLength = cycleLengthOf(config.durations);
+  for (let cycle = 0; cycle * cycleLength < params.maxAge; cycle++) {
+    let startAgeInCycle = 0;
+    for (let step = 0; step < 12; step++) {
+      const period = makePeriod(config, cycle, step, startAgeInCycle, 0);
+      if (period.startAge >= params.maxAge) return periods;
+      periods.push(period);
+      startAgeInCycle += config.durations[step % config.durations.length];
+    }
   }
   return periods;
 }
@@ -182,6 +238,8 @@ export function findParayaAgesForPosition(params: {
   natalRahuSignIndex: number;
   jupiterRetrograde?: boolean;
   saturnRetrograde?: boolean;
+  /** The natal signs of Mars, Mercury and Venus, which the beta grahas need. */
+  natalBeta?: ParayaBetaNatal;
   maxAge?: number;
   options?: ParayaOptions;
 }): ParayaPositionMatch[] {
@@ -190,16 +248,22 @@ export function findParayaAgesForPosition(params: {
   const degree = Math.max(0, Math.min(29.999999, params.degree));
   const sourceBody = params.body === 'Ketu' ? 'Rahu' : params.body;
   const sourceTargetSign = params.body === 'Ketu' ? normalizeSign(targetSignIndex - 6) : targetSignIndex;
-  const natalSignIndex = sourceBody === 'Jupiter'
-    ? params.natalJupiterSignIndex
-    : sourceBody === 'Saturn'
-      ? params.natalSaturnSignIndex
-      : params.natalRahuSignIndex;
-  const retrograde = sourceBody === 'Jupiter'
-    ? params.jupiterRetrograde
-    : sourceBody === 'Saturn'
-      ? params.saturnRetrograde
-      : false;
+  const beta = (PARAYA_BETA_BODIES as readonly ParayaBody[]).includes(sourceBody) ? params.natalBeta?.[sourceBody as ParayaBetaBody] : undefined;
+  if ((PARAYA_BETA_BODIES as readonly ParayaBody[]).includes(sourceBody) && !beta) return [];
+  const natalSignIndex = beta
+    ? beta.signIndex
+    : sourceBody === 'Jupiter'
+      ? params.natalJupiterSignIndex
+      : sourceBody === 'Saturn'
+        ? params.natalSaturnSignIndex
+        : params.natalRahuSignIndex;
+  const retrograde = beta
+    ? beta.retrograde
+    : sourceBody === 'Jupiter'
+      ? params.jupiterRetrograde
+      : sourceBody === 'Saturn'
+        ? params.saturnRetrograde
+        : false;
   const timeline = buildParayaTimeline({
     body: sourceBody,
     natalSignIndex,

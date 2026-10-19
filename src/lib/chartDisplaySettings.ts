@@ -1,5 +1,5 @@
 import { DEFAULT_CHART_DISPLAY, type ChartDisplaySettings } from '@/types';
-import { PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
+import { ALL_PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
 import { clampFontScale } from '@/lib/chartFont';
 import { VARGA_DIVISIONS } from '@/lib/vargaChart';
 
@@ -23,8 +23,8 @@ export function migrateChartDisplaySettings(stored: unknown): ChartDisplaySettin
   if (!['north', 'south', 'both', 'mixedNorth', 'mixedSouth'].includes(result.chartStyle as string)) result.chartStyle = DEFAULT_CHART_DISPLAY.chartStyle;
   // The outer chart of the mixed style is one of the vargas there are.
   if (!(VARGA_DIVISIONS as readonly number[]).includes(result.mixedOuterDivision as number)) result.mixedOuterDivision = DEFAULT_CHART_DISPLAY.mixedOuterDivision;
-  // The Paraya grahas that are drawn: only the four known ones are kept, in their order.
-  if (Array.isArray(parsed.parayaBodies)) result.parayaBodies = PARAYA_BODIES.filter(body => (parsed.parayaBodies as unknown[]).includes(body));
+  // The Paraya grahas that are drawn: only the known ones (the four and the three of the beta) are kept, in their order.
+  if (Array.isArray(parsed.parayaBodies)) result.parayaBodies = ALL_PARAYA_BODIES.filter(body => (parsed.parayaBodies as unknown[]).includes(body));
   // Settings from before degreePrecision only had an on/off degrees switch.
   if (!parsed.degreePrecision && parsed.showDegrees === true) result.degreePrecision = 'degree';
   return result as unknown as ChartDisplaySettings;

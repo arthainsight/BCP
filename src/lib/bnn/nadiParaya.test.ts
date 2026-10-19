@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { DEFAULT_PARAYA_OPTIONS, buildParayaTimeline, calculateNadiParaya, findParayaAgesForPosition, parayaDurations } from './nadiParaya';
+import { ALL_PARAYA_BODIES, DEFAULT_PARAYA_OPTIONS, PARAYA_BETA_BODIES, PARAYA_BODIES, buildParayaTimeline, calculateBetaParaya, calculateNadiParaya, findParayaAgesForPosition, parayaDurations } from './nadiParaya';
 
 const atBirth = calculateNadiParaya({
   ageYears: 0,
@@ -86,6 +86,55 @@ const ketuMatches = findParayaAgesForPosition({
 });
 assert.deepEqual(ketuMatches.map(match => match.ageYears), [1, 19]);
 
+
+// --- The beta grahas: Mars two months, Mercury and Venus a month in each sign --------------------------------------------
+assert.deepEqual(PARAYA_BODIES, ['Jupiter', 'Saturn', 'Rahu', 'Ketu'], 'the four are what there is to begin with');
+assert.deepEqual(PARAYA_BETA_BODIES, ['Mars', 'Mercury', 'Venus']);
+assert.deepEqual(ALL_PARAYA_BODIES, ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Mars', 'Mercury', 'Venus']);
+assert.deepEqual([parayaDurations('Mars'), parayaDurations('Mercury'), parayaDurations('Venus')], [[1 / 6], [1 / 12], [1 / 12]]);
+
+const near = (a: number, b: number, message: string) => assert.ok(Math.abs(a - b) < 1e-6, `${message}: ${a} ≈ ${b}`);
+const beta = (ageYears: number) => calculateBetaParaya({
+  ageYears,
+  natal: { Mars: { signIndex: 0 }, Mercury: { signIndex: 2 }, Venus: { signIndex: 11, retrograde: true } },
+});
+// At birth: each on its natal sign at 0°, and Venus, which was going backwards, one sign back (as Jupiter and Saturn are).
+const born = beta(0);
+assert.deepEqual(born.map(period => [period.body, period.signIndex, period.degree]), [['Mars', 0, 0], ['Mercury', 2, 0], ['Venus', 10, 0]]);
+// Mars is in Aries for the first two months: at 0.1 years (1.2 months) it is 0.6 of the way, at 18°.
+near(beta(0.1)[0].degree, 18, 'Mars at 0.1');
+assert.equal(beta(0.1)[0].signIndex, 0);
+// Then Taurus: at 1/6 + 0.05 years it is 0.3 of the way (9°).
+assert.equal(beta(1 / 6 + 0.05)[0].signIndex, 1);
+near(beta(1 / 6 + 0.05)[0].degree, 9, 'Mars in Taurus');
+// A round of Mars is two years, and of Mercury and Venus a year.
+const marsAgain = beta(2.1)[0];
+assert.equal(marsAgain.signIndex, 0);
+assert.equal(marsAgain.cycleNumber, 2);
+near(marsAgain.degree, 18, 'Mars a round later');
+// Mercury: half a year is six signs on (Gemini to Sagittarius), 0.12 into the sign (3.6°) at 0.51 years; at 1.04 years it is on its second round.
+assert.equal(beta(0.51)[1].signIndex, 8);
+near(beta(0.51)[1].degree, 3.6, 'Mercury at 0.51');
+assert.equal(beta(1.04)[1].signIndex, 2);
+assert.equal(beta(1.04)[1].cycleNumber, 2);
+// Venus, one sign back to begin with (Aquarius), is in the 3rd sign from there (Aries) at 0.2 years, 0.4 of the way (12°).
+assert.equal(beta(0.2)[2].signIndex, 0);
+near(beta(0.2)[2].degree, 12, 'Venus at 0.2');
+// Only the grahas that are given.
+assert.deepEqual(calculateBetaParaya({ ageYears: 1, natal: { Venus: { signIndex: 3 } } }).map(period => period.body), ['Venus']);
+assert.deepEqual(calculateBetaParaya({ ageYears: 1, natal: {} }), []);
+
+// A position is reached once a round: Mars from Aries at 15° of Leo (the 5th sign, so 4/6 + a half month = 0.75), and every two years after that.
+const marsAt = findParayaAgesForPosition({
+  body: 'Mars', targetSignIndex: 4, degree: 15, natalJupiterSignIndex: 0, natalSaturnSignIndex: 0, natalRahuSignIndex: 0,
+  natalBeta: { Mars: { signIndex: 0 } }, maxAge: 5,
+});
+assert.deepEqual(marsAt.map(match => Math.round(match.ageYears * 1000) / 1000), [0.75, 2.75, 4.75]);
+assert.deepEqual(marsAt.map(match => match.cycleNumber), [1, 2, 3]);
+// Without the natal sign of the beta graha there is nothing to find.
+assert.deepEqual(findParayaAgesForPosition({ body: 'Mars', targetSignIndex: 4, degree: 15, natalJupiterSignIndex: 0, natalSaturnSignIndex: 0, natalRahuSignIndex: 0, maxAge: 5 }), []);
+// A timeline of Mercury has twelve signs in a year.
+assert.equal(buildParayaTimeline({ body: 'Mercury', natalSignIndex: 0, maxAge: 1.01 }).length, 13);
 console.log('Nadi paraya tests passed');
 
 // --- Stays in each sign: alternating (the default) or the same in every sign ---------------
