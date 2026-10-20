@@ -16,7 +16,6 @@ type SourceMode = 'paraya' | 'transit' | 'both';
 type HitRow = { chart: string; chartId: string; source: 'Paraya' | 'Transit'; body: string; natal: string; relation: HitRelation; time: number; retrograde?: boolean; events: StoredDashaEvent[] };
 type Props = { sources: readonly ResearchSource[]; initialSelected: ReadonlySet<string>; calculationSettings?: CalculationSettings };
 
-const RELATIONS: HitRelation[] = [1, 3, 4, 5, 7, 8, 9, 10];
 const RELATION_LABEL: Record<number, string> = { 1: '1 · same sign', 3: '3 · Saturn aspect', 4: '4 · Mars aspect', 5: '5 · fifth', 7: '7 · seventh', 8: '8 · Mars aspect', 9: '9 · ninth', 10: '10 · Saturn aspect' };
 const DATE = (time: number) => new Date(time).toISOString().slice(0, 10);
 const dateTime = (date: string) => Date.parse(date + 'T00:00:00.000Z');
