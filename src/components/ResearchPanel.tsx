@@ -35,6 +35,7 @@ import ResearchSettings, { type SettingsOutcome } from './ResearchSettings';
 import ResearchCombos, { kindText, type ComboOutcome } from './ResearchCombos';
 import ResearchModel, { type ModelOutcome } from './ResearchModel';
 import ResearchRuns from './ResearchRuns';
+import ResearchHitFinder from './ResearchHitFinder';
 import { buildReport, type ReportBody, type ReportContext } from './researchReport';
 import { FAMILY_LABELS, SOURCE_LABELS, WINDOWS, chip } from './researchUi';
 
@@ -110,6 +111,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
   const [bodies, setBodies] = useState<readonly ParayaBody[]>(PARAYA_BODIES);
   const [hypothesis, setHypothesis] = useState<Hypothesis>({ on: false, source: 'paraya', family: 'house', body: 'Saturn', target: '4' });
   const [run, setRun] = useState<Run>({ status: 'idle' });
+  const [showHitFinder, setShowHitFinder] = useState(false);
   const [runs, setRuns] = useState(0);
   const language = useLanguage();
   /** What the last run was run on, for the report. */
@@ -375,7 +377,9 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             <button type="button" aria-pressed={mode === 'settings'} onClick={() => { setMode('settings'); setRun({ status: 'idle' }); }} className={chip(mode === 'settings')}>{t('the Paraya settings')}</button>
             <button type="button" aria-pressed={mode === 'combine'} onClick={() => { setMode('combine'); setRun({ status: 'idle' }); }} className={chip(mode === 'combine')}>{t('combinations')}</button>
             <button type="button" aria-pressed={mode === 'model'} onClick={() => { setMode('model'); setRun({ status: 'idle' }); }} className={chip(mode === 'model')}>{t('joint model')}</button>
+            <button type="button" aria-expanded={showHitFinder} onClick={() => setShowHitFinder(value => !value)} className={chip(showHitFinder)}>{t('Graha Hit Finder')}</button>
           </div>
+          {showHitFinder && <ResearchHitFinder sources={sources} initialSelected={selected} calculationSettings={settings} />}
 
           <div className="space-y-1">
             {filterControls(filter, setFilter, grouped ? t('first group') : t('events'), 'a')}
