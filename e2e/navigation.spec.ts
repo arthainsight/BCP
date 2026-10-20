@@ -96,7 +96,7 @@ test('phone: the place is one line, the form folds away with the chart, and the 
   expect(errors).toEqual([]);
 });
 
-test('split view: CHART, TIMING, ANALYSIS and PALM side by side on a wide screen', async ({ page }, info) => {
+test('split view: CHART, TIMING, ANALYSIS and LIFE side by side on a wide screen', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -358,7 +358,7 @@ test('the analysis can take the whole width on a wide screen, as the timing and 
   const chart = page.locator('svg[aria-label="North Indian Jyotish chart"]').locator('visible=true');
   await expect(chart).toHaveCount(1);
 
-  // The same ⤢ full button as in TIMING and PALM, in view beside the tabs: the chart steps aside and the analysis is as wide as the screen.
+  // The same ⤢ full button as in TIMING and LIFE, in view beside the tabs: the chart steps aside and the analysis is as wide as the screen.
   await expect(visible(page, page.getByRole('button', { name: '⤢ full', exact: true }))).toBeInViewport({ ratio: 1 });
   await visible(page, page.getByRole('button', { name: '⤢ full', exact: true })).click();
   await expect(chart).toHaveCount(0);
