@@ -4,8 +4,8 @@ import { useMemo, useState } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { findParayaHits } from '@/lib/bnn/parayaHits';
-import { ALL_PARAYA_BODIES, type ParayaBody } from '@/lib/bnn/nadiParaya';
-import { PROGRESSION_RELATIONS, TRANSIT_RELATIONS, transitRelationsOf, findTransitHits, type HitRelation, type LongitudeSeries } from '@/lib/transitHits';
+import type { ParayaBody } from '@/lib/bnn/nadiParaya';
+import { PROGRESSION_RELATIONS, transitRelationsOf, findTransitHits, type HitRelation, type LongitudeSeries } from '@/lib/transitHits';
 import { parseTargetDateString } from '@/lib/dateInput';
 import { transitSeriesUrl } from '@/lib/apiParams';
 import { useDebouncedJson } from '@/hooks/useDebouncedJson';
@@ -42,14 +42,12 @@ export default function GrahaHitFinder({ chart, birthDatetime, calculationSettin
   const [fromDate, setFromDate] = useState(() => ISO_DATE(new Date()));
   const [toDate, setToDate] = useState(() => { const d = new Date(); d.setFullYear(d.getFullYear() + 5); return ISO_DATE(d); });
   const [searched, setSearched] = useState(false);
-  const [orb, setOrb] = useState('1');
 
   const birth = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const from = useMemo(() => parseTargetDateString(fromDate), [fromDate]);
   const to = useMemo(() => parseTargetDateString(toDate), [toDate]);
   const days = from && to ? Math.floor((to.getTime() - from.getTime()) / 86400000) + 2 : 0;
   const isTransit = source !== 'paraya';
-  const selectedRelations = source === 'transit' ? transitRelationsOf(body) : PROGRESSION_RELATIONS;
   const availableRelations = source === 'both'
     ? [...new Set([...PROGRESSION_RELATIONS, ...transitRelationsOf(body)])]
     : [...selectedRelations];
@@ -100,9 +98,7 @@ export default function GrahaHitFinder({ chart, birthDatetime, calculationSettin
   };
 
   const runSearch = () => {
-    setSearched(false);
-    // Let the source and date controls settle before loading the transit series.
-    setTimeout(() => setSearched(true), 0);
+    setSearched(true);
   };
 
   return (
@@ -146,12 +142,7 @@ export default function GrahaHitFinder({ chart, birthDatetime, calculationSettin
           ))}
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[10px] text-zinc-500">Dates are exact-degree crossings. Orb tolerance: ±{orb}° (reserved for the next iteration).</p>
-        <label className="flex items-center gap-2 text-[10px] font-mono text-zinc-500">Orb
-          <select value={orb} onChange={e => setOrb(e.target.value)} className="rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-xs dark:border-zinc-700 dark:bg-zinc-900"><option value="0">0°</option><option value="0.5">0.5°</option><option value="1">1°</option><option value="2">2°</option><option value="3">3°</option><option value="5">5°</option></select>
-        </label>
-      </div>
+      <p className="text-[10px] text-zinc-500">Dates are exact-degree crossings. Transit dates are interpolated from ephemeris samples; ℞ marks a retrograde pass.</p>
       <button type="button" onClick={runSearch} disabled={!from || !to || days <= 0 || days > 36525} className="rounded-md bg-emerald-600 px-3 py-2 text-xs font-medium text-white disabled:opacity-40">Find dates</button>
       {days > 36525 && <p className="text-[10px] text-amber-600">Choose a range of 100 years or less.</p>}
       {days <= 0 && <p className="text-[10px] text-amber-600">The end date must be after the start date.</p>}
