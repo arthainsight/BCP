@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.26',
+    date: '2026-10-20',
+    title: 'Research gets its own workspace',
+    changes: [
+      'Move Research from ANALYSIS into a dedicated, full-width LIBRARY workspace; existing research calculations and tools remain unchanged.',
+      'Relabel the top-level PALM workspace as LIFE while keeping the existing palm workspace and its tools intact.',
+      'Updated the application version to v3.26.',
+    ],
+  },
+  {
     version: 'v3.25',
     date: '2026-10-20',
     title: 'Research: Nadi relationships for each saved event',
