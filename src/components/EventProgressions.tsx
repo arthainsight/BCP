@@ -76,7 +76,7 @@ export default function EventProgressions({ date, chart, birthDatetime, calculat
               <p className="text-[10px] italic text-zinc-400">{t('No 1, 5, 7 or 9 relationships between progressing grahas.')}</p>
             ) : (
               <ul className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                {relationships.map((relationship, index) => (
+                {relationships.map(relationship => (
                   <li key={`${relationship.from}|${relationship.relation}|${relationship.to}`} data-progressed-relation={`${relationship.from}|${relationship.relation}|${relationship.to}`} className={`flex flex-wrap items-baseline gap-x-2 py-1 text-[11px] font-mono ${relationship.exact ? 'font-bold text-emerald-700 dark:text-green-400' : 'text-zinc-600 dark:text-zinc-300'}`}>
                     <span>{code(relationship.from)}</span>
                     <span>{relationship.relation} →</span>
