@@ -543,11 +543,11 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'How do I add a palm photograph?', fi: 'Miten lisään kuvan kämmenestä?' },
     a: {
       en: [
-        'Open PALM and press Upload photos, or drop a picture on the page. On a phone, Take a photo opens the camera. Give the photograph a name and say whether it is the right or the left hand. A photograph is deleted with the 🗑 button, after a confirmation.',
+        'Open LIFE and press Upload photos, or drop a picture on the page. On a phone, Take a photo opens the camera. Give the photograph a name and say whether it is the right or the left hand. A photograph is deleted with the 🗑 button, after a confirmation.',
         'The photographs stay on your device, in the browser; nothing is sent anywhere. Clearing the browser data deletes them, so keep a backup (see below) or a copy as a picture.',
       ],
       fi: [
-        'Avaa KÄMMEN ja paina Lataa kuvia tai pudota kuva sivulle. Puhelimessa Ota kuva avaa kameran. Anna kuvalle nimi ja kerro, onko se oikea vai vasen käsi. Kuva poistetaan 🗑-painikkeella vahvistuksen jälkeen.',
+        'Avaa ELÄMÄ-työtila ja paina Lataa kuvia tai pudota kuva sivulle. Puhelimessa Ota kuva avaa kameran. Anna kuvalle nimi ja kerro, onko se oikea vai vasen käsi. Kuva poistetaan 🗑-painikkeella vahvistuksen jälkeen.',
         'Kuvat pysyvät laitteellasi, selaimessa; mitään ei lähetetä minnekään. Selaimen tietojen tyhjennys poistaa ne, joten säilytä varmuuskopio (katso alla) tai kopio kuvana.',
       ],
     },
@@ -595,7 +595,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'How do I compare two hands?', fi: 'Miten vertaan kahta kättä?' },
     a: {
       en: [
-        'With two or more photographs in PALM, the Compare button shows two of them side by side, with their drawings. The open photograph is on the left and, if you have said which hand each one is, the other hand on the right; either side can be changed from its list.',
+        'With two or more photographs in LIFE, the Compare button shows two of them side by side, with their drawings. The open photograph is on the left and, if you have said which hand each one is, the other hand on the right; either side can be changed from its list.',
         'The zoom and the place are shared: zoom or move one photograph and the other goes to the same place at the same zoom, even when the two photographs are different shapes. Fit to window on either one fits both. Untick link the zoom to move them separately.',
       ],
       fi: [
@@ -609,7 +609,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
   {
     id: 'split',
     section: 'workspace',
-    q: { en: 'How do I see CHART, TIMING, ANALYSIS and PALM at the same time?', fi: 'Miten näen KARTAN, AJANKOHDAN, ANALYYSIN ja KÄMMENEN yhtä aikaa?' },
+    q: { en: 'How do I see CHART, TIMING, ANALYSIS and LIFE at the same time?', fi: 'Miten näen KARTAN, AJANKOHDAN, ANALYYSIN ja ELÄMÄ-työtilan yhtä aikaa?' },
     a: {
       en: [
         'Press ⊞ split beside the workspaces. The workspaces become switches, and every one that is on is shown side by side. With more than two panes you can choose one row or two rows, or leave it to the screen. On a phone the panes are stacked one under the other. Settings stays a screen of its own.',
@@ -627,10 +627,10 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'What does the full button do?', fi: 'Mitä full-painike tekee?' },
     a: {
       en: [
-        'TIMING, ANALYSIS and PALM each have a ⤢ full button. It gives the workspace the whole width of a wide screen and the chart steps aside; ⤡ narrow brings the chart back. Each workspace remembers its own choice.',
+        'TIMING, ANALYSIS and LIFE each have a ⤢ full button. It gives the workspace the whole width of a wide screen and the chart steps aside; ⤡ narrow brings the chart back. Each workspace remembers its own choice.',
       ],
       fi: [
-        'AJANKOHDALLA, ANALYYSILLA ja KÄMMENELLÄ on kullakin ⤢ full -painike. Se antaa työtilalle leveän näytön koko leveyden ja kartta väistyy; ⤡ narrow tuo kartan takaisin. Jokainen työtila muistaa oman valintansa.',
+        'AJANKOHDALLA, ANALYYSILLA ja ELÄMÄ-työtilalla on kullakin ⤢ full -painike. Se antaa työtilalle leveän näytön koko leveyden ja kartta väistyy; ⤡ narrow tuo kartan takaisin. Jokainen työtila muistaa oman valintansa.',
       ],
     },
   },
