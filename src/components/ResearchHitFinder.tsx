@@ -128,7 +128,7 @@ export default function ResearchHitFinder({ sources, initialSelected, calculatio
     }
     return [...counts.entries()].map(([key, count]) => ({ category: key.split('|')[0], name: key.slice(key.indexOf('|') + 1), count }))
       .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  }, [rows, eventCategory, eventWindow]);
+  }, [matchingRows]);
 
   const selectClass = 'block w-full rounded-md border border-zinc-200 bg-white px-2 py-2 text-xs text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200';
   const labelClass = 'space-y-1 text-[10px] font-mono text-zinc-500';
