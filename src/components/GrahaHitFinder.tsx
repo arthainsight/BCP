@@ -11,7 +11,6 @@ import { transitSeriesUrl } from '@/lib/apiParams';
 import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { pad2 } from '@/lib/dateFormat';
-import { JULIAN_YEAR_MS } from '@/lib/time';
 
 type Props = {
   chart: ChartData;
@@ -50,7 +49,7 @@ export default function GrahaHitFinder({ chart, birthDatetime, calculationSettin
   const isTransit = source !== 'paraya';
   const availableRelations = source === 'both'
     ? [...new Set([...PROGRESSION_RELATIONS, ...transitRelationsOf(body)])]
-    : [...selectedRelations];
+    : source === 'paraya' ? [...PROGRESSION_RELATIONS] : [...transitRelationsOf(body)];
 
   const transitUrl = searched && isTransit && from && to && days > 0 && days <= 36525
     ? transitSeriesUrl(fromDate, days, [body], calculationSettings, days > 3650 ? 3 : undefined)
@@ -133,7 +132,7 @@ export default function GrahaHitFinder({ chart, birthDatetime, calculationSettin
         </div>
       </div>
       <div className="space-y-2">
-        <p className="text-[10px] font-mono text-zinc-500">Relationship (progression uses 1/5/7/9 from natal; transit uses the graha's own aspects)</p>
+        <p className="text-[10px] font-mono text-zinc-500">Relationship (progression uses 1/5/7/9 from natal; transit uses the graha&apos;s own aspects)</p>
         <div className="flex flex-wrap gap-1">
           {availableRelations.map(relation => (
             <button key={relation} type="button" aria-pressed={relations.includes(relation)} onClick={() => toggleRelation(relation)} className={`rounded-md border px-2.5 py-1.5 text-[10px] font-mono ${relations.includes(relation) ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-zinc-200 text-zinc-500 dark:border-zinc-700'}`}>
