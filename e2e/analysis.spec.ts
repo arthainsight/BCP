@@ -879,15 +879,14 @@ async function seedResearch(page: Page) {
   });
 }
 
-test('ANALYSIS Research compares the progressions at events across saved charts, against chance', async ({ page }) => {
+test('LIBRARY Research compares the progressions at events across saved charts, against chance', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
 
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await expect(panel).toBeVisible();
 
@@ -955,21 +954,19 @@ test('ANALYSIS Research compares the progressions at events across saved charts,
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research says so when there are no saved charts', async ({ page }) => {
+test('LIBRARY Research says so when there are no saved charts', async ({ page }) => {
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   await expect(visible(page, page.locator('[data-research-empty]'))).toBeVisible();
 });
 
-test('ANALYSIS Research: a window, a feature chosen beforehand and without each chart in turn, and the CSV files', async ({ page }) => {
+test('LIBRARY Research: a window, a feature chosen beforehand and without each chart in turn, and the CSV files', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
 
@@ -1021,14 +1018,13 @@ test('ANALYSIS Research: a window, a feature chosen beforehand and without each 
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research compares two kinds of event side by side', async ({ page }) => {
+test('LIBRARY Research compares two kinds of event side by side', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: 'two kinds of event', exact: true }).click();
 
@@ -1074,14 +1070,13 @@ test('ANALYSIS Research compares two kinds of event side by side', async ({ page
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research reads the transits and the daśā of the events too', async ({ page }) => {
+test('LIBRARY Research reads the transits and the daśā of the events too', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
 
@@ -1150,14 +1145,13 @@ test('ANALYSIS Research reads the transits and the daśā of the events too', as
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research reads the transits over a window, with exact hits', async ({ page }) => {
+test('LIBRARY Research reads the transits over a window, with exact hits', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
   await panel.getByRole('group', { name: 'window around an event' }).getByRole('button', { name: '±180 days', exact: true }).click();
@@ -1179,7 +1173,7 @@ test('ANALYSIS Research reads the transits over a window, with exact hits', asyn
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research picks events by words in the name, the tags or the notes, and lists the ones chosen', async ({ page }) => {
+test('LIBRARY Research picks events by words in the name, the tags or the notes, and lists the ones chosen', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -1205,8 +1199,7 @@ test('ANALYSIS Research picks events by words in the name, the tags or the notes
     },
   });
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await expect(panel.locator('[data-research-selection]')).toContainText('8 events · 2 charts');
 
@@ -1245,14 +1238,13 @@ test('ANALYSIS Research picks events by words in the name, the tags or the notes
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research can read each event over a window that follows the accuracy of its date', async ({ page }) => {
+test('LIBRARY Research can read each event over a window that follows the accuracy of its date', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
 
@@ -1267,14 +1259,13 @@ test('ANALYSIS Research can read each event over a window that follows the accur
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research finds features in one part of the data and tests them in another', async ({ page }) => {
+test('LIBRARY Research finds features in one part of the data and tests them in another', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: 'training and test', exact: true }).click();
   const split = panel.getByRole('group', { name: 'the split into training and test' });
@@ -1312,14 +1303,13 @@ test('ANALYSIS Research finds features in one part of the data and tests them in
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research compares the eight settings of the Paraya progressions', async ({ page }) => {
+test('LIBRARY Research compares the eight settings of the Paraya progressions', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
   await panel.getByRole('button', { name: 'the Paraya settings', exact: true }).click();
@@ -1342,14 +1332,13 @@ test('ANALYSIS Research compares the eight settings of the Paraya progressions',
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research reads the gochara: houses from the Moon, the rules of Saturn, and a feature chosen beforehand', async ({ page }) => {
+test('LIBRARY Research reads the gochara: houses from the Moon, the rules of Saturn, and a feature chosen beforehand', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
   await panel.getByRole('group', { name: 'window around an event' }).getByRole('button', { name: '±90 days', exact: true }).click();
@@ -1401,14 +1390,13 @@ async function seedResearchThree(page: Page) {
   });
 }
 
-test('ANALYSIS Research puts two kinds of feature together and compares each combination with its parts', async ({ page }) => {
+test('LIBRARY Research puts two kinds of feature together and compares each combination with its parts', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
   await panel.getByRole('button', { name: 'combinations', exact: true }).click();
@@ -1443,14 +1431,13 @@ test('ANALYSIS Research puts two kinds of feature together and compares each com
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research builds a joint model on one part of the data and tries it on the other', async ({ page }) => {
+test('LIBRARY Research builds a joint model on one part of the data and tries it on the other', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: 'joint model', exact: true }).click();
   const split = panel.getByRole('group', { name: 'the split into training and test' });
@@ -1475,27 +1462,25 @@ test('ANALYSIS Research builds a joint model on one part of the data and tries i
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research can take the other charts at the same moment as the chance level', async ({ page }) => {
+test('LIBRARY Research can take the other charts at the same moment as the chance level', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   // With two charts there is too little to compare with.
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const small = visible(page, page.getByRole('region', { name: 'research' }));
   await expect(small.getByRole('button', { name: 'the other charts at the same moment', exact: true })).toBeDisabled();
 });
 
-test('ANALYSIS Research compares with the other charts at the same moment, with three charts', async ({ page }) => {
+test('LIBRARY Research compares with the other charts at the same moment, with three charts', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearchThree(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 9$/ }).click();
   const others = panel.getByRole('button', { name: 'the other charts at the same moment', exact: true });
@@ -1514,14 +1499,13 @@ test('ANALYSIS Research compares with the other charts at the same moment, with 
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research shows when a feature is there around the events, month by month', async ({ page }) => {
+test('LIBRARY Research shows when a feature is there around the events, month by month', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
   await panel.getByRole('checkbox', { name: 'Test one feature chosen beforehand' }).check();
@@ -1544,14 +1528,13 @@ test('ANALYSIS Research shows when a feature is there around the events, month b
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research keeps runs by name and sets two side by side', async ({ page }) => {
+test('LIBRARY Research keeps runs by name and sets two side by side', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
   await panel.getByRole('button', { name: 'Run the comparison' }).click();
@@ -1591,14 +1574,13 @@ test('ANALYSIS Research keeps runs by name and sets two side by side', async ({ 
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Research saves the findings as a report page', async ({ page }) => {
+test('LIBRARY Research saves the findings as a report page', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await seedResearch(page);
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const panel = visible(page, page.getByRole('region', { name: 'research' }));
   await expect(panel.getByRole('button', { name: 'Save the report (HTML)' })).toHaveCount(0);
   await panel.getByRole('button', { name: /^Home \/ move 8$/ }).click();
