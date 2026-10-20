@@ -1578,6 +1578,11 @@ export const FI: Record<string, string> = {
   'life events': 'elämäntapahtumat',
   'Graha Hit Finder': 'Graha Hit Finder',
 
+  'Progressed graha relationships': 'Progressioiden grahojen väliset suhteet',
+  'No 1, 5, 7 or 9 relationships between progressing grahas.': 'Progressioiden grahojen välillä ei ole 1., 5., 7. tai 9. suhdetta.',
+  'Relationship is counted from the first progressing graha by sign. ● = within 1° by degree.': 'Suhde lasketaan ensimmäisestä progressiograhasta merkkien mukaan. ● = astelukujen ero enintään 1°.',
+  'Exact degree proximity': 'Asteluvut ovat lähellä toisiaan',
+
 };
 
 /** Translates English interface text; anything without a Finnish entry stays in English. */
