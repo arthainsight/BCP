@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.25',
+    date: '2026-10-20',
+    title: 'Research: Nadi relationships for each saved event',
+    changes: [
+      'Research: add an event-by-event view of directed 1st, 5th, 7th and 9th sign relationships among progressing grahas across selected saved charts.',
+      'Show each relationship and the within-sign degree difference; highlight relationships within 1° and let the researcher choose charts and progressing grahas.',
+      'Reuse the Event List progression calculation and each saved chart’s Paraya settings.',
+      'Updated the application version to v3.25.',
+    ],
+  },
+  {
     version: 'v3.24',
     date: '2026-10-20',
     title: 'Event Nadi relationships among progressing grahas',
