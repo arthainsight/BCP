@@ -19,6 +19,29 @@ test('the primary navigation exposes CHART / TIMING / ANALYSIS / LIFE / LIBRARY 
   expect(errors).toEqual([]);
 });
 
+
+test('phone: primary navigation labels stay separate and the navigation can scroll', async ({ page }, info) => {
+  test.skip(info.project.name !== 'phone', 'the phone navigation layout');
+  await page.goto('/');
+  const nav = visible(page, page.getByRole('navigation', { name: 'Primary' }));
+  const items = nav.locator('[data-primary-nav-items]');
+  await expect(items).toBeVisible();
+  const buttons = items.getByRole('button').locator('visible=true');
+  const count = await buttons.count();
+  expect(count).toBeGreaterThanOrEqual(6);
+  const boxes = await buttons.evaluateAll(nodes => nodes.map(node => {
+    const rect = node.getBoundingClientRect();
+    return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
+  }));
+  for (let i = 1; i < boxes.length; i++) {
+    expect(boxes[i].left).toBeGreaterThanOrEqual(boxes[i - 1].right - 1);
+    expect(Math.abs(boxes[i].top - boxes[i - 1].top)).toBeLessThan(2);
+  }
+  const sizes = await items.evaluate(node => ({ clientWidth: node.clientWidth, scrollWidth: node.scrollWidth }));
+  expect(sizes.scrollWidth).toBeGreaterThanOrEqual(sizes.clientWidth);
+  await expect(items.getByRole('button', { name: '⚙', exact: true })).toBeAttached();
+});
+
 test('ANALYSIS and TIMING tools are grouped by purpose without hiding individual tools', async ({ page }) => {
   await calculateChart(page);
   await selectWorkspace(page, 'ANALYSIS');
