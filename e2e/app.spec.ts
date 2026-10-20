@@ -198,7 +198,7 @@ test('the user guide has sections, a search, addresses for the answers and both 
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
   // Every section is there, with its questions.
-  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(9);
+  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(10);
   await expect(page.getByRole('heading', { level: 3, name: 'How do I calculate a chart?' })).toBeVisible();
 
   // The search narrows the answers, ignores diacritics and says so when nothing is found.
