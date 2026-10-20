@@ -34,6 +34,7 @@ import { parseClock } from '@/lib/specialSphutas';
 // The panels that are not on the first screen load when they are opened, which keeps the first load small.
 // The calculation panels render on the server as well, so the first paint of each is the same as before.
 const SettingsPanel = dynamic(() => import('@/components/SettingsPanel'));
+const LibraryPanel = dynamic(() => import('@/components/LibraryPanel'));
 const AnalysisPanel = dynamic(() => import('@/components/AnalysisPanel'));
 const TimingPanel = dynamic(() => import('@/components/TimingPanel'));
 const PanchangPanel = dynamic(() => import('@/components/PanchangPanel'));
@@ -42,9 +43,9 @@ const PalmWorkspace = dynamic(() => import('@/components/palm/PalmWorkspace'), {
 const ClientReport = dynamic(() => import('@/components/ClientReport'), { ssr: false });
 
 
-type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'settings';
+type DesktopTab = 'data' | 'grahas' | 'dasha' | 'palm' | 'library' | 'settings';
 /** The screens of the phone: the birth data and the chart are two of them. */
-type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'palm' | 'settings';
+type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'palm' | 'library' | 'settings';
 
 type CalculationOptions = {
   preserveCurrentPanel?: boolean;
@@ -52,20 +53,21 @@ type CalculationOptions = {
 
 // The primary workspaces (and Settings) and the screens that show them. The wide layout always shows the chart on the
 // left, so there CHART is the birth-data panel on the right; a phone shows one screen at a time, and CHART is the chart.
-const WORKSPACE_TO_DESKTOP: Record<Workspace, DesktopTab> = { chart: 'data', timing: 'dasha', analysis: 'grahas', palm: 'palm', settings: 'settings' };
-const WORKSPACE_TO_MOBILE: Record<Workspace, TabId> = { chart: 'chart', timing: 'dasha', analysis: 'grahas', palm: 'palm', settings: 'settings' };
+const WORKSPACE_TO_DESKTOP: Record<Workspace, DesktopTab> = { chart: 'data', timing: 'dasha', analysis: 'grahas', palm: 'palm', library: 'library', settings: 'settings' };
+const WORKSPACE_TO_MOBILE: Record<Workspace, TabId> = { chart: 'chart', timing: 'dasha', analysis: 'grahas', palm: 'palm', library: 'library', settings: 'settings' };
 /** The workspace a screen belongs to: the birth data and the chart both belong to CHART. */
 function tabToWorkspace(tab: TabId): Workspace {
   switch (tab) {
     case 'dasha': return 'timing';
     case 'grahas': return 'analysis';
     case 'palm': return 'palm';
+    case 'library': return 'library';
     case 'settings': return 'settings';
     default: return 'chart';
   }
 }
 
-const PANE_LABELS: Record<SplitWorkspace, string> = { chart: 'CHART', timing: 'TIMING', analysis: 'ANALYSIS', palm: 'PALM' };
+const PANE_LABELS: Record<SplitWorkspace, string> = { chart: 'CHART', timing: 'TIMING', analysis: 'ANALYSIS', palm: 'LIFE' };
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('data');
@@ -85,8 +87,8 @@ export default function Home() {
   // Split view: several workspaces at once, each switched on and off in the nav. Wide screens put the
   // panes side by side, a phone stacks them; each layout leaves it for Settings on its own.
   const split = useSplitView();
-  const splitActive = split.on && desktopTab !== 'settings';
-  const mobileSplitActive = split.on && activeTab !== 'settings';
+  const splitActive = split.on && desktopTab !== 'settings' && desktopTab !== 'library';
+  const mobileSplitActive = split.on && activeTab !== 'settings' && activeTab !== 'library';
   const navigate = useCallback((ws: Workspace, settingsOpen: boolean) => {
     if (!split.on || !isSplitWorkspace(ws)) {
       selectWorkspace(ws);
@@ -601,8 +603,9 @@ export default function Home() {
   const fullTiming = timingFull && desktopTab === 'dasha';
   const fullAnalysis = analysisFull && desktopTab === 'grahas';
   const fullPalm = palmFull && desktopTab === 'palm';
+  const fullLibrary = desktopTab === 'library';
   // The chart column is left out when a panel takes the whole width.
-  const fullWidth = fullTiming || fullAnalysis || fullPalm;
+  const fullWidth = fullTiming || fullAnalysis || fullPalm || fullLibrary;
 
   // The workspace panels of the wide layouts: the one-at-a-time desktop layout and the split view.
   const analysisPanel = (fullControl?: { wide: boolean; onToggleWide: () => void }) => (
@@ -717,6 +720,7 @@ export default function Home() {
               {desktopTab === 'grahas' && analysisPanel({ wide: fullAnalysis, onToggleWide: toggleAnalysisFull })}
               {desktopTab === 'dasha' && timingPanel({ wide: fullTiming, onToggleWide: toggleTimingFull })}
               {desktopTab === 'palm' && <PalmWorkspace wide={fullPalm} onToggleWide={togglePalmFull} />}
+              {desktopTab === 'library' && <LibraryPanel calculationSettings={calculationSettings} />}
               {desktopTab === 'settings' && <SettingsPanel {...settingsProps} />}
             </Panel>
           </div>
@@ -778,6 +782,10 @@ export default function Home() {
 
             {activeTab === 'palm' && (
               <Panel><PalmWorkspace /></Panel>
+            )}
+
+            {activeTab === 'library' && (
+              <Panel><LibraryPanel calculationSettings={calculationSettings} /></Panel>
             )}
 
             {activeTab === 'settings' && (
