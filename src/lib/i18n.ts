@@ -1580,7 +1580,6 @@ export const FI: Record<string, string> = {
   'Event Nadi relationships': 'Tapahtumien Nadi-suhteet',
   'See the 1st, 5th, 7th and 9th sign relationships among progressing grahas for saved events across selected charts. Degree differences of 1° or less are highlighted.': 'Näytä etenevien grahojen 1., 5., 7. ja 9. merkkisuhteet tallennettujen tapahtumien kohdalla valituissa kartoissa. Enintään 1°:n astelerot korostetaan.',
   'Calculate event relationships': 'Laske tapahtumien suhteet',
-  'Calculating…': 'Lasketaan…',
   'events analysed': 'tapahtumaa analysoitu',
   'Date unavailable': 'Päivämäärä ei ole käytettävissä',
   'Chart data unavailable': 'Kartan tietoja ei ole käytettävissä',
