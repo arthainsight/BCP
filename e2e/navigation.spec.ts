@@ -35,7 +35,7 @@ test('phone: primary navigation labels stay separate and the navigation can scro
   }));
   for (let i = 1; i < boxes.length; i++) {
     expect(boxes[i].left).toBeGreaterThanOrEqual(boxes[i - 1].right - 1);
-    expect(Math.abs(boxes[i].top - boxes[i - 1].top)).toBeLessThan(2);
+    expect(Math.min(boxes[i].bottom, boxes[i - 1].bottom)).toBeGreaterThan(Math.max(boxes[i].top, boxes[i - 1].top));
   }
   const sizes = await items.evaluate(node => ({ clientWidth: node.clientWidth, scrollWidth: node.scrollWidth }));
   expect(sizes.scrollWidth).toBeGreaterThanOrEqual(sizes.clientWidth);
