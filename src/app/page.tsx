@@ -110,7 +110,7 @@ export default function Home() {
     // The workspace on screen stays on when the split view opens; from Settings it opens on the panes.
     const panes = isSplitWorkspace(current) && !split.panes.includes(current) ? togglePane(split.panes, current) : split.panes;
     setSplitView({ on: true, panes });
-    if (current === 'settings') selectWorkspace(panes[0]);
+    if (!isSplitWorkspace(current)) selectWorkspace(panes[0]);
   }, [split, selectWorkspace]);
   // The Event List opens the Matrix of ANALYSIS: ANALYSIS is shown (or added to the split view) and told what to show.
   const [analysisRequest, setAnalysisRequest] = useState<AnalysisRequest | null>(null);
