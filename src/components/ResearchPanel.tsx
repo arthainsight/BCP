@@ -342,10 +342,24 @@ export default function ResearchPanel({ calculationSettings }: Props) {
       </Heading>
 
       {sources.length === 0 ? (
-        <p className="text-[10px] font-mono text-zinc-400" data-research-empty>{t('No saved charts yet. Save a chart with SAVE and add its events in TIMING → Dasha → Events.')}</p>
+        <>
+          <section className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-research-step="data" aria-labelledby="research-step-data">
+            <h2 id="research-step-data" className="text-xs font-semibold tracking-wide text-zinc-700 dark:text-zinc-200">{t('1. Choose your data')}</h2>
+            <p className="text-[10px] font-mono text-zinc-400" data-research-empty>{t('No saved charts yet. Save a chart with SAVE and add its events in TIMING → Dasha → Events.')}</p>
+          </section>
+          <section className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-research-step="design" aria-labelledby="research-step-design">
+            <h2 id="research-step-design" className="text-xs font-semibold tracking-wide text-zinc-700 dark:text-zinc-200">{t('2. Design and run the study')}</h2>
+            <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">{t('Save a chart and add at least one life event to unlock the research settings.')}</p>
+          </section>
+        </>
       ) : (
         <>
-          <div className="space-y-1">
+          <section className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-research-step="data" aria-labelledby="research-step-data">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-zinc-100 pb-2 dark:border-zinc-800">
+              <h2 id="research-step-data" className="text-xs font-semibold tracking-wide text-zinc-700 dark:text-zinc-200">{t('1. Choose your data')}</h2>
+              <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">{chosen.length} {t('charts selected')} · {chosen.reduce((sum, source) => sum + source.events.length, 0)} {t('events available')}</span>
+            </div>
+            <div className="space-y-1">
             <div className="flex flex-wrap items-center gap-1">
               <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('charts')}</span>
               <button type="button" onClick={() => setSelected(new Set(sources.filter(source => source.events.length > 0).map(source => source.id)))} className={chip(false)}>{t('all with events')}</button>
@@ -371,6 +385,10 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             </div>
           </div>
 
+          </section>
+
+          <section className="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-research-step="design" aria-labelledby="research-step-design">
+          <h2 id="research-step-design" className="border-b border-zinc-100 pb-2 text-xs font-semibold tracking-wide text-zinc-700 dark:border-zinc-800 dark:text-zinc-200">{t('2. Design and run the study')}</h2>
           <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('kind of comparison')}>
             <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('compare')}</span>
             <button type="button" aria-pressed={mode === 'chance'} onClick={() => { setMode('chance'); setRun({ status: 'idle' }); }} className={chip(mode === 'chance')}>{t('with chance')}</button>
@@ -520,9 +538,12 @@ export default function ResearchPanel({ calculationSettings }: Props) {
             {run.status === 'error' && <span className="text-[10px] font-mono text-rose-600 dark:text-rose-400" role="alert">{t('Could not calculate:')} {run.message}</span>}
           </div>
           {grouped && counts.a > 0 && counts.b === 0 && <p className="text-[10px] font-mono text-zinc-400">{t('The second group has no events of its own: choose a kind of event that differs from the first.')}</p>}
+          </section>
         </>
       )}
 
+      <section className="space-y-3" data-research-step="results" aria-labelledby="research-step-results">
+        <h2 id="research-step-results" className="border-b border-zinc-200 pb-2 text-xs font-semibold tracking-wide text-zinc-700 dark:border-zinc-800 dark:text-zinc-200">{t('3. Review results')}</h2>
       {run.status === 'chance' && <ResearchResults key={runs} outcome={run.outcome} />}
       {run.status === 'chance' && <ResearchRuns key={`runs-${runs}`} current={run.outcome} settings={run.outcome.runSettings} />}
       {run.status === 'idle' && mode === 'chance' && <ResearchRuns current={null} settings={null} />}
@@ -537,6 +558,7 @@ export default function ResearchPanel({ calculationSettings }: Props) {
           <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('One page with the data, the method, the strongest results and the cautions; open it in a browser to print it or save it as a PDF.')}</span>
         </div>
       )}
+      </section>
     </section>
   );
 }
