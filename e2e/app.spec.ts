@@ -198,7 +198,7 @@ test('the user guide has sections, a search, addresses for the answers and both 
   await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
   // Every section is there, with its questions.
-  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(9);
+  await expect(page.getByRole('heading', { level: 2 })).toHaveCount(10);
   await expect(page.getByRole('heading', { level: 3, name: 'How do I calculate a chart?' })).toBeVisible();
 
   // The search narrows the answers, ignores diacritics and says so when nothing is found.
@@ -262,7 +262,7 @@ test('the backup keeps the palm photographs with their drawings and puts them ba
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'safe.png', mimeType: 'image/png', buffer: makePng(600, 800) });
   const canvas = visible(page, page.locator('[data-palm="canvas"]'));
   await expect(canvas).toBeVisible();
@@ -295,7 +295,7 @@ test('the backup keeps the palm photographs with their drawings and puts them ba
   expect(JSON.parse(readFileSync(await (await lighter).path(), 'utf8')).palms).toBeUndefined();
 
   // Delete the photograph, then restore the backup: it is back, drawing and all.
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   await visible(page, page.getByRole('button', { name: 'Delete photograph' })).click();
   await visible(page, page.getByRole('button', { name: 'Delete this photograph?' })).click();
   await expect(visible(page, page.getByText('Upload or drop a photograph of a palm to begin.'))).toBeVisible();
@@ -304,7 +304,7 @@ test('the backup keeps the palm photographs with their drawings and puts them ba
   await expect(visible(page, page.getByText('The palm photographs on this device are replaced too.'))).toBeVisible();
   await visible(page, page.getByRole('button', { name: 'Replace and restore', exact: true })).click();
   await page.waitForLoadState('load');
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   const again = visible(page, page.locator('[data-palm="canvas"]'));
   await expect(again).toBeVisible({ timeout: 15_000 });
   await expect(again.locator('g[data-kind="pen"]')).toHaveCount(1);
@@ -351,7 +351,7 @@ test('REPORT puts the chart, the timing summary and the palm photographs on page
   await calculateChart(page);
 
   // A palm photograph with one numbered note.
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'maria.png', mimeType: 'image/png', buffer: makePng(600, 800) });
   const canvas = visible(page, page.locator('[data-palm="canvas"]'));
   await expect(canvas).toBeVisible();

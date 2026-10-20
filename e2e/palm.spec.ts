@@ -10,7 +10,7 @@ test('PALM: the chart stays beside the palm on a wide screen, and the stroke wid
 
   await calculateChart(page);
   const chartSvg = () => page.locator('svg[aria-label="North Indian Jyotish chart"]').locator('visible=true');
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   await expect(visible(page, page.locator('[data-palm="workspace"]'))).toBeVisible();
 
   // On a wide screen the chart is still there beside the palm; the wide button hides it and brings it back.
@@ -21,11 +21,11 @@ test('PALM: the chart stays beside the palm on a wide screen, and the stroke wid
     await expect(chartSvg()).toHaveCount(0);
     await expect(visible(page, page.locator('[data-palm="workspace"]'))).toBeVisible();
     await page.reload();
-    await selectWorkspace(page, 'PALM');
+    await selectWorkspace(page, 'LIFE');
     await expect(visible(page, page.getByRole('button', { name: '⤡ narrow', exact: true }))).toBeVisible();
     await visible(page, page.getByRole('button', { name: '⤡ narrow', exact: true })).click();
     await calculateChart(page);
-    await selectWorkspace(page, 'PALM');
+    await selectWorkspace(page, 'LIFE');
     await expect(chartSvg()).toHaveCount(1);
   }
 
@@ -79,7 +79,7 @@ test('PALM: upload a palm photograph, draw on it, number the notes, show it to t
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   await expect(visible(page, page.getByText('Upload or drop a photograph of a palm to begin.'))).toBeVisible();
 
   // Upload a photograph: it opens in the editor with an empty drawing.
@@ -143,7 +143,7 @@ test('PALM: upload a palm photograph, draw on it, number the notes, show it to t
   // Everything is kept on this device: after a reload the photograph and its drawing are back.
   await page.waitForTimeout(600);
   await page.reload();
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   const again = visible(page, page.locator('[data-palm="canvas"]'));
   await expect(again).toBeVisible();
   await expect(again.locator('g[data-kind="pen"]')).toHaveCount(1);
@@ -191,7 +191,7 @@ test('PALM: a ruler that finds the middle, a circle that stays round, an eraser 
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'tools.png', mimeType: 'image/png', buffer: makePng(600, 800) });
   const canvas = visible(page, page.locator('[data-palm="canvas"]'));
   await expect(canvas).toBeVisible();
@@ -333,7 +333,7 @@ test('PALM: a ruler that finds the middle, a circle that stays round, an eraser 
   // The ruler and the circle are kept, and are in the saved picture.
   await page.waitForTimeout(600);
   await page.reload();
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   const again = visible(page, page.locator('[data-palm="canvas"]'));
   await expect(again).toBeVisible();
   await expect(again.locator('g[data-kind="ruler"]')).toHaveCount(1);
@@ -352,7 +352,7 @@ test('PALM: a ruler gives the photograph a scale in centimetres, and ages are ma
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   await visible(page, page.getByLabel('Upload palm photographs')).setInputFiles({ name: 'ages.png', mimeType: 'image/png', buffer: makePng(600, 800) });
   const canvas = visible(page, page.locator('[data-palm="canvas"]'));
   await expect(canvas).toBeVisible();
@@ -412,7 +412,7 @@ test('PALM: a ruler gives the photograph a scale in centimetres, and ages are ma
   // Both are kept, and are in the saved picture.
   await page.waitForTimeout(600);
   await page.reload();
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   const again = visible(page, page.locator('[data-palm="canvas"]'));
   await expect(again).toBeVisible();
   await expect(again.locator('[data-age]')).toHaveCount(3);
@@ -434,7 +434,7 @@ test('PALM: two photographs side by side, with the zoom shared', async ({ page }
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   const upload = visible(page, page.getByLabel('Upload palm photographs'));
   await upload.setInputFiles({ name: 'one.png', mimeType: 'image/png', buffer: makePng(600, 800) });
   await expect(visible(page, page.locator('[data-palm="canvas"]'))).toBeVisible();

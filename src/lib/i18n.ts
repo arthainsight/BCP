@@ -18,6 +18,8 @@ export const FI: Record<string, string> = {
   'CHART': 'KARTTA',
   'TIMING': 'AJANKOHTA',
   'ANALYSIS': 'ANALYYSI',
+  'LIFE': 'ELÄMÄ',
+  'LIBRARY': 'KIRJASTO',
   'Chart': 'Kartta',
   'Data': 'Tiedot',
   'Grahas': 'Grahat',
@@ -198,6 +200,7 @@ export const FI: Record<string, string> = {
   'event progressions': 'tapahtuman progressiot',
   // Research
   'Research': 'Tutkimus',
+  'Study recurring patterns across saved charts and life events.': 'Tutki toistuvia kuvioita tallennetuista kartoista ja elämäntapahtumista.',
   'research': 'tutkimus',
   'Do the progressions (Paraya) have something in common at the time of the same kind of event, across your saved charts? Each event is read for the houses and aspects of the progressing grahas and set against the same chart at random moments of its life.': 'Onko progressioilla (Paraya) jotain yhteistä samanlaisten tapahtumien aikana tallennettujen karttojesi yli? Jokaisen tapahtuman etenevien grahojen talot ja aspektit luetaan ja verrataan samaan karttaan satunnaisina hetkinä sen elämän aikana.',
   'No saved charts yet. Save a chart with SAVE and add its events in TIMING → Dasha → Events.': 'Tallennettuja karttoja ei ole vielä. Tallenna kartta SAVE-painikkeella ja lisää sen tapahtumat kohdassa AJANKOHTA → Dasha → Events.',

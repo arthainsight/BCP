@@ -2,20 +2,20 @@
 
 import { Fragment } from 'react';
 import { useT } from '@/lib/i18n';
-import { SPLIT_ROWS, type SplitRows } from '@/lib/splitView';
+import { SPLIT_ROWS, SPLIT_WORKSPACES, type SplitRows } from '@/lib/splitView';
 
-// The primary workspaces plus the global Settings gear. This is the single
-// top-level navigation: CHART / TIMING / ANALYSIS / PALM, with Settings kept
-// apart as a separate global control (not a workspace).
-export type Workspace = 'chart' | 'timing' | 'analysis' | 'palm' | 'settings';
+// The primary workspaces plus the global Settings gear. Research lives in LIBRARY,
+// while LIFE keeps the existing palm workspace under a broader workspace label.
+export type Workspace = 'chart' | 'timing' | 'analysis' | 'palm' | 'library' | 'settings';
 
 type Item = { id: Workspace; label: string; gear?: boolean };
 
 const ITEMS: Item[] = [
   { id: 'chart', label: 'CHART' },
-  { id: 'timing', label: 'TIMING' },
+  { id: 'palm', label: 'LIFE' },
   { id: 'analysis', label: 'ANALYSIS' },
-  { id: 'palm', label: 'PALM' },
+  { id: 'timing', label: 'TIMING' },
+  { id: 'library', label: 'LIBRARY' },
   { id: 'settings', label: '⚙', gear: true },
 ];
 
@@ -52,7 +52,7 @@ export default function PrimaryNav({ active, onChange, show, split }: Props) {
       <div className="flex items-center gap-1 px-4 py-2">
         {ITEMS.map((item) => {
           // In the split view the workspaces are on or off together; Settings is one screen, so it is "current".
-          const asSwitch = split?.on === true && !item.gear;
+          const asSwitch = split?.on === true && !item.gear && SPLIT_WORKSPACES.includes(item.id as (typeof SPLIT_WORKSPACES)[number]);
           const selected = asSwitch ? active !== 'settings' && split.panes.includes(item.id) : active === item.id;
           const toggle = split && item.gear ? (
             <button
