@@ -12,9 +12,9 @@ type Item = { id: Workspace; label: string; gear?: boolean };
 
 const ITEMS: Item[] = [
   { id: 'chart', label: 'CHART' },
-  { id: 'timing', label: 'TIMING' },
-  { id: 'analysis', label: 'ANALYSIS' },
   { id: 'palm', label: 'LIFE' },
+  { id: 'analysis', label: 'ANALYSIS' },
+  { id: 'timing', label: 'TIMING' },
   { id: 'library', label: 'LIBRARY' },
   { id: 'settings', label: '⚙', gear: true },
 ];
