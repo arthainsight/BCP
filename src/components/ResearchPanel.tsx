@@ -342,7 +342,16 @@ export default function ResearchPanel({ calculationSettings }: Props) {
       </Heading>
 
       {sources.length === 0 ? (
-        <p className="text-[10px] font-mono text-zinc-400" data-research-empty>{t('No saved charts yet. Save a chart with SAVE and add its events in TIMING → Dasha → Events.')}</p>
+        <>
+          <section className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-research-step="data" aria-labelledby="research-step-data">
+            <h2 id="research-step-data" className="text-xs font-semibold tracking-wide text-zinc-700 dark:text-zinc-200">{t('1. Choose your data')}</h2>
+            <p className="text-[10px] font-mono text-zinc-400" data-research-empty>{t('No saved charts yet. Save a chart with SAVE and add its events in TIMING → Dasha → Events.')}</p>
+          </section>
+          <section className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-research-step="design" aria-labelledby="research-step-design">
+            <h2 id="research-step-design" className="text-xs font-semibold tracking-wide text-zinc-700 dark:text-zinc-200">{t('2. Design and run the study')}</h2>
+            <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">{t('Save a chart and add at least one life event to unlock the research settings.')}</p>
+          </section>
+        </>
       ) : (
         <>
           <section className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-research-step="data" aria-labelledby="research-step-data">
