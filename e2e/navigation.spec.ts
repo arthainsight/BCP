@@ -3,13 +3,13 @@ import { calculateChart, selectWorkspace, visible } from './helpers';
 
 // Navigation and layout: the primary navigation, the split view, the full-width panels and the phone layout.
 
-test('the primary navigation exposes CHART / TIMING / ANALYSIS / Settings', async ({ page }) => {
+test('the primary navigation exposes CHART / TIMING / ANALYSIS / LIFE / LIBRARY / Settings', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
 
-  for (const label of ['CHART', 'TIMING', 'ANALYSIS', '⚙']) {
+  for (const label of ['CHART', 'TIMING', 'ANALYSIS', 'LIFE', 'LIBRARY', '⚙']) {
     await expect(visible(page, page.getByRole('button', { name: label, exact: true }))).toBeVisible();
   }
 
@@ -17,6 +17,13 @@ test('the primary navigation exposes CHART / TIMING / ANALYSIS / Settings', asyn
   await expect(page.getByRole('contentinfo')).toContainText('bhrigu.code by Riku Forsell');
 
   expect(errors).toEqual([]);
+});
+
+test('LIBRARY opens Research as a separate workspace', async ({ page }) => {
+  await page.goto('/');
+  await selectWorkspace(page, 'LIBRARY');
+  await expect(visible(page, page.locator('[data-library-workspace]'))).toBeVisible();
+  await expect(visible(page, page.locator('[data-library-workspace]').getByRole('heading', { name: 'Research', exact: true }))).toBeVisible();
 });
 
 test('CHART workspace shows the chart (and editable birth data), not only the form', async ({ page }, info) => {
@@ -370,7 +377,7 @@ test('the analysis can take the whole width on a wide screen, as the timing and 
   await selectWorkspace(page, 'TIMING');
   await expect(visible(page, page.getByRole('button', { name: '⤢ full', exact: true }))).toBeVisible();
   await expect(chart).toHaveCount(1);
-  await selectWorkspace(page, 'PALM');
+  await selectWorkspace(page, 'LIFE');
   await expect(visible(page, page.getByRole('button', { name: '⤢ full', exact: true }))).toBeVisible();
 
   expect(errors).toEqual([]);
