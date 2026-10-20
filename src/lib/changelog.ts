@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.29',
+    date: '2026-10-20',
+    title: 'Mobile navigation no longer overlaps',
+    changes: [
+      'Let the primary navigation scroll horizontally on narrow screens instead of shrinking long workspace labels into each other.',
+      'Keep workspace labels on one line and preserve access to split view and Settings at the end of the navigation.',
+      'Updated the application version to v3.29.',
+    ],
+  },
+  {
     version: 'v3.28',
     date: '2026-10-20',
     title: 'Research follows a clearer three-step workflow',
