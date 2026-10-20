@@ -22,7 +22,7 @@ const DATE = (time: number) => new Date(time).toISOString().slice(0, 10);
 const dateTime = (date: string) => Date.parse(date + 'T00:00:00.000Z');
 const eventTime = (event: StoredDashaEvent) => Date.parse(event.date + 'T12:00:00.000Z');
 const today = () => DATE(Date.now());
-const plusYears = (years: number) => { const date = new Date(); date.setUTCFullYear(date.getUTCFullYear() + years); return DATE(date.getTime()); };
+const earliestBirth = (sources: readonly ResearchSource[]) => { const times = sources.map(source => birthTimeOf(source.saved)).filter((time): time is number => time !== null); return times.length ? DATE(Math.min(...times)) : today(); };
 const bodies = [...PARAYA_BODIES, ...PARAYA_BETA_BODIES] as ParayaBody[];
 const natalNames = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu', 'Asc'];
 
@@ -42,8 +42,8 @@ export default function ResearchHitFinder({ sources, initialSelected, calculatio
   const [body, setBody] = useState<ParayaBody>('Jupiter');
   const [natal, setNatal] = useState('Moon');
   const [relations, setRelations] = useState<HitRelation[]>([1, 5, 7, 9]);
-  const [from, setFrom] = useState(today);
-  const [to, setTo] = useState(() => plusYears(5));
+  const [from, setFrom] = useState(() => earliestBirth(sources));
+  const [to, setTo] = useState(today);
   const [eventWindow, setEventWindow] = useState(30);
   const [eventCategory, setEventCategory] = useState<'all' | StoredDashaEvent['category']>('all');
   const [rows, setRows] = useState<HitRow[]>([]);
@@ -51,6 +51,7 @@ export default function ResearchHitFinder({ sources, initialSelected, calculatio
   const [error, setError] = useState('');
   const [completed, setCompleted] = useState(false);
   const chosen = useMemo(() => sources.filter(item => selected.has(item.id)), [sources, selected]);
+  const availableRelations = sourceMode === 'paraya' ? [...PROGRESSION_RELATIONS] : sourceMode === 'transit' ? [...transitRelationsOf(body)] : [...new Set([...PROGRESSION_RELATIONS, ...transitRelationsOf(body)])];
 
   const toggleChart = (id: string) => setSelected(current => {
     const next = new Set(current);
@@ -157,12 +158,20 @@ export default function ResearchHitFinder({ sources, initialSelected, calculatio
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <label className={labelClass}>{t('source')}
-          <select value={sourceMode} onChange={event => setSourceMode(event.target.value as SourceMode)} className={selectClass}>
+          <select value={sourceMode} onChange={event => {
+            const next = event.target.value as SourceMode;
+            setSourceMode(next);
+            setRelations(next === 'paraya' ? [...PROGRESSION_RELATIONS] : next === 'transit' ? [...transitRelationsOf(body)] : [...new Set([...PROGRESSION_RELATIONS, ...transitRelationsOf(body)])]);
+          }} className={selectClass}>
             <option value="both">{t('Progression + transit')}</option><option value="paraya">{t('Nadi Progression (Paraya)')}</option><option value="transit">{t('Transit')}</option>
           </select>
         </label>
         <label className={labelClass}>{t('activating graha')}
-          <select value={body} onChange={event => setBody(event.target.value as ParayaBody)} className={selectClass}>
+          <select value={body} onChange={event => {
+            const next = event.target.value as ParayaBody;
+            setBody(next);
+            if (sourceMode !== 'paraya') setRelations(sourceMode === 'transit' ? [...transitRelationsOf(next)] : [...new Set([...PROGRESSION_RELATIONS, ...transitRelationsOf(next)])]);
+          }} className={selectClass}>
             {bodies.map(item => <option key={item} value={item}>{item}{PARAYA_BETA_BODIES.includes(item) ? ' (beta)' : ''}</option>)}
           </select>
         </label>
@@ -182,7 +191,7 @@ export default function ResearchHitFinder({ sources, initialSelected, calculatio
       <div className="space-y-1">
         <div className="flex flex-wrap items-center gap-1">
           <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{t('relationship')}</span>
-          {RELATIONS.map(relation => (
+          {availableRelations.map(relation => (
             <button key={relation} type="button" aria-pressed={relations.includes(relation)} onClick={() => toggleRelation(relation)}
               className={`rounded-md border px-2.5 py-1.5 text-[10px] font-mono ${relations.includes(relation) ? 'border-emerald-500 bg-emerald-500 text-white' : 'border-zinc-200 text-zinc-500 dark:border-zinc-700'}`}>
               {RELATION_LABEL[relation]}
