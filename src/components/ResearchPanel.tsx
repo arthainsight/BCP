@@ -389,16 +389,21 @@ export default function ResearchPanel({ calculationSettings }: Props) {
 
           <section className="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-research-step="design" aria-labelledby="research-step-design">
           <h2 id="research-step-design" className="border-b border-zinc-100 pb-2 text-xs font-semibold tracking-wide text-zinc-700 dark:border-zinc-800 dark:text-zinc-200">{t('2. Design and run the study')}</h2>
-          <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('kind of comparison')}>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('compare')}</span>
-            <button type="button" aria-pressed={mode === 'chance'} onClick={() => { setMode('chance'); setRun({ status: 'idle' }); }} className={chip(mode === 'chance')}>{t('with chance')}</button>
-            <button type="button" aria-pressed={mode === 'groups'} onClick={() => { setMode('groups'); setRun({ status: 'idle' }); }} className={chip(mode === 'groups')}>{t('two kinds of event')}</button>
-            <button type="button" aria-pressed={mode === 'validate'} onClick={() => { setMode('validate'); setRun({ status: 'idle' }); }} className={chip(mode === 'validate')}>{t('training and test')}</button>
-            <button type="button" aria-pressed={mode === 'settings'} onClick={() => { setMode('settings'); setRun({ status: 'idle' }); }} className={chip(mode === 'settings')}>{t('the Paraya settings')}</button>
-            <button type="button" aria-pressed={mode === 'combine'} onClick={() => { setMode('combine'); setRun({ status: 'idle' }); }} className={chip(mode === 'combine')}>{t('combinations')}</button>
-            <button type="button" aria-pressed={mode === 'model'} onClick={() => { setMode('model'); setRun({ status: 'idle' }); }} className={chip(mode === 'model')}>{t('joint model')}</button>
-            <button type="button" aria-expanded={showHitFinder} onClick={() => setShowHitFinder(value => !value)} className={chip(showHitFinder)}>{t('Graha Hit Finder')}</button>
-            <button type="button" aria-expanded={showEventRelations} onClick={() => setShowEventRelations(value => !value)} className={chip(showEventRelations)}>{t('Event Nadi relationships')}</button>
+          <div className="space-y-1.5">
+            <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('study methods')} data-research-methods>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('study methods')}</span>
+              <button type="button" aria-pressed={mode === 'chance'} onClick={() => { setMode('chance'); setRun({ status: 'idle' }); }} className={chip(mode === 'chance')}>{t('with chance')}</button>
+              <button type="button" aria-pressed={mode === 'groups'} onClick={() => { setMode('groups'); setRun({ status: 'idle' }); }} className={chip(mode === 'groups')}>{t('two kinds of event')}</button>
+              <button type="button" aria-pressed={mode === 'validate'} onClick={() => { setMode('validate'); setRun({ status: 'idle' }); }} className={chip(mode === 'validate')}>{t('training and test')}</button>
+              <button type="button" aria-pressed={mode === 'settings'} onClick={() => { setMode('settings'); setRun({ status: 'idle' }); }} className={chip(mode === 'settings')}>{t('the Paraya settings')}</button>
+              <button type="button" aria-pressed={mode === 'combine'} onClick={() => { setMode('combine'); setRun({ status: 'idle' }); }} className={chip(mode === 'combine')}>{t('combinations')}</button>
+              <button type="button" aria-pressed={mode === 'model'} onClick={() => { setMode('model'); setRun({ status: 'idle' }); }} className={chip(mode === 'model')}>{t('joint model')}</button>
+            </div>
+            <div className="flex flex-wrap items-center gap-1 border-t border-zinc-100 pt-1.5 dark:border-zinc-800" role="group" aria-label={t('focused research tools')} data-research-focused-tools>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('focused research tools')}</span>
+              <button type="button" aria-expanded={showHitFinder} onClick={() => setShowHitFinder(value => !value)} className={chip(showHitFinder)}>{t('Graha Hit Finder')}</button>
+              <button type="button" aria-expanded={showEventRelations} onClick={() => setShowEventRelations(value => !value)} className={chip(showEventRelations)}>{t('Event Nadi relationships')}</button>
+            </div>
           </div>
           {showHitFinder && <ResearchHitFinder sources={sources} initialSelected={selected} calculationSettings={settings} />}
           {showEventRelations && <ResearchEventRelations sources={sources} initialSelected={selected} calculationSettings={settings} />}
