@@ -1584,7 +1584,6 @@ export const FI: Record<string, string> = {
   'events analysed': 'tapahtumaa analysoitu',
   'Date unavailable': 'Päivämäärä ei ole käytettävissä',
   'Chart data unavailable': 'Kartan tietoja ei ole käytettävissä',
-  'Relationship is counted from the first progressing graha by sign. ● = within 1° by degree.': 'Suhde lasketaan merkkien mukaan ensimmäisestä etenevästä grahasta. ● = astelukuero enintään 1°.',
 
   'Progressed graha relationships': 'Progressioiden grahojen väliset suhteet',
   'No 1, 5, 7 or 9 relationships between progressing grahas.': 'Progressioiden grahojen välillä ei ole 1., 5., 7. tai 9. suhdetta.',
