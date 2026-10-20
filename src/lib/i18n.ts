@@ -1549,6 +1549,35 @@ export const FI: Record<string, string> = {
   'Print or save as PDF': 'Tulosta tai tallenna PDF:nä',
   'aspect on': 'aspekti kohteeseen',
   'For the transits the aspects are those of each graha by its own rule, counted from the graha: Saturn the 3rd, 7th and 10th, Jupiter the 5th, 7th and 9th, Mars the 4th, 7th and 8th, Rahu and Ketu the 5th and 9th, the others the 7th. The progressions have the 1st, 5th, 7th and 9th for every graha.': 'Transiiteille aspektit ovat kunkin grahan oman säännön mukaiset, grahasta lukien: Saturnus 3., 7. ja 10., Jupiter 5., 7. ja 9., Mars 4., 7. ja 8., Rahu ja Ketu 5. ja 9., muut 7. Progressioilla jokaisella grahalla on 1., 5., 7. ja 9.',
+
+  // Graha Hit Finder: Research
+  'Choose a date range of 100 years or less.': 'Valitse enintään 100 vuoden aikaväli.',
+  'None of the selected charts has enough birth data to calculate.': 'Valituissa kartoissa ei ole riittävästi syntymätietoja laskentaan.',
+  'Graha Hit Finder · Research': 'Graha Hit Finder · Tutkimus',
+  'Find exact Paraya progression or transit hits for one or several saved charts, then inspect life events close to each hit.': 'Etsi tarkat Paraya-progressioiden tai transiittien osumat yhdestä tai useasta tallennetusta kartasta ja tarkastele niiden lähellä olevia elämäntapahtumia.',
+  'all charts': 'kaikki kartat',
+  'source': 'lähde',
+  'Progression + transit': 'Progressio + transiitti',
+  'Nadi Progression (Paraya)': 'Nadi-progressio (Paraya)',
+  'activating graha': 'aktivoiva graha',
+  'Ascendant': 'Nousumerkki',
+  'life-event window': 'elämäntapahtuman aikaikkuna',
+  'same day': 'sama päivä',
+  'relationship': 'suhde',
+  'Exact-degree crossings; no configurable orb in this view yet.': 'Tarkat asteylitykset; tässä näkymässä ei vielä voi säätää orbia.',
+  'Calculating charts and positions…': 'Lasketaan karttoja ja sijainteja…',
+  'hits': 'osumaa',
+  'nearby life events': 'läheistä elämäntapahtumaa',
+  'No hits found for the selected date range and relationships.': 'Valitulla aikavälillä ja näillä suhteilla ei löytynyt osumia.',
+  'life events near hits': 'osumien lähellä olevat elämäntapahtumat',
+  'category': 'luokka',
+  'event': 'tapahtuma',
+  'nearby hits': 'läheiset osumat',
+  'These counts are descriptive, not a significance test. Use the main Research comparisons to test event groups against chance and to validate patterns.': 'Nämä lukumäärät ovat kuvailevia, eivät tilastollinen merkitsevyystesti. Testaa tapahtumaryhmiä sattumaa vasten ja tarkista kuviot Research-osion varsinaisilla vertailuilla.',
+  'date': 'päivä',
+  'life events': 'elämäntapahtumat',
+  'Graha Hit Finder': 'Graha Hit Finder',
+
 };
 
 /** Translates English interface text; anything without a Finnish entry stays in English. */
