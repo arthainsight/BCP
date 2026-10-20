@@ -22,21 +22,19 @@ import type { TransitLocation } from '@/hooks/useEventTransits';
 
 type View = 'dasha' | 'summary' | 'transits' | 'hitFinder' | 'paraya' | 'parayaAspects' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
 
-const VIEWS: { key: View; label: string }[] = [
-  { key: 'dasha', label: 'Dasha' },
-  { key: 'summary', label: 'Summary' },
-  { key: 'transits', label: 'Transit Hits' },
-  { key: 'hitFinder', label: 'Graha Hit Finder' },
-  { key: 'paraya', label: 'Paraya' },
-  { key: 'parayaAspects', label: 'Paraya aspects' },
-  { key: 'signs', label: 'Sign changes' },
-  { key: 'muhurta', label: 'Muhurta' },
-  { key: 'tithi', label: 'Tithi Praveśa' },
-  { key: 'nakshatra', label: 'Nakṣatra Praveśa' },
-  { key: 'yoga', label: 'Yoga Praveśa' },
-  { key: 'varsha', label: 'Varṣaphala' },
-  { key: 'year', label: 'Year at a glance' },
-  { key: 'sudarshana', label: 'Sudarśana' },
+const VIEW_GROUPS: { label: string; views: { key: View; label: string }[] }[] = [
+  { label: 'Periods & overview', views: [
+    { key: 'dasha', label: 'Dasha' }, { key: 'summary', label: 'Summary' },
+  ] },
+  { label: 'Transits & progressions', views: [
+    { key: 'transits', label: 'Transit Hits' }, { key: 'hitFinder', label: 'Graha Hit Finder' },
+    { key: 'paraya', label: 'Paraya' }, { key: 'parayaAspects', label: 'Paraya aspects' }, { key: 'signs', label: 'Sign changes' },
+  ] },
+  { label: 'Annual & electional', views: [
+    { key: 'muhurta', label: 'Muhurta' }, { key: 'tithi', label: 'Tithi Praveśa' },
+    { key: 'nakshatra', label: 'Nakṣatra Praveśa' }, { key: 'yoga', label: 'Yoga Praveśa' },
+    { key: 'varsha', label: 'Varṣaphala' }, { key: 'year', label: 'Year at a glance' }, { key: 'sudarshana', label: 'Sudarśana' },
+  ] },
 ];
 
 interface Props {
@@ -97,15 +95,22 @@ export default function TimingPanel({
 
   return (
     <div className="min-w-0 space-y-3">
-      <div className="flex min-w-0 items-center gap-2">
-        <div className="min-w-0 flex-1 overflow-x-auto">
-          <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
-            {VIEWS.map((item) => (
-              <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-                {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' || item.key === 'muhurta' || item.key === 'year' ? t(item.label) : item.label}
-              </button>
-            ))}
-          </div>
+      <div className="flex min-w-0 items-start gap-2">
+        <div className="min-w-0 flex-1 space-y-2">
+          {VIEW_GROUPS.map((group) => (
+            <div key={group.label} data-tool-group={group.label} className="flex min-w-0 items-center gap-2">
+              <span className="w-32 shrink-0 text-[9px] font-mono uppercase tracking-wide text-zinc-400 dark:text-zinc-500">{t(group.label)}</span>
+              <div className="min-w-0 flex-1 overflow-x-auto">
+                <div className="inline-flex min-w-max gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50">
+                  {group.views.map((item) => (
+                    <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
+                      {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' || item.key === 'muhurta' || item.key === 'year' ? t(item.label) : item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
         {onToggleWide && <FullWidthToggle wide={wide} onToggle={onToggleWide} />}
       </div>

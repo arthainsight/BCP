@@ -19,6 +19,21 @@ test('the primary navigation exposes CHART / TIMING / ANALYSIS / LIFE / LIBRARY 
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS and TIMING tools are grouped by purpose without hiding individual tools', async ({ page }) => {
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  for (const label of ['Chart & strength', 'Relationships', 'Transits & directions', 'Classical systems']) {
+    await expect(visible(page, page.locator(`[data-tool-group="${label}"]`))).toBeVisible();
+  }
+  await expect(visible(page, page.getByRole('button', { name: 'Special Sphutas', exact: true }))).toBeVisible();
+
+  await selectWorkspace(page, 'TIMING');
+  for (const label of ['Periods & overview', 'Transits & progressions', 'Annual & electional']) {
+    await expect(visible(page, page.locator(`[data-tool-group="${label}"]`))).toBeVisible();
+  }
+  await expect(visible(page, page.getByRole('button', { name: 'Varṣaphala', exact: true }))).toBeVisible();
+});
+
 test('LIBRARY opens Research as a separate workspace', async ({ page }) => {
   await page.goto('/');
   await selectWorkspace(page, 'LIBRARY');

@@ -24,22 +24,21 @@ import { useT } from '@/lib/i18n';
 
 export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'degrees' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota';
 
-const VIEWS: { key: AnalysisView; label: string }[] = [
-  { key: 'grahas', label: 'Grahas' },
-  { key: 'varga', label: 'Varga' },
-  { key: 'bala', label: 'Bala' },
-  { key: 'degrees', label: 'Sensitive Degrees' },
-  { key: 'nadi', label: 'Nāḍī' },
-  { key: 'ashtakavarga', label: 'Aṣṭakavarga' },
-  { key: 'gochara', label: 'Gochara' },
-  { key: 'drishti', label: 'Dṛṣṭi' },
-  { key: 'argala', label: 'Argala' },
-  { key: 'chalit', label: 'Bhava Chalit' },
-  { key: 'tara', label: 'Nava-Tara' },
-  { key: 'dik', label: 'Directions' },
-  { key: 'sphutas', label: 'Special Sphutas' },
-  { key: 'sarvatobhadra', label: 'Sarvatobhadra' },
-  { key: 'kota', label: 'Kota Chakra' },
+const VIEW_GROUPS: { label: string; views: { key: AnalysisView; label: string }[] }[] = [
+  { label: 'Chart & strength', views: [
+    { key: 'grahas', label: 'Grahas' }, { key: 'varga', label: 'Varga' },
+    { key: 'bala', label: 'Bala' }, { key: 'degrees', label: 'Sensitive Degrees' },
+    { key: 'chalit', label: 'Bhava Chalit' }, { key: 'sphutas', label: 'Special Sphutas' },
+  ] },
+  { label: 'Relationships', views: [
+    { key: 'nadi', label: 'Nāḍī' }, { key: 'drishti', label: 'Dṛṣṭi' }, { key: 'argala', label: 'Argala' },
+  ] },
+  { label: 'Transits & directions', views: [
+    { key: 'gochara', label: 'Gochara' }, { key: 'tara', label: 'Nava-Tara' }, { key: 'dik', label: 'Directions' },
+  ] },
+  { label: 'Classical systems', views: [
+    { key: 'ashtakavarga', label: 'Aṣṭakavarga' }, { key: 'sarvatobhadra', label: 'Sarvatobhadra' }, { key: 'kota', label: 'Kota Chakra' },
+  ] },
 ];
 
 /** A request from elsewhere in the app to show one view, for example the Matrix of the Varga view. A new id is a new request. */
@@ -101,15 +100,22 @@ export default function AnalysisPanel({
 
   return (
     <div className="min-w-0 space-y-3">
-      <div className="flex min-w-0 items-center gap-2">
-        <div className="min-w-0 flex-1 overflow-x-auto">
-          <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
-            {VIEWS.map((item) => (
-              <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-                {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' || item.key === 'gochara' || item.key === 'degrees' ? t(item.label) : item.label}
-              </button>
-            ))}
-          </div>
+      <div className="flex min-w-0 items-start gap-2">
+        <div className="min-w-0 flex-1 space-y-2">
+          {VIEW_GROUPS.map((group) => (
+            <div key={group.label} data-tool-group={group.label} className="flex min-w-0 items-center gap-2">
+              <span className="w-28 shrink-0 text-[9px] font-mono uppercase tracking-wide text-zinc-400 dark:text-zinc-500">{t(group.label)}</span>
+              <div className="min-w-0 flex-1 overflow-x-auto">
+                <div className="inline-flex min-w-max gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50">
+                  {group.views.map((item) => (
+                    <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
+                      {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' || item.key === 'gochara' || item.key === 'degrees' ? t(item.label) : item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
         {onToggleWide && <FullWidthToggle wide={wide} onToggle={onToggleWide} />}
       </div>

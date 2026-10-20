@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.27',
+    date: '2026-10-20',
+    title: 'Analysis and Timing tools are grouped by purpose',
+    changes: [
+      'Group Analysis tools into chart and strength, relationships, transits and directions, and classical systems.',
+      'Group Timing tools into periods and overview, transits and progressions, and annual and electional tools.',
+      'Keep every existing tool and calculation available; only the navigation layout changes.',
+      'Updated the application version to v3.27.',
+    ],
+  },
+  {
     version: 'v3.26',
     date: '2026-10-20',
     title: 'Research gets its own workspace',
