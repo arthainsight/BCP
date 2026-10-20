@@ -1,6 +1,5 @@
-// Split view: on a wide screen several of the workspaces side by side instead of one
-// at a time. These are the workspaces that can be shown together (Settings is always
-// a screen of its own), which of them are on, and how the panes are laid out.
+// Split view: on a wide screen several workspaces can be shown side by side.
+// Library and Settings are full-screen workspaces and stay outside split panes.
 
 export const SPLIT_WORKSPACES = ['chart', 'timing', 'analysis', 'palm'] as const;
 export type SplitWorkspace = (typeof SPLIT_WORKSPACES)[number];
