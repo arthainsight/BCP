@@ -23,6 +23,7 @@ export const FI: Record<string, string> = {
   '3. Review results': '3. Tarkastele tuloksia',
   'charts selected': 'valittua karttaa',
   'events available': 'tapahtumaa saatavilla',
+  'Save a chart and add at least one life event to unlock the research settings.': 'Tallenna kartta ja lisää vähintään yksi elämäntapahtuma, niin tutkimusasetukset avautuvat.',
   'Chart & strength': 'Kartta ja vahvuudet',
   'Relationships': 'Suhteet',
   'Transits & directions': 'Transiitit ja suunnat',
