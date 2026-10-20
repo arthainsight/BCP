@@ -1562,8 +1562,7 @@ test('LIBRARY Research keeps runs by name and sets two side by side', async ({ p
   // They are kept in this browser: a reload still has them, to choose and compare before anything is run.
   await page.reload();
   await calculateChart(page);
-  await selectWorkspace(page, 'ANALYSIS');
-  await visible(page, page.getByRole('button', { name: 'Research', exact: true })).click();
+  await selectWorkspace(page, 'LIBRARY');
   const again = visible(page, page.getByRole('region', { name: 'research' }));
   await expect(again.locator('[data-research-run]')).toHaveCount(2);
   // One is deleted (the list opens first).
