@@ -78,7 +78,7 @@ export default function ResearchHitFinder({ sources, initialSelected, calculatio
       if (!valid.length) throw new Error(t('None of the selected charts has enough birth data to calculate.'));
       let transitSeries: Record<string, LongitudeSeries> | undefined;
       if (sourceMode !== 'paraya') {
-        const url = transitSeriesUrl(from, dayCount, ['Jupiter', 'Saturn', 'Rahu', 'Ketu'], calculationSettings, dayCount > 3650 ? 3 : undefined);
+        const url = transitSeriesUrl(from, dayCount, [body], calculationSettings, dayCount > 3650 ? 3 : undefined);
         const response = await fetch(url);
         const json = await response.json();
         if (!response.ok || json.error) throw new Error(json.error ?? 'Transit positions could not be loaded.');
@@ -114,10 +114,10 @@ export default function ResearchHitFinder({ sources, initialSelected, calculatio
     } finally { setRunning(false); }
   }
 
-  const matchingRows = rows.map(row => ({
+  const matchingRows = useMemo(() => rows.map(row => ({
     ...row,
     nearby: row.events.filter(event => (eventCategory === 'all' || event.category === eventCategory) && Number.isFinite(eventTime(event)) && Math.abs(eventTime(event) - row.time) <= eventWindow * DAY_MS),
-  }));
+  })), [rows, eventCategory, eventWindow]);
   const eventMatchesCount = matchingRows.reduce((sum, row) => sum + row.nearby.length, 0);
   const summary = useMemo(() => {
     const counts = new Map<string, number>();
