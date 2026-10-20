@@ -49,7 +49,7 @@ export default function PrimaryNav({ active, onChange, show, split }: Props) {
       aria-label={t('Primary')}
       className={`sticky top-0 z-30 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800${show === 'mobile' ? ' lg:hidden' : show === 'desktop' ? ' hidden lg:block' : ''}`}
     >
-      <div className="flex items-center gap-1 px-4 py-2">
+      <div data-primary-nav-items className="flex min-w-0 items-center gap-1 overflow-x-auto px-2 py-2 sm:px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {ITEMS.map((item) => {
           // In the split view the workspaces are on or off together; Settings is one screen, so it is "current".
           const asSwitch = split?.on === true && !item.gear && SPLIT_WORKSPACES.includes(item.id as (typeof SPLIT_WORKSPACES)[number]);
@@ -110,12 +110,12 @@ export default function PrimaryNav({ active, onChange, show, split }: Props) {
                 data-split-item={asSwitch ? item.id : undefined}
                 className={
                   item.gear
-                    ? `${split ? 'ml-1' : 'ml-auto'} min-w-[44px] py-1.5 px-2 text-sm font-mono transition-colors ${
+                    ? `${split ? 'ml-1' : 'ml-2'} min-w-[44px] shrink-0 py-1.5 px-2 text-sm font-mono transition-colors ${
                         selected
                           ? 'text-emerald-700 dark:text-green-400 font-semibold'
                           : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
                       }`
-                    : `flex-1 min-w-[44px] py-1.5 text-xs font-mono tracking-wider transition-colors ${asSwitch && selected ? 'rounded-md bg-emerald-50 dark:bg-green-950/30 ' : ''}${
+                    : `flex-none whitespace-nowrap px-2 py-1.5 text-xs font-mono tracking-wider transition-colors lg:flex-1 lg:min-w-[44px] lg:px-0 ${asSwitch && selected ? 'rounded-md bg-emerald-50 dark:bg-green-950/30 ' : ''}${
                         selected
                           ? 'text-emerald-700 dark:text-green-400 font-semibold'
                           : 'text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
