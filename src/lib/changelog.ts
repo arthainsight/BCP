@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.23',
+    date: '2026-10-20',
+    title: 'Research: Graha Hit Finder across saved charts, Paraya progressions and transits',
+    changes: [
+      'Research: add Graha Hit Finder for one or several saved charts. Search exact-degree Paraya progression and/or transit hits over a chosen date range, select the activating graha, natal point and relationship, and compare hits with saved life events in configurable windows from the same day to 180 days.',
+      'Research: filter nearby life events by category and summarize which saved event labels occur near the hits. These counts are descriptive only, not a significance test; use the existing Research cohort comparisons to test event groups against chance. Configurable orb windows are not included in this view yet.',
+      'Finnish interface: add translations for the Research Graha Hit Finder controls, status messages, results and methodological caution.',
+      'Updated the application version to v3.23.',
+    ],
+  },
+  {
     version: 'v3.22',
     date: '2026-10-19',
     title: 'Transit aspects by each graha\'s own rule; Research: combinations, joint model, time profile, saved runs, other charts as the chance level, a report; the accuracy of a date chosen by hand',
