@@ -34,6 +34,15 @@ test('ANALYSIS and TIMING tools are grouped by purpose without hiding individual
   await expect(visible(page, page.getByRole('button', { name: 'Varṣaphala', exact: true }))).toBeVisible();
 });
 
+test('Research presents data, study setup, and results as three clear stages', async ({ page }) => {
+  await page.goto('/');
+  await selectWorkspace(page, 'LIBRARY');
+  const research = visible(page, page.locator('[data-library-workspace]'));
+  await expect(research.locator('[data-research-step="data"]')).toContainText('Choose your data');
+  await expect(research.locator('[data-research-step="design"]')).toContainText('Design and run the study');
+  await expect(research.locator('[data-research-step="results"]')).toContainText('Review results');
+});
+
 test('LIBRARY opens Research as a separate workspace', async ({ page }) => {
   await page.goto('/');
   await selectWorkspace(page, 'LIBRARY');
