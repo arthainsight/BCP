@@ -1577,6 +1577,12 @@ export const FI: Record<string, string> = {
   'date': 'päivä',
   'life events': 'elämäntapahtumat',
   'Graha Hit Finder': 'Graha Hit Finder',
+  'Event Nadi relationships': 'Tapahtumien Nadi-suhteet',
+  'See the 1st, 5th, 7th and 9th sign relationships among progressing grahas for saved events across selected charts. Degree differences of 1° or less are highlighted.': 'Näytä etenevien grahojen 1., 5., 7. ja 9. merkkisuhteet tallennettujen tapahtumien kohdalla valituissa kartoissa. Enintään 1°:n astelerot korostetaan.',
+  'Calculate event relationships': 'Laske tapahtumien suhteet',
+  'events analysed': 'tapahtumaa analysoitu',
+  'Date unavailable': 'Päivämäärä ei ole käytettävissä',
+  'Chart data unavailable': 'Kartan tietoja ei ole käytettävissä',
 
   'Progressed graha relationships': 'Progressioiden grahojen väliset suhteet',
   'No 1, 5, 7 or 9 relationships between progressing grahas.': 'Progressioiden grahojen välillä ei ole 1., 5., 7. tai 9. suhdetta.',
