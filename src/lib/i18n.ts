@@ -18,6 +18,8 @@ export const FI: Record<string, string> = {
   'CHART': 'KARTTA',
   'TIMING': 'AJANKOHTA',
   'ANALYSIS': 'ANALYYSI',
+  'study methods': 'tutkimusmenetelmät',
+  'focused research tools': 'kohdennetut tutkimustyökalut',
   '1. Choose your data': '1. Valitse aineisto',
   '2. Design and run the study': '2. Määritä ja suorita tutkimus',
   '3. Review results': '3. Tarkastele tuloksia',
