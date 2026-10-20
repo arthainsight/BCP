@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.24',
+    date: '2026-10-20',
+    title: 'Event Nadi relationships among progressing grahas',
+    changes: [
+      'Event List: for each saved event, show directional 1st, 5th, 7th and 9th sign relationships among the progressing grahas themselves, alongside the existing relationships to natal points.',
+      'Highlight relationships whose within-sign degree difference is 1° or less; show the degree difference for every relationship. Relationship numbers are counted by sign from the first progressing graha.',
+      'Add regression tests for directed relationships, sign counting and the 1° orb; add Finnish translations.',
+      'Updated the application version to v3.24.',
+    ],
+  },
+  {
     version: 'v3.23',
     date: '2026-10-20',
     title: 'Research: Graha Hit Finder across saved charts, Paraya progressions and transits',

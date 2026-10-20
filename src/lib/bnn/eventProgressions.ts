@@ -29,6 +29,32 @@ export interface EventProgression {
   aspects: EventAspect[];
 }
 
+/** A directional Nāḍī relationship between two progressing grahas at an event. */
+export interface ProgressedGrahaRelation {
+  from: string;
+  to: string;
+  relation: HitRelation;
+  /** Absolute difference between the two degrees within their signs. */
+  orb: number;
+  exact: boolean;
+}
+
+/** All directed 1st, 5th, 7th and 9th sign relationships among the progressing grahas themselves. */
+export function progressedRelationsOf(progressions: readonly EventProgression[]): ProgressedGrahaRelation[] {
+  const result: ProgressedGrahaRelation[] = [];
+  for (const from of progressions) {
+    for (const to of progressions) {
+      if (from.body === to.body) continue;
+      const distance = (to.signIndex - from.signIndex + 12) % 12;
+      if (![0, 4, 6, 8].includes(distance)) continue;
+      const relation = (distance + 1) as HitRelation;
+      const orb = Math.abs(from.degree - to.degree);
+      result.push({ from: from.body, to: to.body, relation, orb, exact: orb <= EXACT_ORB });
+    }
+  }
+  return result.sort((a, b) => Number(b.exact) - Number(a.exact) || a.relation - b.relation || a.from.localeCompare(b.from) || a.to.localeCompare(b.to));
+}
+
 /** A graha's place: its sign (0–11) and the degree within it. */
 export interface GrahaPosition {
   body: string;

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import type { ChartData, PlanetData } from '@/types';
-import { progressionsAt } from './eventProgressions';
+import { progressedRelationsOf, progressionsAt } from './eventProgressions';
 import { calculateNadiParaya, PARAYA_BODIES } from './nadiParaya';
 import { JULIAN_YEAR_MS } from '@/lib/time';
 
@@ -56,5 +56,18 @@ for (const years of [0.7, 3.2, 14.9, 40.1]) {
 
 // --- A chart without the slow grahas has no progressions ---------------------------------------------------------------------------------------
 assert.deepEqual(progressionsAt({ chart: { ...chart, planets: [planet('Sun', 1, 15)] } as ChartData, birthTime: birth, time: birth, bodies: PARAYA_BODIES }), []);
+
+// --- Relationships among the progressing grahas themselves; degree matches are highlighted in either direction -----------------------------
+{
+  const relations = progressedRelationsOf([
+    { body: 'Jupiter', signIndex: 0, degree: 12, house: 1, aspects: [] },
+    { body: 'Saturn', signIndex: 4, degree: 12.5, house: 5, aspects: [] },
+    { body: 'Rahu', signIndex: 6, degree: 25, house: 7, aspects: [] },
+  ]);
+  assert.ok(relations.some(row => row.from === 'Jupiter' && row.to === 'Saturn' && row.relation === 5 && row.exact && row.orb === 0.5));
+  assert.ok(relations.some(row => row.from === 'Saturn' && row.to === 'Jupiter' && row.relation === 9 && row.exact && row.orb === 0.5));
+  assert.ok(relations.some(row => row.from === 'Jupiter' && row.to === 'Rahu' && row.relation === 7 && !row.exact && row.orb === 13));
+  assert.ok(!relations.some(row => row.from === 'Saturn' && row.to === 'Rahu'), 'only 1, 5, 7 and 9 sign relationships are included');
+}
 
 console.log('Event progression tests passed');
