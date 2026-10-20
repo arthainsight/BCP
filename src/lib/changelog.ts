@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.28',
+    date: '2026-10-20',
+    title: 'Research follows a clearer three-step workflow',
+    changes: [
+      'Organize the Library Research screen into three visible stages: choose data, design and run the study, and review results.',
+      'Show the number of selected charts and available events beside the data-selection heading.',
+      'Keep all existing research modes, filters, settings, calculations, and reports available.',
+      'Updated the application version to v3.28.',
+    ],
+  },
+  {
     version: 'v3.27',
     date: '2026-10-20',
     title: 'Analysis and Timing tools are grouped by purpose',
