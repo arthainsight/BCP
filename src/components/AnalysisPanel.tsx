@@ -106,7 +106,7 @@ export default function AnalysisPanel({
           <div className="inline-flex min-w-max gap-1 bg-zinc-100 dark:bg-zinc-800/50 rounded-lg p-1">
             {VIEWS.map((item) => (
               <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-                {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' || item.key === 'gochara' || item.key === 'degrees' || item.key === 'research' ? t(item.label) : item.label}
+                {item.key === 'grahas' || item.key === 'dik' || item.key === 'sphutas' || item.key === 'gochara' || item.key === 'degrees' ? t(item.label) : item.label}
               </button>
             ))}
           </div>
