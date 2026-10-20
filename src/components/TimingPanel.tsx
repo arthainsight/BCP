@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { CalculationSettings, ChartData, ChartDisplaySettings, DashaSettings, PlanetData } from '@/types';
 import DashaWorkspace from './DashaWorkspace';
 import TransitHitsPanel from './TransitHitsPanel';
+import GrahaHitFinder from './GrahaHitFinder';
 import SignChangesPanel from './SignChangesPanel';
 import ParayaProgressionPanel from './ParayaProgressionPanel';
 import ParayaAspectsPanel from './ParayaAspectsPanel';
@@ -19,12 +20,13 @@ import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
-type View = 'dasha' | 'summary' | 'transits' | 'paraya' | 'parayaAspects' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
+type View = 'dasha' | 'summary' | 'transits' | 'hitFinder' | 'paraya' | 'parayaAspects' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
 
 const VIEWS: { key: View; label: string }[] = [
   { key: 'dasha', label: 'Dasha' },
   { key: 'summary', label: 'Summary' },
   { key: 'transits', label: 'Transit Hits' },
+  { key: 'hitFinder', label: 'Graha Hit Finder' },
   { key: 'paraya', label: 'Paraya' },
   { key: 'parayaAspects', label: 'Paraya aspects' },
   { key: 'signs', label: 'Sign changes' },
@@ -144,6 +146,15 @@ export default function TimingPanel({
           targetDate={targetDate ?? ''}
           calculationSettings={calculationSettings}
           onSetTransit={onSetTransitDatetime}
+        />
+      )}
+
+      {view === 'hitFinder' && (
+        <GrahaHitFinder
+          chart={chart}
+          birthDatetime={birthDatetime}
+          calculationSettings={calculationSettings}
+          onSetTarget={onSetTransitDatetime}
         />
       )}
 
