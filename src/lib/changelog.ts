@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.29',
+    date: '2026-10-20',
+    title: 'Separate study methods from focused research tools',
+    changes: [
+      'Give the six main statistical study methods their own control group, separate from Graha Hit Finder and Event Nadi relationships.',
+      'Keep the focused tools available beside the study methods without changing their behavior or calculations.',
+      'Updated the application version to v3.29.',
+    ],
+  },
+  {
     version: 'v3.28',
     date: '2026-10-20',
     title: 'Research follows a clearer three-step workflow',
