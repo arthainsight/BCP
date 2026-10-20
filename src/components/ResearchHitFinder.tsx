@@ -171,7 +171,7 @@ export default function ResearchHitFinder({ sources, initialSelected, calculatio
             setBody(next);
             if (sourceMode !== 'paraya') setRelations(sourceMode === 'transit' ? [...transitRelationsOf(next)] : [...new Set([...PROGRESSION_RELATIONS, ...transitRelationsOf(next)])]);
           }} className={selectClass}>
-            {bodies.map(item => <option key={item} value={item}>{item}{PARAYA_BETA_BODIES.includes(item) ? ' (beta)' : ''}</option>)}
+            {bodies.map(item => <option key={item} value={item}>{item}{(PARAYA_BETA_BODIES as readonly string[]).includes(item) ? ' (beta)' : ''}</option>)}
           </select>
         </label>
         <label className={labelClass}>{t('natal point')}
