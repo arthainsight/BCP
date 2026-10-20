@@ -19,11 +19,10 @@ import KotaChakraPanel from './KotaChakraPanel';
 import GocharaPanel from './GocharaPanel';
 import ArgalaPanel from './ArgalaPanel';
 import BhavaChalitPanel from './BhavaChalitPanel';
-import ResearchPanel from './ResearchPanel';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 
-export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'degrees' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota' | 'research';
+export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'degrees' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota';
 
 const VIEWS: { key: AnalysisView; label: string }[] = [
   { key: 'grahas', label: 'Grahas' },
@@ -41,7 +40,6 @@ const VIEWS: { key: AnalysisView; label: string }[] = [
   { key: 'sphutas', label: 'Special Sphutas' },
   { key: 'sarvatobhadra', label: 'Sarvatobhadra' },
   { key: 'kota', label: 'Kota Chakra' },
-  { key: 'research', label: 'Research' },
 ];
 
 /** A request from elsewhere in the app to show one view, for example the Matrix of the Varga view. A new id is a new request. */
@@ -207,7 +205,6 @@ export default function AnalysisPanel({
         <SpecialSphutasPanel chart={chart} calculationSettings={calculationSettings} nakshatraAdjust={nakshatraAdjust} />
       )}
 
-      {view === 'research' && <ResearchPanel calculationSettings={calculationSettings} />}
     </div>
   );
 }
