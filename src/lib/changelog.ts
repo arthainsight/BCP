@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.31',
+    date: '2026-10-21',
+    title: 'Bhṛgu Chakra natal house placement',
+    changes: [
+      'Move natal graha labels out of the central NATAL disc into their zodiac-house positions in the inner band.',
+      'Keep the central disc reserved for the NATAL label; do not add decorative red dots.',
+      'Use small radial offsets to reduce overlap between natal grahas while preserving their sign and degree angles.',
+    ],
+  },
+  {
     version: 'v3.30',
     date: '2026-10-21',
     title: 'Bhṛgu Chakra progression rings',
