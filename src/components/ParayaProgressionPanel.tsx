@@ -42,6 +42,103 @@ const isBeta = (body: ParayaBody) => (PARAYA_BETA_BODIES as readonly ParayaBody[
  * and when each of them next reaches a natal point or the ascendant, an overview of the seven against the ten natal points, and every hit
  * in the order of time: the same degree in the 1st, 5th, 7th and 9th sign from the natal point. Worked out in the browser from the age.
  */
+
+const CHAKRA_BODIES: readonly ParayaBody[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Mercury', 'Venus', 'Mars'];
+const CHAKRA_COLORS: Record<ParayaBody, string> = {
+  Jupiter: '#f59e0b', Saturn: '#60a5fa', Rahu: '#a78bfa', Ketu: '#cbd5e1',
+  Mercury: '#4ade80', Venus: '#f472b6', Mars: '#f87171',
+};
+const CHAKRA_GLYPHS: Record<string, string> = {
+  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju',
+  Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Asc: 'As',
+};
+const CHAKRA_SIGNS = ['Ar', 'Ta', 'Ge', 'Cn', 'Le', 'Vi', 'Li', 'Sc', 'Sg', 'Cp', 'Aq', 'Pi'];
+const CHAKRA_CENTER = 360;
+const CHAKRA_POINT = (radius: number, longitude: number) => {
+  const angle = ((90 - longitude) * Math.PI) / 180;
+  return { x: CHAKRA_CENTER + radius * Math.cos(angle), y: CHAKRA_CENTER - radius * Math.sin(angle) };
+};
+
+function BhriguChakra({ chart, now, relations, code }: {
+  chart: ChartData;
+  now: ReturnType<typeof parayaPeriodsOf>;
+  relations: readonly HitRelation[];
+  code: (body: string) => string;
+}) {
+  const cx = CHAKRA_CENTER;
+  const outer = 306;
+  const ringWidth = 29;
+  const natalRadius = 72;
+  const ringBodies = CHAKRA_BODIES.filter(body => now.some(position => position.body === body));
+  const natal = chart.planets.filter(planet => CHAKRA_GLYPHS[planet.name]);
+  const relationOn = (progressionSign: number, natalSign: number) => {
+    const count = ((natalSign - progressionSign + 12) % 12) + 1;
+    return relations.includes(count as HitRelation);
+  };
+  return (
+    <section className="space-y-2 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800" aria-label="Bhṛgu Chakra">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-sm font-semibold">Bhṛgu Chakra</h3>
+        <p className="text-[10px] text-zinc-500">Natal inner circle · shared zodiac sectors · active natal grahas highlighted</p>
+      </div>
+      <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_190px]">
+        <div className="mx-auto w-full max-w-[720px]">
+          <svg viewBox="0 0 720 720" role="img" aria-label="Natal chart with seven separate progression rings" className="h-auto w-full">
+            {Array.from({ length: 12 }, (_, i) => {
+              const a = CHAKRA_POINT(outer, i * 30);
+              const b = CHAKRA_POINT(natalRadius, i * 30);
+              const label = CHAKRA_POINT(outer + 16, i * 30 + 15);
+              return <g key={i}>
+                <line x1={cx} y1={cx} x2={a.x} y2={a.y} stroke="#52525b" strokeWidth="1" />
+                <text x={label.x} y={label.y} textAnchor="middle" dominantBaseline="middle" fill="#60a5fa" fontSize="11">{CHAKRA_SIGNS[i]}</text>
+              </g>;
+            })}
+            <circle cx={cx} cy={cx} r={outer} fill="none" stroke="#71717a" strokeWidth="1.2" />
+            {ringBodies.map((body, index) => {
+              const radius = outer - index * ringWidth;
+              const position = now.find(item => item.body === body);
+              if (!position) return null;
+              const progressingPoint = CHAKRA_POINT(radius, position.signIndex * 30 + position.degree);
+              const activated = natal.filter(planet => relationOn(position.signIndex, planet.sign - 1));
+              return <g key={body} data-chakra-ring={body}>
+                <circle cx={cx} cy={cx} r={radius} fill="none" stroke={CHAKRA_COLORS[body]} strokeOpacity=".7" strokeWidth="2" />
+                {activated.map(planet => {
+                  const p = CHAKRA_POINT(radius, (planet.sign - 1) * 30 + planet.degree);
+                  return <g key={planet.name} data-activated-natal={planet.name}>
+                    <circle cx={p.x} cy={p.y} r="10" fill={CHAKRA_COLORS[body]} fillOpacity=".18" stroke={CHAKRA_COLORS[body]} strokeWidth="1.2" />
+                    <text x={p.x} y={p.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="700" fill={CHAKRA_COLORS[body]}>{CHAKRA_GLYPHS[planet.name]}</text>
+                  </g>;
+                })}
+                <circle cx={progressingPoint.x} cy={progressingPoint.y} r="6" fill={CHAKRA_COLORS[body]} stroke="#18181b" strokeWidth="1.5" />
+                <text x={progressingPoint.x} y={progressingPoint.y - 9} textAnchor="middle" fontSize="11" fontWeight="700" fill={CHAKRA_COLORS[body]}>{CHAKRA_GLYPHS[body]}</text>
+              </g>;
+            })}
+            <circle cx={cx} cy={cx} r={natalRadius} fill="#27272a" stroke="#fbbf24" strokeWidth="2" />
+            {natal.map(planet => {
+              const p = CHAKRA_POINT(49, (planet.sign - 1) * 30 + planet.degree);
+              return <text key={planet.name} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" fontSize="11" fontWeight="700" fill="#fbbf24">{CHAKRA_GLYPHS[planet.name]}</text>;
+            })}
+            <text x={cx} y={cx + 5} textAnchor="middle" fontSize="12" fill="#fafafa">NATAL</text>
+          </svg>
+        </div>
+        <aside className="space-y-1 text-xs">
+          <div className="mb-2 font-mono text-[10px] uppercase tracking-wider text-zinc-500">Rings · inner → outer</div>
+          <div className="flex items-center gap-2 rounded-md border border-zinc-200 px-2 py-1.5 dark:border-zinc-800"><span className="h-2.5 w-2.5 rounded-full bg-amber-400" />Natal chart</div>
+          {ringBodies.map(body => {
+            const position = now.find(item => item.body === body);
+            const activated = position ? natal.filter(planet => relationOn(position.signIndex, planet.sign - 1)) : [];
+            return <div key={body} className="space-y-1 rounded-md border border-zinc-200 px-2 py-1.5 dark:border-zinc-800">
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: CHAKRA_COLORS[body] }} /><span className="font-medium">{code(body)}</span><span className="ml-auto text-zinc-500">{position ? SIGN_NAMES[position.signIndex] : '—'}</span></div>
+              <div className="pl-4 text-[10px] text-zinc-500">Activates: {activated.length ? activated.map(planet => code(planet.name)).join(' · ') : '—'}</div>
+            </div>;
+          })}
+          <p className="pt-1 text-[10px] leading-relaxed text-zinc-500">Highlights use the selected sign relationships: {relations.join(' · ')}. Shared radial divisions and sign labels are drawn once.</p>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
 export default function ParayaProgressionPanel({ chart, birthDatetime, targetDate, calculationSettings, onSetTarget }: Props) {
   const t = useT();
   const language = useLanguage();
@@ -147,6 +244,8 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
           <button key={body} type="button" aria-pressed={bodies.includes(body)} title={body} onClick={() => toggleBody(body)} className={chip(bodies.includes(body))}>{code(body)}</button>
         ))}
       </div>
+
+      <BhriguChakra chart={chart} now={now} relations={relations} code={code} />
 
       {/* Where they stand and what comes next */}
       <ScrollTable minWidth="min-w-[440px]" headers={[t('Progressing'), t('Stands in'), t('House'), t('Next hit')]}>
