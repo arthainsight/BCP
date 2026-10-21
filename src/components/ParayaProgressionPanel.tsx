@@ -86,7 +86,6 @@ function BhriguChakra({ chart, now, relations, code }: {
           <svg viewBox="0 0 720 720" role="img" aria-label="Natal chart with seven separate progression rings" className="h-auto w-full">
             {Array.from({ length: 12 }, (_, i) => {
               const a = CHAKRA_POINT(outer, i * 30);
-              const b = CHAKRA_POINT(natalRadius, i * 30);
               const label = CHAKRA_POINT(outer + 16, i * 30 + 15);
               return <g key={i}>
                 <line x1={cx} y1={cx} x2={a.x} y2={a.y} stroke="#52525b" strokeWidth="1" />
