@@ -7,6 +7,7 @@ export const CHANGELOG = [
       'Move natal graha labels out of the central NATAL disc into their zodiac-house positions in the inner band.',
       'Keep the central disc reserved for the NATAL label; do not add decorative red dots.',
       'Use small radial offsets to reduce overlap between natal grahas while preserving their sign and degree angles.',
+      'Updated the application version to v3.31.',
     ],
   },
   {
