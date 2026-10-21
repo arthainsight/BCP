@@ -113,9 +113,13 @@ function BhriguChakra({ chart, now, relations, code }: {
               </g>;
             })}
             <circle cx={cx} cy={cx} r={natalRadius} fill="#27272a" stroke="#fbbf24" strokeWidth="2" />
-            {natal.map(planet => {
-              const p = CHAKRA_POINT(49, (planet.sign - 1) * 30 + planet.degree);
-              return <text key={planet.name} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" fontSize="11" fontWeight="700" fill="#fbbf24">{CHAKRA_GLYPHS[planet.name]}</text>;
+            {natal.map((planet, index) => {
+              // Keep natal grahas out of the central NATAL disc and place them in the
+              // zodiac-house band between the inner disc and the Jupiter progression ring.
+              // Slight radial staggering prevents close natal conjunctions from colliding.
+              const radius = 88 + (index % 3) * 11;
+              const p = CHAKRA_POINT(radius, (planet.sign - 1) * 30 + planet.degree);
+              return <text key={planet.name} data-natal-house={planet.sign} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="middle" fontSize="11" fontWeight="700" fill="#fbbf24">{CHAKRA_GLYPHS[planet.name]}</text>;
             })}
             <text x={cx} y={cx + 5} textAnchor="middle" fontSize="12" fill="#fafafa">NATAL</text>
           </svg>
