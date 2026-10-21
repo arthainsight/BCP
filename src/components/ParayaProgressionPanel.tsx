@@ -95,7 +95,7 @@ function BhriguChakra({ chart, now, relations, code }: {
             })}
             <circle cx={cx} cy={cx} r={outer} fill="none" stroke="#71717a" strokeWidth="1.2" />
             {ringBodies.map((body, index) => {
-              const radius = outer - index * ringWidth;
+              const radius = outer - (ringBodies.length - 1 - index) * ringWidth;
               const position = now.find(item => item.body === body);
               if (!position) return null;
               const progressingPoint = CHAKRA_POINT(radius, position.signIndex * 30 + position.degree);
