@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.30',
+    date: '2026-10-21',
+    title: 'Bhṛgu Chakra progression rings',
+    changes: [
+      'Add a concentric Bhṛgu Chakra view to Paraya progressions with natal grahas in the inner circle and separate Jupiter, Saturn, Rahu, Ketu, Mercury, Venus and Mars rings from inner to outer.',
+      'Draw zodiac sectors and sign labels once as a shared grid, and highlight natal grahas activated by the selected 1st, 5th, 7th, 9th and optional 3rd/11th sign relationships.',
+      'Reuse existing Paraya progression positions and relationship selections; keep the existing progression tables and hit calculations available.',
+      'Updated the application version to v3.30.',
+    ],
+  },
+
+  {
     version: 'v3.29',
     date: '2026-10-20',
     title: 'Mobile navigation no longer overlaps',
