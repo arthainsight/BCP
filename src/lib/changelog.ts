@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.32',
+    date: '2026-10-22',
+    title: 'Natal grahas are spaced clearly inside their houses',
+    changes: [
+      'Place natal graha labels by house rather than exact degree so close conjunctions remain readable.',
+      'Keep all natal grahas within the zodiac-house band and leave the central NATAL disc clear.',
+      'Updated the application version to v3.32.',
+    ],
+  },
+  {
     version: 'v3.31',
     date: '2026-10-21',
     title: 'Bhṛgu Chakra natal house placement',
