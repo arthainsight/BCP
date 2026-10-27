@@ -120,8 +120,17 @@ function normalise(value: string): string {
   return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z ]/g, '').trim().replace(/\s+/g, ' ');
 }
 function lookup<T>(map: Record<string, T>, name: string): T | undefined {
-  const wanted = normalise(name).toLowerCase();
-  const key = Object.keys(map).find(k => normalise(k).toLowerCase() === wanted);
+  const raw = normalise(name).toLowerCase();
+  const aliases: Record<string, string> = {
+    dvitiya: 'dwitiya', tritiya: 'tritiya', shula: 'shoola',
+    variya: 'variyana', variayan: 'variyana', kintughna: 'kimstughna',
+    kimshtughna: 'kimstughna', gara: 'gara', garaja: 'garaja',
+  };
+  const wanted = aliases[raw] ?? raw;
+  const key = Object.keys(map).find(k => {
+    const candidate = normalise(k).toLowerCase();
+    return candidate === wanted || (aliases[candidate] ?? candidate) === wanted;
+  });
   return key ? map[key] : undefined;
 }
 function dedupe(items: string[]): string[] {
@@ -163,48 +172,34 @@ export function generateDailyPanchangNarrative(
   };
 }
 
-/** Finnish-language version, preserving the same combined interpretation logic. */
+/** Finnish-language version, using the same five-factor synthesis as the English reading. */
 export function generateFinnishDailyPanchangNarrative(
   p: Pick<PanchangResult, 'vara' | 'varaLord' | 'tithi' | 'tithiNumber' | 'paksha' | 'nakshatra' | 'nakshatraPada' | 'karana' | 'yoga'>,
 ): DailyPanchangNarrative {
-  const en = generateDailyPanchangNarrative(p);
-  const replacements: Array<[RegExp, string]> = [
-    [/Several factors reinforce/g, 'Useat tekijät vahvistavat'],
-    [/Use that overlap as the main thread of the day, while remembering that these are traditional symbolic prompts rather than certain outcomes\./g, 'Käytä tätä yhteistä teemaa päivän punaisena lankana. Kyse on perinteisistä symbolisista tulkinnoista, ei varmoista ennusteista.'],
-    [/The factors point in different directions, so treat the day as a balancing exercise rather than reducing it to one label\./g, 'Tekijät osoittavat eri suuntiin, joten päivää kannattaa tarkastella tasapainotteluna yhden leiman sijaan.'],
-    [/The weekday symbolism emphasises/g, 'Viikonpäivän symboliikka korostaa'],
-    [/the tithi adds/g, 'tithi tuo mukaan'],
-    [/while the nakshatra brings/g, 'ja nakshatra nostaa esiin'],
-    [/The useful question is how to express these themes deliberately, not what events must happen\./g, 'Olennaista on, miten tuot nämä teemat tietoisesti käytäntöön — ei se, mitä tapahtumia pitäisi tapahtua.'],
-    [/For work, combine/g, 'Työssä yhdistä'],
-    [/into focus:/g, 'keskiöön:'],
-    [/The yoga adds/g, 'Yoga lisää kokonaisuuteen'],
-    [/so /g, 'joten '],
-    [/A practical approach is to choose one meaningful deliverable, define what “done” means, and avoid scattering effort across too many tasks\./g, 'Käytännössä valitse yksi merkityksellinen tehtävä, määrittele mitä sen valmistuminen tarkoittaa ja vältä energian hajauttamista liian moneen asiaan.'],
-    [/For money and decisions/g, 'Rahan ja päätöksenteon näkökulmasta'],
-    [/can be used to reflect on value, resources and responsibility\./g, 'tarjoavat näkökulmia arvoon, resursseihin ja vastuuseen.'],
-    [/Keep choices grounded in actual figures, written terms and affordability; a Panchang combination is not evidence that a financial risk will pay off\./g, 'Perusta valinnat todellisiin lukuihin, kirjallisiin ehtoihin ja maksukykyyn. Panchang-yhdistelmä ei todista, että taloudellinen riski kannattaa.'],
-    [/In relationships, the day brings/g, 'Ihmissuhteissa päivä nostaa esiin'],
-    [/into the picture\./g, 'teemat.'],
-    [/Watch for/g, 'Varo erityisesti'],
-    [/state needs plainly and leave room for the other person's perspective\./g, 'kerro tarpeistasi suoraan ja jätä tilaa myös toisen näkökulmalle.'],
-    [/For inner work, reflect on the relationship between/g, 'Sisäisessä työssä pohdi yhteyttä teemojen'],
-    [/The yoga highlights/g, 'Yoga korostaa'],
-    [/while the karana points toward/g, 'ja karana nostaa esiin'],
-    [/Ask where these qualities are helpful and where their excess could appear\./g, 'Pohdi, missä nämä ominaisuudet auttavat ja missä niiden liioittelu voi näkyä.'],
-    [/Possible pressure points include/g, 'Mahdollisia haasteita ovat'],
-    [/Treat the reading as a reflective framework, not a fixed description of you or the day\./g, 'Käytä tulkintaa pohdinnan apuna, älä sinua tai päivää lopullisesti määrittelevänä kuvauksena.'],
-    [/Today's practical thread:/g, 'Päivän käytännön punainen lanka:'],
-    [/Keep an eye on/g, 'Kiinnitä huomiota seuraaviin haasteisiin:'],
-    [/Pick one concrete action, make it small enough to finish, and assess important choices on their real-world merits rather than on astrological symbolism alone\./g, 'Valitse yksi konkreettinen ja loppuun saatettava teko. Arvioi tärkeät päätökset todellisten perusteiden, älä pelkän astrologisen symboliikan pohjalta.'],
-  ];
-  const translate = (value: string) => replacements.reduce((text, [pattern, replacement]) => text.replace(pattern, replacement), value);
+  const day = pick(lookup(VARA, p.vara), { planet: p.varaLord || 'planeetta', themes: ['tietoinen toiminta', 'selkeät painopisteet'], challenges: ['hätiköinti'], action: 'valitse yksi selkeä painopiste' });
+  const starName = cleanNakshatraName(p.nakshatra);
+  const star = pick(lookup(NAKSHATRA, starName), { themes: ['hetken vaatimusten tunnistaminen'], challenges: ['ennakko-oletukset'], action: 'havainnoi tilanne ennen reagointia' });
+  const tithiName = p.tithi.replace(/\\s*\\([^)]*\\)\\s*$/, '').trim();
+  const tithiLookupName = /purnima\\s*\\/\\s*amavasya/i.test(tithiName)
+    ? (p.paksha === 'Shukla' ? 'Purnima' : 'Amavasya')
+    : tithiName;
+  const tithi = pick(lookup(TITHI, tithiLookupName), { themes: ['harkinta', 'tietoinen toiminta'], challenges: ['oletusten varassa toimiminen'], action: 'tarkista faktat ja valitse oikeasuhtainen seuraava askel' });
+  const yoga = pick(lookup(YOGA, p.yoga), { themes: [p.yoga + '-joogan symboliikka'], challenges: ['symboliikan pitäminen varmana ennusteena'], action: 'käytä symboliikkaa pohdinnan apuna, älä ennusteena' });
+  const karana = pick(lookup(KARANA, p.karana), { themes: ['käytännön toteutus'], challenges: ['oletusten varassa toimiminen'], action: 'tee yksi rajattu tehtävä huolellisesti' });
+  const themes = dedupe([...day.themes, ...tithi.themes, ...star.themes, ...yoga.themes, ...karana.themes]);
+  const challenges = dedupe([...day.challenges, ...tithi.challenges, ...star.challenges, ...yoga.challenges, ...karana.challenges]);
+  const shared = themes.filter(theme => [day, tithi, star, yoga, karana].filter(item => item.themes.some(value => value.toLowerCase() === theme.toLowerCase())).length > 1);
+  const synthesis = shared.length
+    ? 'Useampi tekijä korostaa teemaa ' + shared.slice(0, 3).join(', ') + '. Tämä voi toimia päivän punaisena lankana; kyse on perinteisestä symbolisesta tulkinnasta, ei varmoista tapahtumaennusteista.'
+    : 'Tekijät painottavat eri asioita, joten päivän tulkinnassa olennaista on tasapainottaa niitä yhden ominaisuuden korostamisen sijaan.';
+  const weekdayFi: Record<string, string> = { Sunday: 'sunnuntai', Monday: 'maanantai', Tuesday: 'tiistai', Wednesday: 'keskiviikko', Thursday: 'torstai', Friday: 'perjantai', Saturday: 'lauantai' };
+  const planetFi: Record<string, string> = { Sun: 'Aurinko', Moon: 'Kuu', Mars: 'Mars', Mercury: 'Merkurius', Jupiter: 'Jupiter', Venus: 'Venus', Saturn: 'Saturnus' };
   return {
-    overview: translate(en.overview),
-    work: translate(en.work),
-    finances: translate(en.finances),
-    relationships: translate(en.relationships),
-    spiritual: translate(en.spiritual),
-    practicalAdvice: translate(en.practicalAdvice),
+    overview: `${p.tithi} (${p.paksha} paksha), ${weekdayFi[p.vara] ?? p.vara}, ${starName}-nakshatra, ${p.yoga}-jooga ja ${p.karana}-karana muodostavat päivän kokonaisuuden. Viikonpäivän ${planetFi[day.planet] ?? day.planet}-symboliikka korostaa teemoja ${day.themes.slice(0, 3).join(', ')}. Tithi nostaa esiin teemat ${tithi.themes.slice(0, 3).join(', ')}, ja nakshatra tuo mukaan ${star.themes.slice(0, 3).join(', ')}. ${synthesis} Olennaista on, miten teemat näkyvät tietoisessa toiminnassa — ei se, että tiettyjen tapahtumien pitäisi toteutua.`,
+    work: `Työssä yhdistyvät erityisesti teemat ${star.themes[0]} ja ${karana.themes[0]}. ${star.action}. Jooga korostaa teemoja ${yoga.themes.slice(0, 2).join(' ja ')}: ${yoga.action}. Tithin näkökulmasta ${tithi.action}. Valitse yksi merkityksellinen tehtävä, määrittele mitä sen valmistuminen tarkoittaa ja vie se loppuun ennen kuin hajautat huomiosi muualle.`,
+    finances: `Rahan ja päätöksenteon näkökulmasta tithin teemat (${tithi.themes[0]}), karanan painotus (${karana.themes[0]}) ja viikonpäivän teemat (${day.themes[0]}) tarjoavat yhden pohdintakehyksen resursseille ja vastuulle. ${karana.action}. Perusta taloudelliset valinnat todellisiin lukuihin, kirjallisiin ehtoihin ja maksukykyyn. Panchang-yhdistelmä ei ole näyttö siitä, että taloudellinen riski kannattaisi.`,
+    relationships: `Ihmissuhteissa korostuvat ${star.themes.includes('relationships') ? 'yhteys ja vuorovaikutus' : day.themes[0] + ' ja ' + star.themes[0]}. ${day.action}. ${karana.action}. Kiinnitä huomiota mahdollisiin haasteisiin: ${dedupe([...day.challenges, ...star.challenges, ...tithi.challenges]).slice(0, 3).join(', ')}. Kerro tarpeistasi suoraan ja jätä tilaa myös toisen näkökulmalle.`,
+    spiritual: `Sisäisessä työssä voit pohtia tithin teeman ${tithi.themes[0]} ja nakshatran teeman ${star.themes[0]} välistä suhdetta. Jooga korostaa ${yoga.themes[0]}, kun taas karana painottaa ${karana.themes[0]}. Missä nämä ominaisuudet auttavat, ja missä ne voivat mennä liiallisuuksiin? Mahdollisia haasteita ovat ${dedupe([...day.challenges, ...tithi.challenges, ...star.challenges, ...yoga.challenges, ...karana.challenges]).slice(0, 3).join(', ')}. Käytä tulkintaa pohdinnan apuna, älä ehdottomana kuvauksena itsestäsi tai päivästä.`,
+    practicalAdvice: `Päivän käytännön punainen lanka: ${day.action}; ${tithi.action}; ${karana.action}. Varo erityisesti teemoja ${challenges.slice(0, 4).join(', ')}. Valitse yksi konkreettinen, loppuun saatettava teko. Arvioi tärkeät päätökset todellisten perusteiden pohjalta, älä pelkän astrologisen symboliikan varassa.`,
   };
 }
