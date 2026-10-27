@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.35',
+    date: '2026-10-27',
+    title: 'Daily Panchang summary in Finnish',
+    changes: [
+      'Show the Daily Panchang narrative in Finnish when Finnish is selected in Settings.',
+      'Keep the English narrative when the interface language is English.',
+      'Updated the application version to v3.35.',
+    ],
+  },
+
+  {
     version: 'v3.34',
     date: '2026-10-27',
     title: 'Daily Panchang weekday boundary correction',
