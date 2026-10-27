@@ -31,7 +31,7 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
   const t = useT();
   const [dailyChart, setDailyChart] = useState<ChartData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const geo = useMemo(() => {
     const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(targetDate);
@@ -48,8 +48,6 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
     if (!geo) {
       return;
     }
-    setLoading(true);
-    setError(null);
     const params = new URLSearchParams({
       year: String(geo.year), month: String(geo.month), day: String(geo.day),
       hour: '12', minute: '0', second: '0',
@@ -67,7 +65,15 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
       return response.json() as Promise<ChartData>;
     };
 
-    fetchChart(12, 0)
+    // Defer state updates to the promise chain so the effect itself stays side-effect free.
+    Promise.resolve()
+      .then(() => {
+        if (!cancelled) {
+          setLoading(true);
+          setError(null);
+        }
+        return fetchChart(12, 0);
+      })
       .then(async noonChart => {
         const sunrise = noonChart.debug?.sunriseLocalHours;
         if (typeof sunrise !== 'number' || !Number.isFinite(sunrise)) {
