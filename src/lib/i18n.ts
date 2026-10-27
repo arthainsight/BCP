@@ -1604,6 +1604,9 @@ export const FI: Record<string, string> = {
   'No 1, 5, 7 or 9 relationships between progressing grahas.': 'Progressioiden grahojen välillä ei ole 1., 5., 7. tai 9. suhdetta.',
   'Relationship is counted from the first progressing graha by sign. ● = within 1° by degree.': 'Suhde lasketaan ensimmäisestä progressiograhasta merkkien mukaan. ● = astelukujen ero enintään 1°.',
   'Exact degree proximity': 'Asteluvut ovat lähellä toisiaan',
+  'Calculating Daily Panchang…': 'Lasketaan päivän Panchangia…',
+  'Daily Panchang': 'Päivän Panchang',
+  'Calculated for local sunrise at the chart location. Panchang elements can change during the day.': 'Laskettu kartan sijaintipaikan paikallisen auringonnousun mukaan. Panchangin osatekijät voivat vaihtua päivän aikana.',
 
 };
 
