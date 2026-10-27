@@ -1606,7 +1606,7 @@ export const FI: Record<string, string> = {
   'Exact degree proximity': 'Asteluvut ovat lähellä toisiaan',
   'Calculating Daily Panchang…': 'Lasketaan päivän Panchangia…',
   'Daily Panchang': 'Päivän Panchang',
-  'Panchang date': 'Panchangin päivämäärä',
+  'Panchang date': 'Panchangin päivämäärä',\n  'Latitude': 'Leveysaste',\n  'Longitude': 'Pituusaste',\n  'UTC offset': 'UTC-aikapoikkeama',
   'A calculated chart with a valid location is required.': 'Tarvitaan laskettu kartta ja kelvollinen sijainti.',
   'Calculated for local sunrise at the chart location. Panchang elements can change during the day.': 'Laskettu kartan sijaintipaikan paikallisen auringonnousun mukaan. Panchangin osatekijät voivat vaihtua päivän aikana.',
 
