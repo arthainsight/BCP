@@ -26,7 +26,7 @@ function Section({ title, children }: { title: string; children: string }) {
   );
 }
 
-/** Daily narrative based on a freshly calculated chart for local noon at the selected place. */
+/** Daily narrative based on the selected place's local sunrise; falls back to noon if sunrise is unavailable. */
 export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, calculationSettings, nakshatraAdjust = 0 }: Props) {
   const t = useT();
   const [dailyChart, setDailyChart] = useState<ChartData | null>(null);
@@ -58,10 +58,27 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
       lat: String(geo.lat), lng: String(geo.lng), tz: String(geo.tz),
       ...calculationParams(calculationSettings),
     });
-    fetch(`/api/chart?${params.toString()}`)
-      .then(async response => {
-        if (!response.ok) throw new Error('Daily chart calculation failed.');
-        return response.json() as Promise<ChartData>;
+    // First calculate the date at noon to obtain the ephemeris-backed local sunrise.
+    // Then calculate the actual Panchang chart at sunrise, when the Vedic day begins.
+    const fetchChart = async (hour: number, minute: number) => {
+      const chartParams = new URLSearchParams(params);
+      chartParams.set('hour', String(hour));
+      chartParams.set('minute', String(minute));
+      const response = await fetch(`/api/chart?${chartParams.toString()}`);
+      if (!response.ok) throw new Error('Daily chart calculation failed.');
+      return response.json() as Promise<ChartData>;
+    };
+
+    fetchChart(12, 0)
+      .then(async noonChart => {
+        const sunrise = noonChart.debug?.sunriseLocalHours;
+        if (typeof sunrise !== 'number' || !Number.isFinite(sunrise)) {
+          // Polar day/night or unavailable sunrise: retain a noon snapshot.
+          return noonChart;
+        }
+        const hour = Math.floor(sunrise);
+        const minute = Math.round((sunrise - hour) * 60);
+        return fetchChart(hour + (minute === 60 ? 1 : 0), minute === 60 ? 0 : minute);
       })
       .then(result => { if (!cancelled) setDailyChart(result); })
       .catch(reason => { if (!cancelled) setError(reason instanceof Error ? reason.message : 'Unable to calculate the daily Panchang.'); })
@@ -91,7 +108,7 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
             <span key={item} className="rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-zinc-800">{t(item)}</span>
           )}
         </div>
-        <p className="text-[10px] text-zinc-400">{t('Calculated for local noon at the chart location. Panchang elements can change during the day.')}</p>
+        <p className="text-[10px] text-zinc-400">{t('Calculated for local sunrise at the chart location. Panchang elements can change during the day.')}</p>
       </header>
       <Section title="The day ahead">{narrative.overview}</Section>
       <Section title="Work and accomplishment">{narrative.work}</Section>
