@@ -46,8 +46,6 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
   useEffect(() => {
     let cancelled = false;
     if (!geo) {
-      setDailyChart(null);
-      setError(targetDate ? 'A valid date and calculated chart with a location are required.' : 'Select a date to calculate the daily Panchang.');
       return;
     }
     setLoading(true);
@@ -100,6 +98,7 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
 
   const narrative = useMemo(() => panchang ? generateDailyPanchangNarrative(panchang) : null, [panchang]);
 
+  if (!geo) return <div role="alert" className="rounded-lg border border-amber-200 p-4 text-sm text-amber-800 dark:border-amber-900 dark:text-amber-300">{t(targetDate ? 'A valid date and calculated chart with a location are required.' : 'Select a date to calculate the daily Panchang.')}</div>;
   if (loading) return <div className="py-8 text-center text-xs font-mono text-zinc-500">{t('Calculating Daily Panchang…')}</div>;
   if (error) return <div role="alert" className="rounded-lg border border-amber-200 p-4 text-sm text-amber-800 dark:border-amber-900 dark:text-amber-300">{t(error)}</div>;
   if (!panchang || !narrative) return null;
