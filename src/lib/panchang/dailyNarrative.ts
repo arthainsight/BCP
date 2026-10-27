@@ -150,7 +150,7 @@ export function generateDailyPanchangNarrative(
   const star = pick(lookup(NAKSHATRA, starName), { themes: ['attention to the demands of the moment'], challenges: ['assuming the day has a fixed outcome'], action: 'observe the situation before choosing a response' });
   const tithiName = p.tithi.replace(/\s*\([^)]*\)\s*$/, '').trim();
   const tithi = pick(lookup(TITHI, tithiName), { themes: ['reflection and intentional action'], challenges: ['acting on assumptions'], action: 'check the facts and choose a proportionate next step' });
-  const yoga = pick(lookup(YOGA, p.yoga), { themes: ['the traditional symbolism of ' + p.yoga], challenges: ['treating symbolism as certainty'], action: 'use the symbolism as a prompt, not a prediction' });
+  const yoga = pick(lookup(YOGA, p.yoga), { themes: [p.yoga + ' has its own traditional symbolism'], challenges: ['treating symbolism as certainty'], action: 'use the symbolism as a prompt, not a prediction' });
   const karana = pick(lookup(KARANA, p.karana), { themes: ['practical follow-through'], challenges: ['working from assumptions'], action: 'complete one manageable task carefully' });
 
   const themes = dedupe([...day.themes, ...tithi.themes, ...star.themes, ...yoga.themes, ...karana.themes]);
@@ -163,7 +163,7 @@ export function generateDailyPanchangNarrative(
   const paksha = p.paksha ? p.paksha + ' Paksha' : 'current lunar half';
 
   return {
-    overview: `${p.tithi} (${paksha}) combines with ${starName} Nakshatra, ${p.yoga} Yoga, ${p.karana} Karana and ${p.vara}. The weekday symbolism emphasises ${day.themes.slice(0, 3).join(', ')}; the tithi adds ${tithi.themes.slice(0, 3).join(', ')}, while the nakshatra brings ${star.themes.slice(0, 3).join(', ')} into focus. ${synthesis} The useful question is how to express these themes deliberately, not what events must happen.`,
+    overview: `${p.tithi} (${paksha}) combines with ${starName} Nakshatra, ${p.yoga} Yoga, ${p.karana} Karana and ${p.vara}. The ${day.planet} rules the weekday; its symbolism emphasises ${day.themes.slice(0, 3).join(', ')}; the tithi adds ${tithi.themes.slice(0, 3).join(', ')}, while the nakshatra brings ${star.themes.slice(0, 3).join(', ')} into focus. ${synthesis} The useful question is how to express these themes deliberately, not what events must happen.`,
     work: `For work, combine ${star.themes[0]} with ${karana.themes[0]}: ${star.action}. The yoga adds ${yoga.themes.slice(0, 2).join(' and ')}, so ${yoga.action}. The tithi suggests ${tithi.action}. A practical approach is to choose one meaningful deliverable, define what “done” means, and avoid scattering effort across too many tasks.`,
     finances: `For money and decisions, the combined themes of ${tithi.themes[0]}, ${karana.themes[0]} and ${day.themes[0]} can be used to reflect on value, resources and responsibility. ${karana.action}. Keep choices grounded in actual figures, written terms and affordability; a Panchang combination is not evidence that a financial risk will pay off.`,
     relationships: `In relationships, the day brings ${star.themes.includes('relationships') ? 'connection and relational awareness' : day.themes[0] + ' and ' + star.themes[0]} into the picture. ${day.action}. ${karana.action}. Watch for ${dedupe([...day.challenges, ...star.challenges, ...tithi.challenges]).slice(0, 3).join(', ')}; state needs plainly and leave room for the other person's perspective.`,
