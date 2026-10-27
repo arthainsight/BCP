@@ -179,8 +179,8 @@ export function generateFinnishDailyPanchangNarrative(
   const day = pick(lookup(VARA, p.vara), { planet: p.varaLord || 'planeetta', themes: ['tietoinen toiminta', 'selkeät painopisteet'], challenges: ['hätiköinti'], action: 'valitse yksi selkeä painopiste' });
   const starName = cleanNakshatraName(p.nakshatra);
   const star = pick(lookup(NAKSHATRA, starName), { themes: ['hetken vaatimusten tunnistaminen'], challenges: ['ennakko-oletukset'], action: 'havainnoi tilanne ennen reagointia' });
-  const tithiName = p.tithi.replace(/\\s*\\([^)]*\\)\\s*$/, '').trim();
-  const tithiLookupName = /purnima\\s*\\/\\s*amavasya/i.test(tithiName)
+  const tithiName = p.tithi.replace(/\s*\([^)]*\)\s*$/, '').trim();
+  const tithiLookupName = /purnima\s*\/\s*amavasya/i.test(tithiName)
     ? (p.paksha === 'Shukla' ? 'Purnima' : 'Amavasya')
     : tithiName;
   const tithi = pick(lookup(TITHI, tithiLookupName), { themes: ['harkinta', 'tietoinen toiminta'], challenges: ['oletusten varassa toimiminen'], action: 'tarkista faktat ja valitse oikeasuhtainen seuraava askel' });
