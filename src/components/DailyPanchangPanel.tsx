@@ -18,7 +18,6 @@ interface Props {
 
 function Section({ title, children }: { title: string; children: string }) {
   const t = useT();
-  const language = useLanguage();
   return (
     <section className="space-y-1.5">
       <h3 className="text-[10px] font-mono uppercase tracking-widest text-emerald-700 dark:text-green-400">{t(title)}</h3>
@@ -30,6 +29,7 @@ function Section({ title, children }: { title: string; children: string }) {
 /** Daily narrative based on the selected place's local sunrise; falls back to noon if sunrise is unavailable. */
 export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSettings, nakshatraAdjust = 0 }: Props) {
   const t = useT();
+  const language = useLanguage();
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
     const year = today.getFullYear();
