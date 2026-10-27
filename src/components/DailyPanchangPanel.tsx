@@ -106,7 +106,12 @@ export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSet
   const panchang = useMemo<PanchangResult | null>(() => {
     if (!dailyChart || !geo) return null;
     const sunrise = dailyChart.debug?.sunriseLocalHours;
-    const localHour = typeof sunrise === 'number' && Number.isFinite(sunrise) ? sunrise : 12;
+    // The vāra boundary is sunrise. The chart API stores sunrise with sub-minute
+    // precision, while the datetime passed to calculatePanchang is rounded to
+    // whole minutes. If that rounds down, the calculation can wrongly classify
+    // the selected day as the previous vāra. Use a snapshot two minutes after
+    // sunrise so rounding can never place it before the sunrise boundary.
+    const localHour = typeof sunrise === 'number' && Number.isFinite(sunrise) ? sunrise + 2 / 60 : 12;
     const hour = Math.floor(localHour);
     const minute = Math.round((localHour - hour) * 60);
     const normalizedHour = hour + (minute === 60 ? 1 : 0);
