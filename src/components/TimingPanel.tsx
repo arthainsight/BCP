@@ -120,7 +120,6 @@ export default function TimingPanel({
       {view === 'daily' && (
         <DailyPanchangPanel
           chart={chart}
-          targetDate={targetDate ?? ''}
           ianaTimezone={ianaTimezone}
           calculationSettings={calculationSettings}
           nakshatraAdjust={nakshatraAdjust}
