@@ -1077,5 +1077,12 @@ export function generateFinnishDailyPanchangNarrative(
     spiritual: `Sisäisessä työssä voit pohtia tithin teeman ${tithi.themes[0]} ja nakshatran teeman ${star.themes[0]} välistä suhdetta. Jooga korostaa ${yoga.themes[0]}, kun taas karana painottaa ${karana.themes[0]}. Missä nämä ominaisuudet auttavat, ja missä ne voivat mennä liiallisuuksiin? Mahdollisia haasteita ovat ${dedupe([...day.challenges, ...tithi.challenges, ...star.challenges, ...yoga.challenges, ...karana.challenges]).slice(0, 3).join(', ')}. Käytä tulkintaa pohdinnan apuna, älä ehdottomana kuvauksena itsestäsi tai päivästä.`,
     practicalAdvice: `Päivän käytännön punainen lanka: ${day.action}; ${tithi.action}; ${karana.action}. Varo erityisesti teemoja ${challenges.slice(0, 4).join(', ')}. Valitse yksi konkreettinen, loppuun saatettava teko. Arvioi tärkeät päätökset todellisten perusteiden pohjalta, älä pelkän astrologisen symboliikan varassa.`,
   };
-  return Object.fromEntries(Object.entries(narrative).map(([key, value]) => [key, translateFinnishNarrative(value)])) as DailyPanchangNarrative;
+  return {
+    overview: translateFinnishNarrative(narrative.overview),
+    work: translateFinnishNarrative(narrative.work),
+    finances: translateFinnishNarrative(narrative.finances),
+    relationships: translateFinnishNarrative(narrative.relationships),
+    spiritual: translateFinnishNarrative(narrative.spiritual),
+    practicalAdvice: translateFinnishNarrative(narrative.practicalAdvice),
+  };
 }
