@@ -161,7 +161,7 @@ export function generateFinnishDailyPanchangNarrative(
     'Uttara Bhadrapada': 'vakaus, syvyys ja kärsivällinen sisäinen työ',
     Revati: 'päätökseen saattaminen, ohjaus ja harkittu siirtymä',
   };
-  const nakshatraName = p.nakshatra.replace(/\\s*\\([^)]*\\)\\s*$/, '');
+  const nakshatraName = p.nakshatra.replace(/\s*\([^)]*\)\s*$/, '');
   const weekday = weekdays[p.vara] ?? p.vara;
   const planet = planets[p.varaLord] ?? p.varaLord;
   const theme = themes[p.vara] ?? 'tietoinen toiminta ja selkeät painopisteet';
