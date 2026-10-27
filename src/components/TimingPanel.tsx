@@ -15,14 +15,16 @@ import YearGlancePanel from './YearGlancePanel';
 import VarshaphalaPanel from './VarshaphalaPanel';
 import SudarshanaPanel from './SudarshanaPanel';
 import MuhurtaPanel from './MuhurtaPanel';
+import DailyPanchangPanel from './DailyPanchangPanel';
 import type { AnnualPlace } from './annualShared';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
-type View = 'dasha' | 'summary' | 'transits' | 'hitFinder' | 'paraya' | 'parayaAspects' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
+type View = 'daily' | 'dasha' | 'summary' | 'transits' | 'hitFinder' | 'paraya' | 'parayaAspects' | 'signs' | 'muhurta' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
 
 const VIEW_GROUPS: { label: string; views: { key: View; label: string }[] }[] = [
+  { label: 'Daily reading', views: [{ key: 'daily', label: 'Daily Panchang' }] },
   { label: 'Periods & overview', views: [
     { key: 'dasha', label: 'Dasha' }, { key: 'summary', label: 'Summary' },
   ] },
@@ -114,6 +116,16 @@ export default function TimingPanel({
         </div>
         {onToggleWide && <FullWidthToggle wide={wide} onToggle={onToggleWide} />}
       </div>
+
+      {view === 'daily' && (
+        <DailyPanchangPanel
+          chart={chart}
+          targetDate={targetDate ?? ''}
+          ianaTimezone={ianaTimezone}
+          calculationSettings={calculationSettings}
+          nakshatraAdjust={nakshatraAdjust}
+        />
+      )}
 
       {view === 'dasha' && (
         <DashaWorkspace
