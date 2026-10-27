@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.33',
+    date: '2026-10-27',
+    title: 'Daily Panchang date and location controls',
+    changes: [
+      'Fix date selection so valid dates are accepted by the Daily Panchang panel.',
+      'Use the natal chart location by default and allow latitude, longitude and UTC offset to be adjusted.',
+      'Updated the application version to v3.33.',
+    ],
+  },
+  {
     version: 'v3.32',
     date: '2026-10-22',
     title: 'Natal grahas are spaced clearly inside their houses',

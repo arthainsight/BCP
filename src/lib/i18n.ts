@@ -568,6 +568,7 @@ export const FI: Record<string, string> = {
   'edit': 'muokkaa',
   '▲ hide': '▲ piilota',
   'UTC offset set by hand': 'UTC-ero käsin asetettu',
+  'UTC offset': 'UTC-aikapoikkeama',
   'auto': 'auto',
   'Show several workspaces side by side': 'Näytä useita työtiloja rinnakkain',
   'columns': 'sarakkeet',
@@ -1607,6 +1608,7 @@ export const FI: Record<string, string> = {
   'Calculating Daily Panchang…': 'Lasketaan päivän Panchangia…',
   'Daily Panchang': 'Päivän Panchang',
   'Panchang date': 'Panchangin päivämäärä',
+  'Latitude': 'Leveysaste',
   'A calculated chart with a valid location is required.': 'Tarvitaan laskettu kartta ja kelvollinen sijainti.',
   'Calculated for local sunrise at the chart location. Panchang elements can change during the day.': 'Laskettu kartan sijaintipaikan paikallisen auringonnousun mukaan. Panchangin osatekijät voivat vaihtua päivän aikana.',
 

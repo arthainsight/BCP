@@ -35,19 +35,26 @@ export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSet
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   });
+  const [latitudeOverride, setLatitudeOverride] = useState<number | null>(null);
+  const [longitudeOverride, setLongitudeOverride] = useState<number | null>(null);
+  const [timezoneOffsetOverride, setTimezoneOffsetOverride] = useState<number | null>(null);
+  const latitude = latitudeOverride ?? chart.debug?.latitude ?? 0;
+  const longitude = longitudeOverride ?? chart.debug?.longitude ?? 0;
+  const timezoneOffset = timezoneOffsetOverride ?? chart.debug?.utcOffset ?? 0;
   const [dailyChart, setDailyChart] = useState<ChartData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const geo = useMemo(() => {
-    const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(selectedDate);
-    if (!match || !chart.debug) return null;
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(selectedDate);
+    if (!match || !chart.debug || !Number.isFinite(latitude) || !Number.isFinite(longitude) || !Number.isFinite(timezoneOffset) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 || timezoneOffset < -12 || timezoneOffset > 14) return null;
     const [year, month, day] = match.slice(1).map(Number);
     const localNoon = new Date(Date.UTC(year, month - 1, day, 12));
     const zone = ianaTimezone;
-    const tz = zone ? getUtcOffsetHours(zone, localNoon) : chart.debug.utcOffset;
-    return { year, month, day, tz, lat: chart.debug.latitude, lng: chart.debug.longitude };
-  }, [chart.debug, ianaTimezone, selectedDate]);
+    const isNatalLocation = latitude === chart.debug.latitude && longitude === chart.debug.longitude;
+    const tz = isNatalLocation && zone ? getUtcOffsetHours(zone, localNoon) : timezoneOffset;
+    return { year, month, day, tz, lat: latitude, lng: longitude };
+  }, [chart.debug, ianaTimezone, selectedDate, latitude, longitude, timezoneOffset]);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,16 +118,38 @@ export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSet
   const narrative = useMemo(() => panchang ? generateDailyPanchangNarrative(panchang) : null, [panchang]);
 
   const dateSelector = (
-    <label className="flex flex-wrap items-center gap-3 text-xs font-mono text-zinc-500">
-      <span>{t('Date')}</span>
-      <input
-        aria-label={t('Panchang date')}
-        type="date"
-        value={selectedDate}
-        onChange={event => setSelectedDate(event.target.value)}
-        className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-      />
-    </label>
+    <div className="space-y-3">
+      <label className="flex flex-wrap items-center gap-3 text-xs font-mono text-zinc-500">
+        <span>{t('Date')}</span>
+        <input
+          aria-label={t('Panchang date')}
+          type="date"
+          value={selectedDate}
+          onChange={event => setSelectedDate(event.target.value)}
+          className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+        />
+      </label>
+      <div className="flex flex-wrap items-end gap-3 text-xs font-mono text-zinc-500">
+        <label className="flex flex-col gap-1">
+          <span>{t('Latitude')}</span>
+          <input aria-label={t('Latitude')} type="number" min="-90" max="90" step="any"
+            value={latitude} onChange={event => setLatitudeOverride(event.target.value === '' ? null : Number(event.target.value))}
+            className="w-28 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100" />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span>{t('Longitude')}</span>
+          <input aria-label={t('Longitude')} type="number" min="-180" max="180" step="any"
+            value={longitude} onChange={event => setLongitudeOverride(event.target.value === '' ? null : Number(event.target.value))}
+            className="w-28 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100" />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span>{t('UTC offset')}</span>
+          <input aria-label={t('UTC offset')} type="number" min="-12" max="14" step="0.25"
+            value={timezoneOffset} onChange={event => setTimezoneOffsetOverride(event.target.value === '' ? null : Number(event.target.value))}
+            className="w-28 rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100" />
+        </label>
+      </div>
+    </div>
   );
 
   if (!geo) return <div className="max-w-3xl space-y-3">{dateSelector}<div role="alert" className="rounded-lg border border-amber-200 p-4 text-sm text-amber-800 dark:border-amber-900 dark:text-amber-300">{t('A calculated chart with a valid location is required.')}</div></div>;
