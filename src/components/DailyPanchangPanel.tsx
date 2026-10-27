@@ -40,7 +40,7 @@ export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSet
   const [loading, setLoading] = useState(true);
 
   const geo = useMemo(() => {
-    const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(selectedDate);
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(selectedDate);
     if (!match || !chart.debug) return null;
     const [year, month, day] = match.slice(1).map(Number);
     const localNoon = new Date(Date.UTC(year, month - 1, day, 12));
