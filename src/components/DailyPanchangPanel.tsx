@@ -88,7 +88,13 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
 
   const panchang = useMemo<PanchangResult | null>(() => {
     if (!dailyChart || !geo) return null;
-    const dateTime = `${String(geo.day).padStart(2, '0')}.${String(geo.month).padStart(2, '0')}.${geo.year} 12.00.00`;
+    const sunrise = dailyChart.debug?.sunriseLocalHours;
+    const localHour = typeof sunrise === 'number' && Number.isFinite(sunrise) ? sunrise : 12;
+    const hour = Math.floor(localHour);
+    const minute = Math.round((localHour - hour) * 60);
+    const normalizedHour = hour + (minute === 60 ? 1 : 0);
+    const normalizedMinute = minute === 60 ? 0 : minute;
+    const dateTime = `${String(geo.day).padStart(2, '0')}.${String(geo.month).padStart(2, '0')}.${geo.year} ${String(normalizedHour).padStart(2, '0')}.${String(normalizedMinute).padStart(2, '0')}.00`;
     return calculatePanchang(dailyChart, dateTime, geo.tz, calculationSettings?.ayanamsa ?? 'lahiri', nakshatraAdjust);
   }, [dailyChart, geo, calculationSettings?.ayanamsa, nakshatraAdjust]);
 
