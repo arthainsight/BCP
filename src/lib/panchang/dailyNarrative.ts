@@ -123,7 +123,7 @@ function lookup<T>(map: Record<string, T>, name: string): T | undefined {
   const raw = normalise(name).toLowerCase();
   const aliases: Record<string, string> = {
     dvitiya: 'dwitiya', tritiya: 'tritiya', shula: 'shoola',
-    variya: 'variyana', variayan: 'variyana', kintughna: 'kimstughna',
+    variya: 'variyana', variyan: 'variyana', variayan: 'variyana', kintughna: 'kimstughna',
     kimshtughna: 'kimstughna', gara: 'gara', garaja: 'garaja',
   };
   const wanted = aliases[raw] ?? raw;
