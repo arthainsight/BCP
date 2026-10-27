@@ -42,7 +42,15 @@ export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSet
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {\n    if (chart.debug) {\n      setLatitude(chart.debug.latitude);\n      setLongitude(chart.debug.longitude);\n      setTimezoneOffset(chart.debug.utcOffset);\n    }\n  }, [chart.debug]);\n\n  const geo = useMemo(() => {
+  useEffect(() => {
+    if (chart.debug) {
+      setLatitude(chart.debug.latitude);
+      setLongitude(chart.debug.longitude);
+      setTimezoneOffset(chart.debug.utcOffset);
+    }
+  }, [chart.debug]);
+
+  const geo = useMemo(() => {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(selectedDate);
     if (!match || !chart.debug || !Number.isFinite(latitude) || !Number.isFinite(longitude) || !Number.isFinite(timezoneOffset) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 || timezoneOffset < -12 || timezoneOffset > 14) return null;
     const [year, month, day] = match.slice(1).map(Number);
