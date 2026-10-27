@@ -5,7 +5,8 @@ import type { CalculationSettings, ChartData } from '@/types';
 import { calculatePanchang, type PanchangResult } from '@/lib/panchang';
 import { calculationParams } from '@/lib/apiParams';
 import { getUtcOffsetHours } from '@/lib/timezone';
-import { generateDailyPanchangNarrative } from '@/lib/panchang/dailyNarrative';
+import { generateDailyPanchangNarrative, generateFinnishDailyPanchangNarrative } from '@/lib/panchang/dailyNarrative';
+import { useLanguage } from '@/lib/i18n';
 import { useT } from '@/lib/i18n';
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
 
 function Section({ title, children }: { title: string; children: string }) {
   const t = useT();
+  const language = useLanguage();
   return (
     <section className="space-y-1.5">
       <h3 className="text-[10px] font-mono uppercase tracking-widest text-emerald-700 dark:text-green-400">{t(title)}</h3>
@@ -120,7 +122,7 @@ export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSet
     return calculatePanchang(dailyChart, dateTime, geo.tz, calculationSettings?.ayanamsa ?? 'lahiri', nakshatraAdjust);
   }, [dailyChart, geo, calculationSettings?.ayanamsa, nakshatraAdjust]);
 
-  const narrative = useMemo(() => panchang ? generateDailyPanchangNarrative(panchang) : null, [panchang]);
+  const narrative = useMemo(() => panchang ? (language === 'fi' ? generateFinnishDailyPanchangNarrative(panchang) : generateDailyPanchangNarrative(panchang)) : null, [panchang, language]);
 
   const dateSelector = (
     <div className="space-y-3">
