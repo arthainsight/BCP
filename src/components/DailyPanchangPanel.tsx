@@ -10,7 +10,6 @@ import { useT } from '@/lib/i18n';
 
 interface Props {
   chart: ChartData;
-  targetDate: string;
   ianaTimezone?: string;
   calculationSettings?: CalculationSettings;
   nakshatraAdjust?: number;
@@ -27,21 +26,28 @@ function Section({ title, children }: { title: string; children: string }) {
 }
 
 /** Daily narrative based on the selected place's local sunrise; falls back to noon if sunrise is unavailable. */
-export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, calculationSettings, nakshatraAdjust = 0 }: Props) {
+export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSettings, nakshatraAdjust = 0 }: Props) {
   const t = useT();
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  });
   const [dailyChart, setDailyChart] = useState<ChartData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const geo = useMemo(() => {
-    const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(targetDate);
+    const match = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(selectedDate);
     if (!match || !chart.debug) return null;
     const [year, month, day] = match.slice(1).map(Number);
     const localNoon = new Date(Date.UTC(year, month - 1, day, 12));
     const zone = ianaTimezone;
     const tz = zone ? getUtcOffsetHours(zone, localNoon) : chart.debug.utcOffset;
     return { year, month, day, tz, lat: chart.debug.latitude, lng: chart.debug.longitude };
-  }, [chart.debug, ianaTimezone, targetDate]);
+  }, [chart.debug, ianaTimezone, selectedDate]);
 
   useEffect(() => {
     let cancelled = false;
@@ -88,7 +94,7 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
       .catch(reason => { if (!cancelled) setError(reason instanceof Error ? reason.message : 'Unable to calculate the daily Panchang.'); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [geo, targetDate, calculationSettings]);
+  }, [geo, selectedDate, calculationSettings]);
 
   const panchang = useMemo<PanchangResult | null>(() => {
     if (!dailyChart || !geo) return null;
@@ -104,15 +110,29 @@ export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, ca
 
   const narrative = useMemo(() => panchang ? generateDailyPanchangNarrative(panchang) : null, [panchang]);
 
-  if (!geo) return <div role="alert" className="rounded-lg border border-amber-200 p-4 text-sm text-amber-800 dark:border-amber-900 dark:text-amber-300">{t(targetDate ? 'A valid date and calculated chart with a location are required.' : 'Select a date to calculate the daily Panchang.')}</div>;
-  if (loading) return <div className="py-8 text-center text-xs font-mono text-zinc-500">{t('Calculating Daily Panchang…')}</div>;
-  if (error) return <div role="alert" className="rounded-lg border border-amber-200 p-4 text-sm text-amber-800 dark:border-amber-900 dark:text-amber-300">{t(error)}</div>;
-  if (!panchang || !narrative) return null;
+  const dateSelector = (
+    <label className="flex flex-wrap items-center gap-3 text-xs font-mono text-zinc-500">
+      <span>{t('Date')}</span>
+      <input
+        aria-label={t('Panchang date')}
+        type="date"
+        value={selectedDate}
+        onChange={event => setSelectedDate(event.target.value)}
+        className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+      />
+    </label>
+  );
+
+  if (!geo) return <div className="max-w-3xl space-y-3">{dateSelector}<div role="alert" className="rounded-lg border border-amber-200 p-4 text-sm text-amber-800 dark:border-amber-900 dark:text-amber-300">{t('A calculated chart with a valid location is required.')}</div></div>;
+  if (loading) return <div className="max-w-3xl space-y-3">{dateSelector}<div className="py-8 text-center text-xs font-mono text-zinc-500">{t('Calculating Daily Panchang…')}</div></div>;
+  if (error) return <div className="max-w-3xl space-y-3">{dateSelector}<div role="alert" className="rounded-lg border border-amber-200 p-4 text-sm text-amber-800 dark:border-amber-900 dark:text-amber-300">{t(error)}</div></div>;
+  if (!panchang || !narrative) return <div className="max-w-3xl space-y-3">{dateSelector}</div>;
 
   return (
     <div className="max-w-3xl space-y-5">
+      {dateSelector}
       <header className="space-y-2 border-b border-zinc-200 pb-4 dark:border-zinc-800">
-        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{t('Daily Panchang')} · {targetDate}</div>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-500">{t('Daily Panchang')} · {selectedDate}</div>
         <h2 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{t(panchang.tithi)} · {t(panchang.vara)} · {t(panchang.nakshatra)}</h2>
         <div className="flex flex-wrap gap-2 text-[10px] font-mono text-zinc-500">
           {[panchang.paksha + ' Paksha', panchang.yoga + ' Yoga', panchang.karana + ' Karana', 'Pada ' + panchang.nakshatraPada].map(item =>
