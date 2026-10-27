@@ -101,3 +101,96 @@ export function generateDailyPanchangNarrative(p: Pick<PanchangResult, 'vara' | 
     practicalAdvice: `Use the day for ${day.theme}. Be especially mindful of ${day.watch}. Choose one specific action, complete it carefully, and review important decisions on their merits.`,
   };
 }
+
+/** Finnish-language version of the daily reading for the Finnish interface. */
+export function generateFinnishDailyPanchangNarrative(
+  p: Pick<PanchangResult, 'vara' | 'varaLord' | 'tithi' | 'tithiNumber' | 'paksha' | 'nakshatra' | 'nakshatraPada' | 'karana' | 'yoga'>,
+): DailyPanchangNarrative {
+  const weekdays: Record<string, string> = {
+    Sunday: 'sunnuntai', Monday: 'maanantai', Tuesday: 'tiistai',
+    Wednesday: 'keskiviikko', Thursday: 'torstai', Friday: 'perjantai', Saturday: 'lauantai',
+  };
+  const planets: Record<string, string> = {
+    Sun: 'Aurinko', Moon: 'Kuu', Mars: 'Mars', Mercury: 'Merkurius',
+    Jupiter: 'Jupiter', Venus: 'Venus', Saturn: 'Saturnus',
+  };
+  const themes: Record<string, string> = {
+    Sunday: 'tarkoitus, näkyvyys ja johtajuus',
+    Monday: 'tunteiden tunnistaminen, huolenpito ja mukautuminen',
+    Tuesday: 'aloitteellisuus, rohkeus ja päättäväinen toiminta',
+    Wednesday: 'viestintä, oppiminen ja käytännön ongelmanratkaisu',
+    Thursday: 'harkinta, oppiminen ja pitkän aikavälin näkökulma',
+    Friday: 'yhteys toisiin, luovuus ja arvostus',
+    Saturday: 'kurinalaisuus, kärsivällisyys ja vastuu',
+  };
+  const watch: Record<string, string> = {
+    Sunday: 'ylpeyttä tai tarvetta hallita lopputulosta',
+    Monday: 'mielialan ohjaamia päätöksiä tai asioiden ottamista liian henkilökohtaisesti',
+    Tuesday: 'kärsimättömyyttä, ristiriitoja tai ajattelematta puhumista',
+    Wednesday: 'hajanaista keskittymistä tai liiallista pohdintaa',
+    Thursday: 'liiallista itsevarmuutta tai liian suuria lupauksia',
+    Friday: 'miellyttämisen tarvetta tai mukavuuden asettamista tärkeämmän edelle',
+    Saturday: 'pessimismiä tai edistymisen tekemistä tarpeettoman vaikeaksi',
+  };
+  const nakshatraThemes: Record<string, string> = {
+    Ashwini: 'uudet alut, nopeus ja toipuminen',
+    Bharani: 'vastuun kantaminen, luominen ja muutos',
+    Krittika: 'erottelukyky, puhdistaminen ja olennaiseen keskittyminen',
+    Rohini: 'kasvu, ravitseminen ja konkreettisen rakentaminen',
+    Mrigashira: 'uteliaisuus, tutkiminen ja vastausten etsiminen',
+    Ardra: 'rehellinen kohtaaminen, irti päästäminen ja muutos',
+    Punarvasu: 'uudistuminen ja toimivaan palaaminen',
+    Pushya: 'tuki, tasainen kasvu ja vastuullinen huolenpito',
+    Ashlesha: 'strategia ja pinnan alle näkeminen',
+    Magha: 'juuret, perintö ja vastuullinen auktoriteetti',
+    'Purva Phalguni': 'nautinto, luovuus ja sosiaaliset yhteydet',
+    'Uttara Phalguni': 'sopimukset, sitoutuminen ja luotettava tuki',
+    Hasta: 'taito ja ajatusten muuttaminen käytännöksi',
+    Chitra: 'suunnittelu, hiominen ja selkeä vaikutelma',
+    Swati: 'itsenäisyys, joustavuus ja oman tahdin löytäminen',
+    Vishakha: 'kunnianhimo, keskittyminen ja tavoitteeseen eteneminen',
+    Anuradha: 'ystävyys, yhteistyö ja uskollisuus',
+    Jyeshtha: 'osaaminen, suojeleminen ja kypsä vastuu',
+    Mula: 'juurisyiden tutkiminen ja tarpeettomasta luopuminen',
+    'Purva Ashadha': 'vakaumus ja valinnan takana seisominen',
+    'Uttara Ashadha': 'sinnikkyys, rehellisyys ja kestävät saavutukset',
+    Shravana: 'kuunteleminen, oppiminen ja asiayhteyden ymmärtäminen',
+    Dhanishta: 'rytmi, tiimityö ja yhteensovitettu toiminta',
+    Shatabhisha: 'tutkimus ja laajempien kokonaisuuksien havaitseminen',
+    'Purva Bhadrapada': 'vahva vakaumus ja merkityksellinen muutos',
+    'Uttara Bhadrapada': 'vakaus, syvyys ja kärsivällinen sisäinen työ',
+    Revati: 'päätökseen saattaminen, ohjaus ja harkittu siirtymä',
+  };
+  const nakshatraName = p.nakshatra.replace(/\s*\([^)]*\)\s*$/, '');
+  const weekday = weekdays[p.vara] ?? p.vara;
+  const planet = planets[p.varaLord] ?? p.varaLord;
+  const theme = themes[p.vara] ?? 'tietoinen toiminta ja selkeät painopisteet';
+  const caution = watch[p.vara] ?? 'hätiköityjä johtopäätöksiä';
+  const starTheme = nakshatraThemes[nakshatraName] ?? 'hetken vaatimuksiin keskittyminen';
+  const yogaText: Record<string, string> = {
+    Siddhi: 'Siddhi-joogan perinteinen symboliikka liittyy aikaansaamiseen. Käytä sitä muistutuksena konkreettisen tehtävän viimeistelystä, älä menestyksen takeena.',
+    Sukarma: 'Sukarma yhdistetään perinteessä rakentavaan toimintaan. Suosi hyödyllisiä tekoja ja valintoja, joiden hyödyt voi perustella.',
+    Dhriti: 'Dhriti liittyy vakauteen. Tasainen työ voi olla hyödyllisempää kuin suuri suunnanmuutos.',
+    Shubha: 'Shubhaa pidetään perinteisesti suotuisana. Hyödynnä symboliikkaa huolellisen ja toiset huomioivan toiminnan tukena.',
+    Sadhya: 'Sadhya liittyy saavutettavissa olevaan. Jaa suurempi tavoite käytännölliseksi seuraavaksi askeleeksi.',
+    Atiganda: 'Atigandaa pidetään perinteisesti haastavana joogana. Hidasta vältettävissä olevien riskien kohdalla ja tarkista oletukset.',
+    Vyaghata: 'Vyaghatan symboliikka on haastava. Älä pakota lopputulosta, jos tauko tai uusi tarkistus auttaisi.',
+    Vyatipata: 'Vyatipataa pidetään perinteisesti vaikeana. Pidä suunnitelmat realistisina ja tarkista tärkeät päätökset uudelleen.',
+    Parigha: 'Parigha symboloi estettä. Tunnista varsinainen pullonkaula sen sijaan, että taistelisit koko tilannetta vastaan.',
+  };
+  const yogaTextValue = yogaText[p.yoga] ?? `${p.yoga}-joogalla on oma perinteinen symboliikkansa. Käytä sitä yhtenä näkökulmana, älä lupauksena siitä, mitä tulee tapahtumaan.`;
+  const karanaText = /kaulava/i.test(p.karana)
+    ? 'Kaulava yhdistetään perinteisesti ystävyyteen ja yhteistyöhön. Hyödyllinen keskustelu tai yhteinen ponnistus voi olla arvokas.'
+    : /vishti|bhadra/i.test(p.karana)
+      ? 'Tähän karanaan suhtaudutaan perinteessä varovaisesti joidenkin hankkeiden kohdalla. Tarkista ajoitus ja vältä tarpeetonta kärjistämistä.'
+      : `${p.karana} tuo Panchangiin lisäsävyn. Tulkitse sitä yhdessä tithin, viikonpäivän ja nakshatran kanssa, älä yksinään.`;
+
+  return {
+    overview: `${p.tithi}-tithi (${p.paksha} paksha), ${weekday}, ${nakshatraName}-nakshatra ja ${p.yoga}-jooga yhdistävät useita teemoja. Viikonpäivää hallitsee ${planet}, ja sen teemoja ovat ${theme}. Nakshatra nostaa esiin teemat ${starTheme}. Olennaista on, miten tuot nämä teemat tietoisesti käytäntöön — päivä ei takaa tiettyä lopputulosta.`,
+    work: `Työssä keskity yhteen tehtävään, jonka valmistuminen olisi aidosti merkityksellistä. Voit käyttää nakshatran teemoja (${starTheme}) muistutuksena siitä, miten lähestyä tehtävää. ${yogaTextValue}`,
+    finances: 'Pidä taloudelliset päätökset tosiasioissa. Suosi selkeää arvoa, realistisia lukuja ja työtä, jonka pystyt todella toimittamaan. Älä käytä suotuisalta vaikuttavaa Panchang-yhdistelmää perusteena spekuloinnille tai riskille, jonka muuten hylkäisit.',
+    relationships: `Viikonpäivä korostaa teemoja ${theme}. Puhu suoraan, kuuntele mitä toinen todella tarkoittaa ja pidä tauko, jos keskustelu kuumenee. ${karanaText}`,
+    spiritual: `${nakshatraName} kutsuu pohtimaan teemoja ${starTheme}. Huomaa, missä tämä ominaisuus auttaa ja missä se voi mennä liiallisuuksiin. Rehellinen pieni havainto on hyödyllisempi kuin suuren johtopäätöksen pakottaminen.`,
+    practicalAdvice: `Hyödynnä päivää teemojen ${theme} kautta. Kiinnitä erityistä huomiota tähän: ${caution}. Valitse yksi konkreettinen teko, tee se huolellisesti ja arvioi tärkeät päätökset niiden todellisten perusteiden pohjalta.`,
+  };
+}
