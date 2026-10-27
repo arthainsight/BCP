@@ -172,6 +172,52 @@ export function generateDailyPanchangNarrative(
   };
 }
 
+const FINNISH_TRANSLATIONS: Array<[string, string]> = [
+  ['decisive action', 'määrätietoinen toiminta'], ['emotional awareness', 'tunnetietoisuus'],
+  ['practical problem-solving', 'käytännön ongelmanratkaisu'], ['long-term perspective', 'pitkän aikavälin näkökulma'],
+  ['unexpected reversals', 'odottamattomat käänteet'], ['unnecessary conflict', 'tarpeeton riitely'],
+  ['initiative', 'aloitteellisuus'], ['courage', 'rohkeus'], ['grounding', 'maadoittuminen'],
+  ['balance', 'tasapaino'], ['confidence', 'itseluottamus'], ['responsibility', 'vastuullisuus'],
+  ['endurance', 'kestävyys'], ['boundaries', 'rajat'], ['writing', 'kirjoittaminen'],
+  ['upheaval', 'mullistukset'], ['impatience', 'kärsimättömyys'], ['pride', 'ylpeys'],
+  ['oversaturation', 'ylikuormitus'], ['transformation', 'muutos'], ['patience', 'kärsivällisyys'],
+  ['leadership', 'johtajuus'], ['purpose', 'tarkoitus'], ['visibility', 'näkyvyys'],
+  ['communication', 'viestintä'], ['learning', 'oppiminen'], ['care', 'huolenpito'],
+  ['adaptability', 'sopeutumiskyky'], ['relationships', 'ihmissuhteet'], ['justice', 'oikeudenmukaisuus'],
+  ['turn energy into one deliberate action', 'suuntaa energia yhteen harkittuun tekoon'],
+  ['turn information into a clear sequence of steps', 'muuta tieto selkeäksi vaiheittaiseksi toimintasuunnitelmaksi'],
+  ['build steadily and check that confidence stays grounded', 'etene vakaasti ja pidä itseluottamus realistisena'],
+  ['slow down, protect essentials and review consequential choices', 'hidasta, turvaa olennaiset asiat ja harkitse merkittäviä päätöksiä'],
+  ['decide what is yours to carry and what needs a boundary', 'määritä, mistä olet vastuussa ja missä tarvitaan rajoja'],
+  ['make the purpose clear before seeking recognition', 'selkeytä tavoite ennen tunnustuksen hakemista'],
+  ['write down the key question and verify the details', 'kirjoita tärkein kysymys muistiin ja tarkista yksityiskohdat'],
+  ['consider the long-term consequences and keep promises realistic', 'huomioi pitkän aikavälin seuraukset ja pidä lupaukset realistisina'],
+  ['make room for feelings without letting a passing mood decide everything', 'anna tunteille tilaa, mutta älä anna ohimenevän mielialan ratkaista kaikkea'],
+  ['choose one clear priority', 'valitse yksi selkeä painopiste'],
+  ['treat symbolism as a prompt, not a prediction', 'käytä symboliikkaa pohdinnan apuna, älä ennusteena'],
+  ['acting on assumptions', 'oletusten varassa toimiminen'], ['reacting before understanding', 'reagointi ennen ymmärtämistä'],
+  ['carrying too much', 'liian suuren vastuun kantaminen'], ['overthinking', 'liiallinen vatvominen'],
+  ['scattered attention', 'hajamielisyys'], ['overconfidence', 'liiallinen itsevarmuus'],
+  ['mood-driven choices', 'mielialan ohjaamat valinnat'], ['taking things personally', 'asioiden ottaminen henkilökohtaisesti'],
+  ['trying to control the outcome', 'lopputuloksen liiallinen kontrollointi'],
+  ['people-pleasing', 'muiden miellyttäminen'], ['choosing comfort over priorities', 'mukavuuden asettaminen tärkeimpien asioiden edelle'],
+  ['financial risk', 'taloudellinen riski'], ['actual figures', 'todelliset luvut'], ['written terms', 'kirjalliset ehdot'],
+  ['practical follow-through', 'asioiden vieminen käytäntöön'], ['clear priorities', 'selkeät painopisteet'],
+  ['new beginnings', 'uudet alut'], ['healing', 'parantuminen'], ['renewal', 'uudistuminen'],
+  ['curiosity', 'uteliaisuus'], ['searching', 'etsiminen'], ['compassion', 'myötätunto'],
+  ['growth', 'kasvu'], ['feelings', 'tunteet'], ['nourishment', 'ravitseminen'],
+  ['creativity', 'luovuus'], ['freedom', 'vapaus'], ['discipline', 'kurinalaisuus'],
+  ['overplanning', 'liiallinen suunnittelu'], ['rigidity', 'jäykkyys'],
+  ['The useful question is how to express these themes deliberately, not what events must happen.', 'Olennaista on, miten teemat näkyvät tietoisessa toiminnassa – ei se, että tiettyjen tapahtumien pitäisi toteutua.']
+];
+function translateFinnishNarrative(value: string): string {
+  let translated = value;
+  for (const [english, finnish] of FINNISH_TRANSLATIONS.sort((a, b) => b[0].length - a[0].length)) {
+    translated = translated.split(english).join(finnish);
+  }
+  return translated;
+}
+
 /** Finnish-language version, using the same five-factor synthesis as the English reading. */
 export function generateFinnishDailyPanchangNarrative(
   p: Pick<PanchangResult, 'vara' | 'varaLord' | 'tithi' | 'tithiNumber' | 'paksha' | 'nakshatra' | 'nakshatraPada' | 'karana' | 'yoga'>,
@@ -194,7 +240,7 @@ export function generateFinnishDailyPanchangNarrative(
     : 'Tekijät painottavat eri asioita, joten päivän tulkinnassa olennaista on tasapainottaa niitä yhden ominaisuuden korostamisen sijaan.';
   const weekdayFi: Record<string, string> = { Sunday: 'sunnuntai', Monday: 'maanantai', Tuesday: 'tiistai', Wednesday: 'keskiviikko', Thursday: 'torstai', Friday: 'perjantai', Saturday: 'lauantai' };
   const planetFi: Record<string, string> = { Sun: 'Aurinko', Moon: 'Kuu', Mars: 'Mars', Mercury: 'Merkurius', Jupiter: 'Jupiter', Venus: 'Venus', Saturn: 'Saturnus' };
-  return {
+  const narrative: DailyPanchangNarrative = {
     overview: `${p.tithi} (${p.paksha} paksha), ${weekdayFi[p.vara] ?? p.vara}, ${starName}-nakshatra, ${p.yoga}-jooga ja ${p.karana}-karana muodostavat päivän kokonaisuuden. Viikonpäivän ${planetFi[day.planet] ?? day.planet}-symboliikka korostaa teemoja ${day.themes.slice(0, 3).join(', ')}. Tithi nostaa esiin teemat ${tithi.themes.slice(0, 3).join(', ')}, ja nakshatra tuo mukaan ${star.themes.slice(0, 3).join(', ')}. ${synthesis} Olennaista on, miten teemat näkyvät tietoisessa toiminnassa — ei se, että tiettyjen tapahtumien pitäisi toteutua.`,
     work: `Työssä yhdistyvät erityisesti teemat ${star.themes[0]} ja ${karana.themes[0]}. ${star.action}. Jooga korostaa teemoja ${yoga.themes.slice(0, 2).join(' ja ')}: ${yoga.action}. Tithin näkökulmasta ${tithi.action}. Valitse yksi merkityksellinen tehtävä, määrittele mitä sen valmistuminen tarkoittaa ja vie se loppuun ennen kuin hajautat huomiosi muualle.`,
     finances: `Rahan ja päätöksenteon näkökulmasta tithin teemat (${tithi.themes[0]}), karanan painotus (${karana.themes[0]}) ja viikonpäivän teemat (${day.themes[0]}) tarjoavat yhden pohdintakehyksen resursseille ja vastuulle. ${karana.action}. Perusta taloudelliset valinnat todellisiin lukuihin, kirjallisiin ehtoihin ja maksukykyyn. Panchang-yhdistelmä ei ole näyttö siitä, että taloudellinen riski kannattaisi.`,
@@ -202,4 +248,5 @@ export function generateFinnishDailyPanchangNarrative(
     spiritual: `Sisäisessä työssä voit pohtia tithin teeman ${tithi.themes[0]} ja nakshatran teeman ${star.themes[0]} välistä suhdetta. Jooga korostaa ${yoga.themes[0]}, kun taas karana painottaa ${karana.themes[0]}. Missä nämä ominaisuudet auttavat, ja missä ne voivat mennä liiallisuuksiin? Mahdollisia haasteita ovat ${dedupe([...day.challenges, ...tithi.challenges, ...star.challenges, ...yoga.challenges, ...karana.challenges]).slice(0, 3).join(', ')}. Käytä tulkintaa pohdinnan apuna, älä ehdottomana kuvauksena itsestäsi tai päivästä.`,
     practicalAdvice: `Päivän käytännön punainen lanka: ${day.action}; ${tithi.action}; ${karana.action}. Varo erityisesti teemoja ${challenges.slice(0, 4).join(', ')}. Valitse yksi konkreettinen, loppuun saatettava teko. Arvioi tärkeät päätökset todellisten perusteiden pohjalta, älä pelkän astrologisen symboliikan varassa.`,
   };
+  return Object.fromEntries(Object.entries(narrative).map(([key, value]) => [key, translateFinnishNarrative(value)])) as DailyPanchangNarrative;
 }
