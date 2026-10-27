@@ -568,6 +568,7 @@ export const FI: Record<string, string> = {
   'edit': 'muokkaa',
   '▲ hide': '▲ piilota',
   'UTC offset set by hand': 'UTC-ero käsin asetettu',
+  'UTC offset': 'UTC-aikapoikkeama',
   'auto': 'auto',
   'Show several workspaces side by side': 'Näytä useita työtiloja rinnakkain',
   'columns': 'sarakkeet',
