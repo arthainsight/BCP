@@ -56,9 +56,10 @@ export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSet
     const [year, month, day] = match.slice(1).map(Number);
     const localNoon = new Date(Date.UTC(year, month - 1, day, 12));
     const zone = ianaTimezone;
-    const tz = zone ? getUtcOffsetHours(zone, localNoon) : chart.debug.utcOffset;
-    return { year, month, day, tz, lat: chart.debug.latitude, lng: chart.debug.longitude };
-  }, [chart.debug, ianaTimezone, selectedDate]);
+    const isNatalLocation = latitude === chart.debug.latitude && longitude === chart.debug.longitude;
+    const tz = isNatalLocation && zone ? getUtcOffsetHours(zone, localNoon) : timezoneOffset;
+    return { year, month, day, tz, lat: latitude, lng: longitude };
+  }, [chart.debug, ianaTimezone, selectedDate, latitude, longitude, timezoneOffset]);
 
   useEffect(() => {
     let cancelled = false;
