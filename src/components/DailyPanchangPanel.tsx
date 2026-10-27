@@ -35,13 +35,16 @@ export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSet
     const day = String(today.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   });
+  const [latitude, setLatitude] = useState(() => chart.debug?.latitude ?? 0);
+  const [longitude, setLongitude] = useState(() => chart.debug?.longitude ?? 0);
+  const [timezoneOffset, setTimezoneOffset] = useState(() => chart.debug?.utcOffset ?? 0);
   const [dailyChart, setDailyChart] = useState<ChartData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const geo = useMemo(() => {
+  useEffect(() => {\n    if (chart.debug) {\n      setLatitude(chart.debug.latitude);\n      setLongitude(chart.debug.longitude);\n      setTimezoneOffset(chart.debug.utcOffset);\n    }\n  }, [chart.debug]);\n\n  const geo = useMemo(() => {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(selectedDate);
-    if (!match || !chart.debug) return null;
+    if (!match || !chart.debug || !Number.isFinite(latitude) || !Number.isFinite(longitude) || !Number.isFinite(timezoneOffset) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 || timezoneOffset < -12 || timezoneOffset > 14) return null;
     const [year, month, day] = match.slice(1).map(Number);
     const localNoon = new Date(Date.UTC(year, month - 1, day, 12));
     const zone = ianaTimezone;
