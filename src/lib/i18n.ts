@@ -1608,8 +1608,6 @@ export const FI: Record<string, string> = {
   'Daily Panchang': 'Päivän Panchang',
   'Panchang date': 'Panchangin päivämäärä',
   'Latitude': 'Leveysaste',
-  'Longitude': 'Pituusaste',
-  'UTC offset': 'UTC-aikapoikkeama',
   'A calculated chart with a valid location is required.': 'Tarvitaan laskettu kartta ja kelvollinen sijainti.',
   'Calculated for local sunrise at the chart location. Panchang elements can change during the day.': 'Laskettu kartan sijaintipaikan paikallisen auringonnousun mukaan. Panchangin osatekijät voivat vaihtua päivän aikana.',
 
