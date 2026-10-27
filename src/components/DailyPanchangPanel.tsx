@@ -10,7 +10,6 @@ import { useT } from '@/lib/i18n';
 
 interface Props {
   chart: ChartData;
-  targetDate: string;
   ianaTimezone?: string;
   calculationSettings?: CalculationSettings;
   nakshatraAdjust?: number;
@@ -27,7 +26,7 @@ function Section({ title, children }: { title: string; children: string }) {
 }
 
 /** Daily narrative based on the selected place's local sunrise; falls back to noon if sunrise is unavailable. */
-export default function DailyPanchangPanel({ chart, targetDate, ianaTimezone, calculationSettings, nakshatraAdjust = 0 }: Props) {
+export default function DailyPanchangPanel({ chart, ianaTimezone, calculationSettings, nakshatraAdjust = 0 }: Props) {
   const t = useT();
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
