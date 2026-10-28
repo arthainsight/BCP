@@ -1,20 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateChart } from "@/lib/ephemeris";
 import { parseClock } from "@/lib/specialSphutas";
+import { AYANAMSA_OFFSET_RANGE, MOMENT_RANGES, PLACE_RANGES, readNumbers } from "@/lib/apiValidation";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
 
-  const year = parseInt(searchParams.get("year") || "0");
-  const month = parseInt(searchParams.get("month") || "0");
-  const day = parseInt(searchParams.get("day") || "0");
-  const hour = parseInt(searchParams.get("hour") || "0");
-  const minute = parseInt(searchParams.get("minute") || "0");
-  const second = parseInt(searchParams.get("second") || "0");
-  const lat = parseFloat(searchParams.get("lat") || "0");
-  const lng = parseFloat(searchParams.get("lng") || "0");
-  const tz = parseFloat(searchParams.get("tz") || "0");
-  const ayanamsaOffset = parseFloat(searchParams.get("ayanamsaOffset") || "0");
+  const numbers = readNumbers(searchParams, { ...MOMENT_RANGES, ...PLACE_RANGES, ayanamsaOffset: AYANAMSA_OFFSET_RANGE });
+  if ("error" in numbers) return NextResponse.json({ error: numbers.error }, { status: 400 });
+  const { year, month, day, hour, minute, second, lat, lng, tz, ayanamsaOffset } = numbers.values;
 
   const ayanamsa = searchParams.get("ayanamsa") || "lahiri";
   const nodeMode = searchParams.get("nodeMode") || "mean";
@@ -23,14 +17,6 @@ export async function GET(request: NextRequest) {
   const sunriseMode = searchParams.get("sunrise") === "mean" ? "mean" : "true";
   // A sunrise typed in (HH:MM:SS) replaces the calculated one; anything that is not a time of day is left out.
   const sunriseManualHours = parseClock(searchParams.get("sunriseManual") ?? "");
-
-  if ([year, month, day, hour, minute, second, lat, lng, tz, ayanamsaOffset].some(Number.isNaN)) {
-    return NextResponse.json({ error: "A date, time, place or offset parameter is not a number" }, { status: 400 });
-  }
-
-  if (!year || !month || !day) {
-    return NextResponse.json({ error: "Missing required parameters: year, month, day" }, { status: 400 });
-  }
 
   try {
     const chart = await calculateChart(year, month, day, hour, minute, second, lat, lng, tz, ayanamsa, nodeMode, ayanamsaOffset, sunriseMode, sunriseManualHours);

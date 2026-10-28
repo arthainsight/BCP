@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.36',
+    date: '2026-10-28',
+    title: 'Safer API requests and Next.js security update',
+    changes: [
+      'Updated Next.js to 16.4.3, which closes the security advisories that stopped the production build and the dev server on 16.4.0.',
+      'The chart, annual-chart, sunrise and transit routes now check every number of a request: a value that is not a number, or lies outside the sky (a latitude past 90°, an offset past 14 hours, a year past 9999), is answered with an error that names it.',
+      'A graha named several times in /api/sign-changes or /api/transit-series is calculated once, and /api/sign-changes refuses a request for more positions than all nine grahas for the longest time it allows, so one request cannot keep the server busy for minutes.',
+      'Updated the application version to v3.36.',
+    ],
+  },
+
+  {
     version: 'v3.35',
     date: '2026-10-27',
     title: 'Daily Panchang summary in Finnish',

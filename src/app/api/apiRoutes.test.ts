@@ -1,0 +1,87 @@
+import assert from 'node:assert/strict';
+import { NextRequest } from 'next/server';
+import { GET as chart } from './chart/route';
+import { GET as muhurta } from './muhurta/route';
+import { GET as signChanges } from './sign-changes/route';
+import { GET as transitHits } from './transit-hits/route';
+import { GET as transitSeries } from './transit-series/route';
+import { GET as pravesha } from './pravesha/route';
+import { GET as sudarshana } from './sudarshana/route';
+import { GET as tithiPravesha } from './tithi-pravesha/route';
+import { GET as varshaphala } from './varshaphala/route';
+
+// The routes answer what they are asked at once, or say why they will not: these tests call the real handlers.
+type Handler = (request: NextRequest) => Promise<Response>;
+const call = async (handler: Handler, query: string) => {
+  const started = Date.now();
+  const response = await handler(new NextRequest(`http://localhost/api/x?${query}`));
+  return { status: response.status, body: (await response.json()) as Record<string, unknown>, ms: Date.now() - started };
+};
+/** A query with one parameter set to a value (replacing the one that was there). */
+const withParam = (query: string, key: string, value: string) => { const params = new URLSearchParams(query); params.set(key, value); return params.toString(); };
+const BIRTH = 'year=1947&month=8&day=15&hour=9&minute=15&second=0&lat=28.6&lng=77.2&tz=5.5';
+
+async function main() {
+  // /api/chart: a chart for a good request, an error for a request that is not one.
+  const good = await call(chart, BIRTH);
+  assert.equal(good.status, 200);
+  assert.ok(Array.isArray(good.body.planets), 'a chart has planets');
+  for (const bad of ['', 'year=1947&month=8', 'year=abc&month=8&day=15', withParam(BIRTH, 'lat', '91'), withParam(BIRTH, 'lng', 'NaN'), withParam(BIRTH, 'tz', '99'), withParam(BIRTH, 'hour', '24'),
+    `${BIRTH}&ayanamsaOffset=Infinity`, 'year=99999999&month=8&day=15', 'year=0&month=8&day=15']) {
+    const result = await call(chart, bad);
+    assert.equal(result.status, 400, bad);
+    assert.equal(typeof result.body.error, 'string', bad);
+  }
+  assert.equal((await call(chart, `${BIRTH}&ayanamsa=nonsense&nodeMode=nonsense&sunrise=nonsense`)).status, 200, 'an unknown setting falls back to the usual one');
+
+  // /api/sign-changes: a graha asked for again and again is calculated once; a request that is too long is refused.
+  const one = await call(signChanges, 'start=2024-01-01&days=30&bodies=Moon');
+  assert.equal(one.status, 200);
+  const repeated = await call(signChanges, `start=2024-01-01&days=30&bodies=${Array(2000).fill('Moon').join(',')}`);
+  assert.equal(repeated.status, 200);
+  assert.deepEqual(Object.keys(repeated.body.series as object), ['Moon'], 'one series for the repeated graha');
+  assert.deepEqual(repeated.body.series, one.body.series, 'the same series as for one mention');
+  assert.ok(repeated.ms < one.ms * 5 + 1000, `a repeated name does not repeat the work (${repeated.ms} ms against ${one.ms} ms)`);
+  const everything = await call(signChanges, 'start=2024-01-01&days=99999');
+  assert.equal(everything.status, 200, 'all the grahas for the longest time are allowed');
+  for (const name of ['constructor', 'toString', '__proto__']) {
+    const result = await call(signChanges, `start=2024-01-01&days=5&bodies=${name}`);
+    assert.equal(result.status, 400, `${name} is not a graha`);
+  }
+  assert.equal((await call(signChanges, 'start=2024-01-01&bodies=')).status, 400, 'no graha');
+  assert.equal((await call(signChanges, 'start=nonsense')).status, 400);
+  assert.equal((await call(signChanges, 'start=2024-01-01&days=5&bodies=Sun&ayanamsaOffset=abc')).status, 400);
+  assert.equal((await call(signChanges, 'start=2024-01-01&days=abc&bodies=Sun')).status, 200, 'days that is not a number is the usual length');
+
+  // /api/transit-series and /api/transit-hits.
+  const series = await call(transitSeries, `start=2024-01-01&days=60&bodies=${Array(500).fill('Saturn').join(',')}`);
+  assert.equal(series.status, 200);
+  assert.deepEqual(Object.keys(series.body.series as object), ['Saturn']);
+  assert.equal((await call(transitSeries, 'start=2024-01-01&bodies=Moon')).status, 400, 'the Moon is left out of the transits');
+  assert.equal((await call(transitSeries, 'start=2024-01-01&days=99999&step=2')).status, 400, 'every graha every two days for 140 years is too much');
+  assert.equal((await call(transitSeries, 'start=2024-01-01&days=60&ayanamsaOffset=NaN')).status, 400);
+  assert.equal((await call(transitHits, 'start=2024-01-01&days=abc')).status, 200, 'days that is not a number is the usual length');
+  assert.equal((await call(transitHits, 'start=2024-01-01&days=10&ayanamsaOffset=1e999')).status, 400);
+
+  // /api/muhurta: the place is required and has to be on the Earth.
+  assert.equal((await call(muhurta, 'date=2024-06-01&lat=60.17&lng=24.94&tz=3')).status, 200);
+  for (const bad of ['date=2024-06-01', 'date=2024-06-01&lat=60&lng=24', 'date=2024-06-01&lat=95&lng=24&tz=3', 'date=2024-06-01&lat=60&lng=24&tz=abc', 'date=2024-06-01&lat=60&lng=24&tz=20', 'date=2024-6-1&lat=60&lng=24&tz=3']) {
+    assert.equal((await call(muhurta, bad)).status, 400, bad);
+  }
+
+  // The annual routes share one reading of the request.
+  const annual = `${BIRTH}&target=2024-06-01`;
+  for (const [name, handler, extra] of [['pravesha', pravesha, '&kind=nakshatra'], ['sudarshana', sudarshana, ''], ['tithi-pravesha', tithiPravesha, ''], ['varshaphala', varshaphala, '']] as const) {
+    const ok = await call(handler, annual + extra);
+    assert.equal(ok.status, 200, `${name}: ${JSON.stringify(ok.body).slice(0, 200)}`);
+    for (const bad of [`${BIRTH}${extra}`, withParam(annual + extra, 'lat', 'NaN'), withParam(annual + extra, 'tz', '40'), `${annual}${extra}&tpYear=99999999`, withParam(annual + extra, 'hour', 'abc'),
+      `${BIRTH}&target=2024-13-45${extra}`, `${BIRTH}&target=0000-01-01${extra}`, `${annual}${extra}&ayanamsaOffset=Infinity`, `month=8&day=15&target=2024-06-01${extra}`]) {
+      const result = await call(handler, bad);
+      assert.equal(result.status, 400, `${name} ${bad}`);
+    }
+  }
+  assert.equal((await call(pravesha, `${annual}&kind=other`)).status, 400, 'pravesha needs a kind');
+  assert.equal((await call(varshaphala, `${BIRTH}&tpYear=2024`)).status, 200, 'a year instead of a target date');
+}
+
+main().then(() => console.log('API route tests passed'));
