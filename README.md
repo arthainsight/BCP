@@ -213,8 +213,8 @@ Actively developed. Expect bugs, changes, and unfinished ideas.
 ## License
 
 bhrigu.code is free software under the
-[GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only), Copyright (C)
-2026 Riku Forsell. If you run a modified version for others over a network, the
+[GNU Affero General Public License](LICENSE), version 3 or (at your option) any
+later version (AGPL-3.0-or-later), Copyright (C) 2026 Riku Forsell. If you run a modified version for others over a network, the
 AGPL asks you to offer them the source of your version as well; the app links to
 its source in Settings and in the user guide.
 
