@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import ThemeToggle from './ThemeToggle';
-import { APP_NAME, APP_VERSION } from '@/lib/config';
+import { APP_NAME, APP_VERSION, SOURCE_URL } from '@/lib/config';
 import { FAQ_ENTRIES, FAQ_SECTIONS, filterFaq } from '@/lib/faq';
 import { LANGUAGES, LanguageContext, useT, type Language } from '@/lib/i18n';
 import { setStoredLanguage, useStoredLanguage } from '@/hooks/useStoredLanguage';
@@ -112,6 +112,8 @@ function Guide({ language }: { language: Language }) {
           <Link href="/" className={LINK}>{t('Back to the app')}</Link>
           <span className="mx-2">·</span>
           {APP_NAME} by Riku Forsell {APP_VERSION}
+          <span className="mx-2">·</span>
+          <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer" className={LINK}>{t('Source code (AGPL-3.0)')}</a>
         </footer>
       </main>
     </div>
