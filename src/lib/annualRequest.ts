@@ -5,6 +5,7 @@
 import { calculateChart } from './ephemeris';
 import { jdFromLocal, localPartsFromJd } from './lunisolar';
 import { getUtcOffsetHours } from './timezone';
+import { AYANAMSA_OFFSET_RANGE, MOMENT_RANGES, PLACE_RANGES, readNumbers } from './apiValidation';
 
 export interface AnnualRequest {
   birth: { year: number; month: number; day: number; hour: number; minute: number; second: number };
@@ -24,21 +25,23 @@ export interface AnnualRequest {
 }
 
 export async function parseAnnualRequest(searchParams: URLSearchParams): Promise<AnnualRequest | { error: string }> {
-  const num = (key: string) => parseFloat(searchParams.get(key) || '0');
-  const birth = {
-    year: num('year'), month: num('month'), day: num('day'),
-    hour: num('hour'), minute: num('minute'), second: num('second'),
-  };
-  if (!birth.year || !birth.month || !birth.day) return { error: 'Missing required parameters: year, month, day' };
-  const birthTz = num('tz');
+  const numbers = readNumbers(searchParams, { ...MOMENT_RANGES, ...PLACE_RANGES, ayanamsaOffset: AYANAMSA_OFFSET_RANGE });
+  if ('error' in numbers) return { error: numbers.error };
+  const { year, month, day, hour, minute, second, lat, lng, tz, ayanamsaOffset } = numbers.values;
+  const birth = { year, month, day, hour, minute, second };
+  const birthTz = tz;
   const birthJd = await jdFromLocal(birth.year, birth.month, birth.day, birth.hour, birth.minute, birth.second, birthTz);
 
-  const requestedYear = parseInt(searchParams.get('tpYear') || '0');
+  // 0 (or nothing) asks for the year in force at `target`.
+  const years = readNumbers(searchParams, { tpYear: { min: 0, max: MOMENT_RANGES.year.max, fallback: 0 } });
+  if ('error' in years) return { error: years.error };
+  const requestedYear = Math.trunc(years.values.tpYear);
   let targetJd = 0;
   if (!requestedYear) {
     const match = (searchParams.get('target') || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (!match) return { error: 'Provide tpYear or target as yyyy-mm-dd' };
     const [, y, m, d] = match.map(Number);
+    if (y < 1 || m < 1 || m > 12 || d < 1 || d > 31) return { error: 'target is not a date' };
     targetJd = await jdFromLocal(y, m, d, 12, 0, 0, birthTz);
   }
 
@@ -46,11 +49,11 @@ export async function parseAnnualRequest(searchParams: URLSearchParams): Promise
     birth,
     birthTz,
     birthJd,
-    lat: num('lat'),
-    lng: num('lng'),
-    iana: searchParams.get('iana') || '',
+    lat,
+    lng,
+    iana: (searchParams.get('iana') || '').slice(0, 64),
     ayanamsa: searchParams.get('ayanamsa') || 'lahiri',
-    ayanamsaOffsetDegrees: num('ayanamsaOffset'),
+    ayanamsaOffsetDegrees: ayanamsaOffset,
     nodeMode: searchParams.get('nodeMode') || 'mean',
     year: requestedYear || null,
     targetJd,

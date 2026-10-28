@@ -27,13 +27,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Debug secret length
-        shell: bash
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: |
-          echo "Token length: $(printf '%s' "$CLAUDE_CODE_OAUTH_TOKEN" | wc -c)"
-
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:

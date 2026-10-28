@@ -763,6 +763,9 @@ export const FI: Record<string, string> = {
   'Choose backup': 'Valitse varmuuskopio',
   'Replace and restore': 'Korvaa ja palauta',
 
+  // Licence
+  'Source code (AGPL-3.0)': 'Lähdekoodi (AGPL-3.0)',
+
   // User guide
   'Guide': 'Käyttöohje',
   'Open the user guide in a new tab': 'Avaa käyttöohje uuteen välilehteen',

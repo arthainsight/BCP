@@ -210,6 +210,20 @@ Actively developed. Expect bugs, changes, and unfinished ideas.
 
 ---
 
+## License
+
+bhrigu.code is free software under the
+[GNU Affero General Public License](LICENSE), version 3 or (at your option) any
+later version (AGPL-3.0-or-later), Copyright (C) 2026 Riku Forsell. If you run a modified version for others over a network, the
+AGPL asks you to offer them the source of your version as well; the app links to
+its source in Settings and in the user guide.
+
+The planetary calculations use the Swiss Ephemeris through `swisseph-wasm`
+(GPL-3.0-or-later). The Swiss Ephemeris is itself offered under the AGPL or a
+separate commercial licence by Astrodienst; this project uses it under the AGPL.
+
+---
+
 ## Disclaimer
 
 This is a research tool. Use your own judgement.

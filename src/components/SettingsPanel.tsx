@@ -4,7 +4,7 @@ import { parseClock } from '@/lib/specialSphutas';
 import { useState } from 'react';
 import { readNakshatraMode } from '@/lib/nakshatraZodiac';
 import { ChartDisplaySettings, ChartStyle, CalculationSettings, CharaOptions, DashaSettings, DEFAULT_DASHA_SETTINGS, RasiDashaOptions } from '@/types';
-import { APP_NAME, APP_VERSION } from '@/lib/config';
+import { APP_NAME, APP_VERSION, SOURCE_URL } from '@/lib/config';
 import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
 import { PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
 import ParayaChips from './ParayaChips';
@@ -485,6 +485,9 @@ export default function SettingsPanel(props: Props) {
             {APP_NAME} <span className="text-zinc-400 dark:text-zinc-500">{APP_VERSION}</span>
           </div>
           <div className="text-xs font-mono text-zinc-400 dark:text-zinc-500">by Riku Forsell</div>
+          <div className="text-xs font-mono">
+            <a href={SOURCE_URL} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline dark:text-green-400">{t('Source code (AGPL-3.0)')}</a>
+          </div>
           <div className="text-xs font-mono text-zinc-300 dark:text-zinc-700">{t('discord — coming later')}</div>
         </div>
       </Section>
