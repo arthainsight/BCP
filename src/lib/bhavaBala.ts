@@ -1,10 +1,47 @@
+// Bhāva Bala: the strength of the twelve houses, by BPHS 27.26–31.
+//
+// The verses give five parts, all in virūpa (60 virūpa make a rūpa):
+//
+//   1. Bhāvādhipati Bala  the Ṣaḍbala of the lord of the house (27.29)
+//   2. Bhāva Dig Bala     the distance of the house from the point where it is powerless, divided by three
+//                         (27.26–28); the point is an angle of the chart that depends on the sign
+//   3. Bhāva Dṛṣṭi Bala   a quarter of the benefic aspects less a quarter of the malefic ones on the house,
+//                         and the aspects of Mercury and Jupiter in full (27.28–29)
+//   4. Occupants          +60 for Mercury or Jupiter in the house, -60 for Saturn, Mars or the Sun (27.30)
+//   5. Bhāva Kāla Bala    +15 for a house in a śīrṣodaya sign by day, an ubhayodaya sign in the twilight or a
+//                         pṛṣṭhodaya sign by night (27.31)
+//
+// What the verses leave open, and what the app took (see docs/shadbala-manual.md):
+//   * The house is a whole sign counted from the Lagna sign (the first house begins at 0° of the Lagna sign,
+//     as in LagnaOne's equal houses); its middle point, which the aspects and the sign halves go by, is
+//     the 15° of the sign. A sign half therefore cannot tell Sagittarius or Capricorn apart: 15° is read
+//     as the second half.
+//   * Cancer takes the Lagna as its powerless point (27.27 and the translations of Santhanam and
+//     Sharma). B. V. Raman, following Śrīpati, pairs Cancer with Pisces and the 10th.
+//   * Mercury's and Jupiter's aspects count in full instead of a quarter (B. V. Raman, article 132);
+//     read literally the verse would add them to the quarter.
+//   * The twilight is five ghaṭī (two hours) either side of the sunrise and the sunset (46.44–47, where
+//     the word is defined for the day's divisions).
+//   * The waning Moon is a malefic and Mercury a malefic in the sign of a malefic, as in Dṛg Bala.
+//
+// Raman's *Graha and Bhava Balas* leaves out the occupants and the Kāla Bala, and counts the Dig Bala in
+// whole signs; the app follows the verses.
+
 import { normalizeDegrees } from './angles';
 import { SIGN_ABBR, SIGN_LORDS } from './signs';
+import { aspectVirupa } from './shadbalaAspects';
+import {
+  SHADBALA_REQUIRED_VIRUPA,
+  SCORE_PLANETS,
+  classifyBenefics,
+  getBirthHour,
+  type ShadbalaChartLike,
+  type ShadbalaPlanet,
+} from './shadbala';
+
 export type OccupantDetail = {
   name: string;
-  nature: 'benefic' | 'malefic';
-  shadbalaVirupa: number;
-  shadbalaRatio: number | null;
+  /** +60, -60 or 0 (the Moon and Venus neither add nor take away). */
   contribution: number;
   note: string;
 };
@@ -12,7 +49,10 @@ export type OccupantDetail = {
 export type DrigDetail = {
   planet: string;
   nature: 'benefic' | 'malefic';
-  aspectStrength: number;
+  /** The aspect the graha casts on the middle of the house, in virūpa, before it is weighed. */
+  aspectVirupa: number;
+  /** The weight: 1 for Mercury and Jupiter, a quarter for the others. */
+  weight: number;
   contribution: number;
 };
 
@@ -20,37 +60,33 @@ export type BhavaBalaRow = {
   house: number;
   sign: string;
   lord: string;
-  // 1. Bhavadhipati Bala — house lord's Ṣaḍbala virupa
+  // 1. Bhāvādhipati Bala: the lord's Ṣaḍbala
   bhavesha: number;
   bhaveshaRequired: number;
   bhaveshaRatio: number;
   bhaveshaSource: string;
-  // 2. Bhava Drig Bala — simplified drishti to sign midpoint (~approx: sign*30+15°, not exact cusp)
-  drig1: number;  // strong benefic (strength ≥ 0.66): +180 × strength
-  drig2: number;  // weak benefic (strength < 0.66): +100 × strength
-  drig3: number;  // strong malefic (strength ≥ 0.66): −90 × strength
-  drig4: number;  // weak malefic (strength < 0.66): −60 × strength
+  // 2. Bhāva Dig Bala
+  dig: number;
+  /** Which angle the house is measured from: the Ascendant, the Descendant, the Midheaven or the Nadir. */
+  digPoint: BhavaDigPoint | null;
+  // 3. Bhāva Dṛṣṭi Bala
+  drig: number;
+  drigBenefic: number;
+  drigMalefic: number;
   drigDetails: DrigDetail[];
-  // 3. Occupant (Bhava Graha) contribution — ~approx: benefic +45×ratio, malefic −30×ratio
+  // 4. Occupants
   occupants: OccupantDetail[];
   occupantTotal: number;
-  // 4. ~Bhava Dig Bala — positional bonus: kendra +15, panapara +7.5, apoklima 0 (~approx)
-  kendra: number;
-  // Total in virupa
+  // 5. Bhāva Kāla Bala
+  kala: number;
+  kalaNote: string;
+  /** The total in virūpa. */
   total: number;
 };
 
-type ChartPlanet = {
-  name: string;
-  longitude: number;
-  sign: number;   // 1-indexed (1=Aries … 12=Pisces)
-  house?: number;
-};
+export type BhavaDigPoint = 'asc' | 'desc' | 'mc' | 'ic';
 
-type ChartLike = {
-  ascendant?: { sign?: number };  // sign is 1-indexed
-  planets?: ChartPlanet[];
-};
+export type BirthSect = 'day' | 'twilight' | 'night' | 'unknown';
 
 type ShadbalaLike = {
   planet: string;
@@ -65,148 +101,107 @@ type ShadbalaEntry = {
   ratio: number;
 };
 
-const PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
-const BENEFICS = new Set(['Moon', 'Mercury', 'Jupiter', 'Venus']);
+/** The strength an occupant adds to or takes from its house (27.30). */
+const OCCUPANT_VIRUPA: Partial<Record<ShadbalaPlanet, number>> = { Mercury: 60, Jupiter: 60, Saturn: -60, Mars: -60, Sun: -60 };
 
-// Classical required Ṣaḍbala minimums — used as fallback when `requiredVirupa` is not passed in.
-const SHADBALA_REQUIRED_VIRUPA: Record<string, number> = {
-  Sun: 390, Moon: 360, Mars: 300, Mercury: 420, Jupiter: 390, Venus: 330, Saturn: 300,
-};
+/** What each aspecting graha's value is multiplied by: Mercury and Jupiter count in full, the others by a quarter. */
+const FULL_ASPECT_GRAHAS: readonly ShadbalaPlanet[] = ['Mercury', 'Jupiter'];
 
+/** Five ghaṭī, in hours, either side of sunrise and sunset (BPHS 46.44–47). */
+export const TWILIGHT_HOURS = 2;
 
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
+/** Bhāva Kāla Bala (27.31): a quarter of a rūpa. */
+export const BHAVA_KALA_VIRUPA = 15;
 
-function getPlanet(chart: ChartLike, name: string): ChartPlanet | undefined {
+// The way the signs rise, from BPHS 4: Gemini, Leo, Virgo, Libra and Aquarius are said to rise head first (śīrṣodaya),
+// Aries, Taurus, Cancer, Sagittarius and Capricorn back first (pṛṣṭhodaya) and Pisces both ways (ubhayodaya).
+// The text does not say it of Scorpio; it is counted with the head-risers, as everywhere else.
+const SIRSODAYA_SIGNS = [2, 4, 5, 6, 7, 10];
+const PRSTHODAYA_SIGNS = [0, 1, 3, 8, 9];
+const UBHAYODAYA_SIGNS = [11];
+
+function getPlanet(chart: ShadbalaChartLike, name: string) {
   return chart.planets?.find((planet) => planet.name === name);
 }
 
-// ascendantSign is 1-indexed; returns 0-indexed sign index for the Nth house.
-function getHouseSignIndex(ascendantSign: number | undefined, house: number): number | null {
-  if (typeof ascendantSign !== 'number') return null;
-  return (ascendantSign + house - 2 + 12) % 12;
+function distance(a: number, b: number): number {
+  const raw = Math.abs(normalizeDegrees(a) - normalizeDegrees(b));
+  return Math.min(raw, 360 - raw);
 }
 
-function getHouseMidLongitude(ascendantSign: number | undefined, house: number): number | null {
-  const signIndex = getHouseSignIndex(ascendantSign, house);
-  if (typeof signIndex !== 'number') return null;
-  return signIndex * 30 + 15;
+/**
+ * The angle a house in the given sign is measured from (27.26–27): the descendant for Gemini, Virgo, Libra,
+ * Aquarius and the first half of Sagittarius; the nadir for Aries, Taurus, Leo, the first half of Capricorn and
+ * the second half of Sagittarius; the ascendant for Cancer and Scorpio; the midheaven for the second half of
+ * Capricorn and Pisces. `degreeInSign` is the position of the middle point of the house in its sign.
+ */
+export function bhavaDigPoint(signIndex: number, degreeInSign: number): BhavaDigPoint {
+  const firstHalf = degreeInSign < 15;
+  if ([2, 5, 6, 10].includes(signIndex) || (signIndex === 8 && firstHalf)) return 'desc';
+  if ([0, 1, 4].includes(signIndex) || (signIndex === 9 && firstHalf) || (signIndex === 8 && !firstHalf)) return 'ic';
+  if (signIndex === 3 || signIndex === 7) return 'asc';
+  return 'mc'; // the second half of Capricorn and Pisces
 }
 
-function aspectOrbStrength(diff: number, exact: number, orb: number): number {
-  const delta = Math.abs(diff - exact);
-  return delta <= orb ? 1 - delta / orb : 0;
+/** Bhāva Dig Bala (27.28): the distance, in degrees, from the powerless angle, divided by three. */
+export function calculateBhavaDigBalaVirupa(
+  signIndex: number,
+  degreeInSign: number,
+  angles: { ascendant?: number; midheaven?: number },
+): { virupa: number; point: BhavaDigPoint | null } {
+  if (typeof angles.ascendant !== 'number') return { virupa: 0, point: null };
+  const midheaven = angles.midheaven ?? angles.ascendant + 270;
+  const point = bhavaDigPoint(signIndex, degreeInSign);
+  const longitude = { asc: angles.ascendant, desc: angles.ascendant + 180, mc: midheaven, ic: midheaven + 180 }[point];
+  return { virupa: distance(signIndex * 30 + degreeInSign, longitude) / 3, point };
 }
 
-export function getClassicalAspectStrength(fromName: string, fromLongitude: number, toLongitude: number): number {
-  const diff = normalizeDegrees(toLongitude - fromLongitude);
-  let strength = aspectOrbStrength(diff, 180, 45);
-
-  if (fromName === 'Mars') {
-    strength = Math.max(strength, aspectOrbStrength(diff, 90, 35), aspectOrbStrength(diff, 210, 35));
-  }
-  if (fromName === 'Jupiter') {
-    strength = Math.max(strength, aspectOrbStrength(diff, 120, 35), aspectOrbStrength(diff, 240, 35));
-  }
-  if (fromName === 'Saturn') {
-    strength = Math.max(strength, aspectOrbStrength(diff, 60, 35), aspectOrbStrength(diff, 270, 35));
-  }
-
-  return clamp(strength, 0, 1);
+/**
+ * Whether the birth is by day, in the twilight or by night (27.31). The twilight is the two hours either side of
+ * the sunrise and the sunset, so the day is the rest of the time between them. 'unknown' when the chart has no
+ * birth moment or no sunrise.
+ */
+export function birthSect(chart: ShadbalaChartLike): BirthSect {
+  const hour = getBirthHour(chart);
+  const { sunriseLocalHours: sunrise, sunsetLocalHours: sunset } = chart.debug ?? {};
+  if (hour === null || typeof sunrise !== 'number' || typeof sunset !== 'number') return 'unknown';
+  const apart = (a: number, b: number) => {
+    const raw = Math.abs(a - b) % 24;
+    return Math.min(raw, 24 - raw);
+  };
+  if (apart(hour, sunrise) <= TWILIGHT_HOURS || apart(hour, sunset) <= TWILIGHT_HOURS) return 'twilight';
+  return hour >= sunrise && hour < sunset ? 'day' : 'night';
 }
 
-// Simplified Bhava Drig Bala: orb-based drishti to the sign midpoint (sign * 30 + 15°).
-// NOT cusp-based — the actual house cusp longitude is unavailable, so sign midpoint is a proxy.
-// Benefic aspects: +180 vp (strong, str≥0.66) or +100 vp (weak). Malefic: −90 (strong) or −60 (weak).
-// Returns drig1–4 totals plus per-planet drigDetails for debug display.
-function calculateBhavaDrig(
-  chart: ChartLike,
-  house: number,
-): { drig1: number; drig2: number; drig3: number; drig4: number; drigDetails: DrigDetail[] } {
-  const midpoint = getHouseMidLongitude(chart.ascendant?.sign, house);
-  const result = { drig1: 0, drig2: 0, drig3: 0, drig4: 0, drigDetails: [] as DrigDetail[] };
-  if (typeof midpoint !== 'number') return result;
+/** Bhāva Kāla Bala (27.31): 15 virūpa for a house in the kind of sign that suits the time of birth. */
+export function calculateBhavaKalaBalaVirupa(signIndex: number, sect: BirthSect): number {
+  if (sect === 'day' && SIRSODAYA_SIGNS.includes(signIndex)) return BHAVA_KALA_VIRUPA;
+  if (sect === 'twilight' && UBHAYODAYA_SIGNS.includes(signIndex)) return BHAVA_KALA_VIRUPA;
+  if (sect === 'night' && PRSTHODAYA_SIGNS.includes(signIndex)) return BHAVA_KALA_VIRUPA;
+  return 0;
+}
 
-  PLANETS.forEach((name) => {
+/** Bhāva Dṛṣṭi Bala (27.28–29) of the point `longitude`: the aspects of the seven grahas, by the sphuṭa dṛṣṭi table. */
+export function calculateBhavaDrigBala(
+  chart: ShadbalaChartLike,
+  longitude: number,
+  benefics: Set<ShadbalaPlanet> = classifyBenefics(chart),
+): { total: number; benefic: number; malefic: number; details: DrigDetail[] } {
+  const result = { total: 0, benefic: 0, malefic: 0, details: [] as DrigDetail[] };
+  SCORE_PLANETS.forEach((name) => {
     const planet = getPlanet(chart, name);
     if (typeof planet?.longitude !== 'number') return;
-
-    const aspect = getClassicalAspectStrength(name, planet.longitude, midpoint);
+    const aspect = aspectVirupa(name, normalizeDegrees(longitude - planet.longitude));
     if (!aspect) return;
-
-    const isBenefic = BENEFICS.has(name);
-    const nature = isBenefic ? 'benefic' : 'malefic' as 'benefic' | 'malefic';
-    let contribution = 0;
-
-    if (isBenefic) {
-      if (aspect >= 0.66) {
-        contribution = 180 * aspect;
-        result.drig1 += contribution;
-      } else {
-        contribution = 100 * aspect;
-        result.drig2 += contribution;
-      }
-    } else if (aspect >= 0.66) {
-      contribution = -90 * aspect;
-      result.drig3 += contribution;
-    } else {
-      contribution = -60 * aspect;
-      result.drig4 += contribution;
-    }
-
-    result.drigDetails.push({ planet: name, nature, aspectStrength: aspect, contribution });
+    const isBenefic = benefics.has(name);
+    const weight = FULL_ASPECT_GRAHAS.includes(name) ? 1 : 0.25;
+    const contribution = (isBenefic ? 1 : -1) * aspect * weight;
+    result.total += contribution;
+    if (contribution > 0) result.benefic += contribution;
+    else result.malefic += contribution;
+    result.details.push({ planet: name, nature: isBenefic ? 'benefic' : 'malefic', aspectVirupa: aspect, weight, contribution });
   });
-
   return result;
-}
-
-// Occupant (Bhava Graha) contribution — approximate.
-// Finds planets occupying this house (via whole-sign match to planet.sign).
-// Benefic planet: +45 × min(Ṣaḍbala ratio, 2.0) virupa.
-// Malefic planet: −30 × min(Ṣaḍbala ratio, 2.0) virupa.
-// Ratio defaults to 1.0 if Ṣaḍbala is not available.
-// A stronger benefic occupant adds more; a stronger malefic subtracts more.
-function calculateOccupants(
-  chart: ChartLike,
-  house: number,
-  shadbalaMap: Record<string, ShadbalaEntry>,
-): { occupants: OccupantDetail[]; occupantTotal: number } {
-  const ascendantSign = chart.ascendant?.sign;
-  const houseSignIndex = getHouseSignIndex(ascendantSign, house);
-  if (typeof houseSignIndex !== 'number') return { occupants: [], occupantTotal: 0 };
-
-  const houseSign1 = houseSignIndex + 1;  // convert to 1-indexed to match planet.sign
-  const occupants: OccupantDetail[] = [];
-  let occupantTotal = 0;
-
-  PLANETS.forEach((name) => {
-    const planet = getPlanet(chart, name);
-    if (typeof planet?.sign !== 'number') return;
-    if (planet.sign !== houseSign1) return;
-
-    const isBenefic = BENEFICS.has(name);
-    const nature = isBenefic ? 'benefic' : 'malefic' as 'benefic' | 'malefic';
-    const entry = shadbalaMap[name];
-    const shadbalaVirupa = entry?.virupa ?? 0;
-    const shadbalaRequired = entry?.required ?? SHADBALA_REQUIRED_VIRUPA[name] ?? 0;
-    const shadbalaRatio = shadbalaRequired > 0 && shadbalaVirupa > 0
-      ? shadbalaVirupa / shadbalaRequired
-      : null;
-    const effectiveRatio = shadbalaRatio !== null ? Math.min(shadbalaRatio, 2.0) : 1.0;
-    const base = isBenefic ? 45 : -30;
-    const contribution = base * effectiveRatio;
-    occupantTotal += contribution;
-
-    const ratioLabel = shadbalaRatio !== null
-      ? `${shadbalaRatio.toFixed(2)}× req`
-      : 'no Ṣaḍbala';
-    const note = `${ratioLabel}; ~${Math.abs(base)}×min(${effectiveRatio.toFixed(2)},2)`;
-
-    occupants.push({ name, nature, shadbalaVirupa, shadbalaRatio, contribution, note });
-  });
-
-  return { occupants, occupantTotal };
 }
 
 function createShadbalaMap(shadbala: ShadbalaLike[]): Record<string, ShadbalaEntry> {
@@ -217,64 +212,79 @@ function createShadbalaMap(shadbala: ShadbalaLike[]): Record<string, ShadbalaEnt
         : typeof row.total === 'number'
           ? row.total * 60
           : 0;
-      const required = row.requiredVirupa ?? SHADBALA_REQUIRED_VIRUPA[row.planet] ?? 0;
+      const required = row.requiredVirupa ?? SHADBALA_REQUIRED_VIRUPA[row.planet as ShadbalaPlanet] ?? 0;
       const ratio = required > 0 ? virupa / required : 0;
       return [row.planet, { virupa, required, ratio }];
     }),
   );
 }
 
-// Computes classical Bhava Bala using explicit subcomponents. All values in virupa (no 0–100 normalisation).
-//
-// Components included:
-//   1. Bhavadhipati Bala  — lord's Ṣaḍbala total virupa (source shown in bhaveshaSource)
-//   2. Bhava Drig Bala    — ~approx: orb-based drishti to sign midpoint (sign*30+15°)
-//   3. Occupant Bala      — ~approx: benefic +45×ratio, malefic −30×ratio virupa
-//   4. ~Bhava Dig Bala    — ~approx: kendra +15, panapara +7.5, apoklima 0 virupa
-//
-// Components NOT yet implemented (require additional inputs not currently available):
-//   • Exact Bhava Drig Bala using house cusp longitudes instead of sign midpoints
-//   • Classical Bhava Kala Bala (temporal house strength)
-//
-export function buildClassicalBhavaBala(chart: ChartLike, shadbala: ShadbalaLike[]): BhavaBalaRow[] {
+const KALA_NOTE: Record<BirthSect, string> = {
+  day: 'day birth',
+  twilight: 'twilight birth',
+  night: 'night birth',
+  unknown: 'no birth time or sunrise',
+};
+
+/** The Bhāva Bala of the twelve houses, whole signs from the Lagna sign, given the Ṣaḍbala rows of the grahas. */
+export function buildClassicalBhavaBala(chart: ShadbalaChartLike, shadbala: ShadbalaLike[]): BhavaBalaRow[] {
   const ascendantSign = chart.ascendant?.sign;
   const shadbalaMap = createShadbalaMap(shadbala);
+  const benefics = classifyBenefics(chart);
+  const sect = birthSect(chart);
+  const angles = { ascendant: chart.ascendant?.longitude, midheaven: chart.midheaven };
 
   return Array.from({ length: 12 }, (_, index) => {
     const house = index + 1;
-    const signIndex = getHouseSignIndex(ascendantSign, house);
-    const lord = typeof signIndex === 'number' ? SIGN_LORDS[signIndex] : '—';
-
-    const drig = calculateBhavaDrig(chart, house);
-    const { occupants, occupantTotal } = calculateOccupants(chart, house, shadbalaMap);
+    const signIndex = typeof ascendantSign === 'number' ? (ascendantSign - 1 + index) % 12 : null;
+    const lord = signIndex === null ? '—' : SIGN_LORDS[signIndex];
+    const middle = signIndex === null ? null : signIndex * 30 + 15;
 
     const lordEntry = shadbalaMap[lord];
     const bhavesha = lordEntry?.virupa ?? 0;
-    const bhaveshaRequired = lordEntry?.required ?? SHADBALA_REQUIRED_VIRUPA[lord] ?? 0;
+    const bhaveshaRequired = lordEntry?.required ?? SHADBALA_REQUIRED_VIRUPA[lord as ShadbalaPlanet] ?? 0;
     const bhaveshaRatio = lordEntry?.ratio ?? 0;
     const bhaveshaSource = lordEntry
       ? `Ṣaḍbala ${Math.round(bhavesha)} vp / ${bhaveshaRequired} req = ${bhaveshaRatio.toFixed(2)}×`
       : 'fallback: 0 vp (Ṣaḍbala not computed)';
 
-    // ~Bhava Dig Bala: kendra (angular) +15, panapara (succedent) +7.5, apoklima (cadent) 0.
-    // Approximate — full Bhava Dig Bala requires house cusp directional longitude.
-    const kendra = [1, 4, 7, 10].includes(house) ? 15 : [2, 5, 8, 11].includes(house) ? 7.5 : 0;
+    const dig = signIndex === null ? { virupa: 0, point: null } : calculateBhavaDigBalaVirupa(signIndex, 15, angles);
+    const drig = middle === null ? { total: 0, benefic: 0, malefic: 0, details: [] as DrigDetail[] } : calculateBhavaDrigBala(chart, middle, benefics);
 
-    const total = drig.drig1 + drig.drig2 + drig.drig3 + drig.drig4
-      + bhavesha + occupantTotal + kendra;
+    const occupants: OccupantDetail[] = [];
+    let occupantTotal = 0;
+    if (signIndex !== null) {
+      SCORE_PLANETS.forEach((name) => {
+        const planet = getPlanet(chart, name);
+        const planetSign = typeof planet?.longitude === 'number' ? Math.floor(normalizeDegrees(planet.longitude) / 30) : typeof planet?.sign === 'number' ? planet.sign - 1 : null;
+        if (planetSign !== signIndex) return;
+        const contribution = OCCUPANT_VIRUPA[name] ?? 0;
+        occupantTotal += contribution;
+        occupants.push({ name, contribution, note: contribution > 0 ? '+1 rūpa' : contribution < 0 ? '−1 rūpa' : 'no rule' });
+      });
+    }
+
+    const kala = signIndex === null ? 0 : calculateBhavaKalaBalaVirupa(signIndex, sect);
+    const total = bhavesha + dig.virupa + drig.total + occupantTotal + kala;
 
     return {
       house,
-      sign: typeof signIndex === 'number' ? SIGN_ABBR[signIndex] : '—',
+      sign: signIndex === null ? '—' : SIGN_ABBR[signIndex],
       lord,
       bhavesha,
       bhaveshaRequired,
       bhaveshaRatio,
       bhaveshaSource,
-      ...drig,
+      dig: dig.virupa,
+      digPoint: dig.point,
+      drig: drig.total,
+      drigBenefic: drig.benefic,
+      drigMalefic: drig.malefic,
+      drigDetails: drig.details,
       occupants,
       occupantTotal,
-      kendra,
+      kala,
+      kalaNote: KALA_NOTE[sect],
       total,
     };
   });

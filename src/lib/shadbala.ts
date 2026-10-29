@@ -323,7 +323,7 @@ export function calculateSthanaBalaBreakdown(planetName: string, planet: Shadbal
 }
 
 /** Birth hour as local decimal hours, parsed from "YYYY-MM-DD HH:MM:SS". */
-function getBirthHour(chart: ShadbalaChartLike): number | null {
+export function getBirthHour(chart: ShadbalaChartLike): number | null {
   const input = chart?.debug?.inputDateTime;
   const timeParts = input?.split(' ')[1]?.split(':');
   if (!timeParts) return null;
@@ -583,7 +583,7 @@ export function calculateCheshtaBalaVirupa(
 // Benefics and malefics (3.11): Jupiter and Venus are benefics; the Sun, Mars and Saturn (and Rahu and
 // Ketu, which only matter as companions of Mercury) are malefics; the waning Moon is a malefic and the
 // waxing one a benefic (isMoonBenefic); Mercury is a malefic in the company (the same sign) of a malefic.
-function classifyBenefics(chart: ShadbalaChartLike): Set<ShadbalaPlanet> {
+export function classifyBenefics(chart: ShadbalaChartLike): Set<ShadbalaPlanet> {
   const benefics = new Set<ShadbalaPlanet>(['Jupiter', 'Venus']);
   const sun = getPlanet(chart, 'Sun');
   const moon = getPlanet(chart, 'Moon');

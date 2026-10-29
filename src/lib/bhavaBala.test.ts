@@ -1,442 +1,154 @@
-// Bhava Bala verification fixture
-// Run: node --import tsx src/lib/bhavaBala.test.ts (or npm test)
-//
-// Uses a fixed Aries ascendant chart so every component can be manually reproduced.
-// Two houses (H1 and H4) are fully worked through step-by-step in comments below.
+// Bhāva Bala tests (BPHS 27.26–31). The expected numbers are the verses' own constants and values worked
+// out separately from the Sanskrit rules (see shadbala.fixture.ts and docs/shadbala-manual.md), not the
+// output of the engine.
+import assert from 'node:assert/strict';
+import {
+  BHAVA_KALA_VIRUPA,
+  TWILIGHT_HOURS,
+  bhavaDigPoint,
+  birthSect,
+  buildClassicalBhavaBala,
+  calculateBhavaDigBalaVirupa,
+  calculateBhavaDrigBala,
+  calculateBhavaKalaBalaVirupa,
+  type BirthSect,
+} from './bhavaBala';
+import { buildShadbalaRows, type ShadbalaChartLike } from './shadbala';
+import { EXPECTED_BHAVA, REFERENCE_CHART } from './shadbala.fixture';
 
-import { buildClassicalBhavaBala } from './bhavaBala';
+const close = (actual: number, expected: number, tolerance: number, message: string) =>
+  assert.ok(Math.abs(actual - expected) <= tolerance, `${message}: expected ${expected}, got ${actual}`);
 
 // ---------------------------------------------------------------------------
-// Fixed chart: Aries ascendant, planets placed at sign midpoints
+// The angle each sign is measured from (27.26–27)
 // ---------------------------------------------------------------------------
-//
-// Ascendant: sign=1 (Aries, 1-indexed)
-//
-// Planet longitudes (sidereal, placed at sign midpoints for clarity):
-//   Sun     135° — Leo      (sign 5,  H5)
-//   Moon     45° — Taurus   (sign 2,  H2)
-//   Mars    225° — Scorpio  (sign 8,  H8)
-//   Mercury 165° — Virgo    (sign 6,  H6)
-//   Jupiter 105° — Cancer   (sign 4,  H4) ← occupies H4
-//   Venus   195° — Libra    (sign 7,  H7) ← occupies H7
-//   Saturn  285° — Capricorn(sign 10, H10) ← occupies H10
-//
-// House lords (whole sign from Aries ascendant):
-//   H1=Ar(Mars)  H2=Ta(Venus)  H3=Ge(Mercury)  H4=Cn(Moon)   H5=Le(Sun)
-//   H6=Vi(Mercury) H7=Li(Venus) H8=Sc(Mars)    H9=Sg(Jupiter)
-//   H10=Cp(Saturn) H11=Aq(Saturn) H12=Pi(Jupiter)
+// Aries 0, Taurus 1, Gemini 2, Cancer 3, Leo 4, Virgo 5, Libra 6, Scorpio 7, Sagittarius 8, Capricorn 9, Aquarius 10, Pisces 11.
+const SEVENTH = [2, 5, 6, 10]; // Gemini, Virgo, Libra, Aquarius (and the first half of Sagittarius)
+const FOURTH = [0, 1, 4]; // Aries, Taurus, Leo (and the first half of Capricorn, the second half of Sagittarius)
+for (const sign of SEVENTH) assert.equal(bhavaDigPoint(sign, 15), 'desc', `sign ${sign} is measured from the Descendant`);
+for (const sign of FOURTH) assert.equal(bhavaDigPoint(sign, 15), 'ic', `sign ${sign} is measured from the Nadir`);
+assert.equal(bhavaDigPoint(8, 14.9), 'desc', 'the first half of Sagittarius');
+assert.equal(bhavaDigPoint(8, 15), 'ic', 'the second half of Sagittarius');
+assert.equal(bhavaDigPoint(9, 14.9), 'ic', 'the first half of Capricorn');
+assert.equal(bhavaDigPoint(9, 15), 'mc', 'the second half of Capricorn');
+assert.equal(bhavaDigPoint(11, 15), 'mc', 'Pisces');
+assert.equal(bhavaDigPoint(3, 15), 'asc', 'Cancer takes the Lagna (27.27)');
+assert.equal(bhavaDigPoint(7, 15), 'asc', 'Scorpio takes the Lagna (27.27)');
 
-const FIXTURE_CHART = {
-  ascendant: { sign: 1 },
-  planets: [
-    { name: 'Sun',     longitude: 135, sign: 5  },
-    { name: 'Moon',    longitude: 45,  sign: 2  },
-    { name: 'Mars',    longitude: 225, sign: 8  },
-    { name: 'Mercury', longitude: 165, sign: 6  },
-    { name: 'Jupiter', longitude: 105, sign: 4  },
-    { name: 'Venus',   longitude: 195, sign: 7  },
-    { name: 'Saturn',  longitude: 285, sign: 10 },
-  ],
-};
-
-// Pre-set Ṣaḍbala virupa — round numbers for easy manual arithmetic.
-// Not real chart values; chosen to make the verification self-contained.
-const FIXTURE_SHADBALA = [
-  { planet: 'Sun',     totalVirupa: 450, requiredVirupa: 390 }, // ratio ≈ 1.154
-  { planet: 'Moon',    totalVirupa: 420, requiredVirupa: 360 }, // ratio ≈ 1.167
-  { planet: 'Mars',    totalVirupa: 350, requiredVirupa: 300 }, // ratio ≈ 1.167
-  { planet: 'Mercury', totalVirupa: 480, requiredVirupa: 420 }, // ratio ≈ 1.143
-  { planet: 'Jupiter', totalVirupa: 520, requiredVirupa: 390 }, // ratio ≈ 1.333
-  { planet: 'Venus',   totalVirupa: 380, requiredVirupa: 330 }, // ratio ≈ 1.152
-  { planet: 'Saturn',  totalVirupa: 310, requiredVirupa: 300 }, // ratio ≈ 1.033
-];
-
-function assert(condition: boolean, message: string): void {
-  if (!condition) throw new Error(`FAIL: ${message}`);
-}
-
-function approxEqual(a: number, b: number, epsilon = 0.6): boolean {
-  return Math.abs(a - b) <= epsilon;
+// Dig Bala: the distance from that angle in degrees, over three; 60 at the opposite angle.
+{
+  const angles = { ascendant: 100, midheaven: 10 }; // descendant 280, nadir 190
+  // Virgo (sign 5): measured from the descendant (280°). Its middle, 165°, is 115° away: 38.33.
+  const virgo = calculateBhavaDigBalaVirupa(5, 15, angles);
+  assert.equal(virgo.point, 'desc');
+  close(virgo.virupa, 115 / 3, 1e-9, 'Virgo');
+  // Aquarius (sign 10) middle 315°, 35° from the descendant 280°.
+  close(calculateBhavaDigBalaVirupa(10, 15, angles).virupa, 35 / 3, 1e-9, 'Aquarius');
+  // Aries middle 15°, measured from the nadir (190°): 175° away.
+  close(calculateBhavaDigBalaVirupa(0, 15, angles).virupa, 175 / 3, 1e-9, 'Aries');
+  // A house at the very angle it is measured from is powerless: Cancer middle 105° from the Lagna 100°.
+  close(calculateBhavaDigBalaVirupa(3, 15, angles).virupa, 5 / 3, 1e-9, 'Cancer');
+  // The most a house can have is 60, at the point opposite to the angle it is measured from.
+  close(calculateBhavaDigBalaVirupa(0, 15, { ascendant: 100, midheaven: 15 }).virupa, 60, 1e-9, 'Aries 180 degrees from the nadir, which is at 195');
+  assert.equal(calculateBhavaDigBalaVirupa(0, 15, {}).virupa, 0, 'no ascendant, no Dig Bala');
 }
 
 // ---------------------------------------------------------------------------
-// House 1 — Aries (lord: Mars, no occupants)
-//
-// Sign midpoint = signIndex(0) × 30 + 15 = 15°
-//
-// Drig Bala — diff = normalizeDegrees(15 − planet.longitude):
-//
-//   Sun   (135°): diff = (15−135+360)%360 = 240°
-//                 std |240−180|=60 > 45 → 0; no special → no aspect
-//
-//   Moon   (45°): diff = (15−45+360)%360 = 330°
-//                 std |330−180|=150 > 45 → 0 → no aspect
-//
-//   Mars  (225°): diff = (15−225+360)%360 = 150°
-//                 std |150−180|=30 ≤ 45 → 1−30/45 = 0.333
-//                 special 90°: |150−90|=60 > 35 → 0
-//                 special 210°: |150−210|=60 > 35 → 0
-//                 → strength 0.333 (malefic, < 0.66) → drig4 += −60×0.333 = −20.0
-//
-//   Mercury(165°): diff = (15−165+360)%360 = 210°
-//                 std |210−180|=30 ≤ 45 → 1−30/45 = 0.333
-//                 → strength 0.333 (benefic, < 0.66) → drig2 += +100×0.333 = +33.33
-//
-//   Jupiter(105°): diff = (15−105+360)%360 = 270°
-//                 std |270−180|=90 > 45 → 0
-//                 special 120°: |270−120|=150 > 35 → 0
-//                 special 240°: |270−240|=30 ≤ 35 → 1−30/35 = 0.143
-//                 → strength 0.143 (benefic, < 0.66) → drig2 += +100×0.143 = +14.29
-//
-//   Venus  (195°): diff = (15−195+360)%360 = 180°
-//                 std |180−180|=0 ≤ 45 → 1.0
-//                 → strength 1.0 (benefic, ≥ 0.66) → drig1 += +180×1.0 = +180.0
-//
-//   Saturn (285°): diff = (15−285+360)%360 = 90°
-//                 std |90−180|=90 > 45 → 0
-//                 special 60°: |90−60|=30 ≤ 35 → 1−30/35 = 0.143
-//                 special 270°: |90−270|=180 > 35 → 0
-//                 → strength 0.143 (malefic, < 0.66) → drig4 += −60×0.143 = −8.57
-//
-//   drig1 = 180.0, drig2 = 33.33+14.29 = 47.62, drig3 = 0, drig4 = −20.0+(−8.57) = −28.57
-//
-// Bhavadhipati: Mars Ṣaḍbala = 350 vp / 300 req = 1.167×  → bhavesha = 350
-//
-// Occupants: none
-//
-// ~Dig Bala: H1 is kendra (angular) → +15 vp
-//
-// Total = 180.0 + 47.62 + 0 + (−28.57) + 350 + 0 + 15 = 564.05
+// Kāla Bala of the houses (27.31): 15 virūpa
 // ---------------------------------------------------------------------------
-function testHouse1(): { pass: number; fail: number } {
-  let pass = 0, fail = 0;
-  console.log('--- House 1 (Aries, lord: Mars, no occupants) ---');
-
-  const rows = buildClassicalBhavaBala(FIXTURE_CHART, FIXTURE_SHADBALA);
-  const h1 = rows[0];
-
-  let ok = h1.sign === 'Ar' && h1.lord === 'Mars';
-  console.log(`${ok ? '✓' : '✗'} H1: sign=Ar lord=Mars, got sign=${h1.sign} lord=${h1.lord}`);
-  if (ok) pass++; else fail++;
-
-  ok = h1.bhavesha === 350;
-  console.log(`${ok ? '✓' : '✗'} H1 bhavesha: expected 350 vp (Mars), got ${h1.bhavesha}`);
-  if (ok) pass++; else fail++;
-
-  ok = approxEqual(h1.drig1, 180.0);
-  console.log(`${ok ? '✓' : '✗'} H1 drig1 (Venus full 7th): expected 180.0, got ${h1.drig1.toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  ok = approxEqual(h1.drig2, 47.62);
-  console.log(`${ok ? '✓' : '✗'} H1 drig2 (Mercury+Jupiter weak): expected ~47.62, got ${h1.drig2.toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  ok = approxEqual(h1.drig3, 0, 0.01);
-  console.log(`${ok ? '✓' : '✗'} H1 drig3 (no strong malefic): expected 0, got ${h1.drig3.toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  ok = approxEqual(h1.drig4, -28.57);
-  console.log(`${ok ? '✓' : '✗'} H1 drig4 (Mars+Saturn weak): expected ~−28.57, got ${h1.drig4.toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  ok = h1.occupants.length === 0 && h1.occupantTotal === 0;
-  console.log(`${ok ? '✓' : '✗'} H1 occupants: expected none, got ${h1.occupants.length}`);
-  if (ok) pass++; else fail++;
-
-  ok = h1.kendra === 15;
-  console.log(`${ok ? '✓' : '✗'} H1 ~Dig: expected +15 vp (kendra), got ${h1.kendra}`);
-  if (ok) pass++; else fail++;
-
-  // 180.0 + 47.62 + 0 + (−28.57) + 350 + 0 + 15 = 564.05
-  ok = approxEqual(h1.total, 564.05, 1.5);
-  console.log(`${ok ? '✓' : '✗'} H1 total: expected ~564.05, got ${h1.total.toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  return { pass, fail };
+assert.equal(BHAVA_KALA_VIRUPA, 15);
+const SIRSODAYA = [2, 4, 5, 6, 7, 10];
+const PRSTHODAYA = [0, 1, 3, 8, 9];
+for (let sign = 0; sign < 12; sign += 1) {
+  assert.equal(calculateBhavaKalaBalaVirupa(sign, 'day'), SIRSODAYA.includes(sign) ? 15 : 0, `sign ${sign} by day`);
+  assert.equal(calculateBhavaKalaBalaVirupa(sign, 'night'), PRSTHODAYA.includes(sign) ? 15 : 0, `sign ${sign} by night`);
+  assert.equal(calculateBhavaKalaBalaVirupa(sign, 'twilight'), sign === 11 ? 15 : 0, `sign ${sign} in the twilight`);
+  assert.equal(calculateBhavaKalaBalaVirupa(sign, 'unknown'), 0, `sign ${sign} with no birth time`);
 }
 
-// ---------------------------------------------------------------------------
-// House 4 — Cancer (lord: Moon, Jupiter occupies)
-//
-// Sign midpoint = signIndex(3) × 30 + 15 = 105°
-//
-// Drig Bala — diff = normalizeDegrees(105 − planet.longitude):
-//
-//   Sun   (135°): diff=(105−135+360)%360=330°; std |330−180|=150>45→0 → no aspect
-//   Moon   (45°): diff=(105−45+360)%360=60°; std |60−180|=120>45→0 → no aspect
-//
-//   Mars  (225°): diff=(105−225+360)%360=240°
-//                 std |240−180|=60>45→0
-//                 special 90°: |240−90|=150>35→0
-//                 special 210°: |240−210|=30≤35→1−30/35=0.143
-//                 → strength 0.143 (malefic, <0.66) → drig4 += −60×0.143 = −8.57
-//
-//   Mercury(165°): diff=(105−165+360)%360=300°; std |300−180|=120>45→0; no special → no aspect
-//
-//   Jupiter(105°): diff=(105−105+360)%360=0°
-//                 std |0−180|=180>45→0; special 120°:|0−120|=120>35→0; special 240°:|0−240|=240>35→0
-//                 → no aspect (Jupiter is the occupant; 0° diff yields no drishti)
-//
-//   Venus  (195°): diff=(105−195+360)%360=270°; std |270−180|=90>45→0; no special → no aspect
-//
-//   Saturn (285°): diff=(105−285+360)%360=180°
-//                 std |180−180|=0≤45→1.0
-//                 special 60°:|180−60|=120>35→0; special 270°:|180−270|=90>35→0
-//                 → strength 1.0 (malefic, ≥0.66) → drig3 += −90×1.0 = −90.0
-//
-//   drig1=0, drig2=0, drig3=−90.0, drig4=−8.57
-//
-// Bhavadhipati: Moon Ṣaḍbala = 420 vp / 360 req = 1.167× → bhavesha = 420
-//
-// Occupants: Jupiter (sign=4, benefic)
-//   Ṣaḍbala ratio = 520/390 = 1.333
-//   contribution = +45 × min(1.333, 2.0) = 45 × 1.333 = +60.0 vp
-//
-// ~Dig Bala: H4 is kendra (angular) → +15 vp
-//
-// Total = 0 + 0 + (−90.0) + (−8.57) + 420 + 60.0 + 15 = 396.43
-// ---------------------------------------------------------------------------
-function testHouse4(): { pass: number; fail: number } {
-  let pass = 0, fail = 0;
-  console.log('\n--- House 4 (Cancer, lord: Moon, Jupiter occupies) ---');
-
-  const rows = buildClassicalBhavaBala(FIXTURE_CHART, FIXTURE_SHADBALA);
-  const h4 = rows[3];
-
-  let ok = h4.sign === 'Cn' && h4.lord === 'Moon';
-  console.log(`${ok ? '✓' : '✗'} H4: sign=Cn lord=Moon, got sign=${h4.sign} lord=${h4.lord}`);
-  if (ok) pass++; else fail++;
-
-  ok = h4.bhavesha === 420;
-  console.log(`${ok ? '✓' : '✗'} H4 bhavesha: expected 420 vp (Moon), got ${h4.bhavesha}`);
-  if (ok) pass++; else fail++;
-
-  ok = approxEqual(h4.drig3, -90.0);
-  console.log(`${ok ? '✓' : '✗'} H4 drig3 (Saturn full 7th): expected −90.0, got ${h4.drig3.toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  ok = approxEqual(h4.drig4, -8.57);
-  console.log(`${ok ? '✓' : '✗'} H4 drig4 (Mars special 4th): expected ~−8.57, got ${h4.drig4.toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  ok = approxEqual(h4.drig1 + h4.drig2, 0, 0.01);
-  console.log(`${ok ? '✓' : '✗'} H4 drig+ (no benefic aspects): expected 0, got ${(h4.drig1 + h4.drig2).toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  ok = h4.occupants.length === 1 && h4.occupants[0].name === 'Jupiter';
-  console.log(`${ok ? '✓' : '✗'} H4 occupant: expected Jupiter, got ${h4.occupants.map((o) => o.name).join(',') || 'none'}`);
-  if (ok) pass++; else fail++;
-
-  // +45 × min(520/390, 2.0) = 45 × 1.333 = 60.0
-  ok = approxEqual(h4.occupantTotal, 60.0, 1.0);
-  console.log(`${ok ? '✓' : '✗'} H4 occupantTotal: expected ~60.0 (+45×1.333), got ${h4.occupantTotal.toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  ok = h4.kendra === 15;
-  console.log(`${ok ? '✓' : '✗'} H4 ~Dig: expected +15 vp (kendra), got ${h4.kendra}`);
-  if (ok) pass++; else fail++;
-
-  // 0 + 0 + (−90.0) + (−8.57) + 420 + 60.0 + 15 = 396.43
-  ok = approxEqual(h4.total, 396.43, 1.5);
-  console.log(`${ok ? '✓' : '✗'} H4 total: expected ~396.43 (0+0−90−8.57+420+60+15), got ${h4.total.toFixed(2)}`);
-  if (ok) pass++; else fail++;
-
-  return { pass, fail };
-}
-
-// ---------------------------------------------------------------------------
-// House 12 — Pisces (lord: Jupiter, no occupants, cadent)
-// ---------------------------------------------------------------------------
-function testHouse12(): { pass: number; fail: number } {
-  let pass = 0, fail = 0;
-  console.log('\n--- House 12 (Pisces, lord: Jupiter, cadent) ---');
-
-  const rows = buildClassicalBhavaBala(FIXTURE_CHART, FIXTURE_SHADBALA);
-  const h12 = rows[11];
-
-  let ok = h12.sign === 'Pi' && h12.lord === 'Jupiter';
-  console.log(`${ok ? '✓' : '✗'} H12: sign=Pi lord=Jupiter, got sign=${h12.sign} lord=${h12.lord}`);
-  if (ok) pass++; else fail++;
-
-  ok = h12.bhavesha === 520;
-  console.log(`${ok ? '✓' : '✗'} H12 bhavesha: expected 520 vp (Jupiter), got ${h12.bhavesha}`);
-  if (ok) pass++; else fail++;
-
-  // H12 is apoklima (cadent) → kendra/Dig = 0
-  ok = h12.kendra === 0;
-  console.log(`${ok ? '✓' : '✗'} H12 ~Dig: expected 0 (apoklima/cadent), got ${h12.kendra}`);
-  if (ok) pass++; else fail++;
-
-  // Jupiter is in H4, not H12
-  ok = h12.occupants.length === 0;
-  console.log(`${ok ? '✓' : '✗'} H12 occupants: expected none (Jupiter is in H4), got ${h12.occupants.length}`);
-  if (ok) pass++; else fail++;
-
-  return { pass, fail };
-}
-
-// ---------------------------------------------------------------------------
-// All 12 house signs and lords (Aries ascendant, whole-sign)
-// ---------------------------------------------------------------------------
-function testAllHouseSigns(): { pass: number; fail: number } {
-  let pass = 0, fail = 0;
-  console.log('\n--- All 12 house signs and lords (Aries ascendant) ---');
-
-  const EXPECTED = [
-    { sign: 'Ar', lord: 'Mars'    },
-    { sign: 'Ta', lord: 'Venus'   },
-    { sign: 'Ge', lord: 'Mercury' },
-    { sign: 'Cn', lord: 'Moon'    },
-    { sign: 'Le', lord: 'Sun'     },
-    { sign: 'Vi', lord: 'Mercury' },
-    { sign: 'Li', lord: 'Venus'   },
-    { sign: 'Sc', lord: 'Mars'    },
-    { sign: 'Sg', lord: 'Jupiter' },
-    { sign: 'Cp', lord: 'Saturn'  },
-    { sign: 'Aq', lord: 'Saturn'  },
-    { sign: 'Pi', lord: 'Jupiter' },
+// The twilight is five ghatis (two hours) either side of sunrise and sunset (46.44–47).
+assert.equal(TWILIGHT_HOURS, 2);
+{
+  const atHour = (hour: number): ShadbalaChartLike => ({
+    debug: {
+      inputDateTime: `2000-01-01 ${String(Math.floor(hour)).padStart(2, '0')}:${String(Math.round((hour % 1) * 60)).padStart(2, '0')}:00`,
+      sunriseLocalHours: 6.5,
+      sunsetLocalHours: 18.25,
+    },
+  });
+  const expected: Array<[number, BirthSect]> = [
+    [0, 'night'], [4.4, 'night'], [4.5, 'twilight'], [6.5, 'twilight'], [8.5, 'twilight'], [8.75, 'day'],
+    [12, 'day'], [16.0, 'day'], [16.25, 'twilight'], [18.25, 'twilight'], [20.25, 'twilight'], [20.5, 'night'], [23.5, 'night'],
   ];
-
-  const rows = buildClassicalBhavaBala(FIXTURE_CHART, FIXTURE_SHADBALA);
-  assert(rows.length === 12, `expected 12 rows, got ${rows.length}`);
-  pass++;
-
-  for (let i = 0; i < 12; i++) {
-    const ok = rows[i].sign === EXPECTED[i].sign && rows[i].lord === EXPECTED[i].lord;
-    console.log(`${ok ? '✓' : '✗'} H${i + 1}: expected ${EXPECTED[i].sign}/${EXPECTED[i].lord}, got ${rows[i].sign}/${rows[i].lord}`);
-    if (ok) pass++; else fail++;
-  }
-
-  return { pass, fail };
+  for (const [hour, sect] of expected) assert.equal(birthSect(atHour(hour)), sect, `birth at ${hour} h`);
+  assert.equal(birthSect({}), 'unknown', 'no data');
+  assert.equal(birthSect({ debug: { inputDateTime: '2000-01-01 12:00:00' } }), 'unknown', 'no sunrise');
 }
 
 // ---------------------------------------------------------------------------
-// Occupants across all houses — spot-check Saturn in H10, Venus in H7
+// Dṛṣṭi Bala of a house (27.28–29): a quarter of each aspect, Mercury's and Jupiter's in full
 // ---------------------------------------------------------------------------
-function testOccupants(): { pass: number; fail: number } {
-  let pass = 0, fail = 0;
-  console.log('\n--- Occupant placement and contribution ---');
-
-  const rows = buildClassicalBhavaBala(FIXTURE_CHART, FIXTURE_SHADBALA);
-
-  // Saturn (malefic) in H10 (Capricorn)
-  const h10 = rows[9];
-  let ok = h10.occupants.length === 1 && h10.occupants[0].name === 'Saturn';
-  console.log(`${ok ? '✓' : '✗'} H10 occupant: expected Saturn, got ${h10.occupants.map((o) => o.name).join(',') || 'none'}`);
-  if (ok) pass++; else fail++;
-
-  // Saturn is malefic: contribution = −30 × min(310/300, 2) = −30 × 1.033 = −31.0
-  ok = h10.occupants[0].nature === 'malefic' && h10.occupants[0].contribution < 0;
-  console.log(`${ok ? '✓' : '✗'} H10 Saturn: malefic with negative contribution (${h10.occupants[0]?.contribution?.toFixed(1)})`);
-  if (ok) pass++; else fail++;
-
-  // Venus (benefic) in H7
-  const h7 = rows[6];
-  ok = h7.occupants.length === 1 && h7.occupants[0].name === 'Venus';
-  console.log(`${ok ? '✓' : '✗'} H7 occupant: expected Venus, got ${h7.occupants.map((o) => o.name).join(',') || 'none'}`);
-  if (ok) pass++; else fail++;
-
-  ok = h7.occupants[0].nature === 'benefic' && h7.occupants[0].contribution > 0;
-  console.log(`${ok ? '✓' : '✗'} H7 Venus: benefic with positive contribution (${h7.occupants[0]?.contribution?.toFixed(1)})`);
-  if (ok) pass++; else fail++;
-
-  // Empty houses should have no occupants
-  const h1 = rows[0];
-  ok = h1.occupants.length === 0;
-  console.log(`${ok ? '✓' : '✗'} H1 (no occupants): expected 0, got ${h1.occupants.length}`);
-  if (ok) pass++; else fail++;
-
-  return { pass, fail };
+{
+  const chart = (planets: Array<{ name: string; longitude: number }>): ShadbalaChartLike => ({ planets });
+  // Jupiter 180 degrees from the point: the full 60, a benefic, in full: +60.
+  close(calculateBhavaDrigBala(chart([{ name: 'Jupiter', longitude: 0 }]), 180).total, 60, 1e-9, 'Jupiter in full');
+  // Venus 180 degrees away: a quarter, +15.
+  close(calculateBhavaDrigBala(chart([{ name: 'Venus', longitude: 0 }]), 180).total, 15, 1e-9, 'Venus a quarter');
+  // Saturn at 60 degrees behind the point casts 60: a malefic quarter, -15.
+  close(calculateBhavaDrigBala(chart([{ name: 'Saturn', longitude: 0 }]), 60).total, -15, 1e-9, 'Saturn a quarter');
+  // Mercury is a benefic alone and counts in full; with Mars in its sign it is a malefic and counts negative in full.
+  close(calculateBhavaDrigBala(chart([{ name: 'Mercury', longitude: 0 }]), 180).total, 60, 1e-9, 'Mercury in full');
+  const mercuryWithMars = calculateBhavaDrigBala(chart([{ name: 'Mercury', longitude: 10 }, { name: 'Mars', longitude: 20 }]), 190);
+  const detail = mercuryWithMars.details.find((entry) => entry.planet === 'Mercury')!;
+  assert.equal(detail.nature, 'malefic', 'Mercury with Mars');
+  close(detail.contribution, -60, 1e-9, 'Mercury malefic in full');
+  // Nothing is cast within 30 degrees.
+  assert.equal(calculateBhavaDrigBala(chart([{ name: 'Jupiter', longitude: 0 }]), 20).details.length, 0, 'a conjunction casts nothing');
+  // Benefics and malefics add up to the total.
+  const both = calculateBhavaDrigBala(chart([{ name: 'Jupiter', longitude: 0 }, { name: 'Saturn', longitude: 120 }]), 180);
+  close(both.total, both.benefic + both.malefic, 1e-9, 'parts of the total');
 }
 
 // ---------------------------------------------------------------------------
-// Panapara houses get +7.5 Dig, apoklima get 0
+// The reference chart: 13 October 1987, 00:15 EET, Kotka (Cancer rising)
 // ---------------------------------------------------------------------------
-function testDigBala(): { pass: number; fail: number } {
-  let pass = 0, fail = 0;
-  console.log('\n--- ~Dig Bala (kendra +15, panapara +7.5, apoklima 0) ---');
-
-  const rows = buildClassicalBhavaBala(FIXTURE_CHART, FIXTURE_SHADBALA);
-
-  const kendraHouses = [1, 4, 7, 10];
-  const panaparaHouses = [2, 5, 8, 11];
-  const apoklimaHouses = [3, 6, 9, 12];
-
-  for (const h of kendraHouses) {
-    const ok = rows[h - 1].kendra === 15;
-    console.log(`${ok ? '✓' : '✗'} H${h} kendra: expected 15, got ${rows[h - 1].kendra}`);
-    if (ok) pass++; else fail++;
+{
+  const shadbala = buildShadbalaRows(REFERENCE_CHART);
+  const rows = buildClassicalBhavaBala(REFERENCE_CHART, shadbala);
+  assert.equal(rows.length, 12);
+  for (const expected of EXPECTED_BHAVA) {
+    const row = rows[expected.house - 1];
+    const tag = `house ${expected.house} of the reference chart`;
+    assert.equal(row.lord, expected.lord, `${tag}: lord`);
+    close(row.bhavesha, expected.bhavesha, 0.5, `${tag}: Bhavesha`);
+    close(row.dig, expected.dig, 0.02, `${tag}: Dig`);
+    close(row.drig, expected.drig, 0.02, `${tag}: Drig`);
+    assert.equal(row.occupantTotal, expected.occupants, `${tag}: occupants`);
+    assert.equal(row.kala, expected.kala, `${tag}: Kala`);
+    close(row.total, expected.total, 0.6, `${tag}: total`);
+    // The parts add up to the total.
+    close(row.total, row.bhavesha + row.dig + row.drig + row.occupantTotal + row.kala, 1e-9, `${tag}: parts`);
+    close(row.drig, row.drigBenefic + row.drigMalefic, 1e-9, `${tag}: Drig parts`);
   }
-  for (const h of panaparaHouses) {
-    const ok = rows[h - 1].kendra === 7.5;
-    console.log(`${ok ? '✓' : '✗'} H${h} panapara: expected 7.5, got ${rows[h - 1].kendra}`);
-    if (ok) pass++; else fail++;
-  }
-  for (const h of apoklimaHouses) {
-    const ok = rows[h - 1].kendra === 0;
-    console.log(`${ok ? '✓' : '✗'} H${h} apoklima: expected 0, got ${rows[h - 1].kendra}`);
-    if (ok) pass++; else fail++;
-  }
-
-  return { pass, fail };
+  // Cancer rising: the Lagna's own sign takes the Lagna as its powerless angle, 9.5 degrees away.
+  assert.equal(rows[0].digPoint, 'asc');
+  close(rows[0].dig, (114.54414658026127 - 105) / 3, 1e-9, 'the 1st house');
+  // Mars and the Sun stand in Virgo (-60 each), Jupiter in Aries (+60), Mercury and Venus in Libra (+60).
+  assert.deepEqual(rows[2].occupants.map((occupant) => occupant.name), ['Sun', 'Mars']);
+  assert.equal(rows[2].occupantTotal, -120);
+  assert.equal(rows[3].occupantTotal, 60, 'Mercury +60, Venus none');
+  assert.equal(rows[9].occupantTotal, 60, 'Jupiter in Aries');
+  assert.equal(rows[0].kalaNote, 'night birth');
 }
 
-// ---------------------------------------------------------------------------
-// Structural invariants across all twelve houses. H1 and H4 above pin down the
-// arithmetic against hand-worked values; this checks the remaining ten follow
-// the same composition rule rather than being assembled some other way.
-// ---------------------------------------------------------------------------
-function testTotalComposition(): { pass: number; fail: number } {
-  let pass = 0, fail = 0;
-  console.log('\n--- Total composition (bhavesha + drig + occupants + kendra) ---');
-
-  const rows = buildClassicalBhavaBala(FIXTURE_CHART, FIXTURE_SHADBALA);
-
-  let ok = rows.length === 12;
-  console.log(`${ok ? '✓' : '✗'} row count: expected 12, got ${rows.length}`);
-  if (ok) pass++; else fail++;
-
+// A chart without its ascendant still calculates, with no Dig Bala.
+{
+  const rows = buildClassicalBhavaBala({ planets: [] }, []);
+  assert.equal(rows.length, 12);
   for (const row of rows) {
-    const composed =
-      row.bhavesha + row.drig1 + row.drig2 + row.drig3 + row.drig4 + row.occupantTotal + row.kendra;
-    ok = approxEqual(row.total, composed, 1e-9);
-    console.log(`${ok ? '✓' : '✗'} H${row.house} total ${row.total.toFixed(2)} = components ${composed.toFixed(2)}`);
-    if (ok) pass++; else fail++;
+    assert.equal(row.total, 0);
+    assert.equal(row.lord, '—');
   }
-
-  // Occupant details must reconcile with the reported occupant subtotal.
-  for (const row of rows) {
-    const summed = row.occupants.reduce((total, occupant) => total + occupant.contribution, 0);
-    ok = approxEqual(row.occupantTotal, summed, 1e-9);
-    console.log(`${ok ? '✓' : '✗'} H${row.house} occupant subtotal ${row.occupantTotal.toFixed(2)} = ${row.occupants.length} detail row(s)`);
-    if (ok) pass++; else fail++;
-  }
-
-  // Each house carries a distinct sign, and the twelve cover the whole zodiac.
-  const signs = new Set(rows.map((row) => row.sign));
-  ok = signs.size === 12;
-  console.log(`${ok ? '✓' : '✗'} twelve distinct signs across the houses, got ${signs.size}`);
-  if (ok) pass++; else fail++;
-
-  return { pass, fail };
 }
 
-// ---------------------------------------------------------------------------
-// Runner
-// ---------------------------------------------------------------------------
-function main(): void {
-  const h1 = testHouse1();
-  const h4 = testHouse4();
-  const h12 = testHouse12();
-  const all = testAllHouseSigns();
-  const occ = testOccupants();
-  const dig = testDigBala();
-  const comp = testTotalComposition();
-
-  const total = h1.pass + h4.pass + h12.pass + all.pass + occ.pass + dig.pass + comp.pass;
-  const failed = h1.fail + h4.fail + h12.fail + all.fail + occ.fail + dig.fail + comp.fail;
-  console.log(`\n${total} passed, ${failed} failed`);
-  if (failed > 0) process.exit(1);
-}
-
-main();
+console.log('Bhava Bala tests passed');

@@ -29,6 +29,7 @@ import {
 import { aspectVirupa, isMoonBenefic } from './shadbalaAspects';
 import { cheshtaKendra, cheshtaKendraBalaVirupa, meanLongitudes } from './shadbalaCheshta';
 import { ahargana, horaLord, yearMonthDayLords } from './shadbalaTime';
+import { EXPECTED_SHADBALA, REFERENCE_CHART } from './shadbala.fixture';
 
 const PLANETS: readonly ShadbalaPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 const close = (actual: number, expected: number, tolerance: number, message: string) =>
@@ -347,56 +348,13 @@ assert.ok(ayanaOf('Mercury', 0) >= 30, 'Mercury Ayana never drops below half');
 }
 
 // ---------------------------------------------------------------------------
-// The reference chart: 13 October 1987, 00:15 EET, Kotka (60.46667 N, 26.94583 E), Lahiri ayanamsa
+// The reference chart (shadbala.fixture.ts): 13 October 1987, 00:15 EET, Kotka, Lahiri ayanamsa
 // ---------------------------------------------------------------------------
-// The positions are the app's own. The expected numbers were worked out separately from the Sanskrit
-// rules, with the decisions of the audit: the waning Moon a malefic, the mūlatrikoṇa 45 in the rāśi only,
-// the Sun's and the Moon's Cheṣṭā Bala added to the total, and Dṛg Bala a quarter of the net aspect.
-const REFERENCE_CHART: ShadbalaChartLike = {
-  ascendant: { sign: 4, longitude: 114.54414658026127 },
-  midheaven: 359.70649166138884,
-  debug: {
-    julianDay: 2447081.4270833335,
-    ayanamsa: 23.686388896283233,
-    siderealAyanamsa: 23.686388896283233,
-    inputDateTime: '1987-10-13 00:15:00',
-    sunriseLocalHours: 6.764217132702925,
-    sunsetLocalHours: 17.168893737718008,
-    nextSunriseLocalHours: 30.806000037118338,
-    previousSunriseLocalHours: -17.277436288074114,
-  },
-  planets: [
-    { name: 'Sun', longitude: 175.35945018610008, sign: 6, house: 3, speed: 0.9895424227498335, declination: -7.459388811762785 },
-    { name: 'Moon', longitude: 65.16355521542967, sign: 3, house: 12, speed: 12.22188189209701, declination: 28.688789056814585 },
-    { name: 'Mars', longitude: 158.9588132147914, sign: 6, house: 3, speed: 0.6430602219606304, declination: -0.14504848813216933 },
-    { name: 'Mercury', longitude: 198.70672644229387, sign: 7, house: 4, speed: 0.4145030031744527, declination: -18.740312708833574 },
-    { name: 'Jupiter', longitude: 1.754213422011535, sign: 1, house: 10, speed: -0.13369810487429085, declination: 8.363950439435337, isRetrograde: true },
-    { name: 'Venus', longitude: 188.87826045970806, sign: 7, house: 4, speed: 1.2449938119996466, declination: -11.770605887604804 },
-    { name: 'Saturn', longitude: 233.14880397832485, sign: 8, house: 5, speed: 0.07992155076193948, declination: -21.54586845038315 },
-    { name: 'Rahu', longitude: 337.72078702269863, sign: 12, house: 9 },
-    { name: 'Ketu', longitude: 157.7207870226987, sign: 6, house: 3 },
-  ],
-};
-
-const EXPECTED: Record<ShadbalaPlanet, {
-  uccha: number; saptavargaja: number; ojhayugma: number; kendradi: number; drekkana: number; sthana: number;
-  dig: number; natonnata: number; paksha: number; tribhaga: number; varsheshadi: number; ayana: number; kala: number;
-  cheshta: number; naisargika: number; drik: number; total: number;
-}> = {
-  Sun:     { uccha: 4.88,  saptavargaja: 145, ojhayugma: 15, kendradi: 15, drekkana: 0,  sthana: 179.9, dig: 1.45,  natonnata: 1.42,  paksha: 23.27, tribhaga: 0,  varsheshadi: 0,  ayana: 20.48, kala: 45.2,  cheshta: 20.48, naisargika: 60,    drik: 3.08,   total: 310.0 },
-  Moon:    { uccha: 49.28, saptavargaja: 109, ojhayugma: 15, kendradi: 15, drekkana: 0,  sthana: 188.3, dig: 21.82, natonnata: 58.58, paksha: 36.73, tribhaga: 0,  varsheshadi: 45, ayana: 0.15,  kala: 140.5, cheshta: 36.73, naisargika: 51.43, drik: -2.24,  total: 436.5 },
-  Mars:    { uccha: 13.65, saptavargaja: 85,  ojhayugma: 0,  kendradi: 15, drekkana: 15, sthana: 128.7, dig: 6.92,  natonnata: 58.58, paksha: 23.27, tribhaga: 0,  varsheshadi: 60, ayana: 28.68, kala: 170.5, cheshta: 7.42,  naisargika: 17.14, drik: -14.27, total: 316.4 },
-  Mercury: { uccha: 48.76, saptavargaja: 86,  ojhayugma: 15, kendradi: 60, drekkana: 15, sthana: 224.8, dig: 31.95, natonnata: 60,    paksha: 36.73, tribhaga: 0,  varsheshadi: 30, ayana: 49.54, kala: 176.3, cheshta: 49.05, naisargika: 25.71, drik: 7.55,   total: 515.3 },
-  Jupiter: { uccha: 28.92, saptavargaja: 70,  ojhayugma: 30, kendradi: 60, drekkana: 15, sthana: 203.9, dig: 22.40, natonnata: 1.42,  paksha: 36.73, tribhaga: 60, varsheshadi: 0,  ayana: 42.72, kala: 140.9, cheshta: 58.63, naisargika: 34.29, drik: -17.01, total: 443.1 },
-  Venus:   { uccha: 3.96,  saptavargaja: 133, ojhayugma: 0,  kendradi: 60, drekkana: 0,  sthana: 197.0, dig: 56.94, natonnata: 1.42,  paksha: 36.73, tribhaga: 60, varsheshadi: 0,  ayana: 14.06, kala: 112.2, cheshta: 9.08,  naisargika: 42.86, drik: 7.54,   total: 425.6 },
-  Saturn:  { uccha: 48.95, saptavargaja: 112, ojhayugma: 0,  kendradi: 30, drekkana: 0,  sthana: 191.0, dig: 39.53, natonnata: 58.58, paksha: 23.27, tribhaga: 0,  varsheshadi: 15, ayana: 58.24, kala: 155.1, cheshta: 18.87, naisargika: 8.57,  drik: -5.27,  total: 407.8 },
-};
-
 {
   const reference = buildShadbalaRows(REFERENCE_CHART);
   assert.equal(reference.length, 7);
   for (const row of reference) {
-    const expected = EXPECTED[row.planet];
+    const expected = EXPECTED_SHADBALA[row.planet];
     const tag = `${row.planet} of the reference chart`;
     close(row.sthanaBreakdown.uccha, expected.uccha, 0.01, `${tag}: Uccha`);
     assert.equal(row.sthanaBreakdown.saptavargaja, expected.saptavargaja, `${tag}: Saptavargaja`);
@@ -439,7 +397,7 @@ const EXPECTED: Record<ShadbalaPlanet, {
   const shiftedRows = buildShadbalaRows(shifted);
   for (const row of shiftedRows) {
     if (['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'].includes(row.planet)) {
-      close(row.cheshtaVirupa, EXPECTED[row.planet].cheshta, 0.1, `${row.planet} Cheshta in another zodiac`);
+      close(row.cheshtaVirupa, EXPECTED_SHADBALA[row.planet].cheshta, 0.1, `${row.planet} Cheshta in another zodiac`);
     }
   }
 }

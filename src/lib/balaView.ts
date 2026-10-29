@@ -29,17 +29,18 @@ export function shadbalaComposition(row: ShadbalaRow): Record<ShadbalaPart, numb
   };
 }
 
-export const BHAVA_PARTS = ['bhavesha', 'drigBenefic', 'drigMalefic', 'occupants', 'kendra'] as const;
+export const BHAVA_PARTS = ['bhavesha', 'dig', 'drigBenefic', 'drigMalefic', 'occupants', 'kala'] as const;
 export type BhavaPart = (typeof BHAVA_PARTS)[number];
 
-/** The parts of the strength of a house, which add up to its total: its lord's, the aspects of benefics and of malefics, its occupants and its place. */
+/** The parts of the strength of a house, which add up to its total: its lord's, its Dig Bala, the aspects of benefics and of malefics, its occupants and its Kāla Bala. */
 export function bhavaComposition(row: BhavaBalaRow): Record<BhavaPart, number> {
   return {
     bhavesha: row.bhavesha,
-    drigBenefic: row.drig1 + row.drig2,
-    drigMalefic: row.drig3 + row.drig4,
+    dig: row.dig,
+    drigBenefic: row.drigBenefic,
+    drigMalefic: row.drigMalefic,
     occupants: row.occupantTotal,
-    kendra: row.kendra,
+    kala: row.kala,
   };
 }
 

@@ -6,7 +6,7 @@ import { formatScore } from '@/lib/vargaMatrix';
 import { SHADBALA_PARTS, STATUS_ICON, shadbalaComposition, shadbalaStatus, type BalaStatus, type ShadbalaPart } from '@/lib/balaView';
 import { useT } from '@/lib/i18n';
 import { HorizontalBars, SERIES_COLORS, STATUS_COLORS, StackedBars } from './BalaCharts';
-import { BODY_CELL, Heading, NAME_CELL, ROW, ScrollTable, TOTAL_CELL, VALUE_CELL } from './balaShared';
+import { BODY_CELL, Heading, ManualLink, NAME_CELL, ROW, ScrollTable, TOTAL_CELL, VALUE_CELL } from './balaShared';
 
 const STATUS_COLOR: Record<BalaStatus, string> = { weak: STATUS_COLORS.critical, ok: STATUS_COLORS.warning, strong: STATUS_COLORS.good };
 const STATUS_TEXT: Record<BalaStatus, string> = { weak: 'text-red-600 dark:text-red-400', ok: 'text-amber-600 dark:text-amber-400', strong: 'text-emerald-600 dark:text-emerald-400' };
@@ -96,6 +96,7 @@ export default function ShadbalaPanel({ chart }: { chart: ChartData }) {
             );
           })}
         </ScrollTable>
+        <ManualLink label={t('How every number is calculated (manual)')} />
       </div>
     </div>
   );
