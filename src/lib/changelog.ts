@@ -1,5 +1,22 @@
 export const CHANGELOG = [
   {
+    version: 'v3.37',
+    date: '2026-10-29',
+    title: 'Ṣaḍbala by the Sanskrit text of BPHS',
+    changes: [
+      'The Ṣaḍbala was audited against the Sanskrit text of Bṛhat Parāśara Horā Śāstra (chapters 3, 6, 26 and 27), with the translations of R. Santhanam and B. V. Raman as the second witness and JHora, LagnaOne, Viveka and PyJHora only as comparisons. Every rule, its verse and what the text leaves open are in docs/shadbala-sources.md. The numbers change a great deal, and several grahas that fell short of their required strength now reach it.',
+      'Saptavargaja Bala is now the sum of the seven vargas, not their average divided by seven, which had made the Sthāna Bala 70 to 125 virūpa too small. The scores are the verse\'s 45 (own mūlatrikoṇa, in the rāśi only), 30, 20, 15, 10, 4 and 2, graded by the compound relation of the sign\'s lord (natural and temporary friendship together). The mūlatrikoṇa of the Moon begins at 3° of Taurus and that of Mercury at 15° of Virgo.',
+      'Ojhayugma Bala now gives Mercury and Saturn their strength in odd signs, as the verse does (only the Moon and Venus gain in even ones). Naisargika Bala is no longer rounded to whole numbers.',
+      'Dig Bala is measured from the four angles of the chart (ascendant, descendant, midheaven and nadir) as the distance from the point where the graha is powerless, divided by three, and no longer from the whole-sign houses.',
+      'Kāla Bala: the made-up weekday score is replaced by Varṣa-Māsa-Dina-Horā Bala, 15, 30, 45 and 60 virūpa to the lords of the year, month, day and hour, found by the ahargaṇa count of the commentaries (it gives the examples of both Santhanam and Raman). Ayana Bala uses the declination of the verse\'s table from the sāyana longitude, and the Sun\'s Ayana Bala is no longer doubled.',
+      'Cheṣṭā Bala of Mars, Mercury, Jupiter, Venus and Saturn is now measured by the cheṣṭā-kendra (the śīghrocca less the mean of the mean and the true longitude, divided by three), with the mean positions of Raman\'s tables, in place of the table of eight motions the verses give no speeds for. The Sun\'s Cheṣṭā Bala is its Ayana Bala and the Moon\'s its Pakṣa Bala, as the verses say, and both are in the total.',
+      'Dṛg Bala is now a quarter of the benefic aspects less a quarter of the malefic ones, by the sphuṭa dṛṣṭi values of the verses (the general table and the special aspects of Mars, Jupiter and Saturn). The waning Moon (the dark half) is a malefic, and Mercury is a malefic in the sign of a malefic. This differs from JHora, which counts the Moon of the reference chart as a benefic.',
+      'Yuddha Bala (planetary war) is still not included: the sources disagree about who wins and by how much. The test now checks a reference chart against values worked out separately from the Sanskrit rules, and the two commentators\' own examples.',
+      'Updated the application version to v3.37.',
+    ],
+  },
+
+  {
     version: 'v3.36',
     date: '2026-10-28',
     title: 'Safer API requests and Next.js security update',

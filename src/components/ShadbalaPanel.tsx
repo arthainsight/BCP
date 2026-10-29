@@ -73,7 +73,7 @@ export default function ShadbalaPanel({ chart }: { chart: ChartData }) {
       />
 
       <div className="space-y-2">
-        <Heading command="shadbala.beta">{t('Values in virūpa. Exact: Uccha, Saptavargaja, Ojhayugma, Kendradi, Drekkana, Natonnata, Paksha, Tribhaga, Vara, Ayana, Cheṣṭā, Naisargika. Approx (~): Dig (whole-sign house proxy), Dṛg (orb-weighted, can be negative).')}</Heading>
+        <Heading command="shadbala.beta">{t('Values in virūpa, by the Sanskrit text of BPHS 27: Saptavargaja is the sum of the seven vargas, Dig is measured from the four angles, Dṛg counts the waning Moon as a malefic, and the Cheṣṭā Bala of the Sun and of the Moon is their Ayana and Pakṣa Bala. Yuddha Bala is not included.')}</Heading>
         <ScrollTable minWidth="min-w-[1100px]" headers={[t('Planet'), 'Sthāna', 'Dig', 'Kāla', 'Cheṣṭā', 'Naisargika', 'Dṛg', 'Total vp', 'Req vp', '%', t('Status')]}>
           {rows.map(row => {
             const status = shadbalaStatus(row.ratio);
@@ -84,7 +84,7 @@ export default function ShadbalaPanel({ chart }: { chart: ChartData }) {
                 <td className={NAME_CELL}>{row.planet}{row.retrograde ? ' ℞' : ''}</td>
                 <td className={VALUE_CELL} title={`Uccha ${formatScore(sthana.uccha)} + Sapt ${formatScore(sthana.saptavargaja)} + Ojhayugma ${formatScore(sthana.ojhayugma)} + Kendradi ${formatScore(sthana.kendradi)} + Drekkana ${formatScore(sthana.drekkana)} vp`}>{formatScore(sthana.total)}</td>
                 <td className={VALUE_CELL}>{formatScore(row.digVirupa)}</td>
-                <td className={VALUE_CELL} title={`Nat ${formatScore(kala.natonnata)} + Pksh ${formatScore(kala.paksha)} + Tri ${formatScore(kala.tribhaaga)} + Vara ${formatScore(kala.varsheshadi)} + Ayn ${formatScore(kala.ayana)} vp`}>{formatScore(kala.total)}</td>
+                <td className={VALUE_CELL} title={`Nat ${formatScore(kala.natonnata)} + Pksh ${formatScore(kala.paksha)} + Tri ${formatScore(kala.tribhaaga)} + Abda/Masa/Vara/Hora ${formatScore(kala.varsheshadi)} + Ayn ${formatScore(kala.ayana)} vp${kala.varsheshadiLords ? ` · Abda ${kala.varsheshadiLords.abda}, Masa ${kala.varsheshadiLords.masa}, Vara ${kala.varsheshadiLords.vara}, Hora ${kala.varsheshadiLords.hora}` : ''}`}>{formatScore(kala.total)}</td>
                 <td className={VALUE_CELL}>{formatScore(row.cheshtaVirupa)}</td>
                 <td className={VALUE_CELL}>{formatScore(row.naisargikaVirupa)}</td>
                 <td className={VALUE_CELL}>{formatScore(row.drikVirupa)}</td>
