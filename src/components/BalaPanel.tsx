@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import type { ChartData } from '@/types';
 import { useT } from '@/lib/i18n';
+import { useBalaOptions } from '@/hooks/useBalaOptions';
+import BalaOptionsPanel from './BalaOptionsPanel';
 import VimsopakaPanel from './VimsopakaPanel';
 import ShadbalaPanel from './ShadbalaPanel';
 import BhavaBalaPanel from './BhavaBalaPanel';
@@ -19,6 +21,7 @@ const TABS: { key: BalaView; label: string }[] = [
 export default function BalaPanel({ chart }: { chart: ChartData | null | undefined }) {
   const t = useT();
   const [view, setView] = useState<BalaView>('shadbala');
+  const { options, update, reset } = useBalaOptions();
   if (!chart) return <div className="flex h-40 items-center justify-center px-4 text-center font-mono text-xs text-zinc-400 dark:text-zinc-600">{t('Calculate a chart first.')}</div>;
 
   return (
@@ -35,8 +38,9 @@ export default function BalaPanel({ chart }: { chart: ChartData | null | undefin
           </button>
         ))}
       </div>
-      {view === 'shadbala' && <ShadbalaPanel chart={chart} />}
-      {view === 'bhava' && <BhavaBalaPanel chart={chart} />}
+      {(view === 'shadbala' || view === 'bhava') && <BalaOptionsPanel view={view} options={options} onChange={update} onReset={reset} />}
+      {view === 'shadbala' && <ShadbalaPanel chart={chart} options={options} />}
+      {view === 'bhava' && <BhavaBalaPanel chart={chart} options={options} />}
       {view === 'vimsopaka' && <VimsopakaPanel chart={chart} />}
     </div>
   );

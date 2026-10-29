@@ -317,12 +317,12 @@ Dṛṣṭi = −¼ × (5,18 + 4,92 + 0 + 34,07) + 16,85 + 51,62 + ¼ × 11,94 =
 
 ## 10. Valintakohdat
 
-Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. Sovellus käyttää "Käytössä"-sarakkeen valintaa; muut ovat vaihtoehtoja, jotka se voisi tarjota asetuksina.
+Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä"-sarake on oletus, sanskritin tekstin lukutapa, ja se on kunkin asetuksen ensimmäinen vaihtoehto. **Kaikki muut vaihtoehdot voi valita Bala-näkymissä kohdasta "Laskennan valinnat"** (Ṣaḍbalan ja Bhāva Balan yläpuolella; valinnat tallentuvat tähän selaimeen eivätkä muuta muuta kuin näitä kahta näkymää). C1–C11 ja C14 ovat asetuksia; C6 ja C7 (Auringon Ayanan ja Kuun Pakṣan kahdennus) ovat C5:n kolmannessa vaihtoehdossa; C12 (Yuddha Bala) ja C13 (keskipituudet) eivät ole asetuksia.
 
 | | Kysymys | Käytössä | Vaihtoehdot ja kuka niitä pitää |
 |---|---|---|---|
 | C1 | Milloin Kuu on paha? | Tumma puolisko ja uusikuu (Santhanam, Saravali-ohjelmiston dokumentaatio) | Hyvä kirkkaan puoliskon kahdeksannesta tithistä tumman puoliskon kahdeksanteen, muuten paha (B. V. Raman, JHora) |
-| C2 | Milloin Mercury on paha? | Samassa merkissä pahan kanssa (3.11 *krūra-yuta*; teksti ei anna orbia) | Konjunktion orbin sisällä; tai aina hyvä |
+| C2 | Milloin Mercury on paha? | Samassa merkissä pahan kanssa (3.11 *krūra-yuta*; teksti ei anna orbia) | Vain kun hyvät sen merkissä eivät ole pahoja useampia (P. V. R. Narasimha Rao); tai aina hyvä |
 | C3 | Saptavargajan pisteet ja mūlatrikoṇa | Säkeen 45/30/20/15/10/4/2; mūlatrikoṇan 45 vain rāśissa (Raman); suhteet rāśi-kartasta (Santhanam) | Ramanin 45/30/22,5/15/7,5/3,75/1,875 (JHora); 45 kaikissa vargoissa (Santhanam, Saravali-dokumentaatio); suhteet kustakin vargasta |
 | C4 | Mistä "taloista" Dig Bala mitataan | Neljä kulmaa: ascendentti, descendentti, midheaven, nadir (Santhanam, Raman) | Tasatalot Lagnasta (JHoran työpöytäversio) |
 | C5 | Auringon ja Kuun Cheṣṭā Bala | Summassa, kerran Ayanana/Pakṣana Kālassa ja kerran Cheṣṭānä (27.18, 27.25) | Jätetään summasta pois (JHora, Ramanin esimerkki); tai Ayana ja Pakṣa kahdennetaan Kālassa ja Cheṣṭā-sarake jää tyhjäksi (kommentaarit) |
@@ -334,15 +334,20 @@ Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. Sovellus kä
 | C11 | Bhāva Balan osat; hämärä | Säkeiden 27.26–31 viisi osaa; hämärä kaksi tuntia auringonnousun ja -laskun kummallakin puolella (46.44–47) | Ramanin kolme osaa ilman asukkaita ja Kāla Balaa; muut hämärän pituudet |
 | C12 | Yuddha Bala | Jätetty pois | Ramanin sääntö (Ṣaḍbalojen erotus jaettuna kiekkojen erotuksella, voittaja pienempi pituus); Saravali-dokumentaatio (voittaja suurempi pituus) |
 | C13 | Cheṣṭā Balan keskipituudet | Ramanin taulukot, Lahirin vyöhykkeessä | Sūrya Siddhāntan kierrokset (vertailukartalla 0,2 virūpan sisällä) |
+| C14 | Dekaanien järjestys Drekkana Balassa (27.6) | Miehet, neutrit, naiset: sanskritin teksti ja Raman | Miehet, naiset, neutrit: Santhanamin (Sitaram Jhan painos) ja Sharman käännökset |
 
-## 11. Miten luvun voi tarkistaa käsin
+## 11. Valintojen muuttaminen
+
+Ṣaḍbalan ja Bhāva Balan yläpuolella on suljettu rivi **Laskennan valinnat**. Se avaa yhden valinnan jokaiselle §10:n valintakohdalle, joka kuuluu näkymään (Bhāva Bala näyttää myös Ṣaḍbalan valinnat, koska se muodostuu herrojen Ṣaḍbalasta), lähteineen ja huomautuksineen. Kunkin ensimmäinen vaihtoehto on sanskritin lukutapa. Merkki kertoo, jos jokin valinta poikkeaa siitä, ja **Takaisin sanskritin lukutapaan** palauttaa kaikki. Tämän manuaalin vertailukartan luvut ovat sanskritin lukutavalle; JHoran valinnoilla (Kuu kahdeksannen tithin mukaan, Ramanin pisteet, tasatalot Dig Balassa, Auringon ja Kuun Cheṣṭā Bala pois summasta) sovellus antaa vertailukartalle JHoran omat Dṛg Balan ja Marsin–Saturnuksen Cheṣṭā Balan luvut, Auringon Dig Balan ja Ramanin Saptavargaja-pisteet (testattu tiedostossa `src/lib/balaOptions.test.ts`).
+
+## 12. Miten luvun voi tarkistaa käsin
 
 1. Ota pituudet, ascendentti, midheaven, ayanamsa, auringonnousu ja -lasku sekä syntymäaika kartan graha-taulukon alla olevalta suljetulta "calculation details" -riviltä ja itse graha-taulukosta.
 2. Valitse osa, etsi sen kohta yltä ja seuraa vaiheita; jokainen kohta päättyy vertailukartan lukuihin, joten voit ensin tarkistaa menetelmäsi niitä vasten.
 3. Grahan summa saadaan laskemalla sen kuusi osaa yhteen (§8); talon summa laskemalla sen viisi osaa (§9). Taulukoiden työkaluvihjeet näyttävät Sthānan ja Kālan osat.
 4. Sama laskenta on testeissä: `src/lib/shadbala.test.ts` ja `src/lib/bhavaBala.test.ts`, vertailukartta tiedostossa `src/lib/shadbala.fixture.ts`.
 
-## 12. Mitä ei ole mukana
+## 13. Mitä ei ole mukana
 
 - Yuddha Bala (C12).
 - Ṣaḍbalan osien vähimmäisvoimat (27.34–36: Jupiterille, Mercurylle ja Auringolle Sthāna 165, Dig 35, Kāla 50, Cheṣṭā 112, Ayana 30 virūpaa; Kuulle ja Venukselle 133, 50, 30, 100, 40; Marsille ja Saturnukselle 96, 30, 40, 67, 20). Näkymä näyttää vain kokonaisvoiman suhteessa vaadittuun.

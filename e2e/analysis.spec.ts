@@ -750,6 +750,16 @@ test('ANALYSIS Bala has a diagram and a table for the Ṣaḍbala, the Bhāva Ba
   // The table is below the diagrams.
   await expect(visible(page, page.getByText('shadbala.beta'))).toBeVisible();
 
+  // The calculation choices: the Sun's Cheṣṭā Bala can be left out of the total, which lowers the Sun's total.
+  const sunTotal = async () => Number(((await sunBar.getAttribute('aria-label')) ?? '').match(/Total (\d+) vp/)?.[1]);
+  const before = await sunTotal();
+  await visible(page, page.getByText('Calculation choices')).click();
+  await visible(page, page.getByLabel('Cheṣṭā Bala of the Sun and the Moon', { exact: true })).selectOption('left-out');
+  await expect(visible(page, page.getByText('changed from the Sanskrit reading'))).toBeVisible();
+  await expect.poll(sunTotal).toBeLessThan(before);
+  await visible(page, page.getByRole('button', { name: 'Back to the Sanskrit reading', exact: true })).click();
+  await expect.poll(sunTotal).toBe(before);
+
   // Bhāva Bala: a column for each of the twelve houses.
   await visible(page, page.getByRole('button', { name: 'Bhāva Bala', exact: true })).click();
   await expect(visible(page, page.getByRole('img', { name: 'Bhāva Bala of the houses', exact: true }))).toBeVisible();

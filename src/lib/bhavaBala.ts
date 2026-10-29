@@ -12,10 +12,12 @@
 //                         pṛṣṭhodaya sign by night (27.31)
 //
 // What the verses leave open, and what the app took (see docs/shadbala-manual.md):
-//   * The house is a whole sign counted from the Lagna sign (the first house begins at 0° of the Lagna sign,
-//     as in LagnaOne's equal houses); its middle point, which the aspects and the sign halves go by, is
-//     the 15° of the sign. A sign half therefore cannot tell Sagittarius or Capricorn apart: 15° is read
-//     as the second half.
+//   * The house is by default a whole sign counted from the Lagna sign (the first house begins at 0° of the
+//     Lagna sign, as in LagnaOne's equal houses); its middle point, which the aspects and the sign halves go
+//     by, is the 15° of the sign. A sign half therefore cannot tell Sagittarius or Capricorn apart: 15° is
+//     read as the second half. Śrīpati's middle points and equal houses from the degree of the Lagna can be
+//     chosen (BalaOptions); the lord is then the lord of the sign the middle point is in, and an occupant is a
+//     graha between the borders of the house.
 //   * Cancer takes the Lagna as its powerless point (27.27 and the translations of Santhanam and
 //     Sharma). B. V. Raman, following Śrīpati, pairs Cancer with Pisces and the 10th.
 //   * Mercury's and Jupiter's aspects count in full instead of a quarter (B. V. Raman, article 132);
@@ -29,6 +31,8 @@
 
 import { normalizeDegrees } from './angles';
 import { SIGN_ABBR, SIGN_LORDS } from './signs';
+import { DEFAULT_BALA_OPTIONS, type BalaOptions } from './balaOptions';
+import { bhavaMadhyas, bhavas } from './bhavaChalit';
 import { aspectVirupa } from './shadbalaAspects';
 import {
   SHADBALA_REQUIRED_VIRUPA,
@@ -60,6 +64,8 @@ export type BhavaBalaRow = {
   house: number;
   sign: string;
   lord: string;
+  /** The longitude of the middle point of the house, which the aspects and the Dig Bala go by. */
+  middle: number | null;
   // 1. Bhāvādhipati Bala: the lord's Ṣaḍbala
   bhavesha: number;
   bhaveshaRequired: number;
@@ -135,8 +141,9 @@ function distance(a: number, b: number): number {
  * the second half of Sagittarius; the ascendant for Cancer and Scorpio; the midheaven for the second half of
  * Capricorn and Pisces. `degreeInSign` is the position of the middle point of the house in its sign.
  */
-export function bhavaDigPoint(signIndex: number, degreeInSign: number): BhavaDigPoint {
+export function bhavaDigPoint(signIndex: number, degreeInSign: number, cancer: BalaOptions['bhavaCancer'] = DEFAULT_BALA_OPTIONS.bhavaCancer): BhavaDigPoint {
   const firstHalf = degreeInSign < 15;
+  if (signIndex === 3 && cancer === 'midheaven') return 'mc';
   if ([2, 5, 6, 10].includes(signIndex) || (signIndex === 8 && firstHalf)) return 'desc';
   if ([0, 1, 4].includes(signIndex) || (signIndex === 9 && firstHalf) || (signIndex === 8 && !firstHalf)) return 'ic';
   if (signIndex === 3 || signIndex === 7) return 'asc';
@@ -148,10 +155,11 @@ export function calculateBhavaDigBalaVirupa(
   signIndex: number,
   degreeInSign: number,
   angles: { ascendant?: number; midheaven?: number },
+  cancer: BalaOptions['bhavaCancer'] = DEFAULT_BALA_OPTIONS.bhavaCancer,
 ): { virupa: number; point: BhavaDigPoint | null } {
   if (typeof angles.ascendant !== 'number') return { virupa: 0, point: null };
   const midheaven = angles.midheaven ?? angles.ascendant + 270;
-  const point = bhavaDigPoint(signIndex, degreeInSign);
+  const point = bhavaDigPoint(signIndex, degreeInSign, cancer);
   const longitude = { asc: angles.ascendant, desc: angles.ascendant + 180, mc: midheaven, ic: midheaven + 180 }[point];
   return { virupa: distance(signIndex * 30 + degreeInSign, longitude) / 3, point };
 }
@@ -186,6 +194,7 @@ export function calculateBhavaDrigBala(
   chart: ShadbalaChartLike,
   longitude: number,
   benefics: Set<ShadbalaPlanet> = classifyBenefics(chart),
+  mercuryJupiter: BalaOptions['bhavaMercuryJupiter'] = DEFAULT_BALA_OPTIONS.bhavaMercuryJupiter,
 ): { total: number; benefic: number; malefic: number; details: DrigDetail[] } {
   const result = { total: 0, benefic: 0, malefic: 0, details: [] as DrigDetail[] };
   SCORE_PLANETS.forEach((name) => {
@@ -194,7 +203,10 @@ export function calculateBhavaDrigBala(
     const aspect = aspectVirupa(name, normalizeDegrees(longitude - planet.longitude));
     if (!aspect) return;
     const isBenefic = benefics.has(name);
-    const weight = FULL_ASPECT_GRAHAS.includes(name) ? 1 : 0.25;
+    // B. V. Raman: Mercury's and Jupiter's aspects in full instead of the quarter. Read literally, the verse
+    // adds them to the quarter (a weight of 1.25); 'quarter' treats them like the others.
+    const full = FULL_ASPECT_GRAHAS.includes(name);
+    const weight = full ? (mercuryJupiter === 'full-instead' ? 1 : mercuryJupiter === 'full-addon' ? 1.25 : 0.25) : 0.25;
     const contribution = (isBenefic ? 1 : -1) * aspect * weight;
     result.total += contribution;
     if (contribution > 0) result.benefic += contribution;
@@ -226,19 +238,51 @@ const KALA_NOTE: Record<BirthSect, string> = {
   unknown: 'no birth time or sunrise',
 };
 
-/** The Bhāva Bala of the twelve houses, whole signs from the Lagna sign, given the Ṣaḍbala rows of the grahas. */
-export function buildClassicalBhavaBala(chart: ShadbalaChartLike, shadbala: ShadbalaLike[]): BhavaBalaRow[] {
+type HouseSpan = { middle: number; start: number; end: number };
+
+const forward = (from: number, to: number) => normalizeDegrees(to - from);
+
+/**
+ * The twelve houses as a middle point and the borders either side, by the choice of the houses: whole signs from
+ * the Lagna sign, Śrīpati's middle points, or equal houses from the degree of the Lagna. Falls back on whole signs
+ * when the chart lacks what the others need.
+ */
+export function houseSpans(chart: ShadbalaChartLike, houses: BalaOptions['bhavaHouses']): HouseSpan[] | null {
   const ascendantSign = chart.ascendant?.sign;
+  const ascendant = chart.ascendant?.longitude;
+  if (houses === 'sripati' && typeof ascendant === 'number' && typeof chart.midheaven === 'number') {
+    const madhyas = bhavaMadhyas(ascendant, chart.midheaven, 'sripati');
+    if (madhyas) return bhavas(madhyas).map((bhava) => ({ middle: bhava.madhya, start: bhava.start, end: bhava.end }));
+  }
+  if (houses === 'equal-from-lagna' && typeof ascendant === 'number') {
+    return Array.from({ length: 12 }, (_, index) => {
+      const start = normalizeDegrees(ascendant + index * 30);
+      return { middle: normalizeDegrees(start + 15), start, end: normalizeDegrees(start + 30) };
+    });
+  }
+  if (typeof ascendantSign !== 'number') return null;
+  return Array.from({ length: 12 }, (_, index) => {
+    const start = ((ascendantSign - 1 + index) % 12) * 30;
+    return { middle: start + 15, start, end: normalizeDegrees(start + 30) };
+  });
+}
+
+/** The Bhāva Bala of the twelve houses, given the Ṣaḍbala rows of the grahas and the choices of the Bala options. */
+export function buildClassicalBhavaBala(chart: ShadbalaChartLike, shadbala: ShadbalaLike[], options: BalaOptions = DEFAULT_BALA_OPTIONS): BhavaBalaRow[] {
   const shadbalaMap = createShadbalaMap(shadbala);
-  const benefics = classifyBenefics(chart);
+  const benefics = classifyBenefics(chart, options);
   const sect = birthSect(chart);
   const angles = { ascendant: chart.ascendant?.longitude, midheaven: chart.midheaven };
+  const spans = houseSpans(chart, options.bhavaHouses);
+  const fiveParts = options.bhavaParts === 'five';
 
   return Array.from({ length: 12 }, (_, index) => {
     const house = index + 1;
-    const signIndex = typeof ascendantSign === 'number' ? (ascendantSign - 1 + index) % 12 : null;
+    const span = spans?.[index] ?? null;
+    const middle = span ? span.middle : null;
+    const signIndex = middle === null ? null : Math.floor(normalizeDegrees(middle) / 30);
+    const degreeInSign = middle === null ? 0 : normalizeDegrees(middle) % 30;
     const lord = signIndex === null ? '—' : SIGN_LORDS[signIndex];
-    const middle = signIndex === null ? null : signIndex * 30 + 15;
 
     const lordEntry = shadbalaMap[lord];
     const bhavesha = lordEntry?.virupa ?? 0;
@@ -248,29 +292,31 @@ export function buildClassicalBhavaBala(chart: ShadbalaChartLike, shadbala: Shad
       ? `Ṣaḍbala ${Math.round(bhavesha)} vp / ${bhaveshaRequired} req = ${bhaveshaRatio.toFixed(2)}×`
       : 'fallback: 0 vp (Ṣaḍbala not computed)';
 
-    const dig = signIndex === null ? { virupa: 0, point: null } : calculateBhavaDigBalaVirupa(signIndex, 15, angles);
-    const drig = middle === null ? { total: 0, benefic: 0, malefic: 0, details: [] as DrigDetail[] } : calculateBhavaDrigBala(chart, middle, benefics);
+    const dig = signIndex === null ? { virupa: 0, point: null } : calculateBhavaDigBalaVirupa(signIndex, degreeInSign, angles, options.bhavaCancer);
+    const drig = middle === null ? { total: 0, benefic: 0, malefic: 0, details: [] as DrigDetail[] } : calculateBhavaDrigBala(chart, middle, benefics, options.bhavaMercuryJupiter);
 
     const occupants: OccupantDetail[] = [];
     let occupantTotal = 0;
-    if (signIndex !== null) {
+    if (span && fiveParts) {
       SCORE_PLANETS.forEach((name) => {
         const planet = getPlanet(chart, name);
-        const planetSign = typeof planet?.longitude === 'number' ? Math.floor(normalizeDegrees(planet.longitude) / 30) : typeof planet?.sign === 'number' ? planet.sign - 1 : null;
-        if (planetSign !== signIndex) return;
+        if (typeof planet?.longitude !== 'number') return;
+        // A graha is in the house when it stands between its borders (the sign, for whole-sign houses).
+        if (forward(span.start, planet.longitude) >= forward(span.start, span.end)) return;
         const contribution = OCCUPANT_VIRUPA[name] ?? 0;
         occupantTotal += contribution;
         occupants.push({ name, contribution, note: contribution > 0 ? '+1 rūpa' : contribution < 0 ? '−1 rūpa' : 'no rule' });
       });
     }
 
-    const kala = signIndex === null ? 0 : calculateBhavaKalaBalaVirupa(signIndex, sect);
+    const kala = signIndex === null || !fiveParts ? 0 : calculateBhavaKalaBalaVirupa(signIndex, sect);
     const total = bhavesha + dig.virupa + drig.total + occupantTotal + kala;
 
     return {
       house,
       sign: signIndex === null ? '—' : SIGN_ABBR[signIndex],
       lord,
+      middle,
       bhavesha,
       bhaveshaRequired,
       bhaveshaRatio,
@@ -284,7 +330,7 @@ export function buildClassicalBhavaBala(chart: ShadbalaChartLike, shadbala: Shad
       occupants,
       occupantTotal,
       kala,
-      kalaNote: KALA_NOTE[sect],
+      kalaNote: fiveParts ? KALA_NOTE[sect] : 'not part of the three parts',
       total,
     };
   });

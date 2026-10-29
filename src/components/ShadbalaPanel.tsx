@@ -2,6 +2,7 @@
 
 import type { ChartData } from '@/types';
 import { buildShadbalaRows } from '@/lib/shadbala';
+import type { BalaOptions } from '@/lib/balaOptions';
 import { formatScore } from '@/lib/vargaMatrix';
 import { SHADBALA_PARTS, STATUS_ICON, shadbalaComposition, shadbalaStatus, type BalaStatus, type ShadbalaPart } from '@/lib/balaView';
 import { useT } from '@/lib/i18n';
@@ -13,9 +14,9 @@ const STATUS_TEXT: Record<BalaStatus, string> = { weak: 'text-red-600 dark:text-
 const PART_LABEL: Record<ShadbalaPart, string> = { sthana: 'Sthāna', dig: 'Dig', kala: 'Kāla', cheshta: 'Cheṣṭā', naisargika: 'Naisargika', drik: 'Dṛg' };
 
 /** Ṣaḍbala: the strength of each graha against what it needs, how it is made of the six balas, and the table. */
-export default function ShadbalaPanel({ chart }: { chart: ChartData }) {
+export default function ShadbalaPanel({ chart, options }: { chart: ChartData; options?: BalaOptions }) {
   const t = useT();
-  const rows = buildShadbalaRows(chart);
+  const rows = buildShadbalaRows(chart, options);
   const series = SHADBALA_PARTS.map((key, index) => ({ key, label: PART_LABEL[key], color: SERIES_COLORS[index] }));
 
   return (
@@ -73,7 +74,7 @@ export default function ShadbalaPanel({ chart }: { chart: ChartData }) {
       />
 
       <div className="space-y-2">
-        <Heading command="shadbala.beta">{t('Values in virūpa, by the Sanskrit text of BPHS 27: Saptavargaja is the sum of the seven vargas, Dig is measured from the four angles, Dṛg counts the waning Moon as a malefic, and the Cheṣṭā Bala of the Sun and of the Moon is their Ayana and Pakṣa Bala. Yuddha Bala is not included.')}</Heading>
+        <Heading command="shadbala.beta">{t('Values in virūpa, by the Sanskrit text of BPHS 27, unless a calculation choice above says otherwise. Yuddha Bala is not included.')}</Heading>
         <ScrollTable minWidth="min-w-[1100px]" headers={[t('Planet'), 'Sthāna', 'Dig', 'Kāla', 'Cheṣṭā', 'Naisargika', 'Dṛg', 'Total vp', 'Req vp', '%', t('Status')]}>
           {rows.map(row => {
             const status = shadbalaStatus(row.ratio);
