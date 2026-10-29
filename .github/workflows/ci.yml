@@ -39,7 +39,8 @@ jobs:
   # Node 24 matches the engines field, and therefore the Vercel build.
   build:
     name: Production build
-    runs-on: ubuntu-latest
+    # Playwright 1.56 cannot install Chromium on the ubuntu-26.04 image that ubuntu-latest now points to.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
 
