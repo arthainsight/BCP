@@ -318,12 +318,12 @@ Dṛṣṭi = −¼ × (5.18 + 4.92 + 0 + 34.07) + 16.85 + 51.62 + ¼ × 11.94 =
 
 ## 10. Choice points
 
-These are the places where the verses are silent or the sources disagree. The app takes the choice in the "Used" column; the others are alternatives it could offer as settings.
+These are the places where the verses are silent or the sources disagree. The "Used" column is the default, the reading of the Sanskrit text, and it is the first choice of each setting. **Every other alternative can be chosen in the Bala views, under "Calculation choices"** (above the Ṣaḍbala and the Bhāva Bala; the choices are kept in this browser and change nothing but these two views). C1–C11 and C14 are settings; C6 and C7 (doubling the Sun's Ayana and the Moon's Pakṣa) are in the third choice of C5; C12 (Yuddha Bala) and C13 (the mean positions) are not settings.
 
 | | Question | Used | Alternatives and who holds them |
 |---|---|---|---|
 | C1 | When is the Moon a malefic? | Dark half and new Moon (Santhanam, the Saravali documentation) | From the eighth tithi of the bright half to the eighth of the dark half, benefic; otherwise malefic (B. V. Raman, JHora) |
-| C2 | When is Mercury a malefic? | In the same sign as a malefic (3.11 *krūra-yuta*; the text gives no orb) | Within an orb of conjunction; or always a benefic |
+| C2 | When is Mercury a malefic? | In the same sign as a malefic (3.11 *krūra-yuta*; the text gives no orb) | Only when the benefics in its sign do not outnumber the malefics there (P. V. R. Narasimha Rao); or always a benefic |
 | C3 | Saptavargaja scores and mūlatrikoṇa | The verse's 45/30/20/15/10/4/2; the 45 for the mūlatrikoṇa in the rāśi only (Raman); relations from the rāśi chart (Santhanam) | Raman's 45/30/22.5/15/7.5/3.75/1.875 (JHora); the 45 in every varga (Santhanam, the Saravali documentation); relations from each varga |
 | C4 | Which "houses" Dig Bala measures from | The four angles: ascendant, descendant, midheaven, nadir (Santhanam, Raman) | Equal houses from the Lagna (JHora desktop) |
 | C5 | Cheṣṭā Bala of the Sun and the Moon | Added to the total, once as Ayana/Pakṣa in Kāla and once as Cheṣṭā (27.18, 27.25) | Left out of the total (JHora, Raman's example); or the Ayana and Pakṣa doubled in Kāla with the Cheṣṭā column empty (the commentaries) |
@@ -335,15 +335,20 @@ These are the places where the verses are silent or the sources disagree. The ap
 | C11 | Which parts Bhāva Bala has; the twilight | The five parts of 27.26–31; the twilight is two hours either side of sunrise and sunset (46.44–47) | Raman's three parts without the occupants and the Kāla Bala; other lengths of twilight |
 | C12 | Yuddha Bala | Left out | Raman's rule (the difference of the Ṣaḍbalas over the difference of the discs, the winner the one with the smaller longitude); the Saravali documentation (the winner the one with the greater longitude) |
 | C13 | The mean positions of Cheṣṭā Bala | Raman's tables, in Lahiri's zodiac | The Sūrya Siddhānta's revolutions (within 0.2 virūpa for the reference chart) |
+| C14 | The order of the decanates in Drekkana Bala (27.6) | Males, neuters, females: the Sanskrit text and Raman | Males, females, neuters: the translations of Santhanam (the edition of Sitaram Jha) and Sharma |
 
-## 11. How to check a number by hand
+## 11. Changing the choices
+
+Above the Ṣaḍbala and the Bhāva Bala there is a folded line, **Calculation choices**. It opens one select for each choice point of §10 that belongs to the view (the Bhāva Bala shows the Ṣaḍbala's too, because it is made from the Ṣaḍbala of the lords), each with its sources and a note. The first alternative of each is the Sanskrit reading. A mark tells when any choice differs from it, and **Back to the Sanskrit reading** sets them all back. The reference chart's figures in this manual are for the Sanskrit reading; with the choices that JHora makes (the Moon by the eighth tithi, Raman's scores, equal houses for Dig Bala, the Sun's and the Moon's Cheṣṭā Bala out of the total) the app gives JHora's own Dṛg Bala and Cheṣṭā Bala of Mars to Saturn, the Sun's Dig Bala and Raman's Saptavargaja scores for the reference chart (tested in `src/lib/balaOptions.test.ts`).
+
+## 12. How to check a number by hand
 
 1. Take the longitudes, the ascendant, the midheaven, the ayanamsa, the sunrise and sunset and the birth time from the collapsed "calculation details" line under the graha table and from the graha table itself.
 2. Choose a part, find its section above and follow the steps; every section ends with the reference chart's figures so you can first check your method against them.
 3. For a graha's total, add its six parts (§8); for a house, add its five (§9). The tooltips in the tables show the parts of Sthāna and Kāla.
 4. The same arithmetic is in the tests: `src/lib/shadbala.test.ts` and `src/lib/bhavaBala.test.ts`, with the reference chart in `src/lib/shadbala.fixture.ts`.
 
-## 12. What is not included
+## 13. What is not included
 
 - Yuddha Bala (C12).
 - The minimum strengths of the parts of the Ṣaḍbala (27.34–36: for Jupiter, Mercury and the Sun Sthāna 165, Dig 35, Kāla 50, Cheṣṭā 112, Ayana 30 virūpa; for the Moon and Venus 133, 50, 30, 100, 40; for Mars and Saturn 96, 30, 40, 67, 20). The view shows only the total against its required strength.

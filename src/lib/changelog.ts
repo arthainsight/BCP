@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.39',
+    date: '2026-10-29',
+    title: 'Calculation choices for the Ṣaḍbala and the Bhāva Bala',
+    changes: [
+      'Above the Ṣaḍbala and the Bhāva Bala there is now a folded line, Calculation choices. It opens a select for each place where the verses are silent or the sources disagree, with who holds each alternative: the Moon as a benefic or a malefic (from the dark half, or by the eighth tithi as B. V. Raman and JHora), Mercury, the Saptavargaja scores (the verse\'s or Raman\'s), the mūlatrikoṇa and the temporary friendship, the points of Dig Bala (the four angles or equal houses), the Sun\'s and the Moon\'s Cheṣṭā Bala (twice in the total, left out, or doubled in Kāla), Ayana Bala (the table or the real declination), the order of the decanates in Drekkana Bala, the aspects of Mercury and Jupiter, and for the Bhāva Bala the houses (whole signs, Śrīpati or equal houses), the angle of Cancer, the aspects of Mercury and Jupiter and the parts.',
+      'The first choice of each is the reading of the Sanskrit text and stays the default. The choices are kept in the browser, change only these two views, and a mark tells when they differ from the Sanskrit reading; one button sets them all back. With JHora\'s choices the app gives JHora\'s Dṛg Bala and the Cheṣṭā Bala of Mars to Saturn for the reference chart.',
+      'The Sanskrit of the verses was checked against a second digitization (the two share their misprints, so they are one transcription) and against the translations of Santhanam and Sharma. The numbers agree; the only difference found is the order of the decanates in Drekkana Bala (27.6), where the printed translations follow another edition, which is now a choice. The manuals (English and Finnish) list it as C14 and the verification is in docs/shadbala-sources.md.',
+      'Updated the application version to v3.39.',
+    ],
+  },
+
+  {
     version: 'v3.38',
     date: '2026-10-29',
     title: 'Bhāva Bala by the Sanskrit text, and a manual for the Bala views',

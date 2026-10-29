@@ -6,6 +6,8 @@
 // checked against the translation of R. Santhanam; the verse numbers are those of the text the app was
 // audited against, and other editions number them differently.
 
+import type { MoonRule } from './balaOptions';
+
 export type AspectingGraha = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
 
 /** The general aspect value of every graha (BPHS 26.6–8). */
@@ -50,13 +52,19 @@ export function aspectVirupa(graha: AspectingGraha, angle: number): number {
 
 /**
  * Whether the Moon counts as a benefic: BPHS 3.11 lists the waning Moon (kṣīṇa-indu) among the malefics
- * and 34.9 sets the full Moon against it, but no verse says where one ends and the other begins. The
- * app takes the bright half (after the new Moon up to and with the full Moon) as waxing and benefic and
- * the dark half, with the new Moon itself, as waning and malefic, as the commentators do (Santhanam:
- * "the Moon in the dark half is a malefic"). B. V. Raman puts the change at the eighth tithi instead.
+ * and 34.9 sets the full Moon against it, but no verse says where one ends and the other begins.
+ *
+ *  - 'dark-half' (the default): the bright half (after the new Moon up to and with the full Moon) is waxing and
+ *    benefic, the dark half with the new Moon itself waning and malefic (Santhanam: "the Moon in the dark half is
+ *    a malefic").
+ *  - 'tithi-8': B. V. Raman puts the change at the eighth tithi: the Moon is a benefic from the eighth tithi of
+ *    the bright half (84° from the Sun) up to the eighth of the dark half (264°) and a malefic from there to the
+ *    eighth tithi of the bright half.
+ *
  * `elongation` is the Moon's longitude minus the Sun's.
  */
-export function isMoonBenefic(elongation: number): boolean {
+export function isMoonBenefic(elongation: number, rule: MoonRule = 'dark-half'): boolean {
   const normalized = ((elongation % 360) + 360) % 360;
+  if (rule === 'tithi-8') return normalized >= 84 && normalized < 264;
   return normalized > 0 && normalized <= 180;
 }

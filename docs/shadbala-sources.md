@@ -80,3 +80,33 @@ The step-by-step calculation of every part, with the reference chart worked thro
 | Saturn | 191.0 | 39.5 | 155.1 | 18.9 | 8.6 | −5.3 | 407.8 | 300 |
 
 The lords for this birth are Saturn (year), Mercury (month), the Moon (day; the birth is before sunrise, so the Vedic day is Monday 12 October) and Mars (hour).
+
+## Verification of the Sanskrit (October 2026)
+
+The verses listed above as needing a reader of Sanskrit were checked in three ways.
+
+**1. A second digitization of the Sanskrit.** The text of sanskritdocuments.org (typed and proofread by Ahto Jarve, updated 22 October 2026) was compared with the text of enjoylearningsanskrit.com that the audit used, verse by verse, for the 3,843 verses that both hold (chapter 47 of the second was not read). Once a nasal before a consonant is read as an anusvāra, 3,533 verses (92 %) are letter for letter the same. The others differ in spelling and in small corrections. In the verses the Ṣaḍbala and the Bhāva Bala use there is no difference in a number word or in any rule: 26.1–14 and 27.1–40 are the same but for the last sign of 27.13, and 3.50–54 are the same; 3.49, 3.56 (*vandhu* / *bandhu*) and 6.12–6.18 differ in spelling or add a name that the calculation does not use. The twilight verses 46.44–47 are the same in both. **The two are one digitization at two stages, not two witnesses:** they share their misprints (*vaṣamāsa*, *tabdalaṃ jñenaṃ*), so their agreement shows that the transcription is consistent, not that the text is right.
+
+**2. The number words, decoded and set against the translations of two printed editions.** The numbers of the verses were read from the Sanskrit number words, right to left in the Sanskrit way, and compared with the translations of R. Santhanam (the edition of Sitaram Jha) and Girish Chand Sharma, and with B. V. Raman:
+
+| Verse | Sanskrit number words | The app | Santhanam | Sharma | Raman |
+|---|---|---|---|---|---|
+| 27.2–3 | *bhūtābdhayaḥ khāgninakhāḥ tithyo daśa yugāḥ karāḥ* | 45, 30, 20, 15, 10, 4, 2 | same | same | other table (22.5 …) |
+| 27.5 | *śukrendū samabhāṃśe 'nye viṣame* | Moon and Venus even, the others odd | same | same | – |
+| 27.6 | *puṃ-napuṃsaka-yoṣā* | males, neuters, females | males, females, neuters | males, females, neuters | males, neuters, females |
+| 27.13 | *tithyas triṃśat śarārṇavāḥ … ṣaṣṭi* | 15, 30, 45, 60 | same | same | – |
+| 27.15 | *pañcābdhayaḥ surāḥ sūryāḥ* | 45, 33, 12 | same | same | – |
+| 27.21–23 | the eight motions | 60, 30, 15, 30, 15, 7.5, 45, 30 (not used) | same | same | – |
+| 27.32–33 | *aṃkāgnayaḥ aṅgarāmāḥ khāgnayaḥ karasindhavaḥ navāgnayaḥ surāḥ triṃśat* | 390, 360, 300, 420, 390, 330, 300 | same | same | same |
+| 3.50 | *daśa trayo 'ṣṭāśvyaḥ tithyo 'kṣā bhamitā nakhāḥ* | 10, 3, 28, 15, 5, 27, 20 | same | same | – |
+| 3.51–54 | the mūlatrikoṇa degrees | Sun 0–20, Moon 3–30, Mars 0–12, Mercury 15–20, Jupiter 0–10, Venus 0–15, Saturn 0–20 | same | same | – |
+| 26.9–12 | the special aspects | the table of the manual | same | Jupiter's *śara-veda* given as +15, not +45 | – |
+
+**What this found.**
+- *Drekkana (27.6).* The two printed translations follow an edition in which the females are second; the digitizations and Raman have the neuters second. Neither can be shown wrong from here, so the app follows the Sanskrit text it was given and offers the other order as a setting (C14).
+- *26.12.* Sharma's "increase by 15" for Jupiter is a slip: *śara-veda* is 5 and 4, read right to left 45, which is Santhanam's number and the one that makes the aspect full (60) at the 5th and 9th place. The app has 45.
+- *27.13.* Sharma divides the ahargaṇa by 60 for the lord of the year where Santhanam divides by 360. 360 gives the worked examples of both Santhanam and Raman, and the app uses it.
+- *27.15–17 and 27.19.* Sharma confirms the method of the Ayana Bala (the Bhuja from the nearer equinox, 45 : 33 : 12, three signs added or taken off for the north and the south) that the app implements, and both translators read "the entire Dṛṣṭi of Mercury and Jupiter" as added to a planet's Dṛg Bala, where the app, following Raman and JHora, takes only the quarter (a setting, C8).
+- *27.26–31.* Both translations agree with the reading of the Bhāva Bala, Cancer and Scorpio from the Lagna included.
+
+**3. What this does not settle.** All the sources descend from the same printed tradition of the text, so an error common to the printed editions would pass every check above. A reading of the printed Sanskrit of Sitaram Jha's edition, or of a manuscript, is the only thing that would settle it. Nothing found changes the calculation; the only new thing is the Drekkana setting.

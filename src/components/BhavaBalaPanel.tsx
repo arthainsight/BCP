@@ -2,6 +2,7 @@
 
 import type { ChartData } from '@/types';
 import { buildShadbalaRows } from '@/lib/shadbala';
+import type { BalaOptions } from '@/lib/balaOptions';
 import { buildClassicalBhavaBala } from '@/lib/bhavaBala';
 import { formatScore } from '@/lib/vargaMatrix';
 import { BHAVA_PARTS, bhavaComposition, type BhavaPart } from '@/lib/balaView';
@@ -12,9 +13,9 @@ import { Heading, ManualLink, NAME_CELL, ROW, ScrollTable, TOTAL_CELL, VALUE_CEL
 const PART_LABEL: Record<BhavaPart, string> = { bhavesha: 'Bhavesha', dig: 'Dig', drigBenefic: 'Drig+', drigMalefic: 'Drig−', occupants: 'Occupants', kala: 'Kāla' };
 
 /** Bhāva Bala: the strength of each of the twelve houses, as a column for each house and the table. */
-export default function BhavaBalaPanel({ chart }: { chart: ChartData }) {
+export default function BhavaBalaPanel({ chart, options }: { chart: ChartData; options?: BalaOptions }) {
   const t = useT();
-  const rows = buildClassicalBhavaBala(chart, buildShadbalaRows(chart));
+  const rows = buildClassicalBhavaBala(chart, buildShadbalaRows(chart, options), options);
   const series = BHAVA_PARTS.map((key, index) => ({ key, label: key === 'occupants' ? t('Occupants') : PART_LABEL[key], color: SERIES_COLORS[index] }));
 
   return (
@@ -34,7 +35,7 @@ export default function BhavaBalaPanel({ chart }: { chart: ChartData }) {
       />
 
       <div className="space-y-2">
-        <Heading command="bhava.bala.beta">{t("Values in virūpa, by BPHS 27.26–31. Bhavesha = the lord's Ṣaḍbala. Dig = the distance of the middle of the house from the angle where it is powerless, divided by three. Drig = a quarter of the aspects, those of Mercury and Jupiter in full. Occupants: Mercury and Jupiter +60, Saturn, Mars and the Sun −60. Kāla: +15 for the way the sign rises at the time of birth. The house is the whole sign from the Lagna sign.")}</Heading>
+        <Heading command="bhava.bala.beta">{t("Values in virūpa, by BPHS 27.26–31. Bhavesha = the lord's Ṣaḍbala. Dig = the distance of the middle of the house from the angle where it is powerless, divided by three. Drig = the aspects on the middle of the house. Occupants: Mercury and Jupiter +60, Saturn, Mars and the Sun −60. Kāla: +15 for the way the sign rises at the time of birth. The houses and the other choices are set above.")}</Heading>
         <ScrollTable minWidth="min-w-[760px]" headers={[t('House'), t('Sign'), t('Lord'), 'Bhavesha', 'Dig', 'Drig+', 'Drig−', t('Occupants'), 'Kāla', t('Total')]}>
           {rows.map(row => (
             <tr key={row.house} className={ROW}>
