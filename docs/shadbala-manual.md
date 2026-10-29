@@ -2,6 +2,8 @@
 
 This is the manual of the two views ANALYSIS → Bala → Ṣaḍbala and Bhāva Bala. It says, step by step, how each number is made, so that anyone can repeat it by hand or in a spreadsheet and get the same figure. Every step is worked on one chart, the **reference chart**, whose numbers are also the expected values of the tests (`src/lib/shadbala.fixture.ts`). Where the sources do not agree, or the verses are silent, the manual says so and marks it as a **choice point** (C1, C2 …); the table at the end lists them with the alternatives.
 
+A Finnish version of this manual is [shadbala-manuaali.md](shadbala-manuaali.md); if they differ, both are corrected.
+
 Where each rule comes from, verse by verse, is in [shadbala-sources.md](shadbala-sources.md). The code is in `src/lib/shadbala.ts`, `shadbalaAspects.ts`, `shadbalaCheshta.ts`, `shadbalaTime.ts` and `bhavaBala.ts`.
 
 ## 0. Conventions
