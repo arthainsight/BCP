@@ -1,18 +1,24 @@
-// Ṣaḍbala engine (beta).
+// Ṣaḍbala engine.
 //
-// Extracted from the Matrix view (now components/ShadbalaPanel.tsx), where the calculation grew inside
-// the card component as untyped JavaScript. The maths is unchanged; this module
-// only gives it types and a home alongside the other calculation code so the
-// fixtures in shadbala.test.ts can exercise it directly.
+// The six balas of the seven grahas in virūpa (60 virūpa make a rūpa), by the Sanskrit text of
+// Bṛhat Parāśara Horā Śāstra, chapter 27 (the numbers are those of the edition the app was audited
+// against; others number the verses differently). The verses decide; where they are silent or give a
+// choice, a comment says what was taken and from whom, and the written audit lists every such point.
 //
-// Exactness follows the labels shown in the UI: Uccha, Ojhayugma, Kendradi,
-// Drekkana, Paksha, Naisargika and Vara are table-exact; Saptavargaja, Dig,
-// Natonnata, Tribhaga, Ayana, Cheshta and Drig are documented approximations.
+// What the text does not say is taken from the commentaries of R. Santhanam and B. V. Raman, and the
+// astrology programs (JHora, LagnaOne, Viveka) are only compared with, never followed. On purpose this
+// differs from JHora in three places: the waning Moon is a malefic in Dṛg Bala, the Sun's and the Moon's
+// Cheṣṭā Bala are added to the total (the verses count it as a bala of its own), and Dig Bala is
+// measured from the four angles. Yuddha Bala (planetary war) is left out because the sources
+// contradict one another about who wins and by how much.
 
 import { getVargaSignIndex, getDegreesInSign } from './varga';
 import { normalizeLongitude } from './varga/utils';
 import { SIGN_LORDS } from './signs';
 import { DEBILITATION, EXALTATION, NATURAL_ENEMIES, NATURAL_FRIENDS, OWN_SIGNS as OWN_SIGN_NUMBERS } from './dignity';
+import { aspectVirupa, isMoonBenefic } from './shadbalaAspects';
+import { cheshtaKendraBalaVirupa, type CheshtaGraha } from './shadbalaCheshta';
+import { ABDA_VIRUPA, HORA_VIRUPA, MASA_VIRUPA, VARA_VIRUPA, horaLord, yearMonthDayLords, type DayLord } from './shadbalaTime';
 
 export type ShadbalaPlanet = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
 export type Dignity = 'exalted' | 'moolatrikona' | 'own' | 'friend' | 'neutral' | 'enemy' | 'debilitated' | 'none';
@@ -24,21 +30,29 @@ export type ShadbalaChartPlanet = {
   degree?: number;
   house?: number;
   isRetrograde?: boolean;
-  /** Apparent geocentric motion in degrees per day. Drives Cheṣṭā Bala. */
+  /** Apparent geocentric motion in degrees per day. */
   speed?: number;
-  /** True equatorial declination in degrees. Drives Ayana Bala. */
+  /** True equatorial declination in degrees. Ayana Bala falls back on it when the ayanamsa is not known. */
   declination?: number;
 };
 
 export type ShadbalaChartLike = {
   ascendant?: { sign?: number; longitude?: number };
+  /** Longitude of the midheaven, the cusp of the 10th house; Dig Bala is measured from the four angles. */
+  midheaven?: number;
   planets?: ShadbalaChartPlanet[];
   debug?: {
     inputDateTime?: string;
+    /** Julian day (UT) of the birth. Cheṣṭā Bala needs it for the mean positions. */
+    julianDay?: number;
+    /** The ayanamsa the longitudes are in (0 for the tropical zodiac). */
     ayanamsa?: number;
+    /** The Lahiri ayanamsa, in whose zodiac the mean positions of Cheṣṭā Bala are. */
+    siderealAyanamsa?: number;
     sunriseLocalHours?: number;
     sunsetLocalHours?: number;
     nextSunriseLocalHours?: number;
+    previousSunriseLocalHours?: number;
   };
 };
 
@@ -57,7 +71,10 @@ export type KalaBalaBreakdown = {
   paksha: number;
   tribhaaga: number;
   tribhagaLord: string | null;
+  /** Varṣa-Māsa-Dina-Horā Bala: 15, 30, 45 and 60 virūpa to the lords of the year, month, day and hour. */
   varsheshadi: number;
+  /** Who those four lords are for this birth, when the birth moment is known. */
+  varsheshadiLords?: { abda: DayLord; masa: DayLord; vara: DayLord; hora: DayLord };
   ayana: number;
   total: number;
 };
@@ -93,7 +110,6 @@ export type ShadbalaRow = {
 };
 
 export const SCORE_PLANETS: readonly ShadbalaPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
-const BENEFICS: readonly ShadbalaPlanet[] = ['Moon', 'Mercury', 'Jupiter', 'Venus'];
 
 // The dignity tables count signs from 1 (Aries); this module counts them from 0.
 const fromZero = (table: Record<string, number>) => Object.fromEntries(Object.entries(table).map(([planet, sign]) => [planet, sign - 1])) as Record<ShadbalaPlanet, number>;
@@ -103,29 +119,52 @@ const DEBILITATION_SIGNS = fromZero(DEBILITATION);
 const EXALTATION_LONGITUDES: Record<ShadbalaPlanet, number> = { Sun: 10, Moon: 33, Mars: 298, Mercury: 165, Jupiter: 95, Venus: 357, Saturn: 200 };
 
 export const SHADBALA_REQUIRED_VIRUPA: Record<ShadbalaPlanet, number> = { Sun: 390, Moon: 360, Mars: 300, Mercury: 420, Jupiter: 390, Venus: 330, Saturn: 300 };
-export const NAISARGIKA_BALA_VIRUPA: Record<ShadbalaPlanet, number> = { Sun: 60, Moon: 51, Venus: 43, Jupiter: 34, Mercury: 26, Mars: 17, Saturn: 9 };
-export const DIG_BALA_MAX_HOUSE: Record<ShadbalaPlanet, number> = { Sun: 10, Mars: 10, Moon: 4, Venus: 4, Jupiter: 1, Mercury: 1, Saturn: 7 };
 
-const ODD_EVEN_STRENGTH: Record<ShadbalaPlanet, 'odd' | 'even' | 'both'> = { Sun: 'odd', Mars: 'odd', Jupiter: 'odd', Moon: 'even', Venus: 'even', Mercury: 'both', Saturn: 'both' };
+/** Naisargika Bala (27.14): 60/7 times 1 to 7 for Saturn, Mars, Mercury, Jupiter, Venus, the Moon and the Sun, in fractions, not rounded. */
+export const NAISARGIKA_BALA_VIRUPA: Record<ShadbalaPlanet, number> = {
+  Saturn: 60 / 7, Mars: (60 / 7) * 2, Mercury: (60 / 7) * 3, Jupiter: (60 / 7) * 4, Venus: (60 / 7) * 5, Moon: (60 / 7) * 6, Sun: 60,
+};
+
+/**
+ * Dig Bala (27.7–8): a graha has the full 60 virūpa at one of the four angles and nothing at the opposite
+ * one. The verse names the house the strength is subtracted from: the 4th for the Sun and Mars, the 7th
+ * for Jupiter and Mercury, the 1st for Saturn and the 10th for the Moon and Venus, so the strongest
+ * points are the opposite ones below.
+ */
+export type DigPoint = 'asc' | 'ic' | 'desc' | 'mc';
+export const DIG_BALA_STRONG_POINT: Record<ShadbalaPlanet, DigPoint> = {
+  Sun: 'mc', Mars: 'mc', Moon: 'ic', Venus: 'ic', Jupiter: 'asc', Mercury: 'asc', Saturn: 'desc',
+};
+
+/** Ojhayugma (27.5): the Moon and Venus gain in even signs, the five others (Mercury and Saturn too: *anye*, the others) in odd signs. */
+const EVEN_SIGN_PLANETS: readonly ShadbalaPlanet[] = ['Moon', 'Venus'];
+/** Drekkana (27.6, 3.19): males in the first decanate, the neuters (Mercury, Saturn) in the second, the females in the third. */
 const DREKKANA_STRENGTH: Record<ShadbalaPlanet, number> = { Sun: 1, Mars: 1, Jupiter: 1, Mercury: 2, Saturn: 2, Moon: 3, Venus: 3 };
 const DAY_NIGHT_STRENGTH: Record<ShadbalaPlanet, 'day' | 'night' | 'both'> = { Sun: 'day', Jupiter: 'day', Venus: 'day', Moon: 'night', Mars: 'night', Saturn: 'night', Mercury: 'both' };
 
-// Classical Saptavargaja Bala virupa per dignity (BPHS Ch.27). Used as per-varga
-// weights; the sum across 7 vargas is divided by 7 so max = 45.
+// Saptavargaja Bala (27.2–4): a graha scores in each of seven vargas (rāśi, hora, drekkāṇa, saptāṃśa,
+// navāṃśa, dvādaśāṃśa, triṃśāṃśa) by the standing of the sign it occupies there, and the seven scores are
+// added (aikya), not averaged: the most a graha can have is 315 virūpa.
 //
-// Still simplified in one respect: the classical table separates a great friend
-// (22.5) from an ordinary friend (15) and a great enemy (1.875) from an enemy
-// (3.75). Those compound grades need temporary (tatkalika) relationships, which
-// this module does not model, so every friend scores 22.5 and every enemy 3.75.
-const SAPTAVARGAJA_VIRUPA: Record<Dignity, number> = { exalted: 45, moolatrikona: 45, own: 30, friend: 22.5, neutral: 7.5, enemy: 3.75, debilitated: 0, none: 0 };
+//   own mūlatrikoṇa 45 · own sign 30 · sign of an adhimitra 20 · of a mitra 15 · of a sama 10 ·
+//   of a śatru 4 · of an adhiśatru 2
+//
+// The grades of friendship are the compound ones of BPHS 3.55–58: the natural relation and the temporary
+// one together. There is no score of its own for exaltation or debilitation. B. V. Raman allows the 45
+// of the mūlatrikoṇa only in the rāśi and not in the other six vargas, and so does the app. The temporary
+// relation is read from the rāśi chart alone, in every varga (Santhanam's note to 27.2–4; Raman does the
+// same). This is not JHora's table, which is Raman's with 22.5, 7.5, 3.75 and 1.875 for the grades.
+export type CompoundRelation = 'adhimitra' | 'mitra' | 'sama' | 'shatru' | 'adhishatru';
+const SAPTAVARGAJA_VIRUPA = { moolatrikona: 45, own: 30, adhimitra: 20, mitra: 15, sama: 10, shatru: 4, adhishatru: 2 } as const;
+const SAPTAVARGAJA_DIVISIONS = [1, 2, 3, 7, 9, 12, 30] as const;
 
 // Mūlatrikoṇa is a sign plus a degree band, unlike the other dignities which
-// are whole-sign. Ranges are the classical ones: [signIndex, fromDegree, toDegree).
+// are whole-sign. Bands are those of BPHS 3.51–54: [signIndex, fromDegree, toDegree).
 const MOOLATRIKONA: Record<ShadbalaPlanet, { sign: number; from: number; to: number }> = {
   Sun:     { sign: 4,  from: 0,  to: 20 },  // Leo 0–20°
-  Moon:    { sign: 1,  from: 4,  to: 30 },  // Taurus 4–30°
+  Moon:    { sign: 1,  from: 3,  to: 30 },  // Taurus 3–30° (the first 3° are its exaltation)
   Mars:    { sign: 0,  from: 0,  to: 12 },  // Aries 0–12°
-  Mercury: { sign: 5,  from: 16, to: 20 },  // Virgo 16–20°
+  Mercury: { sign: 5,  from: 15, to: 20 },  // Virgo 15–20° (the first 15° are its exaltation)
   Jupiter: { sign: 8,  from: 0,  to: 10 },  // Sagittarius 0–10°
   Venus:   { sign: 6,  from: 0,  to: 15 },  // Libra 0–15°
   Saturn:  { sign: 10, from: 0,  to: 20 },  // Aquarius 0–20°
@@ -151,11 +190,6 @@ function getPlanetHouse(planet: ShadbalaChartPlanet | undefined, ascendantSign: 
   if (typeof planet?.house === 'number') return planet.house;
   if (typeof planet?.sign !== 'number' || typeof ascendantSign !== 'number') return null;
   return ((planet.sign - ascendantSign + 12) % 12) + 1;
-}
-
-function circularHouseDistance(a: number, b: number): number {
-  const raw = Math.abs(a - b) % 12;
-  return Math.min(raw, 12 - raw);
 }
 
 function circularDegreeDistance(a: number, b: number): number {
@@ -189,10 +223,27 @@ export function getDignity(planet: string, signIndex: number | null | undefined,
   return 'neutral';
 }
 
-export function calculateDigBalaVirupa(planetName: string, house: number | null | undefined): number {
-  const maxHouse = isShadbalaPlanet(planetName) ? DIG_BALA_MAX_HOUSE[planetName] : undefined;
-  if (!maxHouse || typeof house !== 'number') return 0;
-  return clamp(60 * (1 - circularHouseDistance(house, maxHouse) / 6), 0, 60);
+/** The angles of the chart a graha's Dig Bala is measured from, as longitudes. */
+export type DigAngles = { ascendant?: number; midheaven?: number };
+
+/**
+ * Dig Bala (27.7–8): the distance, in degrees, from the point where the graha is powerless, divided by
+ * three, so 60 virūpa at the strongest point and nothing at the opposite. The points are the four angles
+ * of the chart: the ascendant, the descendant, the midheaven and the nadir (Santhanam: "the cuspal
+ * degree"; Raman, articles 44–45). The verse does not say what it means by a house; JHora's desktop
+ * version takes equal houses from the ascendant instead. Without a midheaven the 10th cusp is taken as
+ * 90° before the descendant.
+ */
+export function calculateDigBalaVirupa(planetName: string, longitude: number | undefined, angles: DigAngles): number {
+  if (!isShadbalaPlanet(planetName) || typeof longitude !== 'number' || typeof angles.ascendant !== 'number') return 0;
+  const midheaven = angles.midheaven ?? angles.ascendant + 270;
+  const strongPoint = {
+    asc: angles.ascendant,
+    desc: angles.ascendant + 180,
+    mc: midheaven,
+    ic: midheaven + 180,
+  }[DIG_BALA_STRONG_POINT[planetName]];
+  return 60 - circularDegreeDistance(longitude, strongPoint) / 3;
 }
 
 export function calculateUcchaBalaVirupa(planetName: string, longitude: number | undefined): number {
@@ -201,21 +252,50 @@ export function calculateUcchaBalaVirupa(planetName: string, longitude: number |
   return clamp(60 * (1 - circularDegreeDistance(longitude, exaltLongitude) / 180), 0, 60);
 }
 
-export function calculateSaptavargajaBalaVirupa(planetName: string, longitude: number | undefined): number {
-  if (typeof longitude !== 'number') return 0;
-  return [1, 2, 3, 7, 9, 12, 30].reduce((sum, division) => {
-    // Mūlatrikoṇa is a rāśi-level distinction: its degree bands are defined
-    // against the natal sign, not against a position inside a divisional sign.
-    const degreeInSign = division === 1 ? getDegreesInSign(longitude) : undefined;
-    return sum + (SAPTAVARGAJA_VIRUPA[getDignity(planetName, getVargaSignIndex(longitude, division), degreeInSign)] ?? 0);
-  }, 0) / 7;
+/** The sign each of the seven grahas stands in in the rāśi, from 0 (Aries). */
+export type RasiSigns = Partial<Record<ShadbalaPlanet, number>>;
+
+/**
+ * The compound relation (BPHS 3.55–58) of a graha to another: the natural and the temporary relation
+ * together. The other is a temporary friend when it stands in the 2nd, 3rd, 4th, 10th, 11th or 12th sign
+ * from the graha, a temporary enemy elsewhere. A friend that is a temporary friend too is an adhimitra,
+ * a friend that is a temporary enemy a sama; a neutral is a mitra or a śatru; an enemy is a sama or an
+ * adhiśatru. When the rāśi signs of the two are not known the natural relation alone is used (friend as
+ * mitra, neutral as sama, enemy as śatru).
+ */
+export function getCompoundRelation(planet: ShadbalaPlanet, other: ShadbalaPlanet, rasiSigns: RasiSigns): CompoundRelation {
+  const natural = NATURAL_FRIENDS[planet]?.includes(other) ? 'friend' : NATURAL_ENEMIES[planet]?.includes(other) ? 'enemy' : 'neutral';
+  const planetSign = rasiSigns[planet];
+  const otherSign = rasiSigns[other];
+  if (typeof planetSign !== 'number' || typeof otherSign !== 'number') {
+    return natural === 'friend' ? 'mitra' : natural === 'enemy' ? 'shatru' : 'sama';
+  }
+  const place = ((otherSign - planetSign + 12) % 12) + 1;
+  const temporaryFriend = [2, 3, 4, 10, 11, 12].includes(place);
+  if (natural === 'friend') return temporaryFriend ? 'adhimitra' : 'sama';
+  if (natural === 'neutral') return temporaryFriend ? 'mitra' : 'shatru';
+  return temporaryFriend ? 'sama' : 'adhishatru';
 }
 
+export function calculateSaptavargajaBalaVirupa(planetName: string, longitude: number | undefined, rasiSigns: RasiSigns): number {
+  if (!isShadbalaPlanet(planetName) || typeof longitude !== 'number') return 0;
+  return SAPTAVARGAJA_DIVISIONS.reduce((sum, division) => {
+    const signIndex = getVargaSignIndex(longitude, division);
+    // Mūlatrikoṇa has a degree band, which is meaningful in the rāśi only; in the other vargas the sign is just an own sign.
+    if (division === 1 && getDignity(planetName, signIndex, getDegreesInSign(longitude)) === 'moolatrikona') {
+      return sum + SAPTAVARGAJA_VIRUPA.moolatrikona;
+    }
+    if (OWN_SIGNS[planetName].includes(signIndex)) return sum + SAPTAVARGAJA_VIRUPA.own;
+    const lord = SIGN_LORDS[signIndex] as ShadbalaPlanet;
+    return sum + SAPTAVARGAJA_VIRUPA[getCompoundRelation(planetName, lord, rasiSigns)];
+  }, 0);
+}
+
+/** Ojhayugma Bala (27.5): 15 virūpa for the rāśi and 15 for the navāṃśa standing in a sign of the graha's kind. */
 export function calculateOjhayugmaBalaVirupa(planetName: string, longitude: number | undefined): number {
-  const preference = isShadbalaPlanet(planetName) ? ODD_EVEN_STRENGTH[planetName] : undefined;
-  if (!preference || typeof longitude !== 'number') return 0;
-  if (preference === 'both') return 15;
-  const signMatches = (signIndex: number) => (preference === 'odd' ? signIndex % 2 === 0 : signIndex % 2 === 1);
+  if (!isShadbalaPlanet(planetName) || typeof longitude !== 'number') return 0;
+  const wantsEven = EVEN_SIGN_PLANETS.includes(planetName);
+  const signMatches = (signIndex: number) => (signIndex % 2 === 1) === wantsEven;
   return (signMatches(getVargaSignIndex(longitude, 1)) ? 15 : 0) + (signMatches(getVargaSignIndex(longitude, 9)) ? 15 : 0);
 }
 
@@ -232,10 +312,10 @@ export function calculateDrekkanaBalaVirupa(planetName: string, longitude: numbe
   return Math.floor(getDegreesInSign(longitude) / 10) + 1 === preferred ? 15 : 0;
 }
 
-export function calculateSthanaBalaBreakdown(planetName: string, planet: ShadbalaChartPlanet | undefined, house: number | null): SthanaBalaBreakdown {
+export function calculateSthanaBalaBreakdown(planetName: string, planet: ShadbalaChartPlanet | undefined, house: number | null, rasiSigns: RasiSigns): SthanaBalaBreakdown {
   const longitude = planet?.longitude;
   const uccha = calculateUcchaBalaVirupa(planetName, longitude);
-  const saptavargaja = calculateSaptavargajaBalaVirupa(planetName, longitude);
+  const saptavargaja = calculateSaptavargajaBalaVirupa(planetName, longitude, rasiSigns);
   const ojhayugma = calculateOjhayugmaBalaVirupa(planetName, longitude);
   const kendradi = calculateKendradiBalaVirupa(house);
   const drekkana = calculateDrekkanaBalaVirupa(planetName, longitude);
@@ -367,45 +447,86 @@ function calculateTribhaagaBalaVirupa(planetName: ShadbalaPlanet, chart: Shadbal
   return planetName === getTribhagaLord(chart) ? 60 : 0;
 }
 
-function calculateVarsheshadiBalaVirupa(planetName: ShadbalaPlanet, chart: ShadbalaChartLike): number {
+/**
+ * The lords of the year, month, day and hour of the birth (see shadbalaTime.ts), or null when the birth
+ * moment is not known. The Vedic day runs from sunrise to sunrise, so a birth before sunrise belongs to
+ * the day before; the hour is counted in clock time from that sunrise. Without sunrise times the
+ * sunrise is taken to be at 6:00.
+ */
+function getVarsheshadiLords(chart: ShadbalaChartLike): { abda: DayLord; masa: DayLord; vara: DayLord; hora: DayLord } | null {
   const input = chart?.debug?.inputDateTime;
-  const date = input ? new Date(input) : null;
-  const dayLords = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
-  const lord = date && !Number.isNaN(date.getTime()) ? dayLords[date.getDay()] : null;
-  if (!lord) return 0;
-  if (planetName === lord) return 60;
-  if (NATURAL_FRIENDS[planetName]?.includes(lord)) return 30;
-  if (NATURAL_ENEMIES[planetName]?.includes(lord)) return 0;
-  return 15;
+  const birthHour = getBirthHour(chart);
+  const dateMatch = input?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!dateMatch || birthHour === null) return null;
+  const [year, month, day] = [Number(dateMatch[1]), Number(dateMatch[2]), Number(dateMatch[3])];
+  const sunrise = chart.debug?.sunriseLocalHours ?? 6;
+  const beforeSunrise = birthHour < sunrise;
+  const previous = new Date(Date.UTC(year, month - 1, day - 1));
+  const vedicDay = beforeSunrise
+    ? { year: previous.getUTCFullYear(), month: previous.getUTCMonth() + 1, day: previous.getUTCDate() }
+    : { year, month, day };
+  const hoursSinceSunrise = beforeSunrise
+    ? birthHour - (chart.debug?.previousSunriseLocalHours ?? sunrise - 24)
+    : birthHour - sunrise;
+  const { abda, masa, vara } = yearMonthDayLords(vedicDay);
+  return { abda, masa, vara, hora: horaLord(vara, hoursSinceSunrise) };
 }
 
-// Ayana Bala from true declination (krānti).
+/** Varṣa-Māsa-Dina-Horā Bala (27.13): 15 to the lord of the year, 30 to the month's, 45 to the day's and 60 to the hour's. */
+function calculateVarsheshadiBalaVirupa(planetName: ShadbalaPlanet, lords: ReturnType<typeof getVarsheshadiLords>): number {
+  if (!lords) return 0;
+  return (lords.abda === planetName ? ABDA_VIRUPA : 0)
+    + (lords.masa === planetName ? MASA_VIRUPA : 0)
+    + (lords.vara === planetName ? VARA_VIRUPA : 0)
+    + (lords.hora === planetName ? HORA_VIRUPA : 0);
+}
+
+// Ayana Bala (27.15–17).
 //
-// A planet is strong in the half of the year its own declination favours:
-// the Sun, Mars, Jupiter and Venus in northern declination, the Moon and
-// Saturn in southern. Mercury is strong in both, so it takes the magnitude of
-// the declination whichever side of the equator it falls.
+// A graha is strong in the half of the year its declination (krānti) favours: the Sun, Mars, Jupiter and
+// Venus in the north, the Moon and Saturn in the south; Mercury is strong in both, so it takes the
+// magnitude of the declination.
 //
 //   Ayana Bala = 60 × (24 + k·δ) / 48
 //
-// with the traditional obliquity of 24°, so δ = ±24° maps to 60 and 0 virupa.
-// Real declinations can exceed 24° (the Moon reaches ±28°), hence the clamp.
+// The declination is read from the graha's sāyana longitude by the table of the verse, which splits the
+// quarter of the ecliptic from an equinox to a solstice into 45, 33 and 12 parts of the 24° of the
+// obliquity (ninety parts in all) and interpolates inside the sign. It does not use the graha's latitude,
+// so the Moon's declination stays under 24°. Without an ayanamsa in the chart the true declination from
+// the ephemeris stands in. The Sun's value is not doubled here: the doubling the commentaries speak of is
+// the way Raman and Santhanam count the Sun's Cheṣṭā Bala (which the verses set equal to its Ayana Bala,
+// 27.18) into the total, and the app adds that Cheṣṭā Bala as a bala of its own.
 const AYANA_NORTH_STRONG: Record<ShadbalaPlanet, 1 | -1 | 0> = {
   Sun: 1, Mars: 1, Jupiter: 1, Venus: 1,
   Moon: -1, Saturn: -1,
   Mercury: 0, // 0 marks "strong in both", handled with |δ|
 };
 const TRADITIONAL_OBLIQUITY = 24;
+const AYANA_PARTS = [45, 33, 12];
+const AYANA_PARTS_TOTAL = 90;
 
-function calculateAyanaBalaVirupa(planetName: ShadbalaPlanet, planet: ShadbalaChartPlanet | undefined): number {
-  const declination = planet?.declination;
+/** The declination, in degrees (north positive), of a point of the ecliptic by the table of BPHS 27.15. */
+export function declinationFromSayanaLongitude(sayanaLongitude: number): number {
+  const longitude = normalizeLongitude(sayanaLongitude);
+  const north = longitude <= 180;
+  // The distance from the nearest equinox, 0–90°.
+  let fromEquinox = north ? longitude : 360 - longitude;
+  if (fromEquinox > 90) fromEquinox = 180 - fromEquinox;
+  const signIndex = Math.min(Math.floor(fromEquinox / 30), 2);
+  const fraction = (fromEquinox - signIndex * 30) / 30;
+  const parts = AYANA_PARTS.slice(0, signIndex).reduce((sum, part) => sum + part, 0) + AYANA_PARTS[signIndex] * fraction;
+  const declination = (parts / AYANA_PARTS_TOTAL) * TRADITIONAL_OBLIQUITY;
+  return north ? declination : -declination;
+}
+
+function calculateAyanaBalaVirupa(planetName: ShadbalaPlanet, planet: ShadbalaChartPlanet | undefined, ayanamsa: number | undefined): number {
+  const declination = typeof planet?.longitude === 'number' && typeof ayanamsa === 'number'
+    ? declinationFromSayanaLongitude(planet.longitude + ayanamsa)
+    : planet?.declination;
   if (typeof declination !== 'number') return 0;
   const direction = AYANA_NORTH_STRONG[planetName];
   const effective = direction === 0 ? Math.abs(declination) : direction * declination;
-  const bala = 60 * (TRADITIONAL_OBLIQUITY + effective) / (2 * TRADITIONAL_OBLIQUITY);
-  // BPHS doubles the Sun's Ayana Bala.
-  const scaled = planetName === 'Sun' ? bala * 2 : bala;
-  return clamp(scaled, 0, planetName === 'Sun' ? 120 : 60);
+  return clamp(60 * (TRADITIONAL_OBLIQUITY + effective) / (2 * TRADITIONAL_OBLIQUITY), 0, 60);
 }
 
 export function calculateKalaBalaBreakdown(planetName: ShadbalaPlanet, chart: ShadbalaChartLike, planet: ShadbalaChartPlanet | undefined): KalaBalaBreakdown {
@@ -416,128 +537,113 @@ export function calculateKalaBalaBreakdown(planetName: ShadbalaPlanet, chart: Sh
   const paksha = pakshaMap[planetName] ?? 0;
   const tribhaaga = calculateTribhaagaBalaVirupa(planetName, chart);
   const tribhagaLord = getTribhagaLord(chart);
-  const varsheshadi = calculateVarsheshadiBalaVirupa(planetName, chart);
-  const ayana = calculateAyanaBalaVirupa(planetName, planet);
-  return { sect, natonnata, paksha, tribhaaga, tribhagaLord, varsheshadi, ayana, total: natonnata + paksha + tribhaaga + varsheshadi + ayana };
+  const varsheshadiLords = getVarsheshadiLords(chart) ?? undefined;
+  const varsheshadi = calculateVarsheshadiBalaVirupa(planetName, varsheshadiLords ?? null);
+  const ayana = calculateAyanaBalaVirupa(planetName, planet, chart?.debug?.ayanamsa);
+  return { sect, natonnata, paksha, tribhaaga, tribhagaLord, varsheshadi, varsheshadiLords, ayana, total: natonnata + paksha + tribhaaga + varsheshadi + ayana };
 }
 
-// Cheṣṭā Bala from the eightfold motion (aṣṭa-gati) of BPHS.
+// Cheṣṭā Bala (27.18, 27.24–25).
 //
-// The planet's apparent daily motion is compared with its mean motion and the
-// resulting state carries a fixed virupa award:
-//
-//   Vakra      retrograde                 60
-//   Anuvakra   retrograde into the        30   — folded into Vakra here, since
-//              previous sign                    it needs sign-crossing history
-//   Vikala     stationary                 15
-//   Mandatara  far slower than mean        7.5
-//   Manda      slower than mean           15
-//   Sama       at mean speed              30
-//   Chara      faster than mean           30
-//   Aticharā   far faster than mean       45
-//
-// The Sun and Moon are not judged by motion: BPHS gives the Sun its own Ayana
-// Bala as Cheṣṭā and the Moon its own Pakṣa Bala.
-//
-// The mean motions below are *geocentric* — the average apparent speed against
-// the zodiac. For Mars, Jupiter and Saturn these match the classical madhya
-// gati. Mercury and Venus do not: their traditional 4°05' and 1°36' are sighra
-// (heliocentric) rates, whereas seen from Earth both merely accompany the Sun
-// once round the zodiac each year. Comparing a geocentric speed against the
-// sighra figure would mark them permanently slow, so the solar rate is used.
-const MEAN_DAILY_MOTION: Record<ShadbalaPlanet, number> = {
-  Sun: 0.9856,
-  Moon: 13.1764,
-  Mars: 0.5240,
-  Mercury: 0.9856,
-  Jupiter: 0.0831,
-  Venus: 0.9856,
-  Saturn: 0.0335,
-};
-
-export type MotionState = 'vakra' | 'vikala' | 'mandatara' | 'manda' | 'sama' | 'chara' | 'atichara';
-
-const MOTION_VIRUPA: Record<MotionState, number> = {
-  vakra: 60,
-  vikala: 15,
-  mandatara: 7.5,
-  manda: 15,
-  sama: 30,
-  chara: 30,
-  atichara: 45,
-};
-
-export function classifyMotion(planetName: ShadbalaPlanet, speed: number): MotionState {
-  const mean = MEAN_DAILY_MOTION[planetName];
-  if (speed < 0) return 'vakra';
-  const ratio = speed / mean;
-  if (ratio < 0.02) return 'vikala';
-  if (ratio < 0.25) return 'mandatara';
-  if (ratio < 0.9) return 'manda';
-  if (ratio <= 1.1) return 'sama';
-  if (ratio <= 1.5) return 'chara';
-  return 'atichara';
-}
+// The Sun's Cheṣṭā Bala is its Ayana Bala and the Moon's its Pakṣa Bala (27.18). The verses then count
+// Cheṣṭā as a bala of its own among the six (27.25), so these two are in the total twice: once as a part
+// of Kāla and once here. Mars, Mercury, Jupiter, Venus and Saturn are measured by the cheṣṭā-kendra
+// (see shadbalaCheshta.ts). The verses also list eight motions with a fixed strength each (vakra,
+// anuvakra, vikala, manda, mandatara, sama, cara, aticara, 27.21–23), but give no speeds for the
+// states, and Santhanam points to the kendra for the calculation; the app does not use the list.
+const CHESHTA_GRAHAS: readonly ShadbalaPlanet[] = ['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
 
 export function calculateCheshtaBalaVirupa(
   planetName: ShadbalaPlanet,
   planet: ShadbalaChartPlanet | undefined,
   ayanaBala: number,
   pakshaBala: number,
+  chart?: ShadbalaChartLike,
 ): number {
   if (planetName === 'Sun') return ayanaBala;
   if (planetName === 'Moon') return pakshaBala;
-  if (typeof planet?.speed !== 'number') return 0;
-  return MOTION_VIRUPA[classifyMotion(planetName, planet.speed)];
+  const julianDay = chart?.debug?.julianDay;
+  if (!CHESHTA_GRAHAS.includes(planetName) || typeof planet?.longitude !== 'number' || typeof julianDay !== 'number') return 0;
+  // The mean positions are in the Lahiri zodiac: move the longitude there from the chart's own zodiac
+  // (the tropical one has an ayanamsa of 0).
+  const ayanamsa = chart?.debug?.ayanamsa ?? 0;
+  const lahiri = chart?.debug?.siderealAyanamsa ?? ayanamsa;
+  return cheshtaKendraBalaVirupa(planetName as CheshtaGraha, julianDay, normalizeLongitude(planet.longitude + ayanamsa - lahiri));
 }
 
-function aspectOrbStrength(diff: number, exact: number, orb = 30): number {
-  const delta = Math.abs(diff - exact);
-  return delta <= orb ? 1 - delta / orb : 0;
+// Dṛg Bala (27.19, 26.6–12).
+//
+// Each graha's aspect on the target is read from the sphuṭa dṛṣṭi table (shadbalaAspects.ts). A quarter
+// of the malefic aspects is taken off and a quarter of the benefic ones put on. The verse also says
+// *jñejya-dṛk-yuktam*, "joined with the aspect of Mercury and Jupiter"; as in the verse for Bhāva Bala
+// (27.29), where it means that their aspects count in full, but unlike Raman and JHora's planetary
+// Dṛg Bala, which take only the quarter, the app takes only the quarter here too: adding Mercury's and
+// Jupiter's aspects in full would swamp the other five (14–58 virūpa for the reference chart).
+//
+// Benefics and malefics (3.11): Jupiter and Venus are benefics; the Sun, Mars and Saturn (and Rahu and
+// Ketu, which only matter as companions of Mercury) are malefics; the waning Moon is a malefic and the
+// waxing one a benefic (isMoonBenefic); Mercury is a malefic in the company (the same sign) of a malefic.
+function classifyBenefics(chart: ShadbalaChartLike): Set<ShadbalaPlanet> {
+  const benefics = new Set<ShadbalaPlanet>(['Jupiter', 'Venus']);
+  const sun = getPlanet(chart, 'Sun');
+  const moon = getPlanet(chart, 'Moon');
+  const moonBenefic = typeof sun?.longitude === 'number' && typeof moon?.longitude === 'number'
+    && isMoonBenefic(moon.longitude - sun.longitude);
+  if (moonBenefic) benefics.add('Moon');
+
+  const mercury = getPlanet(chart, 'Mercury');
+  if (typeof mercury?.longitude === 'number') {
+    const mercurySign = Math.floor(normalizeLongitude(mercury.longitude) / 30);
+    const maleficCompanion = (chart?.planets ?? []).some((other) => {
+      if (typeof other.longitude !== 'number' || Math.floor(normalizeLongitude(other.longitude) / 30) !== mercurySign) return false;
+      if (['Sun', 'Mars', 'Saturn', 'Rahu', 'Ketu'].includes(other.name)) return true;
+      return other.name === 'Moon' && !moonBenefic;
+    });
+    if (!maleficCompanion) benefics.add('Mercury');
+  }
+  return benefics;
 }
 
-function getAspectStrength(fromName: ShadbalaPlanet, fromLongitude: number, toLongitude: number): number {
-  const diff = normalizeLongitude(toLongitude - fromLongitude);
-  let strength = aspectOrbStrength(diff, 180, 45);
-  if (fromName === 'Mars') strength = Math.max(strength, aspectOrbStrength(diff, 90, 35), aspectOrbStrength(diff, 210, 35));
-  if (fromName === 'Jupiter') strength = Math.max(strength, aspectOrbStrength(diff, 120, 35), aspectOrbStrength(diff, 240, 35));
-  if (fromName === 'Saturn') strength = Math.max(strength, aspectOrbStrength(diff, 60, 35), aspectOrbStrength(diff, 270, 35));
-  return clamp(strength, 0, 1);
-}
-
-// Approximation. Classical Drig Bala uses drishti-pinda (aspect points) with fixed weights.
-// Here: +45 virupa per benefic aspect, −30 per malefic aspect. No arbitrary base score.
-// Aspect orbs are custom (not classical exact-aspect). Negative values allowed per classical convention.
-export function calculateDrikBalaVirupa(targetName: ShadbalaPlanet, chart: ShadbalaChartLike): number {
+export function calculateDrikBalaVirupa(targetName: ShadbalaPlanet, chart: ShadbalaChartLike, benefics: Set<ShadbalaPlanet> = classifyBenefics(chart)): number {
   const target = getPlanet(chart, targetName);
   if (typeof target?.longitude !== 'number') return 0;
-  const targetLongitude = target.longitude;
-  let score = 0;
+  let sum = 0;
   SCORE_PLANETS.forEach((fromName) => {
     if (fromName === targetName) return;
     const from = getPlanet(chart, fromName);
     if (typeof from?.longitude !== 'number') return;
-    const aspect = getAspectStrength(fromName, from.longitude, targetLongitude);
-    if (!aspect) return;
-    score += (BENEFICS.includes(fromName) ? 45 : -30) * aspect;
+    const aspect = aspectVirupa(fromName, normalizeLongitude(target.longitude! - from.longitude));
+    sum += benefics.has(fromName) ? aspect : -aspect;
   });
-  return score;
+  return sum / 4;
+}
+
+export function rasiSignsOf(chart: ShadbalaChartLike): RasiSigns {
+  const signs: RasiSigns = {};
+  SCORE_PLANETS.forEach((name) => {
+    const longitude = getPlanet(chart, name)?.longitude;
+    if (typeof longitude === 'number') signs[name] = Math.floor(normalizeLongitude(longitude) / 30);
+  });
+  return signs;
 }
 
 export function buildShadbalaRows(chart: ShadbalaChartLike): ShadbalaRow[] {
   const ascendantSign = chart?.ascendant?.sign;
+  const rasiSigns = rasiSignsOf(chart);
+  const benefics = classifyBenefics(chart);
+  const angles: DigAngles = { ascendant: chart?.ascendant?.longitude, midheaven: chart?.midheaven };
   return SCORE_PLANETS
     .map((planetName): ShadbalaRow | null => {
       const planet = getPlanet(chart, planetName);
       if (!planet) return null;
       const house = getPlanetHouse(planet, ascendantSign);
-      const sthanaBreakdown = calculateSthanaBalaBreakdown(planetName, planet, house);
+      const sthanaBreakdown = calculateSthanaBalaBreakdown(planetName, planet, house, rasiSigns);
       const kalaBreakdown = calculateKalaBalaBreakdown(planetName, chart, planet);
       const naisargikaVirupa = NAISARGIKA_BALA_VIRUPA[planetName] ?? 0;
-      const digVirupa = calculateDigBalaVirupa(planetName, house);
+      const digVirupa = calculateDigBalaVirupa(planetName, planet.longitude, angles);
       // Cheṣṭā depends on Kāla for the two luminaries, so it is computed after it.
-      const cheshtaVirupa = calculateCheshtaBalaVirupa(planetName, planet, kalaBreakdown.ayana, kalaBreakdown.paksha);
-      const drikVirupa = calculateDrikBalaVirupa(planetName, chart);
+      const cheshtaVirupa = calculateCheshtaBalaVirupa(planetName, planet, kalaBreakdown.ayana, kalaBreakdown.paksha, chart);
+      const drikVirupa = calculateDrikBalaVirupa(planetName, chart, benefics);
       const totalVirupa = sthanaBreakdown.total + digVirupa + kalaBreakdown.total + cheshtaVirupa + naisargikaVirupa + drikVirupa;
       const requiredVirupa = SHADBALA_REQUIRED_VIRUPA[planetName] ?? 0;
       return {
