@@ -46,8 +46,17 @@ Labels: **A** the rule is in the verse; **B** the verse leaves it open and two i
 | Dṛg: Mercury and Jupiter "in full" | 27.19 *jñejya-dṛk-yuktam* | **Not added.** Santhanam reads it as adding their aspects in full, Raman and JHora count only the quarter. In 27.29 (Bhāva Bala) it means in full; here adding it would raise the totals by 14–58 virūpa | C |
 | Benefic and malefic | 3.11, 34.9, 3.37 | Benefics Jupiter and Venus; malefics Sun, Mars, Saturn (and Rahu and Ketu as companions of Mercury); Mercury a malefic in the sign of a malefic; the Moon a malefic while waning | A, see below |
 | The waning Moon | 3.11 *kṣīṇendu* | The verses never say where waxing ends. The app takes the dark half (and the new Moon) as waning, as Santhanam and the Saravali documentation say; B. V. Raman puts the change at the eighth tithi (and JHora follows him) | C |
+| Bhāva Bala: parts | 27.26–31 | Five parts: the lord's Ṣaḍbala, Dig Bala, Dṛṣṭi Bala, the occupants and the Kāla Bala. Raman leaves out the occupants and the Kāla Bala | A |
+| Bhāva Dig Bala | 27.26–28 | The distance in degrees of the middle of the house from its powerless angle, divided by three: Gemini, Virgo, Libra, Aquarius, first half of Sagittarius → descendant; Aries, Taurus, Leo, first half of Capricorn, second half of Sagittarius → nadir; Cancer, Scorpio → ascendant; second half of Capricorn, Pisces → midheaven. Raman counts it in whole signs from house numbers and pairs Cancer with Pisces and the 10th | A (Santhanam and Sharma agree on Cancer); the Cancer grouping may be a corruption of the verse |
+| Bhāva Dṛṣṭi Bala | 27.28–29 | A quarter of the benefic aspects less a quarter of the malefic ones on the middle of the house, Mercury's and Jupiter's aspects in full instead of the quarter (Raman art. 132). Read literally the verse adds them to the quarter (Santhanam, Sharma) | B, see the manual (C8) |
+| Bhāva occupants | 27.30 | Mercury and Jupiter in the house +60 virūpa, Saturn, Mars and the Sun −60 | A |
+| Bhāva Kāla Bala | 27.31 | +15 virūpa for a house in a head-rising sign by day, a both-rising sign in the twilight, a back-rising sign at night. The way each sign rises is in 4.7–23 (Scorpio's is not stated and it is counted with the head-risers) | A |
+| The twilight | 46.44–47 | Five ghaṭī (two hours) either side of sunrise and sunset. The definition is in the verses on the divisions of the day for daśās; 27.31 does not define the word | C |
+| The houses of Bhāva Bala | – | The verses do not say how the houses are divided. The app takes whole signs from the Lagna sign, the middle point 15° into the sign (LagnaOne's equal houses); Raman uses Śrīpati's middle points and takes the lord from the sign of the middle point | C |
 | Required strength | 27.32–33 | 390, 360, 300, 420, 390, 330, 300 virūpa. (JHora has 300 for the Sun.) | A |
 | Yuddha | 27.20 | **Not implemented.** The verse says the winner gains and the loser loses the difference; Raman and the Saravali documentation disagree about who wins and about the divisor. The reference chart has no planets in war | E |
+
+The step-by-step calculation of every part, with the reference chart worked through, is in [shadbala-manual.md](shadbala-manual.md).
 
 ## Where the app differs from JHora on purpose
 

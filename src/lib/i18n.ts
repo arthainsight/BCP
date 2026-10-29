@@ -122,7 +122,7 @@ export const FI: Record<string, string> = {
   'The six balas in virūpa, added up to the total. Dṛg can be negative, which goes to the left of the zero.': 'Kuusi balaa virūpoina, yhteensä kokonaisuus. Dṛg voi olla negatiivinen, jolloin se on nollan vasemmalla puolella.',
   'Required strength': 'Vaadittu voima',
   'Bhāva Bala of the houses': 'Talojen Bhāva Bala',
-  "The strength of each house in virūpa: its lord's Ṣaḍbala, the aspects of benefics (Drig+) and malefics (Drig−, below the zero), the grahas in it and its place (Kendra). The number over a column is the total.": 'Kunkin talon voima virūpoina: sen herran Ṣaḍbala, hyväntekijöiden (Drig+) ja pahantekijöiden (Drig−, nollan alapuolella) aspektit, siinä olevat grahat ja sen paikka (Kendra). Pylvään päällä oleva luku on summa.',
+  "The strength of each house in virūpa: its lord's Ṣaḍbala, its Dig Bala, the aspects of benefics (Drig+) and malefics (Drig−, below the zero), the grahas in it and its Kāla Bala. The number over a column is the total.": 'Kunkin talon voima virūpoina: herran Ṣaḍbala, talon Dig Bala, hyvien (Drig+) ja pahojen (Drig−, nollan alapuolella) aspektit, talossa olevat grahat ja talon Kāla Bala. Pylvään päällä oleva luku on summa.',
   // Sensitive degrees and the Yogi points
   'Sensitive Degrees': 'Herkät asteet',
   'Sandhi, Gandanta and Mṛtyu Bhāga weaken a point; Puṣkara Navāṁśa and Puṣkara Bhāga strengthen it. A combust graha has lost its light in the Sun.': 'Sandhi, Gandanta ja Mṛtyu Bhāga heikentävät pistettä; Puṣkara Navāṁśa ja Puṣkara Bhāga vahvistavat sitä. Palanut (combust) graha on menettänyt valonsa Auringossa.',
@@ -951,6 +951,7 @@ export const FI: Record<string, string> = {
   'All planets: 7th · Mars: +4th +8th · Jupiter: +5th +9th · Saturn: +3rd +10th': 'Kaikki grahat: 7. · Mars: +4. +8. · Jupiter: +5. +9. · Saturn: +3. +10.',
   'From sign': 'Lähtömerkki',
   'Occupants': 'Asukkaat',
+  'How every number is calculated (manual)': 'Miten jokainen luku lasketaan (manuaali)',
   'Movable→Fixed · Fixed→Movable (non-adjacent) · Dual→all Dual': 'Liikkuva→Kiinteä · Kiinteä→Liikkuva (ei viereinen) · Kaksoisluonteinen→kaikki kaksoisluonteiset',
   'Dṛṣṭi house summary': 'Dṛṣṭin talo-yhteenveto',
   'Total': 'Yhteensä',
@@ -1102,7 +1103,7 @@ export const FI: Record<string, string> = {
   'Four weighted calculations out of 20. Rahu/Ketu and Lagna excluded.': 'Neljä painotettua laskentaa asteikolla 20. Rahu/Ketu ja Lagna jätetty pois.',
   'Planet': 'Planeetta',
   'Values in virūpa, by the Sanskrit text of BPHS 27: Saptavargaja is the sum of the seven vargas, Dig is measured from the four angles, Dṛg counts the waning Moon as a malefic, and the Cheṣṭā Bala of the Sun and of the Moon is their Ayana and Pakṣa Bala. Yuddha Bala is not included.': 'Arvot virūpoina BPHS:n luvun 27 sanskritinkielisen tekstin mukaan: Saptavargaja on seitsemän vargan summa, Dig mitataan neljästä kulmasta, Dṛg pitää vähenevää Kuuta pahana, ja Auringon ja Kuun Cheṣṭā Bala on niiden Ayana- ja Pakṣa-bala. Yuddha Balaa ei ole mukana.',
-  'Bhavesha = lord\'s Ṣaḍbala (virupa). Drig = simplified drishti to sign midpoint. Kendra = +15 virupa (H1/4/7/10). Bhava Digbala and Kala Bala not yet included.': 'Bhavesha = herran Ṣaḍbala (virūpa). Drig = yksinkertaistettu dṛṣṭi merkin keskipisteeseen. Kendra = +15 virūpaa (H1/4/7/10). Bhava Digbalaa ja Kala Balaa ei ole vielä otettu mukaan.',
+  "Values in virūpa, by BPHS 27.26–31. Bhavesha = the lord's Ṣaḍbala. Dig = the distance of the middle of the house from the angle where it is powerless, divided by three. Drig = a quarter of the aspects, those of Mercury and Jupiter in full. Occupants: Mercury and Jupiter +60, Saturn, Mars and the Sun −60. Kāla: +15 for the way the sign rises at the time of birth. The house is the whole sign from the Lagna sign.": 'Arvot virūpoina, BPHS 27.26–31 mukaan. Bhavesha = herran Ṣaḍbala. Dig = talon keskipisteen etäisyys heikosta kulmasta jaettuna kolmella. Drig = neljännes aspekteista, Merkuriuksen ja Jupiterin aspektit kokonaan. Asukkaat: Merkurius ja Jupiter +60, Saturnus, Mars ja Aurinko −60. Kāla: +15 sen mukaan, miten merkki nousee syntymähetkellä. Talo on kokonainen merkki Lagna-merkistä alkaen.',
   'ok': 'kelpo',
 
   // Remaining prose

@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.38',
+    date: '2026-10-29',
+    title: 'Bhāva Bala by the Sanskrit text, and a manual for the Bala views',
+    changes: [
+      'Bhāva Bala is now the five parts of BPHS 27.26–31 in place of the made-up ones: the lord\'s Ṣaḍbala, the Dig Bala of the house (the distance of its middle point from the angle where it is powerless, over three), the Dṛṣṭi Bala (a quarter of the aspects by the sphuṭa dṛṣṭi table, Mercury\'s and Jupiter\'s in full), the occupants (Mercury and Jupiter +60 virūpa, Saturn, Mars and the Sun −60) and the Kāla Bala (+15 for a house in the kind of sign that suits the time of birth). The old Kendra bonus and the occupants weighed by their Ṣaḍbala are gone.',
+      'The houses are whole signs from the Lagna sign with the middle point at 15°, as in LagnaOne\'s equal houses. A point in Cancer is measured from the Lagna, as the verse and the translations of Santhanam and Sharma say; B. V. Raman and Śrīpati pair Cancer with Pisces and the 10th instead.',
+      'New manual, docs/shadbala-manual.md, says step by step how every number of the Ṣaḍbala and the Bhāva Bala is calculated, works each step on one reference chart, and lists the thirteen choice points where the sources disagree (the Moon\'s nature, the Saptavargaja table, Dig Bala\'s angles, the Sun\'s and the Moon\'s Cheṣṭā Bala, the houses of Bhāva Bala and so on) with who holds the alternatives. Both Bala views link to it.',
+      'Updated the application version to v3.38.',
+    ],
+  },
+
+  {
     version: 'v3.37',
     date: '2026-10-29',
     title: 'Ṣaḍbala by the Sanskrit text of BPHS',

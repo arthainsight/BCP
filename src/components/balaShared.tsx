@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { SOURCE_URL } from '@/lib/config';
 
 export const HEAD_CELL = 'text-left p-2 border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400';
 export const BODY_CELL = 'p-2 border border-zinc-100 dark:border-zinc-800';
@@ -28,6 +29,15 @@ export function ScrollTable({ minWidth, headers, children }: { minWidth: string;
         </thead>
         <tbody>{children}</tbody>
       </table>
+    </div>
+  );
+}
+
+/** A link to the manual that says how every number of the Ṣaḍbala and the Bhāva Bala is calculated. */
+export function ManualLink({ label }: { label: string }) {
+  return (
+    <div className="text-xs font-mono">
+      <a href={`${SOURCE_URL}/blob/main/docs/shadbala-manual.md`} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline dark:text-green-400">{label}</a>
     </div>
   );
 }

@@ -22,11 +22,12 @@ assert.deepEqual(Object.keys(parts), [...SHADBALA_PARTS]);
 assert.equal(Object.values(parts).reduce((sum, value) => sum + value, 0), shadbala.totalVirupa, 'the parts add up to the total, a negative Dṛg included');
 
 // --- The parts of a house add up to its total -----------------------------------------------------------------------------------
-const house = { house: 7, bhavesha: 300, drig1: 90, drig2: 20, drig3: -45, drig4: -10, occupantTotal: 30, kendra: 15, total: 400 } as unknown as BhavaBalaRow;
+const house = { house: 7, bhavesha: 300, dig: 20, drigBenefic: 110, drigMalefic: -55, occupantTotal: 60, kala: 15, total: 450 } as unknown as BhavaBalaRow;
 const houseParts = bhavaComposition(house);
 assert.deepEqual(Object.keys(houseParts), [...BHAVA_PARTS]);
 assert.equal(houseParts.drigBenefic, 110);
 assert.equal(houseParts.drigMalefic, -55);
+assert.equal(houseParts.occupants, 60);
 assert.equal(Object.values(houseParts).reduce((sum, value) => sum + value, 0), house.total);
 
 // --- Vimsopaka by a scheme ------------------------------------------------------------------------------------------------------------
