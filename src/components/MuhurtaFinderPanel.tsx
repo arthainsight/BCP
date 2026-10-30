@@ -16,6 +16,8 @@ import { DOSHAS, DOSHAS_NOT_WORKED_OUT, DOSHA_IDS, isDoshaId, type DoshaId } fro
 import { D1_KEYS, D1_WISHES, isD1Key, type D1Key } from '@/lib/muhurtaD1';
 import { FINDER_PRESETS, FINDER_PRESET_CATEGORIES, NOT_APPLIED, type FinderPreset } from '@/lib/muhurtaFinderPresets';
 import type { FinderResult } from '@/lib/muhurtaFinderRun';
+import MuhurtaStrip from './MuhurtaStrip';
+import type { StripChoices } from '@/lib/muhurtaStripView';
 import { useT } from '@/lib/i18n';
 
 type Props = {
@@ -262,6 +264,14 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   const lat = place ? place.latitude : chart.debug?.latitude;
   const lng = place ? place.longitude : chart.debug?.longitude;
   const tz = chart.debug?.utcOffset ?? 0;
+  const activePreset = FINDER_PRESETS.find(preset => preset.id === presetId);
+  const stripChoices = useMemo<StripChoices>(() => ({
+    vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, karana: choices.karana, yoga: choices.yoga,
+    tara: natalNakshatra !== undefined ? { nakshatra: natalNakshatra, taras: choices.tara } : undefined,
+    chandra: natalMoonSign !== undefined ? { moonSign: natalMoonSign, houses: choices.chandra } : undefined,
+    middling: activePreset?.middling,
+    sarvarthaExceptions: activePreset?.sarvarthaExceptions,
+  }), [choices, natalMoonSign, natalNakshatra, activePreset]);
   const canSearch = typeof lat === 'number' && typeof lng === 'number' && /^\d{4}-\d{2}-\d{2}$/.test(start) && !impossible;
 
   const search = async () => {
@@ -387,6 +397,14 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
           </div>
         ))}
       </section>
+
+      {typeof lat === 'number' && typeof lng === 'number' && (
+        <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700" data-finder-group="Strip">
+          <h3 className="text-xs font-mono font-semibold text-emerald-700 dark:text-green-400">{t('Month strip')}</h3>
+          <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('The colours follow the choices below: a ready-made choice for a purpose shows which times the book calls favourable for it. Click a time for its details.')}</p>
+          <MuhurtaStrip start={start} lat={lat} lng={lng} tz={tz} zone={zone} calculation={calculationParams(calculationSettings)} choices={stripChoices} />
+        </section>
+      )}
 
       <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
         <label className="flex items-center gap-1.5">
