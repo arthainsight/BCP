@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v3.58',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: make rows of the strip green by choice',
+    changes: [
+      'Each row of the month strip has a tick box. Tick the rows that you want green (for example the Chandrabala and the Tarabala, or the nakṣatra and the tithi of a ready-made choice) and the strip shows only the times when all the ticked rows are green: the rest of the strip is covered, and the times are listed below it with their lengths (a click on one puts the marker there). With no row ticked the strip is as before.',
+      'A row counts as green where its value is chosen (the Vāra–Tithi–Nakṣatra row where the book judges the combination auspicious); a group with every item chosen is green all the time. Updated the application version to v3.58.',
+    ],
+  },
+  {
     version: 'v3.57',
     date: '2026-10-30',
     title: 'Muhurta Finder: the month strip and the Vāra–Tithi–Nakṣatra yogas',

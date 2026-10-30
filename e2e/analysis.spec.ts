@@ -1784,6 +1784,16 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(strip.locator('[data-finder-strip-row="vtn"] [data-finder-strip-tone]').first()).toBeVisible();
   await strip.locator('[data-finder-strip-row="vtn"] > div').first().click({ position: { x: 200, y: 8 } });
   await expect(strip.locator('[data-finder-strip-detail]')).toBeVisible();
+  // Rows made green by choice: only the times when all the ticked rows are green are shown, the rest of the strip is covered.
+  await expect(strip.locator('[data-finder-strip-windows]')).toHaveCount(0);
+  await strip.locator('[data-finder-strip-require="tara"]').check();
+  await strip.locator('[data-finder-strip-require="chandra"]').check();
+  await expect(strip.locator('[data-finder-strip-windows]')).toBeVisible();
+  await expect(strip.locator('[data-finder-strip-windows] button').first()).toBeVisible();
+  await expect(strip.locator('[data-finder-strip-gap]').first()).toBeAttached();
+  await strip.locator('[data-finder-strip-require="tara"]').uncheck();
+  await strip.locator('[data-finder-strip-require="chandra"]').uncheck();
+  await expect(strip.locator('[data-finder-strip-windows]')).toHaveCount(0);
   const monthBefore = await strip.locator('[data-finder-strip-month]').textContent();
   await strip.getByRole('button', { name: 'next month', exact: true }).click();
   await expect(strip.locator('[data-finder-strip-month]')).not.toHaveText(monthBefore ?? '');

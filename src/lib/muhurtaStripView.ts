@@ -43,6 +43,30 @@ const toneOf = (value: number, chosen: number[], size: number, middling: number[
   return middling.includes(value) ? 'middling' : 'bad';
 };
 
+/** The house of the Moon from the sign of the Moon at birth (the Moon's sign in the state is taken whole: the sign is what the Chandrabala counts). */
+const chandraHouse = (natalMoonSign: number, state: StripState) => houseFrom(natalMoonSign, state.moonSign * 30 + 15);
+
+/**
+ * The stretches in which every one of the `required` rows is green, from the rows of the strip: the times to show when the
+ * user makes those rows green by choice. A row that is not in the strip (no natal chart for the Tarabala) is no condition.
+ * Stretches that touch are one.
+ */
+export function greenWindows(rows: { id: StripRowId; segments: StripSegment[] }[], required: StripRowId[]): { start: number; end: number }[] {
+  const wanted = rows.filter(row => required.includes(row.id));
+  if (wanted.length === 0) return [];
+  const edges = [...new Set(wanted.flatMap(row => row.segments.flatMap(segment => [segment.start, segment.end])))].sort((a, b) => a - b);
+  const toneAt = (row: { segments: StripSegment[] }, ms: number) => row.segments.find(segment => segment.start <= ms && ms < segment.end)?.tone;
+  const windows: { start: number; end: number }[] = [];
+  for (let index = 0; index + 1 < edges.length; index += 1) {
+    const [start, end] = [edges[index], edges[index + 1]];
+    if (!wanted.every(row => toneAt(row, start) === 'good')) continue;
+    const last = windows[windows.length - 1];
+    if (last && last.end === start) last.end = end;
+    else windows.push({ start, end });
+  }
+  return windows;
+}
+
 /** Stretches of equal text and tone put together: a stretch of the same value in two states is one. */
 function merge(segments: StripSegment[]): StripSegment[] {
   const merged: StripSegment[] = [];
@@ -80,7 +104,7 @@ export function stripRows(states: StripState[], choices: StripChoices): { id: St
   }
   if (chandra) {
     row('chandra', state => {
-      const house = houseFrom(chandra.moonSign, state.moonSign * 30 + 15);
+      const house = chandraHouse(chandra.moonSign, state);
       return { label: String(house), title: `${house}`, tone: toneOf(house, chandra.houses, 12) };
     });
   }

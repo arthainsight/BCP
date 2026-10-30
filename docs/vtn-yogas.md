@@ -45,4 +45,6 @@ The table's asterisks (a factor that forms both an auspicious and an inauspiciou
 
 When nothing is chosen away (every value of a group chosen), no stretch of the group is red. The Tarabala and the Chandrabala rows are there when the chart has a natal Moon. The last row is the book's own judgement of the vāra/tithi/nakṣatra yogas, not the choices. A click on any row gives the moment's vāra, tithi, nakṣatra, karaṇa, yoga and the yogas it forms.
 
+**Making rows green by choice (v3.58).** Each row has a tick box. With rows ticked the strip shows only the times when every ticked row is green (`greenWindows` in `muhurtaStripView.ts`: the stretches are cut at every edge of the ticked rows, and those where all are green are joined); the rest is covered and the times are listed. A row is green where its value is chosen (the Vāra–Tithi–Nakṣatra row where the judgement is good; yellow is not green); a group with every item chosen is green all the time. The ticks are local to the strip and are not part of the Finder search.
+
 Not done: a Lagna row (the Lagna changes every two hours; Kala zooms to it), the finer scales of Kala's strip (navāṁśa, hora, muhūrta, nāḍī, minutes), the Nakṣatra Purusha and the other readings of the Muhurta Helper, the VTN yogas as a Finder condition or wish.
