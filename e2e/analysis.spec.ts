@@ -1642,3 +1642,47 @@ test('LIBRARY Research saves the findings as a report page', async ({ page }) =>
 
   expect(errors).toEqual([]);
 });
+
+test('TIMING Muhurta Finder lists the stretches in which every choice holds, and sets one as the target', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Muhurta Finder', exact: true })).click();
+  const finder = visible(page, page.getByTestId('muhurta-finder'));
+  await expect(finder).toBeVisible();
+
+  // The groups of choices, as a panchāṅga has them: vāra, karaṇa, tithi, yoga, nakṣatra, and the grid of the signs of the grahas.
+  for (const group of ['Vāra', 'Karaṇa', 'Tithi', 'Yoga', 'Nakṣatra', 'Graha']) await expect(finder.locator(`[data-finder-group="${group}"]`)).toBeVisible();
+  await expect(finder.locator('[data-finder-group="Tithi"]').getByRole('button', { name: 'S1', exact: true })).toBeVisible();
+  await expect(finder.locator('[data-finder-group="Tithi"]').getByRole('button', { name: 'K15', exact: true })).toBeVisible();
+  await expect(finder.getByRole('button', { name: 'Su Ar', exact: true })).toBeVisible();
+
+  // Nothing is chosen in a group: no search is possible and it says where.
+  const vara = finder.locator('[data-finder-group="Vāra"]');
+  await vara.getByRole('button', { name: 'none', exact: true }).click();
+  await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeDisabled();
+  await expect(finder).toContainText('Nothing is chosen in Vāra');
+
+  // Thursday alone, for the week from Monday 2 November 2026: the one Thursday, from its sunrise to the next (the vāra changes at sunrise).
+  await vara.getByRole('button', { name: 'thu', exact: true }).click();
+  await expect(vara.getByRole('button', { name: 'thu', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await finder.getByLabel('Search from').fill('2026-11-02');
+  await finder.getByRole('button', { name: '7 d', exact: true }).click();
+  await finder.getByRole('button', { name: 'search', exact: true }).click();
+  const results = visible(page, page.getByTestId('muhurta-finder-results'));
+  await expect(results).toBeVisible({ timeout: 30_000 });
+  const rows = results.locator('[data-finder-window]');
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText('Thursday 05.11.2026');
+  await expect(rows.first()).toContainText('1 d 0 h');
+
+  // Setting a stretch as the target does not fail.
+  await rows.first().getByRole('button', { name: 'use as target', exact: true }).click();
+
+  // The choices are kept in the browser.
+  await page.reload();
+  await selectWorkspace(page, 'TIMING');
+  expect(errors).toEqual([]);
+});

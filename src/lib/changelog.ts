@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.46',
+    date: '2026-10-30',
+    title: 'Muhurta Finder',
+    changes: [
+      'TIMING has a new view, Muhurta Finder, next to Muhurta. Choose what suits from the vāra (the weekday, which changes at sunrise), the tithi (S1 to S15 for the bright half, K1 to K15 for the dark), the nakṣatra of the Moon, the yoga and the karaṇa, and the signs the Ascendant and each graha (the Sun to Saturn and Rāhu) may be in, with all, flip and none for each group; then press search. It lists the stretches of time, in a span of 7 to 366 days from a date at the place (the birthplace, or a residence), in which every choice holds at once, with the clock times to the minute, the length of each, and what the sky is at its start. A stretch can be set as the target of the chart.',
+      'A group with everything chosen puts no condition, and one with nothing chosen can never be met (the search says where). The zodiac, the node and the ayanamsa are the ones of the chart. A stretch shorter than the look every 15 minutes (5 when the Ascendant is limited) can be missed. The choices are kept in the browser.',
+      'Updated the application version to v3.46.',
+    ],
+  },
+  {
     version: 'v3.45',
     date: '2026-10-30',
     title: 'Bhāva Bala: plain blue columns with the totals',

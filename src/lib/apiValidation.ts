@@ -77,3 +77,22 @@ export function readBodies<T extends string>(raw: string | null, allowed: readon
   const named = new Set(raw.split(',').map(name => name.trim()));
   return allowed.filter(body => named.has(body));
 }
+
+/**
+ * A comma-separated list of whole numbers from a query, each once and each inside its range: `undefined` when the
+ * parameter is absent (no list), an error when an item is not a whole number or lies outside the range. An empty
+ * value is an empty list (the caller decides what that means).
+ */
+export function readIntList(params: URLSearchParams, key: string, { min, max }: { min: number; max: number }): number[] | undefined | { error: string } {
+  const raw = params.get(key);
+  if (raw === null) return undefined;
+  const items = raw.trim() === '' ? [] : raw.split(',').map(item => item.trim());
+  const values = new Set<number>();
+  for (const item of items) {
+    const value = /^\d{1,3}$/.test(item) ? Number(item) : NaN;
+    if (!Number.isInteger(value) || value < min || value > max) return { error: `${key} must be whole numbers from ${min} to ${max}` };
+    values.add(value);
+  }
+  return [...values].sort((a, b) => a - b);
+}
+
