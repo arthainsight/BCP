@@ -217,7 +217,9 @@ Vertailukartta: 32061,138 päivää epookista.
 | Pelkistetty kendra | 22,07 | 147,14 | 175,97 | 27,14 | 56,55 |
 | **Cheṣṭā** (÷ 3) | **7,36** | **49,05** | **58,66** | **9,05** | **18,85** |
 
-(Säkeiden 27.21–23 kahdeksaa nimettyä liikettä — vakra 60, anuvakra 30 ja niin edelleen — ei käytetä: säkeet eivät anna tiloille nopeuksia, ja Santhanam osoittaa laskennassa kendraan. Testi sallii ±0,1 virūpaa, koska keskipituudet toisesta taulukosta, kuten Sūrya Siddhāntasta, muuttavat voimaa enintään 0,2.)
+(Säkeiden 27.21–23 kahdeksaa nimettyä liikettä — vakra 60, anuvakra 30 ja niin edelleen — ei käytetä: säkeet eivät anna tiloille nopeuksia, ja Santhanam osoittaa laskennassa kendraan. Testi sallii ±0,1 virūpaa Marsin–Saturnuksen JHora-vertailuissa.)
+
+Toinen taulukko, jonka valitaan asetuksella C13, on Sūrya Siddhāntan oma: grahan keskipituus on (kalpan kierrokset ÷ 1 577 917 828 000 päivää) × Kali-yugan keskiyöstä Ujjainissa (juliaaninen päivä 588 465,5, 76° E) kulunut aika päivinä; kierroksia on keskiauringolla 4 320 000 000, Marsilla 2 296 832 000, Mercuryn śīghroccalla 17 937 060 000, Jupiterilla 364 220 000, Venuksen śīghroccalla 7 022 376 000 ja Saturnuksella 146 568 000. Vuoden 1900 alussa se antaa täsmälleen Ramanin taulukon alkuarvot (aurinko 257,457°, Mars 270,216°, Mercury 163,985°, Jupiter 220,040°, Venus 328,509°); Ramanin taulukko on sama Duttin vuosikorjauksilla lisättynä, ja Saturnuksen alkuarvo 236,74° on 2° puhtaasta 238,735°:sta. Marsilla taulukot ovat samat; auditoinnin kolmessa kartassa Mercury eroaa enintään 2,2 virūpaa, Venus 1,7, Jupiter 0,7 ja Saturn 0,5.
 
 ## 6. Naisargika Bala (27.14)
 
@@ -317,7 +319,7 @@ Dṛṣṭi = −¼ × (5,18 + 4,92 + 0 + 34,07) + 16,85 + 51,62 + ¼ × 11,94 =
 
 ## 10. Valintakohdat
 
-Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä"-sarake on oletus, sanskritin tekstin lukutapa, ja se on kunkin asetuksen ensimmäinen vaihtoehto. **Kaikki muut vaihtoehdot voi valita Bala-näkymissä kohdasta "Laskennan valinnat"** (Ṣaḍbalan ja Bhāva Balan yläpuolella; valinnat tallentuvat tähän selaimeen eivätkä muuta muuta kuin näitä kahta näkymää). C1–C11 ja C14 ovat asetuksia; C6 ja C7 (Auringon Ayanan ja Kuun Pakṣan kahdennus) ovat C5:n kolmannessa vaihtoehdossa; C12 (Yuddha Bala) ja C13 (keskipituudet) eivät ole asetuksia.
+Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä"-sarake on oletus, sanskritin tekstin lukutapa, ja se on kunkin asetuksen ensimmäinen vaihtoehto. **Kaikki muut vaihtoehdot voi valita Bala-näkymissä kohdasta "Laskennan valinnat"** (Ṣaḍbalan ja Bhāva Balan yläpuolella; valinnat tallentuvat tähän selaimeen eivätkä muuta muuta kuin näitä kahta näkymää). C1–C11, C13 ja C14 ovat asetuksia; C6 ja C7 (Auringon Ayanan ja Kuun Pakṣan kahdennus) ovat C5:n kolmannessa vaihtoehdossa; C12 (Yuddha Bala) ei ole asetus.
 
 | | Kysymys | Käytössä | Vaihtoehdot ja kuka niitä pitää |
 |---|---|---|---|
@@ -333,7 +335,7 @@ Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä
 | C10 | Cancerin voimaton kulma Bhāva Dig Balassa | Ascendentti (27.27, Santhanam, Sharma) | Midheaven yhdessä Piscesin ja Capricornin toisen puoliskon kanssa (Raman, Śrīpatin vesimerkkien ryhmittely) |
 | C11 | Bhāva Balan osat; hämärä | Säkeiden 27.26–31 viisi osaa; hämärä kaksi tuntia auringonnousun ja -laskun kummallakin puolella (46.44–47) | Ramanin kolme osaa ilman asukkaita ja Kāla Balaa; muut hämärän pituudet |
 | C12 | Yuddha Bala | Jätetty pois | Ramanin sääntö (Ṣaḍbalojen erotus jaettuna kiekkojen erotuksella, voittaja pienempi pituus); Saravali-dokumentaatio (voittaja suurempi pituus) |
-| C13 | Cheṣṭā Balan keskipituudet | Ramanin taulukot, Lahirin vyöhykkeessä | Sūrya Siddhāntan kierrokset (vertailukartalla 0,2 virūpan sisällä) |
+| C13 | Cheṣṭā Balan keskipituudet | Ramanin taulukot (Dutt, vuosikorjauksineen), Lahirin vyöhykkeessä | Sūrya Siddhāntan omat kierrokset Kali-yugasta ilman korjauksia (Mars sama; Mercury enintään 2,2 virūpaa eri) |
 | C14 | Dekaanien järjestys Drekkana Balassa (27.6) | Miehet, neutrit, naiset: sanskritin teksti ja Raman | Miehet, naiset, neutrit: Santhanamin (Sitaram Jhan painos) ja Sharman käännökset |
 
 ## 11. Valintojen muuttaminen
