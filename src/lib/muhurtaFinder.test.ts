@@ -7,7 +7,8 @@ import {
   matchesVara, momentMatches, nakshatraOf, neededBodies, parseChandra, parseRule, parseTara, formatTara, taraOf, ruleMatches, signOf, tithiLabel, tithiOf, yogaOf,
   type FinderCriteria, type FinderMoment, type FinderRule,
 } from './muhurtaFinder';
-import { FINDER_PRESETS } from './muhurtaFinderPresets';
+import { FINDER_PRESETS, FINDER_PRESET_CATEGORIES, NOT_APPLIED } from './muhurtaFinderPresets';
+import { FI } from './i18n';
 import { MAX_FINDER_STEPS, finderStepCount, finderStepMinutes, jdToMs, runMuhurtaFinder } from './muhurtaFinderRun';
 import { calculateChart } from './ephemeris';
 import { calculatePanchang } from './panchang';
@@ -185,6 +186,73 @@ assert.equal(houseFrom(11, 0), 2, 'Pisces rising: Aries is the 2nd');
   assert.deepEqual(preset.rules!.map(formatRule), [
     'any:Venus,Moon:1', 'none:Sun,Mars,Saturn,Rahu,Ketu:8,12', 'any:Moon,Mercury,Jupiter,Venus:2,10,11',
   ]);
+}
+
+// The ready-made choices of Classical Muhurta, chapter 22, as the book prints them.
+{
+  const preset = (id: string) => FINDER_PRESETS.find(entry => entry.id === id)!;
+  const names = (indices: number[]) => indices.map(index => NAKSHATRA_NAMES[index]);
+  const sign = (indices: number[]) => indices.map(index => ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'][index]);
+  const weekdays = (indices: number[]) => indices.map(index => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][index]);
+
+  const wedding = preset('marriage-wedding');
+  assert.deepEqual(names(wedding.nakshatra!), ['Rohini', 'Mrigashira', 'Magha', 'Uttara Phalguni', 'Hasta', 'Swati', 'Anuradha', 'Mula', 'Uttara Ashadha', 'Uttara Bhadrapada', 'Revati']);
+  assert.deepEqual(wedding.tithi, [2, 3, 5, 7, 10, 11, 13, 17, 18, 20, 22], 'the favourable tithis, the dark half only to its 8th');
+  assert.deepEqual(wedding.middling!.tithi, [1, 6, 8, 12, 15, 16, 21, 23], 'the middling ones: 1, 6, 8, 12 and Purnima, and the dark 1, 6 and 8');
+  assert.equal(wedding.karana!.includes(6), false, 'Viṣṭi is left out');
+  assert.equal(wedding.karana!.length, 10);
+  assert.deepEqual(weekdays(wedding.vara!), ['Monday', 'Wednesday', 'Thursday', 'Friday'], 'not the vāras of the Sun, Mars and Saturn');
+  assert.deepEqual(sign(wedding.signs!.Asc!), ['Gemini', 'Virgo', 'Libra']);
+  assert.deepEqual(sign(wedding.middling!.asc!), ['Taurus', 'Cancer', 'Leo', 'Sagittarius', 'Aquarius'], 'the others than the four to avoid are middling');
+  assert.deepEqual(wedding.rules!.map(formatRule), [
+    'none:Moon,Sun,Mars,Saturn,Rahu,Ketu:1', 'none:Saturn:12', 'none:Mars:8,10', 'none:Venus:6', 'none:Moon:6,8', 'none:Mercury,Jupiter,Venus:8',
+  ]);
+  assert.equal(wedding.avoid!.length, 11, 'the eleven the book names first');
+  assert.ok(['udayasta', 'sankranti', 'ekargala', 'bhriguShatka', 'ashtamaKuja', 'gandanta', 'kartari', 'sangraha', 'ashtamaLagna', 'vyatipata', 'vaidhriti'].every(id => wedding.avoid!.includes(id as never)));
+  assert.equal(wedding.avoid!.includes('jamitra' as never), false, 'Jāmitra with the rest leaves no time in a year');
+
+  const construction = preset('construction-start');
+  assert.deepEqual(names(construction.nakshatra!), ['Rohini', 'Mrigashira', 'Pushya', 'Uttara Phalguni', 'Chitra', 'Swati', 'Anuradha', 'Mula', 'Uttara Ashadha', 'Shravana', 'Uttara Bhadrapada', 'Revati']);
+  assert.deepEqual(names(construction.middling!.nakshatra!), ['Ashwini', 'Punarvasu', 'Hasta', 'Dhanishtha', 'Shatabhisha']);
+  assert.deepEqual(construction.tithi!.filter(tithi => tithi <= 15), [1, 2, 3, 5, 6, 7, 10, 11, 13, 15], 'the 2nd, 6th, 10th and the odd ones but the 9th');
+  assert.equal(construction.tithi!.includes(30), false, 'Amāvasyā is left out');
+  assert.deepEqual(weekdays(construction.vara!), ['Monday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
+  assert.deepEqual(sign(construction.signs!.Asc!), ['Taurus', 'Leo', 'Scorpio', 'Aquarius'], 'the fixed Rāśis');
+
+  const entering = preset('house-entering');
+  assert.deepEqual(names(entering.nakshatra!), ['Rohini', 'Mrigashira', 'Uttara Phalguni', 'Anuradha', 'Uttara Ashadha', 'Uttara Bhadrapada', 'Revati']);
+  assert.deepEqual(names(entering.middling!.nakshatra!), ['Punarvasu', 'Pushya', 'Hasta', 'Chitra', 'Shravana', 'Shatabhisha'], 'the ones one of the two classical lists adds');
+  assert.deepEqual(entering.tithi, [2, 3, 5, 7, 10, 11, 13, 16, 17, 18, 20, 22, 25], 'not the 4th, 9th, 14th or the last five of the dark half');
+  assert.deepEqual(weekdays(entering.vara!), ['Monday', 'Wednesday', 'Thursday', 'Friday']);
+
+  const purchase = preset('real-estate-purchase');
+  assert.equal(purchase.nakshatra!.length, 14);
+  assert.deepEqual(weekdays(purchase.vara!), ['Monday', 'Tuesday', 'Wednesday', 'Saturday']);
+  assert.deepEqual(all(30, 1).filter(tithi => !purchase.tithi!.includes(tithi)), [4, 9, 14, 19, 24, 29]);
+  assert.equal(purchase.karana!.includes(6), false);
+
+  const journey = preset('journey-start');
+  assert.deepEqual(names(journey.nakshatra!), ['Ashwini', 'Mrigashira', 'Pushya', 'Hasta', 'Anuradha', 'Shravana', 'Dhanishtha', 'Revati']);
+  assert.deepEqual(names(journey.middling!.nakshatra!), ['Rohini', 'Punarvasu', 'Uttara Phalguni', 'Chitra', 'Mula', 'Uttara Ashadha', 'Shatabhisha']);
+  assert.deepEqual(journey.tithi, [2, 3, 5, 7, 10, 11, 13, 17, 18, 20, 22, 25, 26, 28]);
+  assert.deepEqual(weekdays(journey.vara!), ['Wednesday', 'Thursday', 'Friday']);
+  assert.deepEqual(sign(journey.signs!.Asc!), ['Taurus', 'Leo', 'Libra', 'Sagittarius']);
+  assert.deepEqual(sign(journey.middling!.asc!), ['Aries', 'Cancer', 'Virgo', 'Scorpio', 'Capricorn'], 'the other moveable Rāśis and the other Śīrṣodaya ones');
+
+  // Every preset is in one of the listed kinds, has a name that is said in Finnish too, and names only what exists.
+  assert.equal(new Set(FINDER_PRESETS.map(entry => entry.id)).size, FINDER_PRESETS.length);
+  for (const entry of FINDER_PRESETS) {
+    assert.ok((FINDER_PRESET_CATEGORIES as readonly string[]).includes(entry.category), entry.id);
+    for (const text of [entry.category, entry.label, entry.note]) assert.ok(text in FI, `Finnish for "${text.slice(0, 40)}"`);
+    for (const key of entry.notApplied ?? []) assert.ok(NOT_APPLIED[key] in FI, `Finnish for "${NOT_APPLIED[key]}"`);
+    assert.ok((entry.nakshatra ?? []).every(index => index >= 0 && index <= 26), entry.id);
+    assert.ok((entry.tithi ?? []).every(tithi => tithi >= 1 && tithi <= 30), entry.id);
+    assert.ok(Object.values(entry.middling ?? {}).every(list => list.length > 0), entry.id);
+    for (const [key, list] of [['nakshatra', entry.middling?.nakshatra], ['tithi', entry.middling?.tithi], ['asc', entry.middling?.asc]] as const) {
+      const ticked = key === 'asc' ? entry.signs?.Asc : entry[key];
+      assert.ok((list ?? []).every(value => !(ticked ?? []).includes(value)), `${entry.id}: what is middling is not ticked (${key})`);
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -427,6 +495,28 @@ async function searches() {
     for (const name of ['Sun', 'Mars', 'Saturn']) {
       const house = ((signOfPlanet(name) - ascSign + 12) % 12) + 1;
       assert.ok(house !== 8 && house !== 12, `${name} is in the ${house}th house`);
+    }
+  }
+  // The wedding: the eleven Mahādoṣas, the Lagna and the Bhāva rules together still leave stretches in a year, and each holds
+  // what the book asks of the chart of the app: Gemini, Virgo or Libra rising and neither the Moon nor a malefic in the Lagna.
+  {
+    const wedding = FINDER_PRESETS.find(entry => entry.id === 'marriage-wedding')!;
+    const result = await runMuhurtaFinder(request({
+      ...open, nakshatra: wedding.nakshatra!, tithi: wedding.tithi!, vara: wedding.vara!, karana: wedding.karana!, signs: wedding.signs!, rules: wedding.rules!, avoid: wedding.avoid!,
+    }, 365));
+    assert.ok(result.windows.length >= 3, `${result.windows.length} stretches of the wedding in a year`);
+    for (const window of result.windows.slice(0, 4)) {
+      assert.ok([2, 5, 6].includes(window.at.ascendantSign), `the Lagna is sign ${window.at.ascendantSign}`);
+      assert.ok(wedding.nakshatra!.includes(window.at.nakshatra) && wedding.tithi!.includes(window.at.tithi) && window.at.karana !== 6);
+      const middle = new Date((window.start + window.end) / 2);
+      const local = new Date(middle.getTime() + (middle.getUTCMonth() >= 3 && middle.getUTCMonth() <= 9 ? 3 : 2) * 3_600_000);
+      const chart = await calculateChart(local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate(), local.getUTCHours(), local.getUTCMinutes(), 0, PLACE.lat, PLACE.lng, middle.getUTCMonth() >= 3 && middle.getUTCMonth() <= 9 ? 3 : 2, 'lahiri');
+      const ascSign = chart.ascendant.sign;
+      const houseOf = (name: string) => ((chart.planets.find(planet => planet.name === name)!.sign - ascSign + 12) % 12) + 1;
+      for (const name of ['Moon', 'Sun', 'Mars', 'Saturn']) assert.notEqual(houseOf(name), 1, `${name} is in the Lagna`);
+      assert.notEqual(houseOf('Saturn'), 12);
+      assert.ok(![8, 10].includes(houseOf('Mars')));
+      assert.ok(![6, 8].includes(houseOf('Moon')));
     }
   }
   // A rule only narrows: every stretch with the rules lies inside one without them.

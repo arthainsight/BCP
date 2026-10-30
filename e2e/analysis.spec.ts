@@ -1769,6 +1769,24 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await finder.getByRole('button', { name: 'choose everything again', exact: true }).click();
   await expect(placements.locator('[data-finder-rule]')).toHaveCount(0);
 
+  // The ready-made choices of the chapter on specific guidelines: kinds of purpose, what the book calls middling, what is not used.
+  const presets = finder.locator('[data-finder-group="Presets"]');
+  await expect(presets.locator('[data-finder-preset-category]')).toHaveCount(4);
+  await expect(presets.locator('[data-finder-preset]')).toHaveCount(6);
+  await presets.getByRole('button', { name: 'Wedding', exact: true }).click();
+  await expect(finder.locator('[data-finder-group="Nakṣatra"]').getByRole('button', { name: 'Magha', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(finder.locator('[data-finder-group="Nakṣatra"]').getByRole('button', { name: 'Bharani', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(finder.locator('[data-finder-group="Vāra"]').getByRole('button', { name: 'sat', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(finder.locator('[data-finder-group="Mahadoshas"]')).toContainText('11 / 27');
+  await expect(placements.locator('[data-finder-rule]')).toHaveCount(6);
+  await expect(presets.locator('[data-finder-preset-middling]')).toContainText('Taurus, Cancer, Leo, Sagittarius, Aquarius');
+  await expect(presets.locator('[data-finder-preset-not-applied]')).toContainText('the lunar month (Masa)');
+  await presets.getByRole('button', { name: 'Commencing a journey', exact: true }).click();
+  await expect(finder.locator('[data-finder-group="Mahadoshas"]')).toContainText('1 / 27');
+  await expect(presets.locator('[data-finder-preset-not-applied]')).toContainText('the direction of the journey');
+  await finder.getByRole('button', { name: 'choose everything again', exact: true }).click();
+  await doshas.getByRole('button', { name: 'none', exact: true }).click();
+
   // Setting a stretch as the target does not fail.
   await rows.first().getByRole('button', { name: 'use as target', exact: true }).click();
 
