@@ -110,3 +110,11 @@ The verses listed above as needing a reader of Sanskrit were checked in three wa
 - *27.26–31.* Both translations agree with the reading of the Bhāva Bala, Cancer and Scorpio from the Lagna included.
 
 **3. What this does not settle.** All the sources descend from the same printed tradition of the text, so an error common to the printed editions would pass every check above. A reading of the printed Sanskrit of Sitaram Jha's edition, or of a manuscript, is the only thing that would settle it. Nothing found changes the calculation; the only new thing is the Drekkana setting.
+
+## Two more charts (October 2026)
+
+The reference chart (Kotka, 1987) was the only chart the expected numbers had been worked out for. Two more were checked, against a separate program written from the Sanskrit rules alone (not from the app's code): a day birth in Mumbai (2 August 1975, 15:10 IST, Sagittarius rising) and a twilight birth in Sydney (21 March 2003, 08:40 AEDT, Pisces rising, southern hemisphere, waning Moon, Jupiter retrograde).
+
+- **Every part except the Cheṣṭā Bala of the five tara grahas agrees with the separate program**: Uccha, Saptavargaja (all seven vargas), Ojhayugma, Kendradi, Drekkana, Dig, Natonnata, Pakṣa, Tribhāga, Abda/Masa/Vara/Hora, Ayana, Naisargika, Dṛg, the totals of the Sun and the Moon, and every part of the Bhāva Bala (Dig, Dṛṣṭi, occupants, Kāla; the lord's Ṣaḍbala differs only by the Cheṣṭā below). They are in `src/lib/shadbala.charts.test.ts`.
+- **Cheṣṭā Bala depends on the table of mean positions** (the verses give none). With the pure Sūrya Siddhānta (the mean positions from the Kali-yuga epoch and the revolutions of a mahāyuga) Mars agrees with Raman's table to the hundredth; Mercury differs by up to 2.2 virūpa, Venus by 1.7, Jupiter by 0.7 and Saturn by 0.5, because Raman's table carries Kedarnath Dutt's yearly corrections. Modern astronomy (the real mean heliocentric longitudes) puts Mercury's śīghrocca 13° away from both, so the choice is one of tradition. The app keeps Raman's table; the difference is the largest known uncertainty in the totals.
+- PyJHora's Cheṣṭā Bala was usable as a reference only for the 1987 chart: for the two new charts it returns values over 60 (for example 109 for Mercury), so it was not used.
