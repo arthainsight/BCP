@@ -11,6 +11,7 @@ export type MulatrikonaRule = 'rasi-only' | 'all-vargas';
 export type TemporaryRelationChart = 'rasi' | 'varga';
 export type DigPoints = 'angles' | 'equal-houses';
 export type LuminaryCheshta = 'in-total' | 'left-out' | 'doubled-in-kala';
+export type CheshtaMeans = 'raman' | 'surya-siddhanta';
 export type AyanaMethod = 'table' | 'declination';
 export type DrekkanaOrder = 'neuter-second' | 'female-second';
 export type DrigMercuryJupiter = 'quarter' | 'full-addon';
@@ -27,6 +28,7 @@ export interface BalaOptions {
   temporaryRelation: TemporaryRelationChart;
   digPoints: DigPoints;
   luminaryCheshta: LuminaryCheshta;
+  cheshtaMeans: CheshtaMeans;
   ayana: AyanaMethod;
   drekkana: DrekkanaOrder;
   drigMercuryJupiter: DrigMercuryJupiter;
@@ -45,6 +47,7 @@ export const DEFAULT_BALA_OPTIONS: BalaOptions = {
   temporaryRelation: 'rasi',
   digPoints: 'angles',
   luminaryCheshta: 'in-total',
+  cheshtaMeans: 'raman',
   ayana: 'table',
   drekkana: 'neuter-second',
   drigMercuryJupiter: 'quarter',
@@ -137,6 +140,14 @@ export const BALA_OPTION_DEFINITIONS: readonly BalaOptionDefinition[] = [
       { value: 'in-total', label: 'Both in Kāla and in Cheṣṭā, so twice in the total (the verses)' },
       { value: 'left-out', label: 'Not in the total, the Cheṣṭā column empty (JHora, Raman\'s example)' },
       { value: 'doubled-in-kala', label: 'Ayana of the Sun and Pakṣa of the Moon doubled in Kāla, the Cheṣṭā column empty (Raman, Santhanam)' },
+    ],
+  },
+  {
+    key: 'cheshtaMeans', view: 'shadbala', choicePoint: 'C13', label: 'Cheṣṭā Bala: the mean positions',
+    note: 'The verses give the method of the cheṣṭā-kendra but no mean positions of the grahas. Mars is the same in both; Mercury differs by up to 2 virūpa, the others by less.',
+    choices: [
+      { value: 'raman', label: 'B. V. Raman\'s tables from Kedarnath Dutt, with the yearly corrections (Raman, JHora)' },
+      { value: 'surya-siddhanta', label: 'The Sūrya Siddhānta\'s own revolutions from the Kali Yuga, without the corrections' },
     ],
   },
   {

@@ -13,6 +13,8 @@ import { buildClassicalBhavaBala } from './bhavaBala';
 import { translate } from './i18n';
 import { buildShadbalaRows, classifyBenefics, type ShadbalaChartLike } from './shadbala';
 import { REFERENCE_CHART } from './shadbala.fixture';
+import { MUMBAI_CASE, SYDNEY_CASE } from './shadbala.fixture2';
+import { meanLongitudes } from './shadbalaCheshta';
 import { isMoonBenefic } from './shadbalaAspects';
 import {
   BALA_OPTIONS_STORAGE_KEY, getBalaOptionsSnapshot, resetBalaOptions, setBalaOptions, subscribeBalaOptions,
@@ -164,6 +166,37 @@ close(sapta({ saptavargajaScores: 'raman', mulatrikona: 'all-vargas' })[0], 187.
 {
   const ayana = column(rowsWith({ ayana: 'declination' }), (row) => row.kalaBreakdown.ayana);
   [20.68, 0, 29.82, 53.43, 40.45, 15.29, 56.93].forEach((expected, index) => close(ayana[index], expected, 0.02, `real-declination Ayana Bala, ${PLANETS[index]}`));
+}
+
+// ---------------------------------------------------------------------------
+// The mean positions of Cheṣṭā Bala (C13)
+// ---------------------------------------------------------------------------
+{
+  // Counted from the Kali-yuga midnight with the Surya Siddhanta's revolutions, the 1900 epoch is Raman's own
+  // epoch values (the Sun 257.4568, Mars 270.22, Jupiter 220.04, Venus 328.51, Mercury 164).
+  const epoch = 2415020.5 - 76 / 360;
+  const sun = meanLongitudes('Mars', epoch, 'surya-siddhanta');
+  close(sun.sun, 257.457, 0.01, 'mean Sun at the 1900 epoch');
+  close(sun.planet, 270.216, 0.01, 'mean Mars at the 1900 epoch');
+  close(meanLongitudes('Mercury', epoch, 'surya-siddhanta').planet, 163.985, 0.01, 'sighrocca of Mercury at the 1900 epoch');
+  close(meanLongitudes('Jupiter', epoch, 'surya-siddhanta').planet, 220.04, 0.01, 'mean Jupiter at the 1900 epoch');
+  close(meanLongitudes('Venus', epoch, 'surya-siddhanta').planet, 328.509, 0.01, 'sighrocca of Venus at the 1900 epoch');
+  close(meanLongitudes('Saturn', epoch, 'surya-siddhanta').planet, 238.735, 0.01, 'mean Saturn at the 1900 epoch');
+  // The default is Raman's table, and changing the choice moves Cheshta Bala of Mars to Saturn and nothing else.
+  const raman = rowsWith({});
+  const siddhanta = rowsWith({ cheshtaMeans: 'surya-siddhanta' });
+  // Worked out separately from the revolutions in a short program (the reference chart; then the Mumbai and Sydney charts of shadbala.fixture2.ts), and JHora's figures for Raman's table.
+  [7.36, 46.84, 58.01, 10.74, 18.33].forEach((expected, index) => close(siddhanta[index + 2].cheshtaVirupa, expected, 0.02, `Surya Siddhanta Cheshta, ${PLANETS[index + 2]}`));
+  [7.4, 49.0, 58.7, 9.0, 18.8].forEach((expected, index) => close(raman[index + 2].cheshtaVirupa, expected, 0.15, `Raman Cheshta, ${PLANETS[index + 2]}`));
+  assert.deepEqual(column(siddhanta, (row) => row.sthanaBreakdown.total), column(raman, (row) => row.sthanaBreakdown.total), 'Sthana unchanged');
+  assert.deepEqual(column(siddhanta, (row) => row.drikVirupa), column(raman, (row) => row.drikVirupa), 'Drik unchanged');
+  assert.equal(siddhanta[0].totalVirupa, raman[0].totalVirupa, 'the Sun is unchanged');
+  assert.equal(siddhanta[1].totalVirupa, raman[1].totalVirupa, 'the Moon is unchanged');
+  for (const testCase of [MUMBAI_CASE, SYDNEY_CASE]) {
+    const rows = buildShadbalaRows(testCase.chart, { ...DEFAULT_BALA_OPTIONS, cheshtaMeans: 'surya-siddhanta' });
+    const expected = testCase === MUMBAI_CASE ? [34.67, 2.61, 36.37, 52.03, 6.68] : [31.01, 8.80, 44.93, 22.61, 28.44];
+    expected.forEach((value, index) => close(rows[index + 2].cheshtaVirupa, value, 0.02, `${testCase.name}, Surya Siddhanta Cheshta, ${PLANETS[index + 2]}`));
+  }
 }
 
 // ---------------------------------------------------------------------------

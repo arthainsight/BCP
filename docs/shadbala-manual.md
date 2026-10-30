@@ -218,7 +218,9 @@ Reference chart: 32061.138 days after the epoch.
 | Reduced kendra | 22.07 | 147.14 | 175.97 | 27.14 | 56.55 |
 | **Cheṣṭā** (÷ 3) | **7.36** | **49.05** | **58.66** | **9.05** | **18.85** |
 
-(The eight named motions of 27.21–23 — vakra 60, anuvakra 30 and so on — are not used: the verses give no speeds for the states, and Santhanam points to the kendra for the calculation. The test accepts ±0.1 virūpa because mean positions from another table, such as the Sūrya Siddhānta's, move the strength by up to 0.2.)
+(The eight named motions of 27.21–23 — vakra 60, anuvakra 30 and so on — are not used: the verses give no speeds for the states, and Santhanam points to the kendra for the calculation. The test accepts ±0.1 virūpa for Mars to Saturn against JHora's figures.)
+
+The other table, chosen with C13, is the Sūrya Siddhānta's own: the mean position of a graha is (revolutions in a kalpa ÷ 1,577,917,828,000 days) × the days since the Kali-yuga midnight at Ujjain (Julian day 588,465.5, 76° E), with the mean Sun 4,320,000,000, Mars 2,296,832,000, Mercury's śīghrocca 17,937,060,000, Jupiter 364,220,000, Venus's śīghrocca 7,022,376,000 and Saturn 146,568,000 revolutions. At the 1900 epoch it gives exactly the epoch values of Raman's table (Sun 257.457°, Mars 270.216°, Mercury 163.985°, Jupiter 220.040°, Venus 328.509°); Raman's table is the same with Dutt's yearly corrections added, and Saturn's epoch 236.74° is 2° off the pure 238.735°. For Mars the two are the same; in the three charts of the audit Mercury differs by up to 2.2 virūpa, Venus by 1.7, Jupiter by 0.7 and Saturn by 0.5.
 
 ## 6. Naisargika Bala (27.14)
 
@@ -318,7 +320,7 @@ Dṛṣṭi = −¼ × (5.18 + 4.92 + 0 + 34.07) + 16.85 + 51.62 + ¼ × 11.94 =
 
 ## 10. Choice points
 
-These are the places where the verses are silent or the sources disagree. The "Used" column is the default, the reading of the Sanskrit text, and it is the first choice of each setting. **Every other alternative can be chosen in the Bala views, under "Calculation choices"** (above the Ṣaḍbala and the Bhāva Bala; the choices are kept in this browser and change nothing but these two views). C1–C11 and C14 are settings; C6 and C7 (doubling the Sun's Ayana and the Moon's Pakṣa) are in the third choice of C5; C12 (Yuddha Bala) and C13 (the mean positions) are not settings.
+These are the places where the verses are silent or the sources disagree. The "Used" column is the default, the reading of the Sanskrit text, and it is the first choice of each setting. **Every other alternative can be chosen in the Bala views, under "Calculation choices"** (above the Ṣaḍbala and the Bhāva Bala; the choices are kept in this browser and change nothing but these two views). C1–C11, C13 and C14 are settings; C6 and C7 (doubling the Sun's Ayana and the Moon's Pakṣa) are in the third choice of C5; C12 (Yuddha Bala) is not a setting.
 
 | | Question | Used | Alternatives and who holds them |
 |---|---|---|---|
@@ -334,7 +336,7 @@ These are the places where the verses are silent or the sources disagree. The "U
 | C10 | The powerless angle of Cancer in Bhāva Dig Bala | The ascendant (27.27, Santhanam, Sharma) | The midheaven, with Pisces and the second half of Capricorn (Raman, Śrīpati's grouping of the water signs) |
 | C11 | Which parts Bhāva Bala has; the twilight | The five parts of 27.26–31; the twilight is two hours either side of sunrise and sunset (46.44–47) | Raman's three parts without the occupants and the Kāla Bala; other lengths of twilight |
 | C12 | Yuddha Bala | Left out | Raman's rule (the difference of the Ṣaḍbalas over the difference of the discs, the winner the one with the smaller longitude); the Saravali documentation (the winner the one with the greater longitude) |
-| C13 | The mean positions of Cheṣṭā Bala | Raman's tables, in Lahiri's zodiac | The Sūrya Siddhānta's revolutions (within 0.2 virūpa for the reference chart) |
+| C13 | The mean positions of Cheṣṭā Bala | Raman's tables (Dutt, with the yearly corrections), in Lahiri's zodiac | The Sūrya Siddhānta's own revolutions from the Kali Yuga, without the corrections (Mars the same; Mercury up to 2.2 virūpa different) |
 | C14 | The order of the decanates in Drekkana Bala (27.6) | Males, neuters, females: the Sanskrit text and Raman | Males, females, neuters: the translations of Santhanam (the edition of Sitaram Jha) and Sharma |
 
 ## 11. Changing the choices

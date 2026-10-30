@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.40',
+    date: '2026-10-30',
+    title: 'The Sūrya Siddhānta\'s mean positions as a choice in Cheṣṭā Bala',
+    changes: [
+      'Calculation choices has a new select, Cheṣṭā Bala: the mean positions. The verses give the method of the cheṣṭā-kendra but no mean positions of the grahas. The default stays B. V. Raman\'s tables (Kedarnath Dutt, with the yearly corrections); the other is the Sūrya Siddhānta\'s own revolutions counted from the Kali Yuga, without the corrections. Mars is the same in both; Mercury differs by up to 2.2 virūpa, Venus 1.7, Jupiter 0.7 and Saturn 0.5. The manuals (English and Finnish) list it as C13.',
+      'The Ṣaḍbala and the Bhāva Bala were checked on two more charts (a day birth in Mumbai and a twilight birth in Sydney) against a separate program written from the Sanskrit rules. Every part agrees except the Cheṣṭā Bala of Mars to Saturn, which depends on the table above (docs/shadbala-sources.md).',
+      'Updated the application version to v3.40.',
+    ],
+  },
+  {
     version: 'v3.39',
     date: '2026-10-29',
     title: 'Calculation choices for the Ṣaḍbala and the Bhāva Bala',

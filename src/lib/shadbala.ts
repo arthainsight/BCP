@@ -621,6 +621,7 @@ export function calculateCheshtaBalaVirupa(
   pakshaBala: number,
   chart?: ShadbalaChartLike,
   luminaries: BalaOptions['luminaryCheshta'] = DEFAULT_BALA_OPTIONS.luminaryCheshta,
+  means: BalaOptions['cheshtaMeans'] = DEFAULT_BALA_OPTIONS.cheshtaMeans,
 ): number {
   // Both authors of the books and JHora leave the two luminaries' Cheṣṭā Bala out of the sum; the verses add it.
   if (planetName === 'Sun') return luminaries === 'in-total' ? ayanaBala : 0;
@@ -631,7 +632,7 @@ export function calculateCheshtaBalaVirupa(
   // (the tropical one has an ayanamsa of 0).
   const ayanamsa = chart?.debug?.ayanamsa ?? 0;
   const lahiri = chart?.debug?.siderealAyanamsa ?? ayanamsa;
-  return cheshtaKendraBalaVirupa(planetName as CheshtaGraha, julianDay, normalizeLongitude(planet.longitude + ayanamsa - lahiri));
+  return cheshtaKendraBalaVirupa(planetName as CheshtaGraha, julianDay, normalizeLongitude(planet.longitude + ayanamsa - lahiri), means);
 }
 
 // Dṛg Bala (27.19, 26.6–12).
@@ -742,7 +743,7 @@ export function buildShadbalaRows(chart: ShadbalaChartLike, options: BalaOptions
       const naisargikaVirupa = NAISARGIKA_BALA_VIRUPA[planetName] ?? 0;
       const digVirupa = calculateDigBalaVirupa(planetName, planet.longitude, angles);
       // Cheṣṭā depends on Kāla for the two luminaries, so it is computed after it.
-      const cheshtaVirupa = calculateCheshtaBalaVirupa(planetName, planet, kalaBreakdown.ayana, kalaBreakdown.paksha, chart, options.luminaryCheshta);
+      const cheshtaVirupa = calculateCheshtaBalaVirupa(planetName, planet, kalaBreakdown.ayana, kalaBreakdown.paksha, chart, options.luminaryCheshta, options.cheshtaMeans);
       const drikVirupa = calculateDrikBalaVirupa(planetName, chart, benefics, options.drigMercuryJupiter);
       const totalVirupa = sthanaBreakdown.total + digVirupa + kalaBreakdown.total + cheshtaVirupa + naisargikaVirupa + drikVirupa;
       const requiredVirupa = SHADBALA_REQUIRED_VIRUPA[planetName] ?? 0;
