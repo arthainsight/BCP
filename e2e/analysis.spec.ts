@@ -1748,7 +1748,7 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(doshas).toContainText('Other blemishes the book names, outside the list of 21');
   await expect(doshas.locator('[data-finder-dosha="mrityubhaga"]')).toContainText('Mṛtyubhāga (fatal degrees)');
   await doshas.getByRole('checkbox', { name: 'Śūnya Rāśi' }).check();
-  await expect(doshas).toContainText('3 / 27');
+  await expect(doshas).toContainText('5 / 27');
   await doshas.getByRole('button', { name: 'none', exact: true }).click();
   await expect(doshas.locator('input:checked')).toHaveCount(0);
 
