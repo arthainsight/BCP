@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.54',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: wishes about the Rāśi chart (D1)',
+    changes: [
+      'The Muhurta Finder has a new group, Wishes about the Rāśi chart (D1): five places of the Lagna and the grahas that Classical Muhurta (chapters 15 and 16) names as favourable. The Lagna in a sign of a benefic; the Navāṁśa Lagna in a sign of a benefic; more benefics than malefics in the angles; the Moon in the 3rd, 10th or 11th (an upachaya, not the 6th); the 8th and 12th houses empty. The Moon is a benefic 120° to 240° from the Sun and a malefic within 60° of it, as the book has it.',
+      'The book gives no weights for them, so each is a wish worth one point, added to the score of the Pañcāṅga wishes (a stretch with the suiting Chandrabala and the Moon in an upachaya has 101). They limit nothing, and the Mahādoṣas stay conditions. With a wish the search looks every 5 minutes. They are off at the start.',
+      'Updated the application version to v3.54.',
+    ],
+  },
+  {
     version: 'v3.53',
     date: '2026-10-30',
     title: 'Muhurta Finder: the Mahādoṣas as the classical source has them',

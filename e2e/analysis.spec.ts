@@ -1714,6 +1714,18 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await tara.getByRole('button', { name: 'all', exact: true }).click();
   await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeEnabled();
 
+  // The wishes about the Rāśi chart: five, a point each, off at the start; one makes the lowest score and the search every 5 minutes available.
+  const d1 = finder.locator('[data-finder-group="D1"]');
+  await expect(d1.locator('[data-finder-d1]')).toHaveCount(5);
+  await expect(d1.locator('input:checked')).toHaveCount(0);
+  await d1.getByRole('checkbox', { name: 'The Moon in an upachaya' }).check();
+  await expect(d1).toContainText('1 / 5');
+  await expect(finder.getByLabel('Lowest score listed')).toBeVisible();
+  await d1.getByRole('button', { name: 'all', exact: true }).click();
+  await expect(d1).toContainText('5 / 5');
+  await d1.getByRole('button', { name: 'none', exact: true }).click();
+  await expect(d1.locator('input:checked')).toHaveCount(0);
+
   // The Mahādoṣas to keep clear of: the 24 that are worked out (the six Daśa Doṣas among them), each with what it avoids, and the 3 that are not worked out listed with their reason.
   const doshas = finder.locator('[data-finder-group="Mahadoshas"]');
   await expect(doshas.locator('[data-finder-dosha]')).toHaveCount(24);

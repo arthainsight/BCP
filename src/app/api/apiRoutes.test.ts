@@ -121,6 +121,14 @@ async function main() {
   assert.equal(((await call(muhurtaFinder, `${finder}&tithi=&prefer=tithi`)).body.windows as unknown[]).length, 1, 'a wish with nothing chosen limits nothing');
   assert.deepEqual((await call(muhurtaFinder, `${finder}&tithi=`)).body.windows, [], 'but a condition with nothing chosen is never met');
   for (const bad of ['prefer=nope', 'prefer=tithi,asc', 'minScore=-1', 'minScore=1001', 'minScore=abc', 'minScore=1.5']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
+  // Wishes about the Rāśi chart, a point each: `d1`.
+  const d1 = await call(muhurtaFinder, `${finder}&d1=lagnaBenefic,navamsaLagnaBenefic,beneficsInAngles,moonUpachaya,eighthTwelfthEmpty`);
+  assert.equal(d1.status, 200);
+  const d1Windows = d1.body.windows as { score: number; maxScore: number; held: string[] }[];
+  assert.ok(d1Windows.length >= 5 && d1Windows.every(window => window.maxScore === 5 && window.held.length === window.score));
+  assert.equal(d1.body.stepMinutes, 5);
+  assert.equal(((await call(muhurtaFinder, `${finder}&d1=`)).body.windows as unknown[]).length, 1, 'no wishes');
+  for (const bad of ['d1=nope', 'd1=lagnaBenefic,asc']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
   // Rules about the houses from the Ascendant: any number up to twelve, each any|none:grahas:houses.
   const moonInLagna = await call(muhurtaFinder, `${finder}&rule=any:Moon:1`);
   assert.equal(moonInLagna.status, 200);

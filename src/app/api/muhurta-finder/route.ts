@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AYANAMSA_OFFSET_RANGE, PLACE_RANGES, readClampedInt, readIntList, readNumbers } from '@/lib/apiValidation';
 import { PREFER_KEYS, SANKRANTI_ARC_MINUTES, SANKRANTI_SOLSTICE_DEGREES, FINDER_GRAHAS, FINDER_SIZES, isPreferKey, parseChandra, parseRule, parseTara, type FinderCriteria, type FinderRule } from '@/lib/muhurtaFinder';
 import { DOSHA_IDS, isDoshaId } from '@/lib/mahadosha';
+import { D1_KEYS, isD1Key } from '@/lib/muhurtaD1';
 import { MAX_FINDER_DAYS, MAX_FINDER_STEPS, finderStepCount, finderStepMinutes, runMuhurtaFinder } from '@/lib/muhurtaFinderRun';
 
 const MAX_RULES = 12;
@@ -9,7 +10,8 @@ const MAX_RULES = 12;
 // The stretches of time, from a start date for a number of days at a place, in which every condition the query names
 // holds at once: weekday (vara), tithi, nakshatra, yoga, karana, the signs the Ascendant and the grahas may be in, and
 // rules about the houses from the Ascendant (`rule=any:Venus,Moon:1`, `rule=none:Sun,Mars:8,12`, up to 12 of them),
-// the groups that are wishes with weights, not conditions (`prefer=chandra,tara`, with `minScore` the lowest score to list),
+// the groups that are wishes with weights, not conditions (`prefer=chandra,tara`, with `minScore` the lowest score to list), the wishes about
+// the Rāśi chart, a point each (`d1=lagnaBenefic,moonUpachaya`),
 // the Mahādoṣas to keep clear of (`avoid=panchanga,udayasta,...`, with `natal=<Ascendant sign>:<Moon sign>` for the Aṣṭama Lagna and
 // `sankrantiArc` and `sankrantiSolstice` for the time around a Saṅkrānti, `gandanta=pada|four|two`, `vyatipata=days|short`), and the Chandrabala (`chandra=1:1,3,6,7,10,11`: the sign of the Moon at birth, 0 Aries to 11 Pisces, then the houses from it the Moon may be in).
 // A condition that is left out is not a condition; one given as an empty list can never be met.
@@ -67,6 +69,13 @@ export async function GET(request: NextRequest) {
     if (!keys.every(isPreferKey)) return NextResponse.json({ error: `prefer must be some of ${PREFER_KEYS.join(', ')}` }, { status: 400 });
     prefer = [...new Set(keys)] as FinderCriteria['prefer'];
   }
+  let d1: string[] | undefined;
+  const d1Text = searchParams.get('d1');
+  if (d1Text !== null) {
+    const keys = d1Text.trim() === '' ? [] : d1Text.split(',').map(item => item.trim());
+    if (!keys.every(isD1Key)) return NextResponse.json({ error: `d1 must be some of ${D1_KEYS.join(', ')}` }, { status: 400 });
+    d1 = [...new Set(keys)];
+  }
   let minScore = 0;
   const minText = searchParams.get('minScore');
   if (minText !== null) {
@@ -115,6 +124,7 @@ export async function GET(request: NextRequest) {
     chandra,
     tara,
     prefer,
+    d1,
     minScore,
     avoid,
     natal,

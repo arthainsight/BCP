@@ -89,6 +89,8 @@ export interface FinderCriteria {
   tara?: { nakshatra: number; taras: number[] };
   /** The groups that are wishes, not conditions: they score instead of limiting. */
   prefer?: PreferKey[];
+  /** The wishes about the Rāśi chart (ids of muhurtaD1.ts), one point each. */
+  d1?: string[];
   /** The lowest score a stretch may have to be listed, when there are wishes. */
   minScore?: number;
   /** The Mahādoṣas (ids of mahadosha.ts) the stretches must be free of. */

@@ -19,6 +19,7 @@ import {
   varaVishanadi, type JdWindow,
 } from './mahadoshaEvents';
 import { lunarMonthAt } from './lunisolar';
+import { D1_GRAHAS, d1Held as d1HeldBy, isD1Key, type D1Key } from './muhurtaD1';
 import { rahuKala, yamaganda } from './muhurta';
 import { VARA_VISHANADI_START } from './mahadosha';
 import { calculateSunTimes } from './sunTimes';
@@ -54,7 +55,7 @@ export interface FinderResultWindow {
   /** The score of the stretch when some groups are wishes: the weights of the wishes it holds, out of all the weights, and which. */
   score?: number;
   maxScore?: number;
-  held?: PreferKey[];
+  held?: (PreferKey | D1Key)[];
   /** What the sky is at the start of the stretch. */
   at: { tithi: number; nakshatra: number; yoga: number; karana: number; ascendantSign: number };
 }
@@ -74,8 +75,9 @@ export const jdToMs = (jd: number) => (jd - JD_UNIX_EPOCH) * 86_400_000;
 /** The minutes between looks: finer when the Ascendant, which changes sign in an hour or two, is limited or the houses are asked about. */
 export function finderStepMinutes(criteria: FinderCriteria): number {
   const ascendant = criteria.signs.Asc !== undefined && isLimited(criteria.signs.Asc, 12);
+  const wishes = (criteria.d1 ?? []).some(isD1Key);
   const doshas = (criteria.avoid ?? []).filter(isDoshaId).some(doshaUsesAscendant);
-  return ascendant || doshas || effectiveRules(criteria).length > 0 ? 5 : 15;
+  return ascendant || wishes || doshas || effectiveRules(criteria).length > 0 ? 5 : 15;
 }
 
 /** Whether a request is small enough to run: the number of moments the walk looks at. */
@@ -291,12 +293,27 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
 
   // The wishes: a moment out of the conditions is -1, any other has the score of the wishes it holds.
   const wishes = scoredKeys(criteria);
+  const d1Wishes = [...new Set((criteria.d1 ?? []).filter(isD1Key))];
   const momentAt = async (jd: number): Promise<FinderMoment> => ({ vara: varaAt(jd), sun: await longitudeOf('Sun', jd), moon: await longitudeOf('Moon', jd), others: {} });
-  const valueAt = async (jd: number): Promise<number> => ((await holds(jd)) ? momentScore(await momentAt(jd), criteria).score : -1);
+  // The wishes about the Rāśi chart, one point each: the sky of the moment with the Ascendant and the grahas the wishes name.
+  const d1Sky = async (jd: number): Promise<DoshaSky> => {
+    const others: DoshaSky['others'] = {};
+    for (const graha of D1_GRAHAS) if (graha !== 'Sun' && graha !== 'Moon') others[graha] = await longitudeOf(graha, jd);
+    return { vara: varaAt(jd), sun: await longitudeOf('Sun', jd), moon: await longitudeOf('Moon', jd), asc: await longitudeOf('Asc', jd), others };
+  };
+  const d1Held = async (jd: number): Promise<D1Key[]> => {
+    if (d1Wishes.length === 0) return [];
+    const sky = await d1Sky(jd);
+    return d1Wishes.filter(key => d1HeldBy(key, sky));
+  };
+  const valueAt = async (jd: number): Promise<number> => {
+    if (!(await holds(jd))) return -1;
+    return (wishes.length > 0 ? momentScore(await momentAt(jd), criteria).score : 0) + (await d1Held(jd)).length;
+  };
 
   let windows: { startJd: number; endJd: number }[];
   let truncated: boolean;
-  if (wishes.length === 0) {
+  if (wishes.length === 0 && d1Wishes.length === 0) {
     ({ windows, truncated } = await findWindows(holds, fromJd, toJd, stepMinutes, MAX_FINDER_WINDOWS));
   } else {
     const lowest = Math.max(0, criteria.minScore ?? 0);
@@ -310,7 +327,11 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
     const jd = window.startJd + 0.5 / 1440;
     const sun = await longitudeOf('Sun', jd);
     const moon = await longitudeOf('Moon', jd);
-    const scored = wishes.length > 0 ? momentScore({ vara: varaAt(jd), sun, moon, others: {} }, criteria) : undefined;
+    const panchanga = wishes.length > 0 ? momentScore({ vara: varaAt(jd), sun, moon, others: {} }, criteria) : { score: 0, max: 0, held: [] as PreferKey[] };
+    const d1 = await d1Held(jd);
+    const scored = wishes.length > 0 || d1Wishes.length > 0
+      ? { score: panchanga.score + d1.length, max: panchanga.max + d1Wishes.length, held: [...panchanga.held, ...d1] }
+      : undefined;
     result.push({
       start: jdToMs(window.startJd),
       end: jdToMs(window.endJd),
