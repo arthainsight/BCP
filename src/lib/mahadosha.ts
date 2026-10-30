@@ -9,7 +9,7 @@
 // found in mahadoshaEvents.ts and muhurtaFinderRun.ts.
 
 import { MALEFICS, houseFrom, karanaOf, nakshatraOf, signOf, tithiOf, yogaOf, type FinderGraha } from './muhurtaFinder';
-import { NAKSHATRA_SIZE } from './nakshatras';
+import { NAKSHATRA_LORDS, NAKSHATRA_SIZE } from './nakshatras';
 import { SIGN_LORDS } from './signs';
 import { getVargaSignIndex } from './varga';
 
@@ -19,12 +19,13 @@ export const DOSHA_IDS = [
   'sangraha', 'ashtamaLagna', 'vishaGhati', 'durmuhurta', 'varaDosha',
   'ekargala', 'dashaYoga', 'jamitra', 'latta', 'upagraha', 'pata',
   'eclipse', 'kunavamsa', 'vyatipata', 'vaidhriti',
+  'shunyaRasi', 'blindDeafLame', 'mrityubhaga',
 ] as const;
 export type DoshaId = (typeof DOSHA_IDS)[number];
 export const isDoshaId = (value: string): value is DoshaId => (DOSHA_IDS as readonly string[]).includes(value);
 
 export interface DoshaInfo {
-  /** The place in the list of 21 (the ten Daśa Doṣas all have the 15th). */
+  /** The place in the list of 21 (the ten Daśa Doṣas all have the 15th); 0 for a blemish the book names outside the list. */
   number: number;
   name: string;
   /** What is avoided, in one line. */
@@ -133,6 +134,22 @@ export const DOSHAS: Record<DoshaId, DoshaInfo> = {
     number: 21, name: 'Vaidhṛti',
     what: 'The Sun and the Moon at the same distance from the equator on opposite sides: the day before, the day of and the day after (or the short time around the moment the book gives).',
   },
+  // The blemishes the book names besides the 21 (number 0).
+  shunyaRasi: {
+  number: 0, name: 'Śūnya Rāśi',
+  what: 'The Lagna or the Navāṁśa Lagna in a Śūnya (empty) sign of the tithi, by the book\'s table (the 1st tithi: Libra and Capricorn, and so on for the 14; none for the 15th), or the Moon in the Śūnya sign of the lunar month (Chaitra: Aquarius, … Phālguna: Leo).',
+  notApplied: 'The exceptions and the purposes for which an empty sign suits (overcoming a difficulty). The Muhūrta Cintāmaṇi\'s variants for the 9th and 13th tithi.',
+},
+  blindDeafLame: {
+  number: 0, name: 'Blind, deaf and lame Rāśis',
+  what: 'The Lagna in a blind sign (Aries, Taurus, Leo by day; Gemini, Cancer, Virgo by night), a deaf sign (Libra, Scorpio by day; Capricorn, Sagittarius by night) or a lame sign (Aquarius by day, Pisces by night).',
+  notApplied: 'The exceptions (benefics in the angles, Jupiter aspecting the Lagna or its lord, and the like). Day is from sunrise to sunset of the place.',
+},
+  mrityubhaga: {
+  number: 0, name: 'Mṛtyubhāga (fatal degrees)',
+  what: 'The Lagna, the Moon, the Lagna lord, the lord of the Moon\'s nakṣatra or the lord of the yoga within one degree of its fatal degree in the sign (the book\'s table of the degrees of each planet, Rāhu, Ketu and the Lagna in the twelve signs).',
+  notApplied: 'A planet joined or aspected by a planet in a fatal degree, and the other planets of the chart.',
+},
 };
 
 /** The doṣas of the list that are not worked out, and why. */
@@ -181,6 +198,31 @@ const PATA_TARGETS = [8, 9, 13, 16, 21, 26]; // Āśleṣā, Maghā, Citrā, Anu
 /** How far on (+) or back (−) from the nakṣatra of a graha the nakṣatra it kicks (Lattā) is. */
 const LATTA_KICK: Partial<Record<FinderGraha, number>> = { Sun: 11, Mars: 2, Jupiter: 5, Saturn: 7, Mercury: -6, Venus: -4, Rahu: -8 };
 
+/** The Śūnya (empty) signs of each tithi, 1 to 14 (0 Aries … 11 Pisces); the 15th has none. The book's table, the same for both halves. */
+export const SHUNYA_RASIS_OF_TITHI: number[][] = [
+  [6, 9], [8, 11], [4, 9], [1, 10], [2, 5], [0, 4], [8, 3], [2, 5], [4, 7], [4, 7], [8, 11], [6, 9], [4, 1], [2, 5, 8, 11],
+];
+/** The sign the Moon should not be in during each lunar month, Chaitra to Phālguna. */
+export const SHUNYA_RASI_OF_MASA = [10, 11, 1, 2, 0, 5, 7, 6, 8, 3, 9, 4];
+/** The blind, deaf and lame signs by day and by night. */
+export const BLIND_DEAF_LAME = {
+  day: { blind: [0, 1, 4], deaf: [6, 7], lame: [10] },
+  night: { blind: [2, 3, 5], deaf: [9, 8], lame: [11] },
+};
+/** The fatal degree (Mṛtyubhāga) of each in the twelve signs, Aries first. */
+export const FATAL_DEGREES: Record<string, number[]> = {
+  Sun: [20, 9, 12, 6, 8, 24, 16, 17, 22, 2, 3, 23],
+  Moon: [26, 12, 13, 25, 24, 11, 26, 14, 13, 25, 5, 12],
+  Mars: [19, 28, 25, 23, 29, 28, 14, 21, 2, 15, 11, 6],
+  Mercury: [15, 14, 13, 12, 8, 18, 20, 10, 21, 22, 7, 5],
+  Jupiter: [19, 29, 12, 27, 6, 4, 13, 10, 17, 11, 15, 28],
+  Venus: [28, 15, 11, 17, 10, 13, 4, 6, 27, 12, 29, 19],
+  Saturn: [10, 4, 7, 9, 12, 16, 3, 18, 28, 14, 13, 15],
+  Rahu: [14, 13, 12, 11, 24, 23, 22, 21, 10, 20, 18, 8],
+  Ketu: [8, 18, 20, 10, 21, 22, 23, 24, 11, 12, 13, 14],
+  Lagna: [8, 9, 22, 22, 25, 14, 4, 23, 18, 20, 21, 10],
+};
+
 /** What the doṣas need of a moment, so that the ephemeris is asked for no more. */
 export interface DoshaNeeds {
   /** The Sun and the Moon (the panchāṅga). */
@@ -216,6 +258,9 @@ const NEEDS: Record<DoshaId, DoshaNeeds> = {
   kunavamsa: { luminaries: true, asc: true, grahas: ['Mars', 'Saturn', 'Rahu'] },
   vyatipata: { luminaries: false, asc: false, grahas: [] },
   vaidhriti: { luminaries: false, asc: false, grahas: [] },
+  shunyaRasi: { luminaries: true, asc: true, grahas: [] },
+  blindDeafLame: { luminaries: false, asc: true, grahas: [] },
+  mrityubhaga: { luminaries: true, asc: true, grahas: [...ALL_OTHERS] },
 };
 export const doshaNeeds = (id: DoshaId): DoshaNeeds => NEEDS[id];
 
@@ -233,6 +278,8 @@ export interface DoshaSky {
   others: Partial<Record<FinderGraha, number>>;
   /** The lunar month (0 Chaitra to 11 Phālguna), for the Śūnya tithis, when it is known. */
   masa?: number;
+  /** Whether the Sun is above the horizon (sunrise to sunset of the place), for the blind and deaf signs. */
+  day?: boolean;
 }
 
 /** What the choices of the user change in the doṣas of a sky. */
@@ -434,6 +481,28 @@ const HAS: Record<DoshaId, (sky: DoshaSky, natal?: DoshaNatal, options?: DoshaOp
   },
   vyatipata: () => false,
   vaidhriti: () => false,
+  shunyaRasi: sky => {
+    const tithi = ((tithiOf(sky.sun, sky.moon) - 1) % 15) + 1;
+    const empty = tithi === 15 ? [] : SHUNYA_RASIS_OF_TITHI[tithi - 1];
+    if (empty.includes(signOf(sky.asc)) || empty.includes(getVargaSignIndex(sky.asc, 9))) return true;
+    return sky.masa !== undefined && signOf(sky.moon) === SHUNYA_RASI_OF_MASA[sky.masa];
+  },
+  blindDeafLame: sky => {
+    if (sky.day === undefined) return false;
+    const sign = signOf(sky.asc);
+    const set = sky.day ? BLIND_DEAF_LAME.day : BLIND_DEAF_LAME.night;
+    return set.blind.includes(sign) || set.deaf.includes(sign) || set.lame.includes(sign);
+  },
+  mrityubhaga: sky => {
+    const fatal = (table: string, longitude: number) => {
+      const sign = signOf(longitude);
+      return Math.abs((((longitude % 360) + 360) % 360) % 30 - FATAL_DEGREES[table][sign]) <= 1;
+    };
+    const check = (graha: string) => fatal(graha, longitudeIn(sky, graha as FinderGraha));
+    const nakshatraLord = NAKSHATRA_LORDS[nakshatraOf(sky.moon) % 9];
+    const yogaLord = NAKSHATRA_LORDS[(yogaOf(sky.sun, sky.moon) + 7) % 27 % 9];
+    return fatal('Lagna', sky.asc) || check('Moon') || check(SIGN_LORDS[signOf(sky.asc)]) || check(nakshatraLord) || check(yogaLord);
+  },
 };
 
 /** Whether a sky has the doṣa. The doṣas of a span of time (Saṅkrānti, eclipses, Vyatipāta, Vaidhṛti, the Vāra Doṣa) are never in a sky. */

@@ -38,11 +38,12 @@ const has = (id: DoshaId, value: DoshaSky, natal?: DoshaNatal, options?: DoshaOp
 // ---------------------------------------------------------------------------
 // The list
 // ---------------------------------------------------------------------------
-assert.equal(DOSHA_IDS.length, 24);
-assert.equal(new Set(DOSHA_IDS.map(id => DOSHAS[id].number)).size, 19, 'each has its own place in the list, the six Daśa Doṣas the 15th');
+assert.equal(DOSHA_IDS.length, 27);
+assert.equal(new Set(DOSHA_IDS.map(id => DOSHAS[id].number)).size, 20, 'each has its own place in the list, the six Daśa Doṣas the 15th, the three blemishes outside the list 0');
+assert.deepEqual(DOSHA_IDS.filter(id => DOSHAS[id].number === 0).sort(), ['blindDeafLame', 'mrityubhaga', 'shunyaRasi']);
 assert.deepEqual(DOSHA_IDS.filter(id => DOSHAS[id].number === 15).sort(), ['dashaYoga', 'ekargala', 'jamitra', 'latta', 'pata', 'upagraha']);
 assert.deepEqual(
-  [...new Set([...DOSHA_IDS.map(id => DOSHAS[id].number), ...DOSHAS_NOT_WORKED_OUT.map(item => item.number)])].sort((a, b) => a - b),
+  [...new Set([...DOSHA_IDS.map(id => DOSHAS[id].number), ...DOSHAS_NOT_WORKED_OUT.map(item => item.number)])].filter(number => number > 0).sort((a, b) => a - b),
   Array.from({ length: 21 }, (_, index) => index + 1),
   'every one of the 21 is either worked out or listed with its reason',
 );
@@ -56,7 +57,7 @@ assert.equal(finderStepMinutes({ vara: [0, 1, 2, 3, 4, 5, 6], tithi: [], nakshat
 assert.equal(finderStepMinutes({ vara: [0, 1, 2, 3, 4, 5, 6], tithi: [], nakshatra: [], yoga: [], karana: [], signs: {}, avoid: ['panchanga', 'kartari'] }), 5, 'a doṣa of the Ascendant');
 
 // The quiet sky has none of the doṣas of a sky (the weekday is a Wednesday, so the Pañcāṅga Doṣa is for the Sun and Moon below).
-const NEW_ONES: DoshaId[] = ['panchanga', 'papashadvarga', 'vishaGhati', 'durmuhurta', 'ekargala', 'dashaYoga', 'jamitra', 'latta', 'upagraha', 'pata'];
+const NEW_ONES: DoshaId[] = ['shunyaRasi', 'blindDeafLame', 'mrityubhaga', 'panchanga', 'papashadvarga', 'vishaGhati', 'durmuhurta', 'ekargala', 'dashaYoga', 'jamitra', 'latta', 'upagraha', 'pata'];
 for (const id of DOSHA_IDS) {
   if (NEW_ONES.includes(id)) continue;
   assert.equal(has(id, sky(), { ascSign: 0, moonSign: 0 }), false, `${id} in the quiet sky`);
@@ -303,6 +304,46 @@ const nearRanges = (value: number, ranges: [number, number][]) => ranges.some(([
   assert.deepEqual(withMasa(undefined, 0, 50), [], 'without the month it is not looked at');
   assert.deepEqual(withMasa(0, 0, 50), [], 'the 5th is not Śūnya in Chaitra (the 8th and 11th, the 8th and 9th)');
   assert.deepEqual(panchangaReasons(sky({ vara: 3, sun: 340, moon: 5 })), ['mrityu'], 'a Wednesday with the Moon in Aśvinī');
+}
+
+// ---------------------------------------------------------------------------
+// Śūnya Rāśi, the blind, deaf and lame signs, and the fatal degrees (the blemishes the book names besides the 21)
+// ---------------------------------------------------------------------------
+{
+  // Śūnya Rāśi. The sky has the Sun in Leo and the Moon in Taurus 285° ahead: the 24th tithi, the 9th of the dark half, whose empty signs are Leo and Scorpio.
+  assert.equal(has('shunyaRasi', sky()), false, 'Cancer rising, its Navāṁśa Lagna Libra');
+  assert.equal(has('shunyaRasi', sky({ asc: at(4, 5) })), true, 'Leo rising');
+  assert.equal(has('shunyaRasi', sky({ asc: at(7, 5) })), true, 'Scorpio rising');
+  assert.equal(has('shunyaRasi', sky({ asc: at(0, 24) })), true, 'Aries 24° has the Navāṁśa Lagna in Scorpio');
+  assert.equal(has('shunyaRasi', sky({ asc: at(0, 3.5) })), false, 'Aries 3°30′ has it in Taurus');
+  // The 15th has none: the full Moon at 175°.
+  assert.equal(has('shunyaRasi', sky({ sun: 0, moon: 175, asc: at(4, 5) })), false);
+  // The Moon in the empty sign of the month: Chaitra, Aquarius; Jyeshtha, Taurus.
+  const inMonth = (masa: number | undefined, moonSign: number) => has('shunyaRasi', { ...sky({ moon: at(moonSign, 5), sun: at(moonSign, 5) - 100 }), masa });
+  assert.equal(inMonth(0, 10), true);
+  assert.equal(inMonth(0, 1), false);
+  assert.equal(inMonth(2, 1), true);
+  assert.equal(inMonth(undefined, 10), false, 'without the month it is not looked at');
+
+  // The blind, deaf and lame signs: by day Aries, Taurus, Leo blind; Libra, Scorpio deaf; Aquarius lame. By night Gemini, Cancer, Virgo blind; Capricorn, Sagittarius deaf; Pisces lame.
+  const blemished = (sign: number, day: boolean | undefined) => has('blindDeafLame', sky({ asc: at(sign, 5), day } as Partial<DoshaSky>));
+  assert.deepEqual([0, 1, 4, 6, 7, 10].map(sign => blemished(sign, true)), Array(6).fill(true), 'by day');
+  assert.deepEqual([2, 3, 5, 8, 9, 11].map(sign => blemished(sign, true)), Array(6).fill(false), 'the signs of the night are not by day');
+  assert.deepEqual([2, 3, 5, 8, 9, 11].map(sign => blemished(sign, false)), Array(6).fill(true), 'by night');
+  assert.deepEqual([0, 1, 4, 6, 7, 10].map(sign => blemished(sign, false)), Array(6).fill(false));
+  assert.equal(blemished(0, undefined), false, 'without day and night it is not looked at');
+
+  // The fatal degrees: within one degree of the book's degree. The Lagna at Aries has 8; Mars at Pisces has 6 (the lord of an Aries Lagna).
+  const aries = (change: Partial<Omit<DoshaSky, 'others'>> = {}, others: DoshaSky['others'] = {}) => sky({ asc: at(0, 0.5), ...change }, others);
+  assert.equal(has('mrityubhaga', aries()), false);
+  assert.equal(has('mrityubhaga', sky({ asc: at(0, 8.5) })), true, 'the Lagna at Aries 8°30′');
+  assert.equal(has('mrityubhaga', sky({ asc: at(0, 10) })), false, 'two degrees away');
+  assert.equal(has('mrityubhaga', aries({}, { Mars: at(11, 6.5) })), true, 'the Lagna lord Mars at Pisces 6°30′');
+  assert.equal(has('mrityubhaga', aries({}, { Mars: at(11, 8) })), false);
+  assert.equal(has('mrityubhaga', aries({ moon: at(1, 12.5) })), true, 'the Moon at Taurus 12°30′');
+  // The lord of the Moon's nakṣatra: the Moon in Aśvinī has Ketu, who is opposite Rāhu; Rāhu at Virgo 14° puts Ketu at Pisces 14°, which is Ketu's degree there.
+  assert.equal(has('mrityubhaga', aries({ moon: 5 }, { Rahu: at(5, 14) })), true);
+  assert.equal(has('mrityubhaga', aries({ moon: 5 }, { Rahu: at(5, 20) })), false);
 }
 
 // ---------------------------------------------------------------------------
@@ -557,6 +598,48 @@ async function searches() {
     const signs = [Math.floor(asc / 30), ...[2, 3, 9, 12, 30].map(division => getVargaSignIndex(asc, division))];
     const malefic = signs.filter(bad).length;
     assert.ok(malefic < 3 || (malefic === 3 && !bad(getVargaSignIndex(asc, 9))), `${malefic} of six in malefic signs`);
+  }
+
+  // Śūnya Rāśi, against the chart of the app: the Lagna and its Navāṁśa are not in the empty signs of the tithi, nor the Moon in the empty sign of the month (the tables as the book prints them).
+  const EMPTY_OF_TITHI = [[6, 9], [8, 11], [4, 9], [1, 10], [2, 5], [0, 4], [8, 3], [2, 5], [4, 7], [4, 7], [8, 11], [6, 9], [4, 1], [2, 5, 8, 11]];
+  const EMPTY_OF_MONTH = [10, 11, 1, 2, 0, 5, 7, 6, 8, 3, 9, 4];
+  const shunya = await runMuhurtaFinder(request({ ...open, avoid: ['shunyaRasi'] }, 10, '2026-11-02'));
+  assert.ok(shunya.windows.length >= 8, `${shunya.windows.length} stretches`);
+  for (const window of shunya.windows.slice(0, 10)) {
+    const { chart, panchang } = await appAt((window.start + window.end) / 2);
+    const empty = panchang.tithiNumber === 15 ? [] : EMPTY_OF_TITHI[panchang.tithiNumber - 1];
+    assert.ok(!empty.includes(chart.ascendant.sign - 1), `the Lagna in sign ${chart.ascendant.sign - 1}, the ${panchang.tithiNumber}th tithi`);
+    assert.ok(!empty.includes(getVargaSignIndex(chart.ascendant.longitude, 9)), 'the Navāṁśa Lagna');
+    assert.notEqual(chart.planets.find(planet => planet.name === 'Moon')!.sign - 1, EMPTY_OF_MONTH[chart.lunarMonth!.masaIndex], 'the Moon in the empty sign of the month');
+  }
+
+  // The blind, deaf and lame signs, where the Sun is clearly above (the 8th to 11th from the Lagna) or below the horizon (the 2nd to 5th).
+  const blind = await runMuhurtaFinder(request({ ...open, avoid: ['blindDeafLame'] }, 3, '2026-11-02'));
+  assert.ok(blind.windows.length >= 6, `${blind.windows.length} stretches`);
+  let clear = 0;
+  for (const window of blind.windows) {
+    const { chart } = await appAt((window.start + window.end) / 2);
+    const asc = chart.ascendant.sign - 1;
+    const sunHouse = ((chart.planets.find(planet => planet.name === 'Sun')!.sign - 1 - asc + 12) % 12) + 1;
+    const day = sunHouse >= 8 && sunHouse <= 11;
+    const night = sunHouse >= 2 && sunHouse <= 5;
+    if (day) { clear += 1; assert.ok(![0, 1, 4, 6, 7, 10].includes(asc), `by day the Lagna is in sign ${asc}`); }
+    if (night) { clear += 1; assert.ok(![2, 3, 5, 8, 9, 11].includes(asc), `by night the Lagna is in sign ${asc}`); }
+  }
+  assert.ok(clear >= 4, `${clear} stretches were clearly by day or by night`);
+
+  // The fatal degrees of the Lagna and of the Moon (their rows of the book's table), against the chart.
+  const FATAL_LAGNA = [8, 9, 22, 22, 25, 14, 4, 23, 18, 20, 21, 10];
+  const FATAL_MOON = [26, 12, 13, 25, 24, 11, 26, 14, 13, 25, 5, 12];
+  const fatal = await runMuhurtaFinder(request({ ...open, avoid: ['mrityubhaga'] }, 10, '2026-11-02'));
+  const withoutFatal = await runMuhurtaFinder(request(open, 10, '2026-11-02'));
+  assert.ok(fatal.windows.length >= 8 && totalDays(fatal.windows) < totalDays(withoutFatal.windows), 'some time is lost');
+  for (const window of fatal.windows.slice(0, 10)) {
+    const { chart } = await appAt((window.start + window.end) / 2);
+    const asc = chart.ascendant.longitude;
+    assert.ok(Math.abs((asc % 30) - FATAL_LAGNA[Math.floor(asc / 30)]) > 1, `the Lagna at ${(asc % 30).toFixed(2)}° of sign ${Math.floor(asc / 30)}`);
+    const moon = chart.planets.find(planet => planet.name === 'Moon')!.longitude;
+    assert.ok(Math.abs((moon % 30) - FATAL_MOON[Math.floor(moon / 30)]) > 1, `the Moon at ${(moon % 30).toFixed(2)}° of sign ${Math.floor(moon / 30)}`);
   }
 
   // Everything at once leaves almost nothing, and it is a answer, not an error.

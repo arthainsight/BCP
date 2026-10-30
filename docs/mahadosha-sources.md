@@ -32,6 +32,16 @@ is listed in the page as "Not worked out" with its reason.
 | 20 | Vyatipāta | The Sun and Moon at the same distance from the equator on the same side (equal declinations with the Moon's latitude; the new Moon, where they are equal too, is left out): **the day before, the day of and the day after** (Varāhamihira, the user's text), or the **short time of the book**, 1.036 hours (the mean discs over the difference of the daily motions) on each side | |
 | 21 | Vaidhṛti | The same on opposite sides (the full Moon is left out) | |
 
+## Other blemishes the book names, outside the list of 21 (number 0 in the page)
+
+| Blemish | What the finder avoids | Not applied |
+|---|---|---|
+| Śūnya Rāśi (ch. 15 "Lagna", and "Suunya Rasis in the Months" in ch. 17) | The Lagna or the Navāṁśa Lagna in an empty sign of the tithi: 1st Libra, Capricorn; 2nd Sagittarius, Pisces; 3rd Leo, Capricorn; 4th Taurus, Aquarius; 5th Gemini, Virgo; 6th Aries, Leo; 7th Sagittarius, Cancer; 8th Gemini, Virgo; 9th and 10th Leo, Scorpio; 11th Sagittarius, Pisces; 12th Libra, Capricorn; 13th Leo, Taurus; 14th Gemini, Virgo, Sagittarius, Pisces; 15th none (both halves). The Moon in the empty sign of the lunar month: Chaitra Aquarius, Vaiśākha Pisces, Jyeṣṭha Taurus, Āṣāḍha Gemini, Śrāvaṇa Aries, Bhādrapada Virgo, Āśvina Scorpio, Kārttika Libra, Mārgaśīrṣa Sagittarius, Pauṣa Cancer, Māgha Capricorn, Phālguna Leo | The exceptions; the Muhūrta Cintāmaṇi\'s Cancer for the 9th and Pisces for the 13th tithi (the book finds them less accurate); the purposes for which an empty sign suits |
+| Blind, deaf and lame Rāśis (ch. 15) | The Lagna in Aries, Taurus, Leo by day and Gemini, Cancer, Virgo by night (blind); Libra, Scorpio by day and Capricorn, Sagittarius by night (deaf); Aquarius by day and Pisces by night (lame). Day is sunrise to sunset of the place | The exceptions |
+| Mṛtyubhāga, the fatal degrees (ch. 16) | The Lagna, the Moon, the Lagna lord, the lord of the Moon\'s nakṣatra (Viṃśottarī order) and the lord of the yoga (the nakṣatra of the yoga\'s table: Viṣkambha Puṣya, so the 14th yoga Uttara Āṣāḍhā) within one degree of the degree in the book\'s table (each planet, Rāhu, Ketu and the Lagna in the twelve signs). "Within one degree of the degree listed" is read as the position in the sign differing from the listed number by at most 1 | A planet joined or aspected by a planet in a fatal degree; the rest of the planets ("none of the important planets"). Gulika\'s row is not used |
+
+The book says experience, not the standard Muhūrta texts, supports the fatal degrees ("Though Fatal Degrees are not mentioned in standard Muhurta texts, experience has shown that they are amongst the worst of blemishes").
+
 ## Not worked out, and why
 
 | # | Doṣa | Reason |
