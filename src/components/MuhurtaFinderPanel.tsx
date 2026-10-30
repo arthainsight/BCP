@@ -322,6 +322,28 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   if (natalMoonSign !== undefined && conditions('chandra') && choices.chandra.length === 0) emptyGroups.push('Chandrabala');
   if (natalNakshatra !== undefined && conditions('tara') && choices.tara.length === 0) emptyGroups.push('Tarabala');
 
+  // One doṣa of the list, as a row with a checkbox.
+  const doshaRow = (id: DoshaId) => {
+    const on = choices.avoid.includes(id);
+    const label = DOSHAS[id].number > 0 ? `${DOSHAS[id].number}. ${DOSHAS[id].name}` : DOSHAS[id].name;
+    return (
+      <label key={id} className="flex min-w-0 cursor-pointer items-start gap-2 rounded-md border border-zinc-200 p-1.5 dark:border-zinc-700" data-finder-dosha={id}>
+        <input
+          type="checkbox"
+          checked={on}
+          onChange={() => set('avoid', on ? choices.avoid.filter(item => item !== id) : [...choices.avoid, id])}
+          className="mt-0.5"
+          aria-label={label}
+        />
+        <span className="min-w-0 text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
+          <span className="font-semibold text-zinc-800 dark:text-zinc-100">{label}</span>
+          <span className="block text-[9px] text-zinc-500 dark:text-zinc-400">{t(DOSHAS[id].what)}</span>
+          {DOSHAS[id].notApplied && <span className="block text-[9px] text-zinc-400 dark:text-zinc-600">{t('Not applied')}: {t(DOSHAS[id].notApplied!)}</span>}
+        </span>
+      </label>
+    );
+  };
+
   return (
     <div className="min-w-0 space-y-3" data-testid="muhurta-finder">
       <div>
@@ -595,27 +617,9 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
         <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
           {t('The great faults of a muhūrta, to be avoided for all important occasions. The stretches found are free of the ones chosen. Together they leave very little, so choose the ones that matter. With one that depends on the Ascendant the search looks every 5 minutes.')}
         </p>
-        <div className="grid gap-1 lg:grid-cols-2">
-          {[...DOSHA_IDS].sort((a, b) => DOSHAS[a].number - DOSHAS[b].number).map(id => {
-            const on = choices.avoid.includes(id);
-            return (
-              <label key={id} className="flex min-w-0 cursor-pointer items-start gap-2 rounded-md border border-zinc-200 p-1.5 dark:border-zinc-700" data-finder-dosha={id}>
-                <input
-                  type="checkbox"
-                  checked={on}
-                  onChange={() => set('avoid', on ? choices.avoid.filter(item => item !== id) : [...choices.avoid, id])}
-                  className="mt-0.5"
-                  aria-label={`${DOSHAS[id].number}. ${DOSHAS[id].name}`}
-                />
-                <span className="min-w-0 text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-100">{DOSHAS[id].number}. {DOSHAS[id].name}</span>
-                  <span className="block text-[9px] text-zinc-500 dark:text-zinc-400">{t(DOSHAS[id].what)}</span>
-                  {DOSHAS[id].notApplied && <span className="block text-[9px] text-zinc-400 dark:text-zinc-600">{t('Not applied')}: {t(DOSHAS[id].notApplied!)}</span>}
-                </span>
-              </label>
-            );
-          })}
-        </div>
+        <div className="grid gap-1 lg:grid-cols-2">{[...DOSHA_IDS].filter(id => DOSHAS[id].number > 0).sort((a, b) => DOSHAS[a].number - DOSHAS[b].number).map(doshaRow)}</div>
+        <p className="pt-1 text-[9px] font-mono font-semibold text-zinc-500 dark:text-zinc-400">{t('Other blemishes the book names, outside the list of 21')}</p>
+        <div className="grid gap-1 lg:grid-cols-2">{[...DOSHA_IDS].filter(id => DOSHAS[id].number === 0).map(doshaRow)}</div>
         {choices.avoid.includes('sankranti') && (
           <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
             <label className="flex items-center gap-1.5">

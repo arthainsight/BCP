@@ -215,7 +215,7 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
   }
   // The lunar month, for the Śūnya tithis of the Pañcāṅga Doṣa: the months of the span, each from new Moon to new Moon.
   const masaWindows: { startJd: number; endJd: number; masa: number }[] = [];
-  if (avoid.has('panchanga') && !isImpossible(criteria)) {
+  if ((avoid.has('panchanga') || avoid.has('shunyaRasi')) && !isImpossible(criteria)) {
     try {
       for (let at = fromJd; at < toJd + 1;) {
         const month = await lunarMonthAt(at, request.ayanamsa, request.ayanamsaOffset);
@@ -229,6 +229,10 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
   }
   const masaAt = (jd: number) => masaWindows.find(window => jd >= window.startJd && jd < window.endJd)?.masa;
   const gandantaOptions = { gandantaNakshatra: criteria.gandantaNakshatra };
+  // The daytime of each date (sunrise to sunset), for the blind and deaf signs.
+  const dayWindows = avoid.has('blindDeafLame')
+    ? mergeWindows(rows.filter(row => row.sunsetHour !== undefined).map(row => ({ startJd: row.sunriseJd, endJd: row.midnightJd + row.sunsetHour! / 24 })))
+    : [];
   const blocked = mergeWindows(blockedWindows);
   const watchedNakshatras = eclipseNakshatras.filter(entry => entry.endJd > fromJd && entry.startJd < toJd);
 
@@ -280,6 +284,7 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
         const sky: DoshaSky = {
           vara: varaAt(jd), sun: found.get('Sun') ?? 0, moon: found.get('Moon') ?? 0, asc: found.get('Asc') ?? 0,
           masa: masaAt(jd),
+          day: avoid.has('blindDeafLame') ? insideWindows(dayWindows, jd) : undefined,
           others: Object.fromEntries([...found].filter(([key]) => !['Sun', 'Moon', 'Asc'].includes(key))) as DoshaSky['others'],
         };
         if (hasDosha(id, sky, criteria.natal, gandantaOptions)) return false;

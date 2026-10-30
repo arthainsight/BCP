@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.55',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: Śūnya Rāśi, the blind, deaf and lame signs, and the fatal degrees',
+    changes: [
+      'Three more blemishes of Classical Muhurta (chapters 15 and 16) can be kept clear of, under "Other blemishes the book names, outside the list of 21": Śūnya Rāśi (the Lagna or the Navāṁśa Lagna in an empty sign of the tithi, by the book\'s table for the 1st to 14th tithi; the Moon in the empty sign of the lunar month), the blind, deaf and lame Rāśis as the Lagna (by day and by night, from sunrise to sunset of the place) and Mṛtyubhāga, the fatal degrees (the Lagna, the Moon, the Lagna lord, the lord of the Moon\'s nakṣatra and the lord of the yoga within one degree of the degree the book gives each in the sign).',
+      'Not applied: the exceptions, the purposes for which an empty sign suits, and planets joined or aspected by a planet in a fatal degree. There are now 27 to choose from. docs/mahadosha-sources.md has the tables.',
+      'Updated the application version to v3.55.',
+    ],
+  },
+  {
     version: 'v3.54',
     date: '2026-10-30',
     title: 'Muhurta Finder: wishes about the Rāśi chart (D1)',

@@ -1726,16 +1726,16 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await d1.getByRole('button', { name: 'none', exact: true }).click();
   await expect(d1.locator('input:checked')).toHaveCount(0);
 
-  // The Mahādoṣas to keep clear of: the 24 that are worked out (the six Daśa Doṣas among them), each with what it avoids, and the 3 that are not worked out listed with their reason.
+  // The Mahādoṣas to keep clear of: the 24 of the list that are worked out (the six Daśa Doṣas among them), each with what it avoids, and the 3 that are not worked out listed with their reason.
   const doshas = finder.locator('[data-finder-group="Mahadoshas"]');
-  await expect(doshas.locator('[data-finder-dosha]')).toHaveCount(24);
+  await expect(doshas.locator('[data-finder-dosha]')).toHaveCount(27);
   await expect(doshas).toContainText('Pañcāṅga Doṣa');
   await expect(doshas).toContainText('Not worked out (3)');
   await doshas.getByRole('checkbox', { name: '3. Saṅkrānti' }).check();
   await expect(doshas.getByLabel('Minutes of arc of the Sun on each side of its entry into a sign')).toHaveValue('16');
   await expect(doshas.getByLabel('Degrees at Cancer and Capricorn')).toHaveValue('3');
   await doshas.getByRole('checkbox', { name: '1. Pañcāṅga Doṣa' }).check();
-  await expect(doshas).toContainText('2 / 24');
+  await expect(doshas).toContainText('2 / 27');
   // The choices of the doṣas that have them appear with the doṣa: the part of the nakṣatra that is Gaṇḍānta, and the time at Vyatipāta and Vaidhṛti.
   await doshas.getByRole('checkbox', { name: '7. Gaṇḍānta' }).check();
   await expect(doshas.getByLabel('Gaṇḍānta of the nakṣatra')).toHaveValue('pada');
@@ -1744,6 +1744,11 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(doshas.getByLabel('Time kept clear of at a Vyatipāta or Vaidhṛti')).toHaveValue('days');
   await expect(doshas.locator('[data-finder-dosha="vishaGhati"]')).toContainText('Viṣa Ghaṭī');
   await expect(doshas.locator('[data-finder-dosha="latta"]')).toContainText('15. Lattā');
+  // The three blemishes the book names outside the list of 21 have no number.
+  await expect(doshas).toContainText('Other blemishes the book names, outside the list of 21');
+  await expect(doshas.locator('[data-finder-dosha="mrityubhaga"]')).toContainText('Mṛtyubhāga (fatal degrees)');
+  await doshas.getByRole('checkbox', { name: 'Śūnya Rāśi' }).check();
+  await expect(doshas).toContainText('3 / 27');
   await doshas.getByRole('button', { name: 'none', exact: true }).click();
   await expect(doshas.locator('input:checked')).toHaveCount(0);
 
