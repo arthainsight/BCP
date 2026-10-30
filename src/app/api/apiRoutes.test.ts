@@ -86,6 +86,13 @@ async function main() {
   }
   assert.equal((await call(muhurtaFinder, `${finder}&sign_Pluto=1`)).status, 200, 'a name that is not a graha of the grid is not read');
   assert.equal((await call(muhurtaFinder, `${finder}&sign_Ketu=1`)).status, 200, 'Ketu is in the grid');
+  // Chandrabala: the sign of the Moon at birth and the houses from it that suit.
+  const chandraAll = await call(muhurtaFinder, `${finder}&chandra=1:1,3,6,7,10,11`);
+  assert.equal(chandraAll.status, 200);
+  assert.ok((chandraAll.body.windows as unknown[]).length >= 1);
+  assert.deepEqual((await call(muhurtaFinder, `${finder}&chandra=1:`)).body.windows, [], 'no house can never be met');
+  assert.equal(((await call(muhurtaFinder, `${finder}&chandra=1:1,2,3,4,5,6,7,8,9,10,11,12`)).body.windows as unknown[]).length, 1, 'every house is no condition');
+  for (const bad of ['chandra=', 'chandra=1', 'chandra=12:1', 'chandra=a:1', 'chandra=1:0', 'chandra=1:13', 'chandra=1:1:2']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
   // Rules about the houses from the Ascendant: any number up to twelve, each any|none:grahas:houses.
   const moonInLagna = await call(muhurtaFinder, `${finder}&rule=any:Moon:1`);
   assert.equal(moonInLagna.status, 200);
