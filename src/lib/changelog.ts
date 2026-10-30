@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.50',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: the Mahādoṣas',
+    changes: [
+      'The Muhurta Finder can keep the stretches it finds clear of the great faults of a muhūrta. A new group, Mahādoṣas to keep clear of, lists 15 of the 21 with what each avoids: 1 Pañcāṅga Doṣa (Sunday and Tuesday, Riktā tithis, Amāvasyā, Viṣṭi and the fixed karaṇas, the nine inauspicious yogas, Yamaghaṇṭa yoga), 2 Udayāsta Śuddhi, 3 Saṅkrānti, 5 Bhṛgu ṣaṭka, 6 Aṣṭama Kuja, 7 Gaṇḍānta (tithi, nakṣatra and Lagna), 8 Kartarī, 9 Ṣaḍaṣṭariṣpha Candra, 10 Saṅgraha, 11 Aṣṭama Lagna, 14 Vāra Doṣa (Rāhu Kāla and Yamaghaṇṭa), 16 Grahaṇa (the days around the eclipses and the nakṣatra of an eclipse for six months), 19 Kunavāṁśa, 20 Vyatipāta and 21 Vaidhṛti.',
+      'The other six are listed under "Not worked out" with the reason: their tables are not in the text (Viṣa Ghaṭī, Daśa Doṣas, Krūraviddha Nakṣatra), the sources of the figures disagree (Dūrmuhūrta), the definition is open (Pāpaṣaḍvarga) or it is not a reading of the sky (storms and earthquakes). Nothing is filled in from memory; the manual ledger docs/mahadosha-sources.md says what each doṣa does and what part of it is not applied.',
+      'The Saṅkrānti keeps clear of 16 ghaṭīs (6.4 hours) on each side of the Sun entering a sign, which can be changed; the text gives no length. Chosen all together the doṣas leave very little of the time. The eclipses are those of the whole Earth (the Swiss Ephemeris, penumbral lunar eclipses left out).',
+      'Updated the application version to v3.50.',
+    ],
+  },
+  {
     version: 'v3.49',
     date: '2026-10-30',
     title: 'Muhurta Finder: Chandrabala',
