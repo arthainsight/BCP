@@ -3,9 +3,11 @@
 // panchāṅga of the app at the middle of what it finds.
 import assert from 'node:assert/strict';
 import {
-  FINDER_SIZES, KARANA_NAMES, findWindows, isImpossible, isLimited, karanaOf, localParts, matchesVara, momentMatches, nakshatraOf, neededBodies, signOf,
-  tithiLabel, tithiOf, yogaOf, type FinderCriteria, type FinderMoment,
+  BENEFICS, FINDER_SIZES, KARANA_NAMES, MALEFICS, effectiveRules, findWindows, formatRule, houseFrom, isImpossible, isLimited, karanaOf, localParts,
+  matchesVara, momentMatches, nakshatraOf, neededBodies, parseRule, ruleMatches, signOf, tithiLabel, tithiOf, yogaOf,
+  type FinderCriteria, type FinderMoment, type FinderRule,
 } from './muhurtaFinder';
+import { FINDER_PRESETS } from './muhurtaFinderPresets';
 import { MAX_FINDER_STEPS, finderStepCount, finderStepMinutes, jdToMs, runMuhurtaFinder } from './muhurtaFinderRun';
 import { calculateChart } from './ephemeris';
 import { calculatePanchang } from './panchang';
@@ -119,6 +121,73 @@ assert.equal(matchesVara(only({ vara: [1, 3] }), 2), false);
 }
 
 // ---------------------------------------------------------------------------
+// Placement rules: the houses from the Ascendant (worked by hand)
+// ---------------------------------------------------------------------------
+// The Ascendant at 100° is in Cancer (sign 3): a longitude at 100° is in the 1st house, 130° in the 2nd, 70° (Gemini) in the 12th,
+// 280° (Capricorn, sign 9) in the 7th.
+assert.equal(houseFrom(3, 100), 1);
+assert.equal(houseFrom(3, 130), 2);
+assert.equal(houseFrom(3, 70), 12);
+assert.equal(houseFrom(3, 280), 7);
+assert.equal(houseFrom(0, 359.99), 12);
+assert.equal(houseFrom(11, 0), 2, 'Pisces rising: Aries is the 2nd');
+
+{
+  // Venus in the 1st and the Moon in the 5th: "at least one of Venus and the Moon in the 1st" holds, "none of them in the 5th" does not.
+  const houses: Record<string, number> = { Venus: 1, Moon: 5, Sun: 9 };
+  const houseOf = (graha: string) => houses[graha];
+  assert.equal(ruleMatches({ kind: 'any', grahas: ['Venus', 'Moon'], houses: [1] }, houseOf), true);
+  assert.equal(ruleMatches({ kind: 'any', grahas: ['Moon'], houses: [1, 2] }, houseOf), false);
+  assert.equal(ruleMatches({ kind: 'none', grahas: ['Venus', 'Moon'], houses: [5] }, houseOf), false);
+  assert.equal(ruleMatches({ kind: 'none', grahas: ['Venus', 'Sun'], houses: [5, 12] }, houseOf), true);
+  assert.equal(ruleMatches({ kind: 'any', grahas: ['Mars'], houses: [1] }, houseOf), false, 'a graha that was not worked out fails the rule');
+  assert.equal(ruleMatches({ kind: 'none', grahas: ['Mars'], houses: [1] }, houseOf), false);
+
+  // The text of a rule, and back.
+  const rule: FinderRule = { kind: 'none', grahas: ['Sun', 'Ketu'], houses: [8, 12] };
+  assert.equal(formatRule(rule), 'none:Sun,Ketu:8,12');
+  assert.deepEqual(parseRule('none:Sun,Ketu:12,8,8'), rule);
+  assert.deepEqual(parseRule('any:Venus:'), { kind: 'any', grahas: ['Venus'], houses: [] });
+  for (const bad of ['', 'any', 'some:Sun:1', 'any:Asc:1', 'any:Pluto:1', 'any:Sun:0', 'any:Sun:13', 'any:Sun:x', 'any:Sun:1:2']) {
+    assert.ok('error' in parseRule(bad), `"${bad}" is refused`);
+  }
+
+  // Rules that can never hold, and those that put no condition.
+  assert.equal(isImpossible(only({ rules: [{ kind: 'any', grahas: [], houses: [1] }] })), true);
+  assert.equal(isImpossible(only({ rules: [{ kind: 'any', grahas: ['Sun'], houses: [] }] })), true);
+  assert.equal(isImpossible(only({ rules: [{ kind: 'none', grahas: ['Sun'], houses: all(12, 1) }] })), true, 'the Sun is in some house');
+  assert.equal(isImpossible(only({ rules: [{ kind: 'none', grahas: [], houses: [8] }] })), false);
+  assert.equal(effectiveRules(only({ rules: [{ kind: 'none', grahas: [], houses: [8] }, { kind: 'none', grahas: ['Sun'], houses: [] }, { kind: 'any', grahas: ['Sun'], houses: [1] }] })).length, 1);
+
+  // Ketu is opposite Rāhu: Rāhu at 100° (Cancer) puts Ketu at 280° (Capricorn), the 7th from a Cancer Ascendant.
+  const moment: FinderMoment = { vara: 1, sun: 10, moon: 40, others: { Asc: 100, Rahu: 100 } };
+  assert.equal(momentMatches(moment, only({ signs: { Ketu: [9] } })), true);
+  assert.equal(momentMatches(moment, only({ signs: { Ketu: [3] } })), false);
+  assert.equal(momentMatches(moment, only({ rules: [{ kind: 'any', grahas: ['Ketu'], houses: [7] }] })), true);
+  assert.equal(momentMatches(moment, only({ rules: [{ kind: 'any', grahas: ['Rahu'], houses: [1] }, { kind: 'none', grahas: ['Sun', 'Moon'], houses: [8, 12] }] })), true);
+  // The Sun at 10° (Aries) is the 10th from Cancer; the Moon at 40° (Taurus) the 11th.
+  assert.equal(momentMatches(moment, only({ rules: [{ kind: 'any', grahas: ['Sun'], houses: [10] }, { kind: 'any', grahas: ['Moon'], houses: [11] }] })), true);
+  assert.equal(momentMatches(moment, only({ rules: [{ kind: 'any', grahas: ['Sun'], houses: [10] }, { kind: 'any', grahas: ['Moon'], houses: [10] }] })), false, 'every rule must hold');
+  assert.equal(momentMatches({ ...moment, others: {} }, only({ rules: [{ kind: 'any', grahas: ['Sun'], houses: [10] }] })), false, 'without an Ascendant the houses are unknown');
+  assert.deepEqual([...BENEFICS, ...MALEFICS].sort(), ['Jupiter', 'Ketu', 'Mars', 'Mercury', 'Moon', 'Rahu', 'Saturn', 'Sun', 'Venus']);
+}
+
+// The ready-made choices of the store or business opening, as the source gives them.
+{
+  const preset = FINDER_PRESETS.find(entry => entry.id === 'business-opening')!;
+  assert.deepEqual(preset.nakshatra!.map(index => NAKSHATRA_NAMES[index]), [
+    'Ashwini', 'Rohini', 'Mrigashira', 'Pushya', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Anuradha', 'Uttara Ashadha', 'Uttara Bhadrapada', 'Revati',
+  ]);
+  assert.equal(preset.nakshatra!.length, 11);
+  assert.deepEqual(all(30, 1).filter(tithi => !preset.tithi!.includes(tithi)), [4, 9, 14, 19, 24, 29], 'the 4th, 9th and 14th of both halves are left out');
+  assert.deepEqual(all(7).filter(vara => !preset.vara!.includes(vara)), [2], 'Tuesday, the vāra of Mars, is left out');
+  assert.deepEqual(all(12).filter(sign => !preset.signs!.Asc!.includes(sign)), [10], 'Aquarius does not rise');
+  assert.deepEqual(preset.rules!.map(formatRule), [
+    'any:Venus,Moon:1', 'none:Sun,Mars,Saturn,Rahu,Ketu:8,12', 'any:Moon,Mercury,Jupiter,Venus:2,10,11',
+  ]);
+}
+
+// ---------------------------------------------------------------------------
 // The walk through time: stretches found to the minute from a rule with known edges
 // ---------------------------------------------------------------------------
 async function walks() {
@@ -163,6 +232,8 @@ async function searches() {
   assert.equal(finderStepMinutes(open), 15);
   assert.equal(finderStepMinutes(only({ signs: { Asc: [0] } })), 5);
   assert.equal(finderStepMinutes(only({ signs: { Asc: all(12) } })), 15, 'an Ascendant that may be anywhere is no condition');
+  assert.equal(finderStepMinutes(only({ rules: [{ kind: 'any', grahas: ['Moon'], houses: [1] }] })), 5, 'the houses depend on the Ascendant');
+  assert.equal(finderStepMinutes(only({ rules: [{ kind: 'none', grahas: [], houses: [8] }] })), 15, 'a rule that puts no condition is not looked at');
   assert.ok(finderStepCount(366, 5) <= MAX_FINDER_STEPS, 'a year with the Ascendant is allowed');
   assert.ok(finderStepCount(366, 15) < finderStepCount(366, 5));
 
@@ -226,6 +297,43 @@ async function searches() {
   for (const window of moonInTaurus.windows) {
     const days = (window.end - window.start) / 86_400_000;
     assert.ok(days > 1.8 && days < 3, `the Moon in a sign for ${days.toFixed(2)} days`);
+  }
+
+
+  // Rules about the houses, against the chart of the app at the middle of each stretch: Venus or the Moon in the Lagna, no malefic
+  // in the 8th and 12th, with the vāra, tithi and nakṣatra of the store opening in front (the rules are looked at after them).
+  const preset = FINDER_PRESETS.find(entry => entry.id === 'business-opening')!;
+  const rulesOnly = only({ rules: preset.rules!.slice(0, 2) });
+  const opening = await runMuhurtaFinder(request({ ...rulesOnly, nakshatra: preset.nakshatra!, tithi: preset.tithi!, vara: preset.vara!, signs: preset.signs! }, 60));
+  assert.ok(opening.windows.length >= 5, `${opening.windows.length} stretches of the store opening in 60 days`);
+  assert.equal(opening.stepMinutes, 5);
+  for (const window of opening.windows.slice(0, 6)) {
+    const middle = new Date((window.start + window.end) / 2);
+    const local = new Date(middle.getTime() + 2 * 3_600_000); // Helsinki is +2 h from late October to March
+    const chart = await calculateChart(
+      local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate(), local.getUTCHours(), local.getUTCMinutes(), 0,
+      PLACE.lat, PLACE.lng, 2, 'lahiri',
+    );
+    const signOfPlanet = (name: string) => chart.planets.find(planet => planet.name === name)!.sign;
+    const ascSign = chart.ascendant.sign;
+    assert.notEqual(ascSign, 11, 'Aquarius (the 11th sign) is not rising');
+    assert.ok(signOfPlanet('Venus') === ascSign || signOfPlanet('Moon') === ascSign, 'Venus or the Moon is in the Lagna');
+    for (const name of ['Sun', 'Mars', 'Saturn']) {
+      const house = ((signOfPlanet(name) - ascSign + 12) % 12) + 1;
+      assert.ok(house !== 8 && house !== 12, `${name} is in the ${house}th house`);
+    }
+  }
+  // A rule only narrows: every stretch with the rules lies inside one without them.
+  const without = await runMuhurtaFinder(request({ ...rulesOnly, rules: [], nakshatra: preset.nakshatra!, tithi: preset.tithi!, vara: preset.vara!, signs: preset.signs! }, 60));
+  for (const window of opening.windows) {
+    assert.ok(without.windows.some(outer => outer.start - 60_000 <= window.start && window.end <= outer.end + 60_000), 'inside a stretch of the same choices without the rules');
+  }
+  // The Moon in the 1st alone is the Moon in the sign that rises: a stretch of hours, once or twice a day.
+  const moonRising = await runMuhurtaFinder(request(only({ rules: [{ kind: 'any', grahas: ['Moon'], houses: [1] }] }), 30));
+  assert.ok(moonRising.windows.length >= 8 && moonRising.windows.length <= 40, `${moonRising.windows.length} stretches of the Moon in the Lagna in 30 days`);
+  for (const window of moonRising.windows) {
+    const hours = (window.end - window.start) / 3_600_000;
+    assert.ok(hours > 0.1 && hours < 5, `${hours.toFixed(2)} h`);
   }
 
   // The Ascendant in a sign: a window of an hour or two each day, found with the finer step.

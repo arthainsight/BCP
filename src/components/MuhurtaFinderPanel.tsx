@@ -9,9 +9,10 @@ import { SIGN_ABBR } from '@/lib/signs';
 import { NAKSHATRA_NAMES } from '@/lib/nakshatras';
 import { YOGA_NAMES } from '@/lib/panchang';
 import {
-  FINDER_GRAHAS, FINDER_SIZES, KARANA_NAMES, isImpossible, isLimited, localParts, tithiLabel,
-  type FinderCriteria, type FinderGraha,
+  BENEFICS, FINDER_GRAHAS, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, effectiveRules, formatRule, isImpossible, isImpossibleRule,
+  isLimited, localParts, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule,
 } from '@/lib/muhurtaFinder';
+import { FINDER_PRESETS, type FinderPreset } from '@/lib/muhurtaFinderPresets';
 import type { FinderResult } from '@/lib/muhurtaFinderRun';
 import { useT } from '@/lib/i18n';
 
@@ -29,8 +30,9 @@ type Props = {
 const STORAGE_KEY = 'muhurtaFinderChoices';
 const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 const WEEKDAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
-const GRAHA_HEAD: Record<FinderGraha, string> = { Asc: 'As', Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra' };
+const GRAHA_HEAD: Record<FinderGraha, string> = { Asc: 'As', Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke' };
 const DAYS = [7, 30, 90, 180, 366] as const;
+const MAX_RULES = 12;
 
 const range = (size: number, first = 0) => Array.from({ length: size }, (_, index) => first + index);
 
@@ -38,13 +40,24 @@ const range = (size: number, first = 0) => Array.from({ length: size }, (_, inde
 type Choices = {
   vara: number[]; tithi: number[]; nakshatra: number[]; yoga: number[]; karana: number[];
   signs: Record<FinderGraha, number[]>;
+  rules: FinderRule[];
 };
 
 const allChoices = (): Choices => ({
   vara: range(FINDER_SIZES.vara), tithi: range(FINDER_SIZES.tithi, 1), nakshatra: range(FINDER_SIZES.nakshatra),
   yoga: range(FINDER_SIZES.yoga), karana: range(FINDER_SIZES.karana),
   signs: Object.fromEntries(FINDER_GRAHAS.map(graha => [graha, range(12)])) as Record<FinderGraha, number[]>,
+  rules: [],
 });
+
+/** The choices of a preset: everything, with what the preset names set. */
+function presetChoices(preset: FinderPreset): Choices {
+  const choices = allChoices();
+  for (const key of ['vara', 'tithi', 'nakshatra', 'yoga', 'karana'] as const) choices[key] = preset[key] ?? choices[key];
+  for (const graha of FINDER_GRAHAS) choices.signs[graha] = preset.signs?.[graha] ?? choices.signs[graha];
+  choices.rules = (preset.rules ?? []).map(rule => ({ ...rule, grahas: [...rule.grahas], houses: [...rule.houses] }));
+  return choices;
+}
 
 /** The choices kept in the browser, each list read back only as far as it is made of numbers that exist. */
 function readChoices(): Choices {
@@ -61,6 +74,15 @@ function readChoices(): Choices {
     choices.karana = list(saved.karana, 0, 11) ?? choices.karana;
     const signs = saved.signs as Partial<Record<string, unknown>> | undefined;
     for (const graha of FINDER_GRAHAS) choices.signs[graha] = list(signs?.[graha], 0, 12) ?? choices.signs[graha];
+    if (Array.isArray(saved.rules)) {
+      const rules: FinderRule[] = [];
+      for (const item of saved.rules.slice(0, MAX_RULES) as Partial<Record<string, unknown>>[]) {
+        const grahas = Array.isArray(item?.grahas) && item.grahas.every(name => (RULE_GRAHAS as readonly unknown[]).includes(name)) ? [...new Set(item.grahas as FinderGraha[])] : null;
+        const houses = list(item?.houses, 1, 12);
+        if ((item?.kind === 'any' || item?.kind === 'none') && grahas && houses) rules.push({ kind: item.kind, grahas, houses });
+      }
+      choices.rules = rules;
+    }
   } catch {
     // No storage, or something else in it: the choices are all.
   }
@@ -134,6 +156,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   const [days, setDays] = useState<number>(30);
   const [state, setState] = useState<{ loading: boolean; error?: string; result?: FinderResult; zone?: string; tz: number }>({ loading: false, tz: 0 });
   const [showAll, setShowAll] = useState(false);
+  const [presetId, setPresetId] = useState<string | null>(null);
   const request = useRef(0);
 
   // The choices are kept in the browser, and written back as they change.
@@ -148,10 +171,10 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   const criteria: FinderCriteria = useMemo(() => {
     const signs: FinderCriteria['signs'] = {};
     for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) signs[graha] = choices.signs[graha];
-    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs };
+    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules };
   }, [choices]);
   const impossible = isImpossible(criteria);
-  const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0;
+  const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0 || effectiveRules(criteria).length > 0;
 
   const zone = place ? place.timezone : ianaTimezone;
   const lat = place ? place.latitude : chart.debug?.latitude;
@@ -167,6 +190,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     ];
     for (const [key, list, size] of lists) if (isLimited(list, size)) params.set(key, list.join(','));
     for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) params.set(`sign_${graha}`, choices.signs[graha].join(','));
+    for (const rule of choices.rules) params.append('rule', formatRule(rule));
     const id = ++request.current;
     setState({ loading: true, tz });
     setShowAll(false);
@@ -181,6 +205,8 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   };
 
   const set = <K extends keyof Choices>(key: K, value: Choices[K]) => setChoices(current => ({ ...current, [key]: value }));
+  const setRule = (index: number, value: FinderRule) => setChoices(current => ({ ...current, rules: current.rules.map((rule, at) => (at === index ? value : rule)) }));
+  const removeRule = (index: number) => setChoices(current => ({ ...current, rules: current.rules.filter((_, at) => at !== index) }));
   const setSigns = (graha: FinderGraha, value: number[]) => setChoices(current => ({ ...current, signs: { ...current.signs, [graha]: value } }));
 
   const shown = state.result ? (showAll ? state.result.windows : state.result.windows.slice(0, 60)) : [];
@@ -189,6 +215,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     ['Vāra', choices.vara], ['Tithi', choices.tithi], ['Nakṣatra', choices.nakshatra], ['Yoga', choices.yoga], ['Karaṇa', choices.karana],
     ...FINDER_GRAHAS.map(graha => [GRAHA_HEAD[graha], choices.signs[graha]] as [string, number[]]),
   ].filter(([, list]) => (list as number[]).length === 0).map(([name]) => name as string);
+  if (choices.rules.some(isImpossibleRule)) emptyGroups.push(t('a placement rule'));
 
   return (
     <div className="min-w-0 space-y-3" data-testid="muhurta-finder">
@@ -200,6 +227,20 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
       </div>
 
       <AnnualPlaceControl place={place} onChange={setPlace} />
+
+      <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700" data-finder-group="Presets">
+        <h3 className="text-xs font-mono font-semibold text-emerald-700 dark:text-green-400">{t('Ready-made choices')}</h3>
+        <div className="flex flex-wrap gap-1">
+          {FINDER_PRESETS.map(preset => (
+            <button key={preset.id} type="button" className={chip(preset.id === presetId)} aria-pressed={preset.id === presetId} onClick={() => { setChoices(presetChoices(preset)); setPresetId(preset.id); }}>
+              {t(preset.label)}
+            </button>
+          ))}
+        </div>
+        {FINDER_PRESETS.filter(preset => preset.id === presetId).map(preset => (
+          <p key={preset.id} className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t(preset.note)}</p>
+        ))}
+      </section>
 
       <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
         <label className="flex items-center gap-1.5">
@@ -298,10 +339,76 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
             </table>
           </div>
         </section>
+        <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700 lg:col-span-2" data-finder-group="Placements">
+          <h3 className="text-xs font-mono font-semibold text-emerald-700 dark:text-green-400">{t('Placements')}</h3>
+          <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('Rules about the houses, counted from the sign of the Ascendant (the 1st house). Every rule must hold at once. With a rule the search looks every 5 minutes.')}</p>
+          {choices.rules.map((rule, index) => (
+            <div key={index} className="space-y-1 rounded-md border border-zinc-200 p-2 dark:border-zinc-700" data-finder-rule={index}>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <select
+                  aria-label={`${t('Rule')} ${index + 1}`}
+                  value={rule.kind}
+                  onChange={event => setRule(index, { ...rule, kind: event.target.value as FinderRule['kind'] })}
+                  className="rounded border border-zinc-300 bg-white px-1.5 py-1 text-[10px] text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                >
+                  <option value="any">{t('at least one of')}</option>
+                  <option value="none">{t('none of')}</option>
+                </select>
+                <button type="button" className={smallButton} onClick={() => setRule(index, { ...rule, grahas: [...BENEFICS] })}>{t('benefics')}</button>
+                <button type="button" className={smallButton} onClick={() => setRule(index, { ...rule, grahas: [...MALEFICS] })}>{t('malefics')}</button>
+                <button type="button" className={smallButton} onClick={() => removeRule(index)} aria-label={`${t('remove rule')} ${index + 1}`}>{t('remove rule')}</button>
+                {isImpossibleRule(rule) && <span className="text-[9px] font-mono text-rose-600 dark:text-rose-400">{t('this rule can never hold')}</span>}
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {RULE_GRAHAS.map(graha => {
+                  const on = rule.grahas.includes(graha);
+                  return (
+                    <button
+                      key={graha}
+                      type="button"
+                      aria-pressed={on}
+                      aria-label={`${t('Rule')} ${index + 1} ${graha}`}
+                      className={chip(on)}
+                      onClick={() => setRule(index, { ...rule, grahas: on ? rule.grahas.filter(name => name !== graha) : [...rule.grahas, graha] })}
+                    >
+                      {GRAHA_HEAD[graha]}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-wrap items-center gap-1">
+                <span className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{rule.kind === 'any' ? t('in one of the houses') : t('in none of the houses')}</span>
+                {range(12, 1).map(house => {
+                  const on = rule.houses.includes(house);
+                  return (
+                    <button
+                      key={house}
+                      type="button"
+                      aria-pressed={on}
+                      aria-label={`${t('Rule')} ${index + 1} ${t('house')} ${house}`}
+                      className={chip(on)}
+                      onClick={() => setRule(index, { ...rule, houses: on ? rule.houses.filter(value => value !== house) : [...rule.houses, house].sort((a, b) => a - b) })}
+                    >
+                      {house}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            className={smallButton}
+            disabled={choices.rules.length >= MAX_RULES}
+            onClick={() => setChoices(current => ({ ...current, rules: [...current.rules, { kind: 'any', grahas: [], houses: [] }] }))}
+          >
+            {t('add a rule')}
+          </button>
+        </section>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" className={smallButton} onClick={() => setChoices(allChoices())}>{t('choose everything again')}</button>
+        <button type="button" className={smallButton} onClick={() => { setChoices(allChoices()); setPresetId(null); }}>{t('choose everything again')}</button>
       </div>
 
       {state.error && <p className="text-xs font-mono text-rose-600 dark:text-rose-400" role="alert">{state.error}</p>}

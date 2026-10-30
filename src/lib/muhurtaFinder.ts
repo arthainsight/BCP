@@ -5,6 +5,10 @@
 // tithi, the nakṣatra of the Moon, the yoga, the karaṇa, and for the Ascendant and each graha the signs it may be in.
 // A group of choices that has every item chosen puts no condition at all; one with none chosen can never hold.
 //
+// Beyond the signs, the placements of the grahas can be asked for as rules in the houses counted from the Ascendant
+// (the sign of the Ascendant is the first house): "at least one of Venus and the Moon in the 1st", "none of the malefics
+// in the 8th and the 12th".
+//
 // This file is the part that needs no ephemeris: what a pair of longitudes says about the panchāṅga, whether a
 // moment suits the conditions, and the walk through time that finds where the answer changes (muhurtaFinderRun.ts
 // supplies the positions).
@@ -12,8 +16,13 @@
 import { NAKSHATRA_SIZE } from './nakshatras';
 
 /** The grahas of the sign grid, and the Ascendant first. Ketu is always opposite Rāhu. */
-export const FINDER_GRAHAS = ['Asc', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu'] as const;
+export const FINDER_GRAHAS = ['Asc', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'] as const;
 export type FinderGraha = (typeof FINDER_GRAHAS)[number];
+/** The grahas a rule may name: the nine, not the Ascendant. */
+export const RULE_GRAHAS = FINDER_GRAHAS.filter(graha => graha !== 'Asc');
+/** The natural benefics and malefics, for the shortcuts of the rules (the Moon is taken with the benefics). */
+export const BENEFICS: FinderGraha[] = ['Moon', 'Mercury', 'Jupiter', 'Venus'];
+export const MALEFICS: FinderGraha[] = ['Sun', 'Mars', 'Saturn', 'Rahu', 'Ketu'];
 
 /** The eleven karaṇas: the seven that repeat, then the four that stand fixed (Kiṃstughna at the start of the bright half, the last three at the end of the dark half). */
 export const KARANA_NAMES = ['Bava', 'Balava', 'Kaulava', 'Taitila', 'Garija', 'Vanija', 'Visti', 'Shakuni', 'Chatushpada', 'Naga', 'Kimstughna'] as const;
@@ -66,6 +75,60 @@ export interface FinderCriteria {
   /** Indexes into KARANA_NAMES. */
   karana: number[];
   signs: Partial<Record<FinderGraha, number[]>>;
+  /** Placement rules, all of which must hold. */
+  rules?: FinderRule[];
+}
+
+/**
+ * A rule about houses (1 to 12, counted from the sign of the Ascendant): `any` holds when at least one of the grahas is
+ * in one of the houses, `none` when no graha of the list is in any of them.
+ */
+export interface FinderRule {
+  kind: 'any' | 'none';
+  grahas: FinderGraha[];
+  houses: number[];
+}
+
+/** The house, 1 to 12, that a longitude is in when the Ascendant is in the sign `ascSign`. */
+export const houseFrom = (ascSign: number, longitude: number) => ((signOf(longitude) - ascSign + 12) % 12) + 1;
+
+/** The rules that put a condition: a `none` rule with nothing to keep out, or with no graha, holds always. */
+export const effectiveRules = (criteria: Pick<FinderCriteria, 'rules'>): FinderRule[] =>
+  (criteria.rules ?? []).filter(rule => rule.grahas.length > 0 && (rule.kind === 'any' || rule.houses.length > 0));
+
+/** Whether a rule can never hold: an `any` with no graha or no house, or a `none` that keeps the grahas out of every house. */
+export const isImpossibleRule = (rule: FinderRule) =>
+  rule.kind === 'any' ? rule.grahas.length === 0 || rule.houses.length === 0 : rule.grahas.length > 0 && new Set(rule.houses).size >= 12;
+
+/** Whether a rule holds, given the house each graha is in. A graha with no house (one that was not worked out) fails it. */
+export function ruleMatches(rule: FinderRule, houseOf: (graha: FinderGraha) => number | undefined): boolean {
+  const houses = rule.grahas.map(houseOf);
+  if (houses.some(house => house === undefined)) return false;
+  const inside = houses.some(house => rule.houses.includes(house as number));
+  return rule.kind === 'any' ? inside : !inside;
+}
+
+/** The text of a rule for the address of a request: `any:Venus,Moon:1`. */
+export const formatRule = (rule: FinderRule) => `${rule.kind}:${rule.grahas.join(',')}:${rule.houses.join(',')}`;
+
+/** A rule from its text, or what is wrong with it. */
+export function parseRule(text: string): FinderRule | { error: string } {
+  const parts = text.split(':');
+  if (parts.length !== 3 || (parts[0] !== 'any' && parts[0] !== 'none')) return { error: 'rule must be any:grahas:houses or none:grahas:houses' };
+  const names = parts[1].trim() === '' ? [] : parts[1].split(',').map(item => item.trim());
+  const grahas: FinderGraha[] = [];
+  for (const name of names) {
+    if (!(RULE_GRAHAS as readonly string[]).includes(name)) return { error: `rule graha must be one of ${RULE_GRAHAS.join(', ')}` };
+    if (!grahas.includes(name as FinderGraha)) grahas.push(name as FinderGraha);
+  }
+  const numbers = parts[2].trim() === '' ? [] : parts[2].split(',').map(item => item.trim());
+  const houses = new Set<number>();
+  for (const item of numbers) {
+    const value = /^\d{1,2}$/.test(item) ? Number(item) : NaN;
+    if (!(value >= 1 && value <= 12)) return { error: 'rule houses must be whole numbers from 1 to 12' };
+    houses.add(value);
+  }
+  return { kind: parts[0], grahas, houses: [...houses].sort((a, b) => a - b) };
 }
 
 export const FINDER_SIZES = { vara: 7, tithi: 30, nakshatra: 27, yoga: 27, karana: 11 } as const;
@@ -76,7 +139,7 @@ export const isLimited = (allowed: readonly number[], size: number) => new Set(a
 /** Whether the conditions can never be met: some limited group has nothing chosen. */
 export function isImpossible(criteria: FinderCriteria): boolean {
   const groups = [criteria.vara, criteria.tithi, criteria.nakshatra, criteria.yoga, criteria.karana, ...Object.values(criteria.signs)];
-  return groups.some(group => group !== undefined && group.length === 0);
+  return groups.some(group => group !== undefined && group.length === 0) || (criteria.rules ?? []).some(isImpossibleRule);
 }
 
 /** What a moment is, for the conditions: the longitudes (sidereal) the conditions ask about, and the weekday. */
@@ -86,6 +149,14 @@ export interface FinderMoment {
   moon: number;
   /** The Ascendant, and the grahas other than the Sun and the Moon, by name. */
   others: Partial<Record<FinderGraha, number>>;
+}
+
+/** The longitude of a graha in a moment; Ketu is opposite Rāhu. */
+export function grahaLongitude(moment: FinderMoment, graha: FinderGraha): number | undefined {
+  if (graha === 'Sun') return moment.sun;
+  if (graha === 'Moon') return moment.moon;
+  if (graha === 'Ketu') return moment.others.Rahu === undefined ? undefined : normalize(moment.others.Rahu + 180);
+  return moment.others[graha];
 }
 
 /** Which bodies the conditions need, so that the ephemeris is asked for no more. */
@@ -115,8 +186,19 @@ export function momentMatches(moment: FinderMoment, criteria: FinderCriteria): b
   for (const graha of Object.keys(criteria.signs) as FinderGraha[]) {
     const allowed = criteria.signs[graha];
     if (allowed === undefined || !isLimited(allowed, 12)) continue;
-    const longitude = graha === 'Sun' ? sun : graha === 'Moon' ? moon : moment.others[graha];
+    const longitude = grahaLongitude(moment, graha);
     if (longitude === undefined || !allowed.includes(signOf(longitude))) return false;
+  }
+  const rules = effectiveRules(criteria);
+  if (rules.length > 0) {
+    const asc = moment.others.Asc;
+    if (asc === undefined) return false;
+    const ascSign = signOf(asc);
+    const houseOf = (graha: FinderGraha) => {
+      const longitude = grahaLongitude(moment, graha);
+      return longitude === undefined ? undefined : houseFrom(ascSign, longitude);
+    };
+    if (!rules.every(rule => ruleMatches(rule, houseOf))) return false;
   }
   return true;
 }

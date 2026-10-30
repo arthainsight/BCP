@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AYANAMSA_OFFSET_RANGE, PLACE_RANGES, readClampedInt, readIntList, readNumbers } from '@/lib/apiValidation';
-import { FINDER_GRAHAS, FINDER_SIZES, type FinderCriteria } from '@/lib/muhurtaFinder';
+import { FINDER_GRAHAS, FINDER_SIZES, parseRule, type FinderCriteria, type FinderRule } from '@/lib/muhurtaFinder';
 import { MAX_FINDER_DAYS, MAX_FINDER_STEPS, finderStepCount, finderStepMinutes, runMuhurtaFinder } from '@/lib/muhurtaFinderRun';
 
+const MAX_RULES = 12;
+
 // The stretches of time, from a start date for a number of days at a place, in which every condition the query names
-// holds at once: weekday (vara), tithi, nakshatra, yoga, karana, and the signs the Ascendant and the grahas may be in.
+// holds at once: weekday (vara), tithi, nakshatra, yoga, karana, the signs the Ascendant and the grahas may be in, and
+// rules about the houses from the Ascendant (`rule=any:Venus,Moon:1`, `rule=none:Sun,Mars:8,12`, up to 12 of them).
 // A condition that is left out is not a condition; one given as an empty list can never be met.
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -31,6 +34,14 @@ export async function GET(request: NextRequest) {
   for (const list of Object.values(lists)) {
     if (list !== undefined && 'error' in list) return NextResponse.json({ error: list.error }, { status: 400 });
   }
+  const rules: FinderRule[] = [];
+  const ruleTexts = searchParams.getAll('rule');
+  if (ruleTexts.length > MAX_RULES) return NextResponse.json({ error: `at most ${MAX_RULES} rules` }, { status: 400 });
+  for (const text of ruleTexts) {
+    const rule = parseRule(text);
+    if ('error' in rule) return NextResponse.json({ error: rule.error }, { status: 400 });
+    rules.push(rule);
+  }
   const all = (size: number, first = 0) => Array.from({ length: size }, (_, index) => first + index);
   const given = (list: number[] | undefined | { error: string }, size: number, first = 0): number[] => (list === undefined ? all(size, first) : (list as number[]));
   const criteria: FinderCriteria = {
@@ -40,6 +51,7 @@ export async function GET(request: NextRequest) {
     yoga: given(lists.yoga, FINDER_SIZES.yoga),
     karana: given(lists.karana, FINDER_SIZES.karana),
     signs,
+    rules,
   };
   if (finderStepCount(days, finderStepMinutes(criteria)) > MAX_FINDER_STEPS) {
     return NextResponse.json({ error: 'That many days is too many to search with these conditions' }, { status: 400 });

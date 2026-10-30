@@ -84,7 +84,20 @@ async function main() {
     `${finder}&karana=11`, `${finder}&sign_Moon=12`, `${finder}&sign_Asc=1.5`, `${finder}&sign_Mars=1,,2`, withParam(finder, 'lat', '95'), withParam(finder, 'tz', 'abc'), `${finder}&ayanamsaOffset=Infinity`]) {
     assert.equal((await call(muhurtaFinder, bad)).status, 400, bad);
   }
-  assert.equal((await call(muhurtaFinder, `${finder}&sign_Ketu=1`)).status, 200, 'a name that is not a graha of the grid is not read');
+  assert.equal((await call(muhurtaFinder, `${finder}&sign_Pluto=1`)).status, 200, 'a name that is not a graha of the grid is not read');
+  assert.equal((await call(muhurtaFinder, `${finder}&sign_Ketu=1`)).status, 200, 'Ketu is in the grid');
+  // Rules about the houses from the Ascendant: any number up to twelve, each any|none:grahas:houses.
+  const moonInLagna = await call(muhurtaFinder, `${finder}&rule=any:Moon:1`);
+  assert.equal(moonInLagna.status, 200);
+  assert.equal(moonInLagna.body.stepMinutes, 5);
+  assert.ok((moonInLagna.body.windows as unknown[]).length >= 3, 'the Moon rises with its sign for hours each day or two');
+  assert.deepEqual((await call(muhurtaFinder, `${finder}&rule=any:Moon:`)).body.windows, [], 'a rule with no house can never be met');
+  assert.equal((await call(muhurtaFinder, `${finder}&rule=any:Venus,Moon:1&rule=none:Sun,Mars,Saturn,Rahu,Ketu:8,12`)).status, 200);
+  const twelve = Array.from({ length: 13 }, () => '&rule=any:Moon:1').join('');
+  for (const bad of ['rule=', 'rule=any', 'rule=some:Moon:1', 'rule=any:Asc:1', 'rule=any:Pluto:1', 'rule=any:Moon:0', 'rule=any:Moon:13', 'rule=any:Moon:x', 'rule=any:Moon:1:2', twelve.slice(1)]) {
+    const result = await call(muhurtaFinder, `${finder}&${bad.replace(/^&/, '')}`);
+    assert.equal(result.status, 400, bad.slice(0, 40));
+  }
   assert.equal((await call(muhurtaFinder, withParam(finder, 'days', '99999'))).status, 200, 'a span that is too long is cut to the longest');
 
   // The annual routes share one reading of the request.
