@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v3.45',
+    date: '2026-10-30',
+    title: 'Bhāva Bala: plain blue columns with the totals',
+    changes: [
+      'The columns of the Bhāva Bala are now plain blue, one for each house with its total over it, instead of a stack of six colours: the total is what is read from a diagram, and what each total is made of (Bhavesha, Dig, Drig+, Drig−, occupants, Kāla) is in the table below it. The bar for each house against the average, with its status, stays above.',
+      'Updated the application version to v3.45.',
+    ],
+  },
+  {
     version: 'v3.44',
     date: '2026-10-30',
     title: 'Bhāva Bala: one colour for each house, strong or weak at a glance',

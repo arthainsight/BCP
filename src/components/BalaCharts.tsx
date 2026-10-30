@@ -331,17 +331,21 @@ export function StackedColumns({ title, note, ariaLabel, rows, series }: {
   const y = (value: number) => scaleLinear(value, axis.min, axis.max, top + plotHeight, top);
   const pitch = (x1 - x0) / rows.length;
   const columnWidth = Math.min(24, pitch - 6);
-  const linesOf = (row: ColumnRow): TipLine[] => [
-    ...series.map(item => ({ color: item.color, label: item.label, value: signed(row.values[item.key] ?? 0, 1) })),
-    { label: 'Σ', value: row.total.toFixed(1).replace(/\.0$/, '') },
-  ];
+  // With one series the column is the total and says so once; with several the tooltip gives each part and the sum.
+  const single = series.length === 1;
+  const linesOf = (row: ColumnRow): TipLine[] => single
+    ? [{ color: series[0].color, label: series[0].label, value: row.total.toFixed(1).replace(/\.0$/, '') }]
+    : [
+      ...series.map(item => ({ color: item.color, label: item.label, value: signed(row.values[item.key] ?? 0, 1) })),
+      { label: 'Σ', value: row.total.toFixed(1).replace(/\.0$/, '') },
+    ];
   const show = (event: { clientX: number; clientY: number }, row: ColumnRow) => {
     const box = ref.current?.getBoundingClientRect();
     setTip({ x: event.clientX - (box?.left ?? 0), y: event.clientY - (box?.top ?? 0), title: row.title, lines: linesOf(row) });
   };
 
   return (
-    <Frame title={title} note={note} legend={series.map(item => ({ label: item.label, color: item.color }))}>
+    <Frame title={title} note={note} legend={single ? undefined : series.map(item => ({ label: item.label, color: item.color }))}>
       <div ref={ref} className="relative min-w-0">
         <svg width={width} height={height} role="img" aria-label={ariaLabel} className="block" style={{ fontFamily: FONT }}>
           {axis.ticks.map(tick => (

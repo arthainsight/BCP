@@ -5,20 +5,19 @@ import { buildShadbalaRows } from '@/lib/shadbala';
 import type { BalaOptions } from '@/lib/balaOptions';
 import { buildClassicalBhavaBala } from '@/lib/bhavaBala';
 import { formatScore } from '@/lib/vargaMatrix';
-import { BHAVA_PARTS, STATUS_ICON, bhavaAgainstAverage, bhavaComposition, type BalaStatus, type BhavaPart } from '@/lib/balaView';
+import { STATUS_ICON, bhavaAgainstAverage, type BalaStatus } from '@/lib/balaView';
 import { useT } from '@/lib/i18n';
 import { HorizontalBars, SERIES_COLORS, STATUS_COLORS, StackedColumns } from './BalaCharts';
 import { Heading, ManualLink, NAME_CELL, ROW, ScrollTable, TOTAL_CELL, VALUE_CELL } from './balaShared';
 
 const STATUS_COLOR: Record<BalaStatus, string> = { weak: STATUS_COLORS.critical, ok: STATUS_COLORS.warning, strong: STATUS_COLORS.good };
-const PART_LABEL: Record<BhavaPart, string> = { bhavesha: 'Bhavesha', dig: 'Dig', drigBenefic: 'Drig+', drigMalefic: 'Drig−', occupants: 'Occupants', kala: 'Kāla' };
 
 /** Bhāva Bala: the strength of each of the twelve houses, as a column for each house and the table. */
 export default function BhavaBalaPanel({ chart, options }: { chart: ChartData; options?: BalaOptions }) {
   const t = useT();
   const rows = buildClassicalBhavaBala(chart, buildShadbalaRows(chart, options), options);
   const { average, houses } = bhavaAgainstAverage(rows);
-  const series = BHAVA_PARTS.map((key, index) => ({ key, label: key === 'occupants' ? t('Occupants') : PART_LABEL[key], color: SERIES_COLORS[index] }));
+  const series = [{ key: 'total', label: t('Total'), color: SERIES_COLORS[0] }];
 
   return (
     <div className="min-w-0 space-y-4">
@@ -51,14 +50,14 @@ export default function BhavaBalaPanel({ chart, options }: { chart: ChartData; o
       />
 
       <StackedColumns
-        title={t('What the Bhāva Bala of the houses is made of')}
-        note={t("The strength of each house in virūpa: its lord's Ṣaḍbala, its Dig Bala, the aspects of benefics (Drig+) and malefics (Drig−, below the zero), the grahas in it and its Kāla Bala. The number over a column is the total.")}
+        title={t('Bhāva Bala of the houses')}
+        note={t('The total strength of each house in virūpa, the number over the column. What each total is made of is in the table below.')}
         ariaLabel={t('Bhāva Bala of the houses')}
         series={series}
         rows={rows.map(row => ({
           key: String(row.house),
           label: `H${row.house}`,
-          values: bhavaComposition(row),
+          values: { total: row.total },
           total: row.total,
           title: `H${row.house} · ${row.sign} · ${row.lord}`,
         }))}

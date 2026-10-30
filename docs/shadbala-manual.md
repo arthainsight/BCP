@@ -282,7 +282,7 @@ Total = Sthāna + Dig + Kāla + Cheṣṭā + Naisargika + Dṛg, in virūpa. Th
 
 The houses are whole signs counted from the Lagna sign, the first house beginning at 0° of the Lagna sign (the equal houses of LagnaOne); the middle point of each house, which the aspects and the Dig Bala go by, is 15° into its sign (C9). The reference chart has Cancer rising, so the 1st house is Cancer (middle 105°), the 2nd Leo (135°), the 3rd Virgo (165°) and so on.
 
-**How the view shows it.** The first diagram is a bar for each house in one colour, so that the strong and the weak houses can be seen at a glance: the house's total as a percentage of the average of the twelve houses of the chart, with ✕ weak under 90 %, ! ok up to 110 % and ✓ strong from 110 %. The verses give no minimum strength for a house (the Ṣaḍbala has one for each graha, §8), so the status is the chart set against itself and is the app's reading, not a figure of BPHS. The second diagram shows what each total is made of.
+**How the view shows it.** The first diagram is a bar for each house in one colour, so that the strong and the weak houses can be seen at a glance: the house's total as a percentage of the average of the twelve houses of the chart, with ✕ weak under 90 %, ! ok up to 110 % and ✓ strong from 110 %. The verses give no minimum strength for a house (the Ṣaḍbala has one for each graha, §8), so the status is the chart set against itself and is the app's reading, not a figure of BPHS. The second diagram is a blue column for each house with its total in virūpa; what each total is made of is in the table.
 
 The strength of a house is the sum of five parts:
 
