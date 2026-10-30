@@ -1714,15 +1714,24 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await tara.getByRole('button', { name: 'all', exact: true }).click();
   await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeEnabled();
 
-  // The Mahādoṣas to keep clear of: the 15 that are worked out, each with what it avoids, and the 6 that are not worked out listed with their reason.
+  // The Mahādoṣas to keep clear of: the 24 that are worked out (the six Daśa Doṣas among them), each with what it avoids, and the 3 that are not worked out listed with their reason.
   const doshas = finder.locator('[data-finder-group="Mahadoshas"]');
-  await expect(doshas.locator('[data-finder-dosha]')).toHaveCount(15);
+  await expect(doshas.locator('[data-finder-dosha]')).toHaveCount(24);
   await expect(doshas).toContainText('Pañcāṅga Doṣa');
-  await expect(doshas).toContainText('Not worked out (6)');
+  await expect(doshas).toContainText('Not worked out (3)');
   await doshas.getByRole('checkbox', { name: '3. Saṅkrānti' }).check();
-  await expect(doshas.getByLabel('Hours on each side of the Sun entering a sign')).toHaveValue('6.4');
+  await expect(doshas.getByLabel('Minutes of arc of the Sun on each side of its entry into a sign')).toHaveValue('16');
+  await expect(doshas.getByLabel('Degrees at Cancer and Capricorn')).toHaveValue('3');
   await doshas.getByRole('checkbox', { name: '1. Pañcāṅga Doṣa' }).check();
-  await expect(doshas).toContainText('2 / 15');
+  await expect(doshas).toContainText('2 / 24');
+  // The choices of the doṣas that have them appear with the doṣa: the part of the nakṣatra that is Gaṇḍānta, and the time at Vyatipāta and Vaidhṛti.
+  await doshas.getByRole('checkbox', { name: '7. Gaṇḍānta' }).check();
+  await expect(doshas.getByLabel('Gaṇḍānta of the nakṣatra')).toHaveValue('pada');
+  await doshas.getByLabel('Gaṇḍānta of the nakṣatra').selectOption('two');
+  await doshas.getByRole('checkbox', { name: '20. Vyatipāta' }).check();
+  await expect(doshas.getByLabel('Time kept clear of at a Vyatipāta or Vaidhṛti')).toHaveValue('days');
+  await expect(doshas.locator('[data-finder-dosha="vishaGhati"]')).toContainText('Viṣa Ghaṭī');
+  await expect(doshas.locator('[data-finder-dosha="latta"]')).toContainText('15. Lattā');
   await doshas.getByRole('button', { name: 'none', exact: true }).click();
   await expect(doshas.locator('input:checked')).toHaveCount(0);
 

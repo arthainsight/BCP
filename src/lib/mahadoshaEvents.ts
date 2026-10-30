@@ -62,6 +62,38 @@ async function bisect(isAfter: (jd: number) => Promise<boolean>, low: number, hi
   return b;
 }
 
+/** The angle from `b` to `a` in degrees, wrapped to (−180, 180]. */
+const signedAngle = (a: number, b: number) => ((((a - b) % 360) + 540) % 360) - 180;
+
+/**
+ * The stretches around the Sun entering a sign (Saṅkrānti): `solsticeDegrees` of the Sun's longitude before and after the
+ * entry into Cancer and Capricorn (signs 3 and 9 of the zodiac the longitudes are in), `arcMinutes` before and after the
+ * entry into the others. The longitudes are in the zodiac of the chart (the sidereal when the ayanamsa is, the tropical when
+ * it is not): the entry is taken in the zodiac one uses.
+ */
+export async function sankrantiWindows(
+  sunLongitude: (jd: number) => Promise<number>,
+  fromJd: number,
+  toJd: number,
+  arcMinutes: number,
+  solsticeDegrees: number,
+): Promise<JdWindow[]> {
+  const windows: JdWindow[] = [];
+  // The Sun moves about a degree a day (0.95 at the slowest): the days a stretch of `degrees` takes, with a little over.
+  const days = (degrees: number) => degrees / 0.95 + 0.5;
+  for (const entry of await sankrantiMoments(sunLongitude, fromJd - days(solsticeDegrees), toJd + days(solsticeDegrees))) {
+    const sign = Math.floor((await sunLongitude(entry + 0.01)) / 30) % 12;
+    const boundary = sign * 30;
+    const degrees = sign === 3 || sign === 9 ? solsticeDegrees : arcMinutes / 60;
+    const reach = days(degrees);
+    // The Sun is `degrees` short of the boundary at the start and `degrees` past it at the end.
+    const startJd = await bisect(async jd => signedAngle(await sunLongitude(jd), boundary) >= -degrees, entry - reach, entry);
+    const endJd = await bisect(async jd => signedAngle(await sunLongitude(jd), boundary) >= degrees, entry, entry + reach);
+    windows.push({ startJd, endJd });
+  }
+  return windows;
+}
+
 /** The moments between `fromJd` and `toJd` when the sidereal Sun enters a sign, looked at every day. */
 export async function sankrantiMoments(sunLongitude: (jd: number) => Promise<number>, fromJd: number, toJd: number): Promise<number[]> {
   const moments: number[] = [];
@@ -131,4 +163,26 @@ export async function eclipseMoments(fromJd: number, toJd: number): Promise<{ so
     return moments;
   };
   return { solar: await collect(sweNextSolarEclipse), lunar: await collect(sweNextLunarEclipse) };
+}
+
+/** The hours before and after the exact moment that the book gives for the time of Vyatipāta and Vaidhṛti that is most terrible (the mean apparent discs of the Sun and the Moon over the difference of their mean daily motions: 1.036 hours). */
+export const VYATIPATA_SHORT_HOURS = 1.036;
+
+/**
+ * The Viṣanāḍī of a weekday (Vara Vishanadi): 4 nāḍīs from the nāḍī `start`, counted from sunrise in the weekday that lasts
+ * to the next sunrise and has 60 nāḍīs.
+ */
+export function varaVishanadi(sunriseJd: number, nextSunriseJd: number, start: number, nadis = 4): JdWindow {
+  const nadi = (nextSunriseJd - sunriseJd) / 60;
+  return { startJd: sunriseJd + start * nadi, endJd: sunriseJd + (start + nadis) * nadi };
+}
+
+/**
+ * The Ardhayāma of a weekday: multiply the number of the weekday (Sunday 1) by 3, divide by 8, add 1 to the remainder; the
+ * eighth of the day (sunrise to sunset) with that number, and of the night (sunset to the next sunrise).
+ */
+export function ardhayama(weekday: number, sunriseJd: number, sunsetJd: number, nextSunriseJd: number): JdWindow[] {
+  const part = (((weekday + 1) * 3) % 8) + 1;
+  const eighth = (from: number, to: number): JdWindow => ({ startJd: from + ((part - 1) * (to - from)) / 8, endJd: from + (part * (to - from)) / 8 });
+  return [eighth(sunriseJd, sunsetJd), eighth(sunsetJd, nextSunriseJd)];
 }

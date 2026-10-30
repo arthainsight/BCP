@@ -10,7 +10,7 @@ import { NAKSHATRA_NAMES } from '@/lib/nakshatras';
 import { YOGA_NAMES } from '@/lib/panchang';
 import {
   BENEFICS, CHANDRABALA_USUAL, FINDER_GRAHAS, FINDER_WEIGHTS, isPreferKey, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, TARABALA_USUAL, TARA_NAMES, effectiveRules, formatChandra, formatRule, formatTara, isImpossible, isImpossibleRule,
-  SANKRANTI_HOURS, isLimited, localParts, nakshatraOf, scoredKeys, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule, type PreferKey,
+  SANKRANTI_ARC_MINUTES, SANKRANTI_SOLSTICE_DEGREES, isLimited, localParts, nakshatraOf, scoredKeys, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule, type PreferKey,
 } from '@/lib/muhurtaFinder';
 import { DOSHAS, DOSHAS_NOT_WORKED_OUT, DOSHA_IDS, isDoshaId, type DoshaId } from '@/lib/mahadosha';
 import { FINDER_PRESETS, type FinderPreset } from '@/lib/muhurtaFinderPresets';
@@ -53,8 +53,12 @@ type Choices = {
   minScore: number;
   /** The Mahādoṣas to keep clear of. */
   avoid: DoshaId[];
-  /** Hours on each side of a Saṅkrānti. */
-  sankrantiHours: number;
+  /** Minutes of arc of the Sun on each side of its entry into a sign, and degrees at Cancer and Capricorn (Saṅkrānti). */
+  sankrantiArc: number;
+  sankrantiSolstice: number;
+  /** The part of the nakṣatra that is Gaṇḍānta, and the time of Vyatipāta and Vaidhṛti. */
+  gandantaNakshatra: 'pada' | 'four' | 'two';
+  vyatipataLength: 'days' | 'short';
 };
 
 const allChoices = (): Choices => ({
@@ -67,7 +71,10 @@ const allChoices = (): Choices => ({
   prefer: [],
   minScore: 0,
   avoid: [],
-  sankrantiHours: SANKRANTI_HOURS,
+  sankrantiArc: SANKRANTI_ARC_MINUTES,
+  sankrantiSolstice: SANKRANTI_SOLSTICE_DEGREES,
+  gandantaNakshatra: 'pada',
+  vyatipataLength: 'days',
 });
 
 /** The choices at the start: the houses of the Chandrabala and the tārās of the Tarabala that suit, as wishes (they limit nothing and score 100 and 60). */
@@ -102,7 +109,10 @@ function readChoices(): Choices {
     if (Array.isArray(saved.prefer)) choices.prefer = [...new Set((saved.prefer as unknown[]).filter((item): item is PreferKey => typeof item === 'string' && isPreferKey(item)))];
     if (typeof saved.minScore === 'number' && saved.minScore >= 0 && saved.minScore <= 1000) choices.minScore = Math.round(saved.minScore);
     if (Array.isArray(saved.avoid)) choices.avoid = [...new Set((saved.avoid as unknown[]).filter((item): item is DoshaId => typeof item === 'string' && isDoshaId(item)))];
-    if (typeof saved.sankrantiHours === 'number' && saved.sankrantiHours >= 0 && saved.sankrantiHours <= 48) choices.sankrantiHours = saved.sankrantiHours;
+    if (typeof saved.sankrantiArc === 'number' && saved.sankrantiArc >= 0 && saved.sankrantiArc <= 600) choices.sankrantiArc = saved.sankrantiArc;
+    if (typeof saved.sankrantiSolstice === 'number' && saved.sankrantiSolstice >= 0 && saved.sankrantiSolstice <= 15) choices.sankrantiSolstice = saved.sankrantiSolstice;
+    if (saved.gandantaNakshatra === 'pada' || saved.gandantaNakshatra === 'four' || saved.gandantaNakshatra === 'two') choices.gandantaNakshatra = saved.gandantaNakshatra;
+    if (saved.vyatipataLength === 'days' || saved.vyatipataLength === 'short') choices.vyatipataLength = saved.vyatipataLength;
     const signs = saved.signs as Partial<Record<string, unknown>> | undefined;
     for (const graha of FINDER_GRAHAS) choices.signs[graha] = list(signs?.[graha], 0, 12) ?? choices.signs[graha];
     if (Array.isArray(saved.rules)) {
@@ -230,7 +240,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     const chandra = natalMoonSign !== undefined && isLimited(choices.chandra, 12) ? { moonSign: natalMoonSign, houses: choices.chandra } : undefined;
     const tara = natalNakshatra !== undefined && isLimited(choices.tara, 9) ? { nakshatra: natalNakshatra, taras: choices.tara } : undefined;
     const natal = natalMoonSign !== undefined && natalAscSign !== undefined ? { ascSign: natalAscSign, moonSign: natalMoonSign } : undefined;
-    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, tara, prefer: choices.prefer, minScore: choices.minScore, avoid: choices.avoid, natal, sankrantiHours: choices.sankrantiHours };
+    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, tara, prefer: choices.prefer, minScore: choices.minScore, avoid: choices.avoid, natal, sankrantiArc: choices.sankrantiArc, sankrantiSolstice: choices.sankrantiSolstice, gandantaNakshatra: choices.gandantaNakshatra, vyatipataLength: choices.vyatipataLength };
   }, [choices, natalMoonSign, natalAscSign, natalNakshatra]);
   const impossible = isImpossible(criteria);
   // The wishes that limit something, and the most a stretch can score.
@@ -262,7 +272,12 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     if (choices.avoid.length > 0) {
       params.set('avoid', choices.avoid.join(','));
       if (criteria.natal) params.set('natal', `${criteria.natal.ascSign}:${criteria.natal.moonSign}`);
-      if (choices.avoid.includes('sankranti')) params.set('sankrantiHours', String(choices.sankrantiHours));
+      if (choices.avoid.includes('sankranti')) {
+        params.set('sankrantiArc', String(choices.sankrantiArc));
+        params.set('sankrantiSolstice', String(choices.sankrantiSolstice));
+      }
+      if (choices.avoid.includes('gandanta')) params.set('gandanta', choices.gandantaNakshatra);
+      if (choices.avoid.includes('vyatipata') || choices.avoid.includes('vaidhriti')) params.set('vyatipata', choices.vyatipataLength);
     }
     const id = ++request.current;
     setState({ loading: true, tz });
@@ -560,15 +575,55 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
           })}
         </div>
         {choices.avoid.includes('sankranti') && (
+          <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+            <label className="flex items-center gap-1.5">
+              <span>{t('Minutes of arc of the Sun on each side of its entry into a sign')}</span>
+              <input
+                type="number" min={0} max={600} step={1} value={choices.sankrantiArc}
+                onChange={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0 && value <= 600) set('sankrantiArc', value); }}
+                className="w-20 rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                aria-label={t('Minutes of arc of the Sun on each side of its entry into a sign')}
+              />
+            </label>
+            <label className="flex items-center gap-1.5">
+              <span>{t('Degrees at Cancer and Capricorn')}</span>
+              <input
+                type="number" min={0} max={15} step={0.5} value={choices.sankrantiSolstice}
+                onChange={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0 && value <= 15) set('sankrantiSolstice', value); }}
+                className="w-16 rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                aria-label={t('Degrees at Cancer and Capricorn')}
+              />
+            </label>
+            <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{t('The text: 16 nāḍīs (16′) and 3°, in the zodiac of the chart.')}</span>
+          </div>
+        )}
+        {choices.avoid.includes('gandanta') && (
           <label className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
-            <span>{t('Hours on each side of the Sun entering a sign')}</span>
-            <input
-              type="number" min={0} max={48} step={0.1} value={choices.sankrantiHours}
-              onChange={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0 && value <= 48) set('sankrantiHours', value); }}
-              className="w-20 rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
-              aria-label={t('Hours on each side of the Sun entering a sign')}
-            />
-            <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{t('The text gives no length: 16 ghaṭīs (6.4 hours) is the default.')}</span>
+            <span>{t('Gaṇḍānta of the nakṣatra')}</span>
+            <select
+              value={choices.gandantaNakshatra}
+              onChange={event => set('gandantaNakshatra', event.target.value as Choices['gandantaNakshatra'])}
+              className="rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+              aria-label={t('Gaṇḍānta of the nakṣatra')}
+            >
+              <option value="pada">{t('a pada (3°20′, the text)')}</option>
+              <option value="four">{t('4 ghaṭīs (53′20″)')}</option>
+              <option value="two">{t('2 ghaṭīs (26′40″)')}</option>
+            </select>
+          </label>
+        )}
+        {(choices.avoid.includes('vyatipata') || choices.avoid.includes('vaidhriti')) && (
+          <label className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+            <span>{t('Time kept clear of at a Vyatipāta or Vaidhṛti')}</span>
+            <select
+              value={choices.vyatipataLength}
+              onChange={event => set('vyatipataLength', event.target.value as Choices['vyatipataLength'])}
+              className="rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+              aria-label={t('Time kept clear of at a Vyatipāta or Vaidhṛti')}
+            >
+              <option value="days">{t('the day before, the day of and the day after')}</option>
+              <option value="short">{t('1 h 2 min on each side of the moment (the book)')}</option>
+            </select>
           </label>
         )}
         <details className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
