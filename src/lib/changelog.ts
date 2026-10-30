@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.56',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: ready-made choices from the specific guidelines',
+    changes: [
+      'The ready-made choices are now in kinds (Business, Marriage, House and land, Travel) and follow the chapter "Specific Muhurta Guidelines" of Classical Muhurta. New: Wedding, Laying the foundation (beginning construction), Entering a new house, Purchasing real estate, and Commencing a journey, besides the Store or business opening. A choice sets the nakṣatras, tithis, vāras, karaṇas, rising signs and placement rules that the book calls favourable, leaves out what it says to avoid, sets the Mahādoṣas the book names for the purpose, and a wish about the Navāṁśa Lagna where it names one.',
+      'Under each choice the page lists what the book calls middling (not chosen: tick it to widen the search) and what is not used from the book for that purpose (the lunar month, the Ayana, the direction of the door or the journey, the natal chart, the Gochara, the pādas, the Combinations and so on), so that nothing is left out unsaid.',
+      'The wedding sets the eleven Mahādoṣas that the book names first. Jāmitra, Lattā, Upagraha, Pāta and the blind, deaf and lame Lagna are named too, but together with the rest they leave no time in a year (tried from November 2026), so they are left for you to tick one at a time. The other events of the chapter (about a hundred) can be added the same way.',
+      'Updated the application version to v3.56.',
+    ],
+  },
+  {
     version: 'v3.55',
     date: '2026-10-30',
     title: 'Muhurta Finder: Śūnya Rāśi, the blind, deaf and lame signs, and the fatal degrees',

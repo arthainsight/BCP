@@ -14,7 +14,7 @@ import {
 } from '@/lib/muhurtaFinder';
 import { DOSHAS, DOSHAS_NOT_WORKED_OUT, DOSHA_IDS, isDoshaId, type DoshaId } from '@/lib/mahadosha';
 import { D1_KEYS, D1_WISHES, isD1Key, type D1Key } from '@/lib/muhurtaD1';
-import { FINDER_PRESETS, type FinderPreset } from '@/lib/muhurtaFinderPresets';
+import { FINDER_PRESETS, FINDER_PRESET_CATEGORIES, NOT_APPLIED, type FinderPreset } from '@/lib/muhurtaFinderPresets';
 import type { FinderResult } from '@/lib/muhurtaFinderRun';
 import { useT } from '@/lib/i18n';
 
@@ -94,6 +94,8 @@ function presetChoices(preset: FinderPreset): Choices {
   for (const graha of FINDER_GRAHAS) choices.signs[graha] = preset.signs?.[graha] ?? choices.signs[graha];
   if (preset.chandra) choices.chandra = preset.chandra;
   if (preset.tara) choices.tara = preset.tara;
+  if (preset.avoid) choices.avoid = [...preset.avoid];
+  if (preset.d1) choices.d1 = [...preset.d1];
   choices.rules = (preset.rules ?? []).map(rule => ({ ...rule, grahas: [...rule.grahas], houses: [...rule.houses] }));
   return choices;
 }
@@ -358,15 +360,31 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
 
       <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700" data-finder-group="Presets">
         <h3 className="text-xs font-mono font-semibold text-emerald-700 dark:text-green-400">{t('Ready-made choices')}</h3>
-        <div className="flex flex-wrap gap-1">
-          {FINDER_PRESETS.map(preset => (
-            <button key={preset.id} type="button" className={chip(preset.id === presetId)} aria-pressed={preset.id === presetId} onClick={() => { setChoices(presetChoices(preset)); setPresetId(preset.id); }}>
-              {t(preset.label)}
-            </button>
-          ))}
-        </div>
+        {FINDER_PRESET_CATEGORIES.map(category => (
+          <div key={category} className="flex flex-wrap items-center gap-1" data-finder-preset-category={category}>
+            <span className="w-24 shrink-0 text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t(category)}</span>
+            {FINDER_PRESETS.filter(preset => preset.category === category).map(preset => (
+              <button key={preset.id} type="button" className={chip(preset.id === presetId)} aria-pressed={preset.id === presetId} data-finder-preset={preset.id} onClick={() => { setChoices(presetChoices(preset)); setPresetId(preset.id); }}>
+                {t(preset.label)}
+              </button>
+            ))}
+          </div>
+        ))}
         {FINDER_PRESETS.filter(preset => preset.id === presetId).map(preset => (
-          <p key={preset.id} className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t(preset.note)}</p>
+          <div key={preset.id} className="space-y-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+            <p>{t(preset.note)}</p>
+            {preset.middling && (
+              <p data-finder-preset-middling>
+                {t('Middling in the book, not chosen')}:
+                {preset.middling.nakshatra && ` ${t('Nakṣatra')} ${preset.middling.nakshatra.map(index => NAKSHATRA_NAMES[index]).join(', ')}.`}
+                {preset.middling.tithi && ` ${t('Tithi')} ${preset.middling.tithi.map(tithiLabel).join(', ')}.`}
+                {preset.middling.asc && ` ${t('Asc')} ${preset.middling.asc.map(sign => SIGN_NAMES[sign]).join(', ')}.`}
+              </p>
+            )}
+            {preset.notApplied && (
+              <p data-finder-preset-not-applied>{t('Not used from the book')}: {preset.notApplied.map(key => t(NOT_APPLIED[key])).join('; ')}.</p>
+            )}
+          </div>
         ))}
       </section>
 
