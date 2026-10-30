@@ -36,6 +36,8 @@ export interface FinderPreset {
   middling?: { nakshatra?: number[]; tithi?: number[]; asc?: number[] };
   /** What the source gives for the purpose that the finder does not use (keys of NOT_APPLIED). */
   notApplied?: NotApplied[];
+  /** Marriage, a journey, entering a house: the book calls three Sarvārtha Siddhi yogas unfavourable for them (the month strip leaves them out). */
+  sarvarthaExceptions?: boolean;
 }
 
 /** The things the source names that the finder has no group for, in a line each. */
@@ -129,6 +131,7 @@ export const FINDER_PRESETS: FinderPreset[] = [
     d1: ['navamsaLagnaBenefic'],
     middling: { tithi: [1, 6, 8, 12, 15, 16, 21, 23], asc: [1, 3, 4, 8, 10] },
     notApplied: ['masa', 'ayana', 'pada', 'dagdha', 'natal', 'lords', 'gochara', 'navamsa', 'combinations', 'varaYogas', 'moonJoined', 'eclipseNakshatra'],
+    sarvarthaExceptions: true,
   },
   /**
    * Laying the foundation of a house or building (the beginning of construction). Nakṣatras Rohiṇī, Mṛgaśīrṣa, Puṣya,
@@ -173,6 +176,7 @@ export const FINDER_PRESETS: FinderPreset[] = [
     d1: ['navamsaLagnaBenefic'],
     middling: { nakshatra: [6, 7, 12, 13, 21, 23], asc: [2, 5, 8, 11] },
     notApplied: ['ayana', 'masa', 'door', 'natal', 'navamsa', 'mukha', 'varaYogas'],
+    sarvarthaExceptions: true,
   },
   /**
    * Purchasing real estate. Nakṣatras Aśvinī, Rohiṇī, Mṛgaśīrṣa, Punarvasu, Puṣya, Uttara Phalgunī, Hasta, Svātī, Anurādhā,
@@ -220,5 +224,6 @@ export const FINDER_PRESETS: FinderPreset[] = [
     avoid: ['udayasta'],
     middling: { nakshatra: [3, 6, 11, 13, 18, 20, 23], tithi: [16], asc: [0, 3, 5, 7, 9] },
     notApplied: ['direction', 'sula', 'venusFront', 'timeOfDay', 'pada', 'natal', 'retrograde', 'ayana', 'navamsa', 'lords'],
+    sarvarthaExceptions: true,
   },
 ];

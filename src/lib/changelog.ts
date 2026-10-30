@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.57',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: the month strip and the Vāra–Tithi–Nakṣatra yogas',
+    changes: [
+      'The Muhurta Finder has a month strip like the one of the Kala software: a row for each of the vāra, nakṣatra, tithi, karaṇa and yoga (and the Tarabala and the Chandrabala when the chart has a natal Moon), one stretch for each value, to the minute, with the days of the month above. It follows the choices of the page: green where the value is chosen, yellow where the book calls it middling for the purpose, red where it is not chosen. Choose a ready-made choice (a wedding, a journey, opening a business) and the strip shows which times of the month the book calls favourable for it; click a time for its details.',
+      'New: the Vāra–Tithi–Nakṣatra yogas of Classical Muhurta, chapter 9 (Siddha, Amṛta, Sarvārtha Siddhi, Subha, Suta, Dagdha, Mṛtyu, Viṣa, Vināśa and the others, 33 combinations under 25 names), as the last row of the strip and in the details of a clicked time. The book\'s strengths are used: a Vāra/Nakṣatra yoga is three times a Vāra/Tithi yoga and a Vāra/Tithi/Nakṣatra yoga three times that; the strongest auspicious and the strongest inauspicious are set against each other. The Sarvārtha Siddhi yogas the book calls unfavourable for a marriage, a journey and entering a house are left out for those choices.',
+      'docs/vtn-yogas.md lists the yogas, how a moment is judged, and five places where the prose of the book and its tables differ (the prose is followed). The Lagna row, the finer scales of Kala\'s strip and the yogas as a search condition are not done yet.',
+      'Updated the application version to v3.57.',
+    ],
+  },
+  {
     version: 'v3.56',
     date: '2026-10-30',
     title: 'Muhurta Finder: ready-made choices from the specific guidelines',

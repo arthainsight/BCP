@@ -1773,7 +1773,20 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   const presets = finder.locator('[data-finder-group="Presets"]');
   await expect(presets.locator('[data-finder-preset-category]')).toHaveCount(4);
   await expect(presets.locator('[data-finder-preset]')).toHaveCount(6);
+  // The month strip: nothing is red while nothing is chosen away; a ready-made choice colours it by the book; a click gives the details.
+  const strip = finder.locator('[data-finder-group="Strip"]');
+  const nakshatraRow = strip.locator('[data-finder-strip-row="nakshatra"]');
+  await expect(nakshatraRow).toBeVisible({ timeout: 20000 });
+  await expect(strip.locator('[data-finder-strip-row]')).toHaveCount(8);
+  await expect(nakshatraRow.locator('[data-finder-strip-tone="bad"]')).toHaveCount(0);
   await presets.getByRole('button', { name: 'Wedding', exact: true }).click();
+  await expect(nakshatraRow.locator('[data-finder-strip-tone="bad"]').first()).toBeVisible();
+  await expect(strip.locator('[data-finder-strip-row="vtn"] [data-finder-strip-tone]').first()).toBeVisible();
+  await strip.locator('[data-finder-strip-row="vtn"] > div').first().click({ position: { x: 200, y: 8 } });
+  await expect(strip.locator('[data-finder-strip-detail]')).toBeVisible();
+  const monthBefore = await strip.locator('[data-finder-strip-month]').textContent();
+  await strip.getByRole('button', { name: 'next month', exact: true }).click();
+  await expect(strip.locator('[data-finder-strip-month]')).not.toHaveText(monthBefore ?? '');
   await expect(finder.locator('[data-finder-group="Nakṣatra"]').getByRole('button', { name: 'Magha', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(finder.locator('[data-finder-group="Nakṣatra"]').getByRole('button', { name: 'Bharani', exact: true })).toHaveAttribute('aria-pressed', 'false');
   await expect(finder.locator('[data-finder-group="Vāra"]').getByRole('button', { name: 'sat', exact: true })).toHaveAttribute('aria-pressed', 'false');
