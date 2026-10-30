@@ -3,8 +3,8 @@
 // panchāṅga of the app at the middle of what it finds.
 import assert from 'node:assert/strict';
 import {
-  BENEFICS, FINDER_SIZES, KARANA_NAMES, MALEFICS, effectiveRules, findWindows, formatRule, houseFrom, isImpossible, isLimited, karanaOf, localParts,
-  matchesVara, momentMatches, nakshatraOf, neededBodies, parseRule, ruleMatches, signOf, tithiLabel, tithiOf, yogaOf,
+  BENEFICS, CHANDRABALA_USUAL, FINDER_SIZES, KARANA_NAMES, MALEFICS, effectiveRules, findWindows, formatChandra, formatRule, houseFrom, isImpossible, isLimited, karanaOf, localParts,
+  matchesVara, momentMatches, nakshatraOf, neededBodies, parseChandra, parseRule, ruleMatches, signOf, tithiLabel, tithiOf, yogaOf,
   type FinderCriteria, type FinderMoment, type FinderRule,
 } from './muhurtaFinder';
 import { FINDER_PRESETS } from './muhurtaFinderPresets';
@@ -188,6 +188,30 @@ assert.equal(houseFrom(11, 0), 2, 'Pisces rising: Aries is the 2nd');
 }
 
 // ---------------------------------------------------------------------------
+// Chandrabala: the Moon's house from the sign of the Moon at birth (worked by hand)
+// ---------------------------------------------------------------------------
+{
+  // The Moon at birth in Taurus (sign 1): the Moon at 100° (Cancer) is in the 3rd house from it, at 130° (Leo) in the 4th, at 25° (Aries) in the 12th, at 40° (Taurus) in the 1st.
+  assert.equal(houseFrom(1, 100), 3);
+  assert.equal(houseFrom(1, 130), 4);
+  assert.equal(houseFrom(1, 25), 12);
+  assert.equal(houseFrom(1, 40), 1);
+  const at = (moon: number): FinderMoment => ({ vara: 1, sun: 200, moon, others: {} });
+  const usual = only({ chandra: { moonSign: 1, houses: CHANDRABALA_USUAL } });
+  // 100° 3rd, 130° 4th, 25° 12th, 40° 1st, 70° (Gemini) 2nd, 280° (Capricorn) 9th, 220° (Scorpio) 7th, 250° (Sagittarius) 8th, the Candrāṣṭama.
+  assert.deepEqual([100, 130, 25, 40, 70, 280, 220, 250].map(moon => momentMatches(at(moon), usual)), [true, false, false, true, false, false, true, false]);
+  assert.equal(momentMatches(at(130), only({ chandra: { moonSign: 1, houses: all(12, 1) } })), true, 'every house is no condition');
+  assert.equal(isImpossible(only({ chandra: { moonSign: 1, houses: [] } })), true);
+  assert.equal(isImpossible(usual), false);
+  assert.equal(neededBodies(usual).luminaries, true);
+  assert.equal(neededBodies(only({ chandra: { moonSign: 1, houses: all(12, 1) } })).luminaries, false);
+  assert.equal(formatChandra({ moonSign: 1, houses: [1, 3] }), '1:1,3');
+  assert.deepEqual(parseChandra('1:11,3,3'), { moonSign: 1, houses: [3, 11] });
+  assert.deepEqual(parseChandra('11:'), { moonSign: 11, houses: [] });
+  for (const bad of ['', '1', '12:1', '-1:1', 'a:1', '1:0', '1:13', '1:x', '1:1:2']) assert.ok('error' in parseChandra(bad), `"${bad}" is refused`);
+}
+
+// ---------------------------------------------------------------------------
 // The walk through time: stretches found to the minute from a rule with known edges
 // ---------------------------------------------------------------------------
 async function walks() {
@@ -335,6 +359,26 @@ async function searches() {
     const hours = (window.end - window.start) / 3_600_000;
     assert.ok(hours > 0.1 && hours < 5, `${hours.toFixed(2)} h`);
   }
+
+  // Chandrabala against the chart of the app: the Moon born in Gemini (sign 2), the usual six houses. At the middle of each stretch the Moon
+  // is in Gemini, Leo, Libra, Scorpio, Capricorn... counted: the 1st Gemini, 3rd Leo, 6th Scorpio, 7th Sagittarius, 10th Pisces, 11th Aries.
+  const chandra = await runMuhurtaFinder(request(only({ chandra: { moonSign: 2, houses: CHANDRABALA_USUAL } }), 60));
+  assert.ok(chandra.windows.length >= 8, `${chandra.windows.length} stretches of the suiting Moon in 60 days`);
+  const suiting = [2, 4, 7, 8, 11, 0];
+  let covered = 0;
+  for (const window of chandra.windows) covered += window.end - window.start;
+  assert.ok(covered / (chandra.to - chandra.from) > 0.4 && covered / (chandra.to - chandra.from) < 0.6, 'six signs of twelve: about half of the time');
+  for (const window of chandra.windows.slice(0, 6)) {
+    const middle = new Date((window.start + window.end) / 2);
+    const local = new Date(middle.getTime() + 2 * 3_600_000);
+    const chart = await calculateChart(
+      local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate(), local.getUTCHours(), local.getUTCMinutes(), 0,
+      PLACE.lat, PLACE.lng, 2, 'lahiri',
+    );
+    const moonSign = chart.planets.find(planet => planet.name === 'Moon')!.sign - 1;
+    assert.ok(suiting.includes(moonSign), `the Moon in sign ${moonSign} at the middle of ${middle.toISOString()}`);
+  }
+  assert.equal(chandra.stepMinutes, 15, 'the Moon alone is looked at every 15 minutes');
 
   // The Ascendant in a sign: a window of an hour or two each day, found with the finer step.
   const rising = await runMuhurtaFinder(request(only({ signs: { Asc: [0] } }), 5));

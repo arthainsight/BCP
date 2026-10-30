@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { CalculationSettings, ChartData } from '@/types';
 import { AnnualPlaceControl, type AnnualPlace } from './annualShared';
 import { calculationParams } from '@/lib/apiParams';
 import { pad2 } from '@/lib/dateFormat';
-import { SIGN_ABBR } from '@/lib/signs';
+import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
 import { NAKSHATRA_NAMES } from '@/lib/nakshatras';
 import { YOGA_NAMES } from '@/lib/panchang';
 import {
-  BENEFICS, FINDER_GRAHAS, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, effectiveRules, formatRule, isImpossible, isImpossibleRule,
+  BENEFICS, CHANDRABALA_USUAL, FINDER_GRAHAS, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, effectiveRules, formatChandra, formatRule, isImpossible, isImpossibleRule,
   isLimited, localParts, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule,
 } from '@/lib/muhurtaFinder';
 import { FINDER_PRESETS, type FinderPreset } from '@/lib/muhurtaFinderPresets';
@@ -41,6 +41,8 @@ type Choices = {
   vara: number[]; tithi: number[]; nakshatra: number[]; yoga: number[]; karana: number[];
   signs: Record<FinderGraha, number[]>;
   rules: FinderRule[];
+  /** The houses from the Moon at birth that suit (Chandrabala); every house is no condition. */
+  chandra: number[];
 };
 
 const allChoices = (): Choices => ({
@@ -48,6 +50,7 @@ const allChoices = (): Choices => ({
   yoga: range(FINDER_SIZES.yoga), karana: range(FINDER_SIZES.karana),
   signs: Object.fromEntries(FINDER_GRAHAS.map(graha => [graha, range(12)])) as Record<FinderGraha, number[]>,
   rules: [],
+  chandra: range(12, 1),
 });
 
 /** The choices of a preset: everything, with what the preset names set. */
@@ -55,6 +58,7 @@ function presetChoices(preset: FinderPreset): Choices {
   const choices = allChoices();
   for (const key of ['vara', 'tithi', 'nakshatra', 'yoga', 'karana'] as const) choices[key] = preset[key] ?? choices[key];
   for (const graha of FINDER_GRAHAS) choices.signs[graha] = preset.signs?.[graha] ?? choices.signs[graha];
+  choices.chandra = preset.chandra ?? choices.chandra;
   choices.rules = (preset.rules ?? []).map(rule => ({ ...rule, grahas: [...rule.grahas], houses: [...rule.houses] }));
   return choices;
 }
@@ -72,6 +76,7 @@ function readChoices(): Choices {
     choices.nakshatra = list(saved.nakshatra, 0, 27) ?? choices.nakshatra;
     choices.yoga = list(saved.yoga, 0, 27) ?? choices.yoga;
     choices.karana = list(saved.karana, 0, 11) ?? choices.karana;
+    choices.chandra = list(saved.chandra, 1, 12) ?? choices.chandra;
     const signs = saved.signs as Partial<Record<string, unknown>> | undefined;
     for (const graha of FINDER_GRAHAS) choices.signs[graha] = list(signs?.[graha], 0, 12) ?? choices.signs[graha];
     if (Array.isArray(saved.rules)) {
@@ -97,7 +102,7 @@ const smallButton = 'rounded border border-zinc-300 px-1.5 py-0.5 text-[9px] fon
 
 /** One group of choices: a title, the buttons that choose all, flip or none, and the items. */
 function Group({
-  title, items, size, first = 0, chosen, onChange, columns = 'flex flex-wrap gap-1', note,
+  title, items, size, first = 0, chosen, onChange, columns = 'flex flex-wrap gap-1', note, extra,
 }: {
   title: string;
   items: { value: number; label: string; title?: string }[];
@@ -107,6 +112,8 @@ function Group({
   onChange: (values: number[]) => void;
   columns?: string;
   note?: string;
+  /** More buttons in the line of the title. */
+  extra?: ReactNode;
 }) {
   const t = useT();
   const set = new Set(chosen);
@@ -118,6 +125,7 @@ function Group({
         <button type="button" className={smallButton} onClick={() => onChange(values)}>{t('all')}</button>
         <button type="button" className={smallButton} onClick={() => onChange(values.filter(value => !set.has(value)))}>{t('flip')}</button>
         <button type="button" className={smallButton} onClick={() => onChange([])}>{t('none')}</button>
+        {extra}
         {isLimited(chosen, size) && <span className="text-[9px] font-mono text-amber-700 dark:text-amber-400">{chosen.length} / {size}</span>}
       </div>
       {note && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{note}</p>}
@@ -168,13 +176,17 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     }
   }, [choices]);
 
+  // The sign (0 to 11) of the Moon at birth, for the Chandrabala.
+  const natalMoon = chart.planets.find(planet => planet.name === 'Moon');
+  const natalMoonSign = natalMoon ? natalMoon.sign - 1 : undefined;
   const criteria: FinderCriteria = useMemo(() => {
     const signs: FinderCriteria['signs'] = {};
     for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) signs[graha] = choices.signs[graha];
-    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules };
-  }, [choices]);
+    const chandra = natalMoonSign !== undefined && isLimited(choices.chandra, 12) ? { moonSign: natalMoonSign, houses: choices.chandra } : undefined;
+    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra };
+  }, [choices, natalMoonSign]);
   const impossible = isImpossible(criteria);
-  const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0 || effectiveRules(criteria).length > 0;
+  const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0 || effectiveRules(criteria).length > 0 || criteria.chandra !== undefined;
 
   const zone = place ? place.timezone : ianaTimezone;
   const lat = place ? place.latitude : chart.debug?.latitude;
@@ -191,6 +203,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     for (const [key, list, size] of lists) if (isLimited(list, size)) params.set(key, list.join(','));
     for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) params.set(`sign_${graha}`, choices.signs[graha].join(','));
     for (const rule of choices.rules) params.append('rule', formatRule(rule));
+    if (criteria.chandra) params.set('chandra', formatChandra(criteria.chandra));
     const id = ++request.current;
     setState({ loading: true, tz });
     setShowAll(false);
@@ -216,6 +229,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     ...FINDER_GRAHAS.map(graha => [GRAHA_HEAD[graha], choices.signs[graha]] as [string, number[]]),
   ].filter(([, list]) => (list as number[]).length === 0).map(([name]) => name as string);
   if (choices.rules.some(isImpossibleRule)) emptyGroups.push(t('a placement rule'));
+  if (natalMoonSign !== undefined && choices.chandra.length === 0) emptyGroups.push('Chandrabala');
 
   return (
     <div className="min-w-0 space-y-3" data-testid="muhurta-finder">
@@ -293,6 +307,14 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
           title={t('Nakṣatra')} size={27} chosen={choices.nakshatra} onChange={value => set('nakshatra', value)}
           items={NAKSHATRA_NAMES.map((label, value) => ({ value, label }))}
         />
+        {natalMoonSign !== undefined && (
+          <Group
+            title="Chandrabala" size={12} first={1} chosen={choices.chandra} onChange={value => set('chandra', value)}
+            note={`${t('The house of the Moon from the sign of the Moon at birth')} (${SIGN_NAMES[natalMoonSign]}). ${t('The 1st, 3rd, 6th, 7th, 10th and 11th are the houses usually taken to suit; the 8th is the Candrāṣṭama to avoid.')}`}
+            extra={<button type="button" className={smallButton} onClick={() => set('chandra', CHANDRABALA_USUAL)}>{t('usual six')}</button>}
+            items={range(12, 1).map(value => ({ value, label: String(value), title: SIGN_NAMES[(natalMoonSign + value - 1) % 12] }))}
+          />
+        )}
         <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700" data-finder-group="Graha">
           <h3 className="text-xs font-mono font-semibold text-emerald-700 dark:text-green-400">{t('Graha')}</h3>
           <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('The signs the Ascendant and each graha may be in. A column header chooses or clears the whole column.')}</p>

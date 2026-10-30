@@ -16,6 +16,8 @@ export interface FinderPreset {
   karana?: number[];
   signs?: Partial<Record<FinderGraha, number[]>>;
   rules?: FinderRule[];
+  /** The houses from the Moon at birth that suit (Chandrabala). */
+  chandra?: number[];
 }
 
 const without = (size: number, first: number, out: number[]) =>

@@ -9,6 +9,8 @@
 // (the sign of the Ascendant is the first house): "at least one of Venus and the Moon in the 1st", "none of the malefics
 // in the 8th and the 12th".
 //
+// Chandrabala is the Moon's house counted from the sign of the Moon at birth: the houses chosen are the ones that suit.
+//
 // This file is the part that needs no ephemeris: what a pair of longitudes says about the panchāṅga, whether a
 // moment suits the conditions, and the walk through time that finds where the answer changes (muhurtaFinderRun.ts
 // supplies the positions).
@@ -77,7 +79,12 @@ export interface FinderCriteria {
   signs: Partial<Record<FinderGraha, number[]>>;
   /** Placement rules, all of which must hold. */
   rules?: FinderRule[];
+  /** Chandrabala: the houses (1 to 12) from the sign of the Moon at birth (`moonSign`, 0 Aries to 11 Pisces) the Moon may be in. */
+  chandra?: { moonSign: number; houses: number[] };
 }
+
+/** The houses from the Moon at birth that are usually taken to suit: the 1st, 3rd, 6th, 7th, 10th and 11th. */
+export const CHANDRABALA_USUAL = [1, 3, 6, 7, 10, 11];
 
 /**
  * A rule about houses (1 to 12, counted from the sign of the Ascendant): `any` holds when at least one of the grahas is
@@ -106,6 +113,23 @@ export function ruleMatches(rule: FinderRule, houseOf: (graha: FinderGraha) => n
   if (houses.some(house => house === undefined)) return false;
   const inside = houses.some(house => rule.houses.includes(house as number));
   return rule.kind === 'any' ? inside : !inside;
+}
+
+/** The text of the Chandrabala for the address of a request: `1:1,3,6,7,10,11` (the sign of the Moon at birth, then the houses). */
+export const formatChandra = (chandra: { moonSign: number; houses: number[] }) => `${chandra.moonSign}:${chandra.houses.join(',')}`;
+
+/** The Chandrabala from its text, or what is wrong with it. */
+export function parseChandra(text: string): { moonSign: number; houses: number[] } | { error: string } {
+  const parts = text.split(':');
+  if (parts.length !== 2 || !/^\d{1,2}$/.test(parts[0].trim()) || Number(parts[0]) > 11) return { error: 'chandra must be the sign of the Moon from 0 to 11, a colon and the houses' };
+  const items = parts[1].trim() === '' ? [] : parts[1].split(',').map(item => item.trim());
+  const houses = new Set<number>();
+  for (const item of items) {
+    const value = /^\d{1,2}$/.test(item) ? Number(item) : NaN;
+    if (!(value >= 1 && value <= 12)) return { error: 'chandra houses must be whole numbers from 1 to 12' };
+    houses.add(value);
+  }
+  return { moonSign: Number(parts[0]), houses: [...houses].sort((a, b) => a - b) };
 }
 
 /** The text of a rule for the address of a request: `any:Venus,Moon:1`. */
@@ -139,7 +163,7 @@ export const isLimited = (allowed: readonly number[], size: number) => new Set(a
 /** Whether the conditions can never be met: some limited group has nothing chosen. */
 export function isImpossible(criteria: FinderCriteria): boolean {
   const groups = [criteria.vara, criteria.tithi, criteria.nakshatra, criteria.yoga, criteria.karana, ...Object.values(criteria.signs)];
-  return groups.some(group => group !== undefined && group.length === 0) || (criteria.rules ?? []).some(isImpossibleRule);
+  return groups.some(group => group !== undefined && group.length === 0) || (criteria.rules ?? []).some(isImpossibleRule) || (criteria.chandra !== undefined && criteria.chandra.houses.length === 0);
 }
 
 /** What a moment is, for the conditions: the longitudes (sidereal) the conditions ask about, and the weekday. */
@@ -167,6 +191,7 @@ export function neededBodies(criteria: FinderCriteria): { luminaries: boolean; o
   const luminaries =
     isLimited(criteria.tithi, FINDER_SIZES.tithi) || isLimited(criteria.nakshatra, FINDER_SIZES.nakshatra) ||
     isLimited(criteria.yoga, FINDER_SIZES.yoga) || isLimited(criteria.karana, FINDER_SIZES.karana) ||
+    (criteria.chandra !== undefined && isLimited(criteria.chandra.houses, 12)) ||
     (criteria.signs.Sun !== undefined && isLimited(criteria.signs.Sun, 12)) ||
     (criteria.signs.Moon !== undefined && isLimited(criteria.signs.Moon, 12));
   return { luminaries, others };
@@ -183,6 +208,7 @@ export function momentMatches(moment: FinderMoment, criteria: FinderCriteria): b
   if (isLimited(criteria.nakshatra, FINDER_SIZES.nakshatra) && !criteria.nakshatra.includes(nakshatraOf(moon))) return false;
   if (isLimited(criteria.yoga, FINDER_SIZES.yoga) && !criteria.yoga.includes(yogaOf(sun, moon))) return false;
   if (isLimited(criteria.karana, FINDER_SIZES.karana) && !criteria.karana.includes(karanaOf(sun, moon))) return false;
+  if (criteria.chandra !== undefined && isLimited(criteria.chandra.houses, 12) && !criteria.chandra.houses.includes(houseFrom(criteria.chandra.moonSign, moon))) return false;
   for (const graha of Object.keys(criteria.signs) as FinderGraha[]) {
     const allowed = criteria.signs[graha];
     if (allowed === undefined || !isLimited(allowed, 12)) continue;

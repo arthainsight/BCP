@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.49',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: Chandrabala',
+    changes: [
+      'The Muhurta Finder has a new group, Chandrabala: the house of the Moon counted from the sign of the Moon at birth (the 1st to the 12th). The buttons "usual six" choose the 1st, 3rd, 6th, 7th, 10th and 11th, the houses usually taken to suit; the 8th is the Candrāṣṭama to avoid. The houses to choose are yours: the group works like the others (all, flip, none), and the sign each house means is in its tooltip. It needs the birth chart, so it is the Moon of the chart that is open.',
+      'The scheme of which houses suit differs between sources (some add the 2nd, 5th and 9th in the bright half), so the app does not fix one: choose the houses you follow.',
+      'Updated the application version to v3.49.',
+    ],
+  },
+  {
     version: 'v3.48',
     date: '2026-10-30',
     title: 'Muhurta Finder: the places of the grahas, and a ready-made choice for opening a store',

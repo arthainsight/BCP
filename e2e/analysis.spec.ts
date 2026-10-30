@@ -1678,6 +1678,19 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(rows.first()).toContainText('Thursday 05.11.2026');
   await expect(rows.first()).toContainText('1 d 0 h');
 
+  // Chandrabala: the houses from the Moon at birth; the usual six, then none (no search), then every house again.
+  const chandra = finder.locator('[data-finder-group="Chandrabala"]');
+  await expect(chandra).toBeVisible();
+  await chandra.getByRole('button', { name: 'usual six', exact: true }).click();
+  await expect(chandra.getByRole('button', { name: '3', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(chandra.getByRole('button', { name: '8', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(chandra).toContainText('6 / 12');
+  await chandra.getByRole('button', { name: 'none', exact: true }).click();
+  await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeDisabled();
+  await expect(finder).toContainText('Nothing is chosen in');
+  await chandra.getByRole('button', { name: 'all', exact: true }).click();
+  await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeEnabled();
+
   // The placements: a ready-made choice sets the groups and three rules; a rule is added and removed by hand.
   await finder.getByRole('button', { name: 'Store or business opening', exact: true }).click();
   const placements = finder.locator('[data-finder-group="Placements"]');
