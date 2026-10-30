@@ -9,8 +9,8 @@ import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
 import { NAKSHATRA_NAMES } from '@/lib/nakshatras';
 import { YOGA_NAMES } from '@/lib/panchang';
 import {
-  BENEFICS, CHANDRABALA_USUAL, FINDER_GRAHAS, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, TARABALA_USUAL, TARA_NAMES, effectiveRules, formatChandra, formatRule, formatTara, isImpossible, isImpossibleRule,
-  SANKRANTI_HOURS, isLimited, localParts, nakshatraOf, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule,
+  BENEFICS, CHANDRABALA_USUAL, FINDER_GRAHAS, FINDER_WEIGHTS, isPreferKey, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, TARABALA_USUAL, TARA_NAMES, effectiveRules, formatChandra, formatRule, formatTara, isImpossible, isImpossibleRule,
+  SANKRANTI_HOURS, isLimited, localParts, nakshatraOf, scoredKeys, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule, type PreferKey,
 } from '@/lib/muhurtaFinder';
 import { DOSHAS, DOSHAS_NOT_WORKED_OUT, DOSHA_IDS, isDoshaId, type DoshaId } from '@/lib/mahadosha';
 import { FINDER_PRESETS, type FinderPreset } from '@/lib/muhurtaFinderPresets';
@@ -34,6 +34,8 @@ const WEEKDAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'F
 const GRAHA_HEAD: Record<FinderGraha, string> = { Asc: 'As', Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke' };
 const DAYS = [7, 30, 90, 180, 366] as const;
 const MAX_RULES = 12;
+/** The short names of the groups that are wishes, for the stretches that hold them. */
+const WISH_HEAD: Record<PreferKey, string> = { tithi: 'Ti', nakshatra: 'Na', vara: 'Va', karana: 'Ka', yoga: 'Yo', tara: 'Ta', chandra: 'Ch' };
 
 const range = (size: number, first = 0) => Array.from({ length: size }, (_, index) => first + index);
 
@@ -46,6 +48,9 @@ type Choices = {
   chandra: number[];
   /** The tārās (1 to 9) of the Moon's nakṣatra from the birth nakṣatra that suit (Tarabala); every tārā is no condition. */
   tara: number[];
+  /** The groups that are wishes (they score by their weights and limit nothing), and the lowest score listed. */
+  prefer: PreferKey[];
+  minScore: number;
   /** The Mahādoṣas to keep clear of. */
   avoid: DoshaId[];
   /** Hours on each side of a Saṅkrānti. */
@@ -59,24 +64,29 @@ const allChoices = (): Choices => ({
   rules: [],
   chandra: range(12, 1),
   tara: range(9, 1),
+  prefer: [],
+  minScore: 0,
   avoid: [],
   sankrantiHours: SANKRANTI_HOURS,
 });
 
+/** The choices at the start: the houses of the Chandrabala and the tārās of the Tarabala that suit, as wishes (they limit nothing and score 100 and 60). */
+const initialChoices = (): Choices => ({ ...allChoices(), chandra: [...CHANDRABALA_USUAL], tara: [...TARABALA_USUAL], prefer: ['chandra', 'tara'] });
+
 /** The choices of a preset: everything, with what the preset names set. */
 function presetChoices(preset: FinderPreset): Choices {
-  const choices = allChoices();
+  const choices = initialChoices();
   for (const key of ['vara', 'tithi', 'nakshatra', 'yoga', 'karana'] as const) choices[key] = preset[key] ?? choices[key];
   for (const graha of FINDER_GRAHAS) choices.signs[graha] = preset.signs?.[graha] ?? choices.signs[graha];
-  choices.chandra = preset.chandra ?? choices.chandra;
-  choices.tara = preset.tara ?? choices.tara;
+  if (preset.chandra) choices.chandra = preset.chandra;
+  if (preset.tara) choices.tara = preset.tara;
   choices.rules = (preset.rules ?? []).map(rule => ({ ...rule, grahas: [...rule.grahas], houses: [...rule.houses] }));
   return choices;
 }
 
 /** The choices kept in the browser, each list read back only as far as it is made of numbers that exist. */
 function readChoices(): Choices {
-  const choices = allChoices();
+  const choices = initialChoices();
   try {
     const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? 'null') as Partial<Record<string, unknown>> | null;
     if (!saved || typeof saved !== 'object') return choices;
@@ -89,6 +99,8 @@ function readChoices(): Choices {
     choices.karana = list(saved.karana, 0, 11) ?? choices.karana;
     choices.chandra = list(saved.chandra, 1, 12) ?? choices.chandra;
     choices.tara = list(saved.tara, 1, 9) ?? choices.tara;
+    if (Array.isArray(saved.prefer)) choices.prefer = [...new Set((saved.prefer as unknown[]).filter((item): item is PreferKey => typeof item === 'string' && isPreferKey(item)))];
+    if (typeof saved.minScore === 'number' && saved.minScore >= 0 && saved.minScore <= 1000) choices.minScore = Math.round(saved.minScore);
     if (Array.isArray(saved.avoid)) choices.avoid = [...new Set((saved.avoid as unknown[]).filter((item): item is DoshaId => typeof item === 'string' && isDoshaId(item)))];
     if (typeof saved.sankrantiHours === 'number' && saved.sankrantiHours >= 0 && saved.sankrantiHours <= 48) choices.sankrantiHours = saved.sankrantiHours;
     const signs = saved.signs as Partial<Record<string, unknown>> | undefined;
@@ -116,7 +128,7 @@ const smallButton = 'rounded border border-zinc-300 px-1.5 py-0.5 text-[9px] fon
 
 /** One group of choices: a title, the buttons that choose all, flip or none, and the items. */
 function Group({
-  title, items, size, first = 0, chosen, onChange, columns = 'flex flex-wrap gap-1', note, extra,
+  title, items, size, first = 0, chosen, onChange, columns = 'flex flex-wrap gap-1', note, extra, weight, wish, onWish,
 }: {
   title: string;
   items: { value: number; label: string; title?: string }[];
@@ -128,6 +140,10 @@ function Group({
   note?: string;
   /** More buttons in the line of the title. */
   extra?: ReactNode;
+  /** The weight of the group as a wish, whether it is one, and the choice of it. */
+  weight?: number;
+  wish?: boolean;
+  onWish?: (wish: boolean) => void;
 }) {
   const t = useT();
   const set = new Set(chosen);
@@ -140,6 +156,18 @@ function Group({
         <button type="button" className={smallButton} onClick={() => onChange(values.filter(value => !set.has(value)))}>{t('flip')}</button>
         <button type="button" className={smallButton} onClick={() => onChange([])}>{t('none')}</button>
         {extra}
+        {weight !== undefined && onWish && (
+          <button
+            type="button"
+            className={chip(!!wish)}
+            aria-pressed={!!wish}
+            aria-label={`${title}: ${t('wish')}`}
+            title={t('As a wish the group limits nothing: a stretch that holds it scores its weight.')}
+            onClick={() => onWish(!wish)}
+          >
+            {t('wish')} ×{weight}
+          </button>
+        )}
         {isLimited(chosen, size) && <span className="text-[9px] font-mono text-amber-700 dark:text-amber-400">{chosen.length} / {size}</span>}
       </div>
       {note && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{note}</p>}
@@ -178,6 +206,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   const [days, setDays] = useState<number>(30);
   const [state, setState] = useState<{ loading: boolean; error?: string; result?: FinderResult; zone?: string; tz: number }>({ loading: false, tz: 0 });
   const [showAll, setShowAll] = useState(false);
+  const [bestFirst, setBestFirst] = useState(false);
   const [presetId, setPresetId] = useState<string | null>(null);
   const request = useRef(0);
 
@@ -201,9 +230,12 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     const chandra = natalMoonSign !== undefined && isLimited(choices.chandra, 12) ? { moonSign: natalMoonSign, houses: choices.chandra } : undefined;
     const tara = natalNakshatra !== undefined && isLimited(choices.tara, 9) ? { nakshatra: natalNakshatra, taras: choices.tara } : undefined;
     const natal = natalMoonSign !== undefined && natalAscSign !== undefined ? { ascSign: natalAscSign, moonSign: natalMoonSign } : undefined;
-    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, tara, avoid: choices.avoid, natal, sankrantiHours: choices.sankrantiHours };
+    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, tara, prefer: choices.prefer, minScore: choices.minScore, avoid: choices.avoid, natal, sankrantiHours: choices.sankrantiHours };
   }, [choices, natalMoonSign, natalAscSign, natalNakshatra]);
   const impossible = isImpossible(criteria);
+  // The wishes that limit something, and the most a stretch can score.
+  const wishKeys = scoredKeys(criteria);
+  const wishMax = wishKeys.reduce((sum, key) => sum + FINDER_WEIGHTS[key], 0);
   const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0 || effectiveRules(criteria).length > 0 || criteria.chandra !== undefined || criteria.tara !== undefined || choices.avoid.length > 0;
 
   const zone = place ? place.timezone : ianaTimezone;
@@ -223,6 +255,10 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     for (const rule of choices.rules) params.append('rule', formatRule(rule));
     if (criteria.chandra) params.set('chandra', formatChandra(criteria.chandra));
     if (criteria.tara) params.set('tara', formatTara(criteria.tara));
+    if (choices.prefer.length > 0) {
+      params.set('prefer', choices.prefer.join(','));
+      params.set('minScore', String(choices.minScore));
+    }
     if (choices.avoid.length > 0) {
       params.set('avoid', choices.avoid.join(','));
       if (criteria.natal) params.set('natal', `${criteria.natal.ascSign}:${criteria.natal.moonSign}`);
@@ -244,17 +280,23 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   const set = <K extends keyof Choices>(key: K, value: Choices[K]) => setChoices(current => ({ ...current, [key]: value }));
   const setRule = (index: number, value: FinderRule) => setChoices(current => ({ ...current, rules: current.rules.map((rule, at) => (at === index ? value : rule)) }));
   const removeRule = (index: number) => setChoices(current => ({ ...current, rules: current.rules.filter((_, at) => at !== index) }));
+  const setWish = (key: PreferKey, on: boolean) => setChoices(current => ({ ...current, prefer: on ? [...new Set([...current.prefer, key])] : current.prefer.filter(item => item !== key) }));
   const setSigns = (graha: FinderGraha, value: number[]) => setChoices(current => ({ ...current, signs: { ...current.signs, [graha]: value } }));
 
-  const shown = state.result ? (showAll ? state.result.windows : state.result.windows.slice(0, 60)) : [];
+  const scored = !!state.result && state.result.windows.some(window => window.score !== undefined);
+  const ordered = state.result ? (scored && bestFirst ? [...state.result.windows].sort((a, b) => (b.score ?? 0) - (a.score ?? 0) || a.start - b.start) : state.result.windows) : [];
+  const shown = showAll ? ordered : ordered.slice(0, 60);
   const local = (ms: number) => localParts(ms, state.zone, state.tz);
+  // A group that is a wish and has nothing chosen limits nothing and scores nothing: it is not an empty group.
+  const conditions = (key: PreferKey) => !choices.prefer.includes(key);
   const emptyGroups = [
-    ['Vāra', choices.vara], ['Tithi', choices.tithi], ['Nakṣatra', choices.nakshatra], ['Yoga', choices.yoga], ['Karaṇa', choices.karana],
-    ...FINDER_GRAHAS.map(graha => [GRAHA_HEAD[graha], choices.signs[graha]] as [string, number[]]),
-  ].filter(([, list]) => (list as number[]).length === 0).map(([name]) => name as string);
+    ['Vāra', choices.vara, conditions('vara')], ['Tithi', choices.tithi, conditions('tithi')], ['Nakṣatra', choices.nakshatra, conditions('nakshatra')],
+    ['Yoga', choices.yoga, conditions('yoga')], ['Karaṇa', choices.karana, conditions('karana')],
+    ...FINDER_GRAHAS.map(graha => [GRAHA_HEAD[graha], choices.signs[graha], true] as [string, number[], boolean]),
+  ].filter(([, list, required]) => required && (list as number[]).length === 0).map(([name]) => name as string);
   if (choices.rules.some(isImpossibleRule)) emptyGroups.push(t('a placement rule'));
-  if (natalMoonSign !== undefined && choices.chandra.length === 0) emptyGroups.push('Chandrabala');
-  if (natalNakshatra !== undefined && choices.tara.length === 0) emptyGroups.push('Tarabala');
+  if (natalMoonSign !== undefined && conditions('chandra') && choices.chandra.length === 0) emptyGroups.push('Chandrabala');
+  if (natalNakshatra !== undefined && conditions('tara') && choices.tara.length === 0) emptyGroups.push('Tarabala');
 
   return (
     <div className="min-w-0 space-y-3" data-testid="muhurta-finder">
@@ -262,6 +304,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
         <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('Muhurta Finder')}</div>
         <p className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
           {t('Choose what suits and press search: the stretches of time in which every choice holds at once are listed. A group with everything chosen puts no condition. The vāra changes at sunrise. Times are local to the place.')}
+          {' '}{t('A group set as a wish limits nothing: the stretches are given a score, the weights of the wishes they hold (tithi 1, nakṣatra 4, vāra 8, karaṇa 16, yoga 32, Tarabala 60, Chandrabala 100). At the start the suiting Tarabala and Chandrabala are wishes.')}
         </p>
       </div>
 
@@ -297,6 +340,18 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
             <button key={count} type="button" aria-pressed={days === count} className={chip(days === count)} onClick={() => setDays(count)}>{count} {t('d')}</button>
           ))}
         </div>
+        {wishKeys.length > 0 && (
+          <label className="flex items-center gap-1.5">
+            <span className="uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('lowest score')}</span>
+            <input
+              type="number" min={0} max={wishMax} step={1} value={choices.minScore}
+              onChange={event => { const value = Math.round(Number(event.target.value)); if (Number.isFinite(value) && value >= 0 && value <= 1000) set('minScore', value); }}
+              className="w-20 rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+              aria-label={t('Lowest score listed')}
+            />
+            <span className="text-[9px] text-zinc-400 dark:text-zinc-600">/ {wishMax}</span>
+          </label>
+        )}
         <button
           type="button"
           onClick={search}
@@ -313,28 +368,34 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
       <div className="grid gap-2 lg:grid-cols-2">
         <Group
           title={t('Vāra')} size={7} chosen={choices.vara} onChange={value => set('vara', value)}
+          weight={FINDER_WEIGHTS.vara} wish={choices.prefer.includes('vara')} onWish={on => setWish('vara', on)}
           items={WEEKDAYS.map((label, value) => ({ value, label, title: WEEKDAY_FULL[value] }))}
         />
         <Group
           title={t('Karaṇa')} size={11} chosen={choices.karana} onChange={value => set('karana', value)}
+          weight={FINDER_WEIGHTS.karana} wish={choices.prefer.includes('karana')} onWish={on => setWish('karana', on)}
           items={KARANA_NAMES.map((label, value) => ({ value, label }))}
         />
         <Group
           title={t('Tithi')} size={30} first={1} chosen={choices.tithi} onChange={value => set('tithi', value)}
+          weight={FINDER_WEIGHTS.tithi} wish={choices.prefer.includes('tithi')} onWish={on => setWish('tithi', on)}
           columns="grid grid-cols-5 gap-1"
           items={range(30, 1).map(value => ({ value, label: tithiLabel(value), title: value <= 15 ? t('bright half') : t('dark half') }))}
         />
         <Group
           title={t('Yoga')} size={27} chosen={choices.yoga} onChange={value => set('yoga', value)}
+          weight={FINDER_WEIGHTS.yoga} wish={choices.prefer.includes('yoga')} onWish={on => setWish('yoga', on)}
           items={YOGA_NAMES.map((label, value) => ({ value, label }))}
         />
         <Group
           title={t('Nakṣatra')} size={27} chosen={choices.nakshatra} onChange={value => set('nakshatra', value)}
+          weight={FINDER_WEIGHTS.nakshatra} wish={choices.prefer.includes('nakshatra')} onWish={on => setWish('nakshatra', on)}
           items={NAKSHATRA_NAMES.map((label, value) => ({ value, label }))}
         />
         {natalMoonSign !== undefined && (
           <Group
             title="Chandrabala" size={12} first={1} chosen={choices.chandra} onChange={value => set('chandra', value)}
+            weight={FINDER_WEIGHTS.chandra} wish={choices.prefer.includes('chandra')} onWish={on => setWish('chandra', on)}
             note={`${t('The house of the Moon from the sign of the Moon at birth')} (${SIGN_NAMES[natalMoonSign]}). ${t('The 1st, 3rd, 6th, 7th, 10th and 11th are the houses usually taken to suit; the 8th is the Candrāṣṭama to avoid.')}`}
             extra={<button type="button" className={smallButton} onClick={() => set('chandra', CHANDRABALA_USUAL)}>{t('usual six')}</button>}
             items={range(12, 1).map(value => ({ value, label: String(value), title: SIGN_NAMES[(natalMoonSign + value - 1) % 12] }))}
@@ -343,6 +404,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
         {natalNakshatra !== undefined && (
           <Group
             title="Tarabala" size={9} first={1} chosen={choices.tara} onChange={value => set('tara', value)}
+            weight={FINDER_WEIGHTS.tara} wish={choices.prefer.includes('tara')} onWish={on => setWish('tara', on)}
             note={`${t("The tārā of the Moon's nakṣatra, counted from the nakṣatra of the Moon at birth")} (${NAKSHATRA_NAMES[natalNakshatra]}). ${t('Sampat, Kshema, Sadhana, Mitra and Parama Mitra are the tārās usually taken to suit; Janma, Vipat, Pratyak and Naidhana are the ones to avoid.')}`}
             extra={<button type="button" className={smallButton} onClick={() => set('tara', TARABALA_USUAL)}>{t('usual five')}</button>}
             items={range(9, 1).map(value => ({
@@ -521,6 +583,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className={smallButton} onClick={() => { setChoices(allChoices()); setPresetId(null); }}>{t('choose everything again')}</button>
+        <button type="button" className={smallButton} onClick={() => { setChoices(initialChoices()); setPresetId(null); }}>{t('back to the start choices')}</button>
       </div>
 
       {state.error && <p className="text-xs font-mono text-rose-600 dark:text-rose-400" role="alert">{state.error}</p>}
@@ -533,12 +596,19 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
             {!anyCondition && state.result.windows.length > 0 && <span className="ml-2 text-[10px] text-zinc-400 dark:text-zinc-600">{t('No choice limits anything: the whole span.')}</span>}
           </div>
           {state.result.truncated && <p className="text-[10px] font-mono text-amber-700 dark:text-amber-400">{t('Only the first stretches are listed: narrow the choices or the days.')}</p>}
+          {scored && (
+            <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+              <span>{t('Each stretch has the same score all through it: the weights of the wishes it holds.')}</span>
+              <button type="button" className={chip(!bestFirst)} aria-pressed={!bestFirst} onClick={() => setBestFirst(false)}>{t('in time order')}</button>
+              <button type="button" className={chip(bestFirst)} aria-pressed={bestFirst} onClick={() => setBestFirst(true)}>{t('best first')}</button>
+            </div>
+          )}
           {shown.length > 0 && (
             <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
               <table className="w-full min-w-[640px] border-collapse text-xs font-mono">
                 <thead>
                   <tr className="bg-zinc-100 text-left text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
-                    <th className="p-2">#</th><th className="p-2">{t('Date')}</th><th className="p-2">{t('From – to')}</th><th className="p-2">{t('Length')}</th><th className="p-2">{t('At the start')}</th><th className="p-2" />
+                    <th className="p-2">#</th><th className="p-2">{t('Date')}</th><th className="p-2">{t('From – to')}</th><th className="p-2">{t('Length')}</th>{scored && <th className="p-2">{t('Score')}</th>}<th className="p-2">{t('At the start')}</th><th className="p-2" />
                   </tr>
                 </thead>
                 <tbody>
@@ -558,6 +628,13 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
                           {clock(from)} – {sameDay ? '' : `${pad2(to.day)}.${pad2(to.month)}. `}{clock(to)}
                         </td>
                         <td className="whitespace-nowrap p-2 text-zinc-500 dark:text-zinc-400">{length}</td>
+                        {scored && (
+                          <td className="whitespace-nowrap p-2" data-finder-score={window.score}>
+                            <span className="font-semibold text-emerald-700 dark:text-green-400">{window.score}</span>
+                            <span className="text-zinc-400 dark:text-zinc-600"> / {window.maxScore}</span>
+                            <span className="block text-[9px] text-zinc-500 dark:text-zinc-400">{(window.held ?? []).map(key => WISH_HEAD[key]).join(' ')}</span>
+                          </td>
+                        )}
                         <td className="p-2 text-[10px] text-zinc-500 dark:text-zinc-400">
                           {tithiLabel(window.at.tithi)} · {NAKSHATRA_NAMES[window.at.nakshatra]} · {YOGA_NAMES[window.at.yoga]} · {KARANA_NAMES[window.at.karana]} · {t('Asc')} {SIGN_ABBR[window.at.ascendantSign]}
                         </td>

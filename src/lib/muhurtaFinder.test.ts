@@ -3,7 +3,7 @@
 // panchāṅga of the app at the middle of what it finds.
 import assert from 'node:assert/strict';
 import {
-  BENEFICS, CHANDRABALA_USUAL, FINDER_SIZES, TARABALA_USUAL, TARA_NAMES, KARANA_NAMES, MALEFICS, effectiveRules, findWindows, formatChandra, formatRule, houseFrom, isImpossible, isLimited, karanaOf, localParts,
+  BENEFICS, CHANDRABALA_USUAL, FINDER_SIZES, FINDER_WEIGHTS, PREFER_KEYS, TARABALA_USUAL, TARA_NAMES, findStretches, momentScore, scoredKeys, KARANA_NAMES, MALEFICS, effectiveRules, findWindows, formatChandra, formatRule, houseFrom, isImpossible, isLimited, karanaOf, localParts,
   matchesVara, momentMatches, nakshatraOf, neededBodies, parseChandra, parseRule, parseTara, formatTara, taraOf, ruleMatches, signOf, tithiLabel, tithiOf, yogaOf,
   type FinderCriteria, type FinderMoment, type FinderRule,
 } from './muhurtaFinder';
@@ -242,6 +242,58 @@ assert.equal(houseFrom(11, 0), 2, 'Pisces rising: Aries is the 2nd');
 }
 
 // ---------------------------------------------------------------------------
+// Wishes: the weights, the score of a moment, and the stretches of one score (worked by hand)
+// ---------------------------------------------------------------------------
+{
+  // The scale of the Atharvaṇa Jyotiṣa extended by the Phalita Navaratna Saṅgraha.
+  assert.deepEqual(FINDER_WEIGHTS, { tithi: 1, nakshatra: 4, vara: 8, karana: 16, yoga: 32, tara: 60, chandra: 100 });
+  assert.equal(PREFER_KEYS.length, 7);
+  // Born in Taurus (sign 1) and in Rohiṇī (3): the Moon at 100° is in Cancer (the 3rd house from Taurus: suits) and in Puṣya (index 7, the 5th from Rohiṇī: Pratyak, does not).
+  const wishes = only({
+    chandra: { moonSign: 1, houses: CHANDRABALA_USUAL }, tara: { nakshatra: 3, taras: TARABALA_USUAL },
+    tithi: [1, 2, 3], vara: [4], prefer: ['chandra', 'tara', 'tithi', 'vara'],
+  });
+  const at = (moon: number, sun: number, vara: number): FinderMoment => ({ vara, sun, moon, others: {} });
+  assert.deepEqual(scoredKeys(wishes), ['chandra', 'tara', 'tithi', 'vara']);
+  // Moon 100°, Sun 90°: the 1st tithi (10° ahead, wait: 10° is the 1st tithi), Thursday: tithi 1 + vara 8 + chandra 100, tara not (Pratyak): 109 of 169.
+  assert.deepEqual(momentScore(at(100, 90, 4), wishes), { score: 109, max: 169, held: ['chandra', 'tithi', 'vara'] });
+  // Moon at 55° (Mṛgaśīrṣa, the 2nd tārā: suits; Taurus, the 1st house: suits), Sun 200°, a Monday: the 28th tithi, not the 1st to 3rd.
+  assert.deepEqual(momentScore(at(55, 200, 1), wishes), { score: 160, max: 169, held: ['chandra', 'tara'] });
+  // A group that is a wish does not limit: the moment is still a match, and a condition that is not a wish still does.
+  assert.equal(momentMatches(at(100, 90, 4), wishes), true);
+  assert.equal(momentMatches(at(100, 90, 1), wishes), true, 'the vāra is a wish, not a condition');
+  assert.equal(momentMatches(at(100, 90, 1), { ...wishes, prefer: ['chandra', 'tara', 'tithi'] }), false, 'without the wish on the vāra it is a condition');
+  assert.equal(momentMatches(at(100, 90, 4), { ...wishes, prefer: ['tithi'] }), false, 'the Moon in Cancer in Puṣya fails the Tarabala as a condition');
+  // A wish with every item chosen scores nothing and is not scored; a wish with nothing chosen is not impossible.
+  assert.deepEqual(scoredKeys(only({ prefer: ['tithi'] })), []);
+  assert.equal(isImpossible(only({ tithi: [], prefer: ['tithi'] })), false, 'a wish with nothing chosen is never held, and limits nothing');
+  assert.equal(isImpossible(only({ tithi: [] })), true, 'but a condition with nothing chosen is');
+  assert.deepEqual(momentScore(at(100, 90, 4), only({ tithi: [], prefer: ['tithi'] })), { score: 0, max: 1, held: [] });
+  assert.equal(matchesVara(only({ vara: [4], prefer: ['vara'] }), 1), true);
+  assert.equal(neededBodies(only({ nakshatra: [1], prefer: ['nakshatra'] })).luminaries, true, 'a wish on the nakṣatra needs the Moon to score');
+}
+
+async function stretches() {
+  // Stretches over which the value is the same: 0 to 2 days is 5, 2 to 5 is 9, 5 to 6 is out (-1), 6 to 10 is 5 again, the step is a day.
+  const value = async (jd: number) => (jd < 2 ? 5 : jd < 5 ? 9 : jd < 6 ? -1 : 5);
+  const found = await findStretches(value, 0, 10, 24 * 60 / 2, v => v >= 0);
+  assert.deepEqual(found.stretches.map(stretch => stretch.value), [5, 9, 5]);
+  assert.ok(Math.abs(found.stretches[0].endJd - 2) <= 1 / 1440 && Math.abs(found.stretches[1].startJd - 2) <= 1 / 1440);
+  assert.ok(Math.abs(found.stretches[1].endJd - 5) <= 1 / 1440 && Math.abs(found.stretches[2].startJd - 6) <= 1 / 1440);
+  assert.equal(found.stretches[2].endJd, 10);
+  assert.equal(found.truncated, false);
+  // Only the stretches whose value is kept; and the most stretches.
+  assert.deepEqual((await findStretches(value, 0, 10, 720, v => v >= 9)).stretches.map(stretch => stretch.value), [9]);
+  const many = await findStretches(async jd => Math.floor(jd), 0, 20, 360, v => v >= 0, 5);
+  assert.equal(many.stretches.length, 5);
+  assert.equal(many.truncated, true);
+  // The value changes twice inside one step (a quarter of a day long): both stretches are found.
+  const quick = await findStretches(async jd => (jd < 1.1 ? 1 : jd < 1.2 ? 2 : 3), 0, 3, 1440, v => v >= 0);
+  assert.deepEqual(quick.stretches.map(stretch => stretch.value), [1, 2, 3]);
+  assert.ok(Math.abs(quick.stretches[1].startJd - 1.1) <= 1 / 1440 && Math.abs(quick.stretches[1].endJd - 1.2) <= 1 / 1440);
+}
+
+// ---------------------------------------------------------------------------
 // The walk through time: stretches found to the minute from a rule with known edges
 // ---------------------------------------------------------------------------
 async function walks() {
@@ -428,6 +480,50 @@ async function searches() {
   }
   assert.equal(tara.stepMinutes, 15);
 
+  // Wishes against the chart of the app: the Moon born in Taurus, Rohiṇī, the usual houses and tārās as wishes. The stretches fill the span, each with
+  // the score its wishes give: 160 when both hold, 100 for the Chandrabala alone, 60 for the Tarabala alone, 0 for none.
+  const wished = await runMuhurtaFinder(request(only({
+    chandra: { moonSign: 1, houses: CHANDRABALA_USUAL }, tara: { nakshatra: 3, taras: TARABALA_USUAL }, prefer: ['chandra', 'tara'],
+  }), 30));
+  assert.ok(wished.windows.length >= 20, `${wished.windows.length} stretches in 30 days`);
+  assert.equal(wished.windows[0].start, wished.from);
+  assert.equal(wished.windows[wished.windows.length - 1].end, wished.to);
+  for (let index = 1; index < wished.windows.length; index += 1) {
+    assert.ok(Math.abs(wished.windows[index].start - wished.windows[index - 1].end) <= 60_000, 'the stretches follow one another');
+    assert.notEqual(wished.windows[index].score, wished.windows[index - 1].score, 'a new stretch where the score changes');
+  }
+  assert.ok(wished.windows.every(window => window.maxScore === 160 && [0, 60, 100, 160].includes(window.score!)));
+  const bestShare = wished.windows.filter(window => window.score === 160).reduce((sum, window) => sum + window.end - window.start, 0) / (wished.to - wished.from);
+  assert.ok(bestShare > 0.2 && bestShare < 0.36, `${(bestShare * 100).toFixed(1)} % of the time holds both (6 of 12 houses and 5 of 9 tārās: 28 %)`);
+  for (const window of wished.windows.slice(0, 8)) {
+    const middle = new Date((window.start + window.end) / 2);
+    const local = new Date(middle.getTime() + 2 * 3_600_000);
+    const chart = await calculateChart(
+      local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate(), local.getUTCHours(), local.getUTCMinutes(), 0,
+      PLACE.lat, PLACE.lng, 2, 'lahiri',
+    );
+    const moon = chart.planets.find(planet => planet.name === 'Moon')!;
+    const house = ((moon.sign - 1 - 1 + 12) % 12) + 1;
+    const nakshatra = Math.floor((moon.longitude % 360) / (360 / 27));
+    const tara = ((nakshatra - 3 + 27) % 27) % 9 + 1;
+    const score = (CHANDRABALA_USUAL.includes(house) ? 100 : 0) + (TARABALA_USUAL.includes(tara) ? 60 : 0);
+    assert.equal(window.score, score, `the stretch at ${middle.toISOString()}: house ${house}, tārā ${tara}`);
+  }
+  // The lowest score: only the stretches that hold both.
+  const best = await runMuhurtaFinder(request(only({
+    chandra: { moonSign: 1, houses: CHANDRABALA_USUAL }, tara: { nakshatra: 3, taras: TARABALA_USUAL }, prefer: ['chandra', 'tara'], minScore: 160,
+  }), 30));
+  assert.ok(best.windows.length >= 5 && best.windows.every(window => window.score === 160));
+  assert.equal(best.windows.length, wished.windows.filter(window => window.score === 160).length);
+  // A wish with every item chosen is no wish at all: one stretch, no score.
+  const nothing = await runMuhurtaFinder(request(only({ chandra: { moonSign: 1, houses: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] }, prefer: ['chandra'] }), 5));
+  assert.equal(nothing.windows.length, 1);
+  assert.equal(nothing.windows[0].score, undefined);
+  // The same houses as conditions are the stretches of the 100 and the 160 together.
+  const conditions = await runMuhurtaFinder(request(only({ chandra: { moonSign: 1, houses: CHANDRABALA_USUAL } }), 30));
+  const withHouse = wished.windows.filter(window => window.score === 100 || window.score === 160).reduce((sum, window) => sum + window.end - window.start, 0);
+  assert.ok(Math.abs(conditions.windows.reduce((sum, window) => sum + window.end - window.start, 0) - withHouse) < 30 * 60_000, 'as a condition the Chandrabala gives the stretches that score 100 or more');
+
   // The Ascendant in a sign: a window of an hour or two each day, found with the finer step.
   const rising = await runMuhurtaFinder(request(only({ signs: { Asc: [0] } }), 5));
   assert.ok(rising.windows.length >= 4 && rising.windows.length <= 6, `${rising.windows.length} windows of Aries rising in five days`);
@@ -442,6 +538,7 @@ async function searches() {
 
 async function main() {
   await walks();
+  await stretches();
   await searches();
   console.log('Muhurta Finder tests passed');
 }

@@ -8,8 +8,8 @@ import {
   sweCalcUt, sweGetAscendant, sweGetAyanamsa, sweJulday,
 } from './ephemerisAdapter';
 import {
-  MINUTE_JD, SANKRANTI_HOURS, effectiveRules, findWindows, houseFrom, isImpossible, isLimited, karanaOf, matchesVara, momentMatches, nakshatraOf, neededBodies,
-  ruleMatches, signOf, tithiOf, yogaOf, type FinderCriteria, type FinderGraha, type FinderMoment,
+  MINUTE_JD, SANKRANTI_HOURS, effectiveRules, findStretches, findWindows, houseFrom, isImpossible, isLimited, karanaOf, matchesVara, momentMatches, momentScore, nakshatraOf, neededBodies,
+  ruleMatches, scoredKeys, signOf, tithiOf, yogaOf, type FinderCriteria, type FinderGraha, type FinderMoment, type PreferKey,
 } from './muhurtaFinder';
 import {
   DOSHA_IDS, EVENT_DOSHAS, doshaNeeds, doshaUsesAscendant, hasDosha, isDoshaId, type DoshaId, type DoshaSky,
@@ -48,6 +48,10 @@ export interface FinderResultWindow {
   end: number;
   /** The vāra at the start, 0 Sunday to 6 Saturday. */
   vara: number;
+  /** The score of the stretch when some groups are wishes: the weights of the wishes it holds, out of all the weights, and which. */
+  score?: number;
+  maxScore?: number;
+  held?: PreferKey[];
   /** What the sky is at the start of the stretch. */
   at: { tithi: number; nakshatra: number; yoga: number; karana: number; ascendantSign: number };
 }
@@ -257,17 +261,33 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
   const empty: FinderResult = { windows: [], truncated: false, stepMinutes, from: jdToMs(fromJd), to: jdToMs(toJd) };
   if (isImpossible(criteria)) return empty;
 
-  const { windows, truncated } = await findWindows(holds, fromJd, toJd, stepMinutes, MAX_FINDER_WINDOWS);
+  // The wishes: a moment out of the conditions is -1, any other has the score of the wishes it holds.
+  const wishes = scoredKeys(criteria);
+  const momentAt = async (jd: number): Promise<FinderMoment> => ({ vara: varaAt(jd), sun: await longitudeOf('Sun', jd), moon: await longitudeOf('Moon', jd), others: {} });
+  const valueAt = async (jd: number): Promise<number> => ((await holds(jd)) ? momentScore(await momentAt(jd), criteria).score : -1);
+
+  let windows: { startJd: number; endJd: number }[];
+  let truncated: boolean;
+  if (wishes.length === 0) {
+    ({ windows, truncated } = await findWindows(holds, fromJd, toJd, stepMinutes, MAX_FINDER_WINDOWS));
+  } else {
+    const lowest = Math.max(0, criteria.minScore ?? 0);
+    const found = await findStretches(valueAt, fromJd, toJd, stepMinutes, value => value >= lowest, MAX_FINDER_WINDOWS);
+    windows = found.stretches;
+    truncated = found.truncated;
+  }
   const result: FinderResultWindow[] = [];
   for (const window of windows) {
     // The window is found to the minute from outside; look a little inside to say what the sky is there.
     const jd = window.startJd + 0.5 / 1440;
     const sun = await longitudeOf('Sun', jd);
     const moon = await longitudeOf('Moon', jd);
+    const scored = wishes.length > 0 ? momentScore({ vara: varaAt(jd), sun, moon, others: {} }, criteria) : undefined;
     result.push({
       start: jdToMs(window.startJd),
       end: jdToMs(window.endJd),
       vara: varaAt(jd),
+      ...(scored ? { score: scored.score, maxScore: scored.max, held: scored.held } : {}),
       at: {
         tithi: tithiOf(sun, moon),
         nakshatra: nakshatraOf(moon),
