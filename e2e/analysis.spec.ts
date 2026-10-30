@@ -1691,6 +1691,18 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await chandra.getByRole('button', { name: 'all', exact: true }).click();
   await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeEnabled();
 
+  // The Mahādoṣas to keep clear of: the 15 that are worked out, each with what it avoids, and the 6 that are not worked out listed with their reason.
+  const doshas = finder.locator('[data-finder-group="Mahadoshas"]');
+  await expect(doshas.locator('[data-finder-dosha]')).toHaveCount(15);
+  await expect(doshas).toContainText('Pañcāṅga Doṣa');
+  await expect(doshas).toContainText('Not worked out (6)');
+  await doshas.getByRole('checkbox', { name: '3. Saṅkrānti' }).check();
+  await expect(doshas.getByLabel('Hours on each side of the Sun entering a sign')).toHaveValue('6.4');
+  await doshas.getByRole('checkbox', { name: '1. Pañcāṅga Doṣa' }).check();
+  await expect(doshas).toContainText('2 / 15');
+  await doshas.getByRole('button', { name: 'none', exact: true }).click();
+  await expect(doshas.locator('input:checked')).toHaveCount(0);
+
   // The placements: a ready-made choice sets the groups and three rules; a rule is added and removed by hand.
   await finder.getByRole('button', { name: 'Store or business opening', exact: true }).click();
   const placements = finder.locator('[data-finder-group="Placements"]');

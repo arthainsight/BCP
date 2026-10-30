@@ -81,7 +81,16 @@ export interface FinderCriteria {
   rules?: FinderRule[];
   /** Chandrabala: the houses (1 to 12) from the sign of the Moon at birth (`moonSign`, 0 Aries to 11 Pisces) the Moon may be in. */
   chandra?: { moonSign: number; houses: number[] };
+  /** The Mahādoṣas (ids of mahadosha.ts) the stretches must be free of. */
+  avoid?: string[];
+  /** The signs (0 to 11) of the Ascendant and the Moon of the birth chart, for the Aṣṭama Lagna. */
+  natal?: { ascSign: number; moonSign: number };
+  /** Hours on each side of the Sun entering a sign that the Saṅkrānti doṣa keeps clear of (16 ghaṭīs, 6.4 hours, if not given). */
+  sankrantiHours?: number;
 }
+
+/** The hours on each side of a Saṅkrānti that are kept clear of: 16 ghaṭīs of 24 minutes. */
+export const SANKRANTI_HOURS = 6.4;
 
 /** The houses from the Moon at birth that are usually taken to suit: the 1st, 3rd, 6th, 7th, 10th and 11th. */
 export const CHANDRABALA_USUAL = [1, 3, 6, 7, 10, 11];

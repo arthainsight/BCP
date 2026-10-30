@@ -10,8 +10,9 @@ import { NAKSHATRA_NAMES } from '@/lib/nakshatras';
 import { YOGA_NAMES } from '@/lib/panchang';
 import {
   BENEFICS, CHANDRABALA_USUAL, FINDER_GRAHAS, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, effectiveRules, formatChandra, formatRule, isImpossible, isImpossibleRule,
-  isLimited, localParts, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule,
+  SANKRANTI_HOURS, isLimited, localParts, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule,
 } from '@/lib/muhurtaFinder';
+import { DOSHAS, DOSHAS_NOT_WORKED_OUT, DOSHA_IDS, isDoshaId, type DoshaId } from '@/lib/mahadosha';
 import { FINDER_PRESETS, type FinderPreset } from '@/lib/muhurtaFinderPresets';
 import type { FinderResult } from '@/lib/muhurtaFinderRun';
 import { useT } from '@/lib/i18n';
@@ -43,6 +44,10 @@ type Choices = {
   rules: FinderRule[];
   /** The houses from the Moon at birth that suit (Chandrabala); every house is no condition. */
   chandra: number[];
+  /** The Mahādoṣas to keep clear of. */
+  avoid: DoshaId[];
+  /** Hours on each side of a Saṅkrānti. */
+  sankrantiHours: number;
 };
 
 const allChoices = (): Choices => ({
@@ -51,6 +56,8 @@ const allChoices = (): Choices => ({
   signs: Object.fromEntries(FINDER_GRAHAS.map(graha => [graha, range(12)])) as Record<FinderGraha, number[]>,
   rules: [],
   chandra: range(12, 1),
+  avoid: [],
+  sankrantiHours: SANKRANTI_HOURS,
 });
 
 /** The choices of a preset: everything, with what the preset names set. */
@@ -77,6 +84,8 @@ function readChoices(): Choices {
     choices.yoga = list(saved.yoga, 0, 27) ?? choices.yoga;
     choices.karana = list(saved.karana, 0, 11) ?? choices.karana;
     choices.chandra = list(saved.chandra, 1, 12) ?? choices.chandra;
+    if (Array.isArray(saved.avoid)) choices.avoid = [...new Set((saved.avoid as unknown[]).filter((item): item is DoshaId => typeof item === 'string' && isDoshaId(item)))];
+    if (typeof saved.sankrantiHours === 'number' && saved.sankrantiHours >= 0 && saved.sankrantiHours <= 48) choices.sankrantiHours = saved.sankrantiHours;
     const signs = saved.signs as Partial<Record<string, unknown>> | undefined;
     for (const graha of FINDER_GRAHAS) choices.signs[graha] = list(signs?.[graha], 0, 12) ?? choices.signs[graha];
     if (Array.isArray(saved.rules)) {
@@ -179,14 +188,16 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   // The sign (0 to 11) of the Moon at birth, for the Chandrabala.
   const natalMoon = chart.planets.find(planet => planet.name === 'Moon');
   const natalMoonSign = natalMoon ? natalMoon.sign - 1 : undefined;
+  const natalAscSign = chart.ascendant ? chart.ascendant.sign - 1 : undefined;
   const criteria: FinderCriteria = useMemo(() => {
     const signs: FinderCriteria['signs'] = {};
     for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) signs[graha] = choices.signs[graha];
     const chandra = natalMoonSign !== undefined && isLimited(choices.chandra, 12) ? { moonSign: natalMoonSign, houses: choices.chandra } : undefined;
-    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra };
-  }, [choices, natalMoonSign]);
+    const natal = natalMoonSign !== undefined && natalAscSign !== undefined ? { ascSign: natalAscSign, moonSign: natalMoonSign } : undefined;
+    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, avoid: choices.avoid, natal, sankrantiHours: choices.sankrantiHours };
+  }, [choices, natalMoonSign, natalAscSign]);
   const impossible = isImpossible(criteria);
-  const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0 || effectiveRules(criteria).length > 0 || criteria.chandra !== undefined;
+  const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0 || effectiveRules(criteria).length > 0 || criteria.chandra !== undefined || choices.avoid.length > 0;
 
   const zone = place ? place.timezone : ianaTimezone;
   const lat = place ? place.latitude : chart.debug?.latitude;
@@ -204,6 +215,11 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) params.set(`sign_${graha}`, choices.signs[graha].join(','));
     for (const rule of choices.rules) params.append('rule', formatRule(rule));
     if (criteria.chandra) params.set('chandra', formatChandra(criteria.chandra));
+    if (choices.avoid.length > 0) {
+      params.set('avoid', choices.avoid.join(','));
+      if (criteria.natal) params.set('natal', `${criteria.natal.ascSign}:${criteria.natal.moonSign}`);
+      if (choices.avoid.includes('sankranti')) params.set('sankrantiHours', String(choices.sankrantiHours));
+    }
     const id = ++request.current;
     setState({ loading: true, tz });
     setShowAll(false);
@@ -428,6 +444,59 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
           </button>
         </section>
       </div>
+
+      <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700" data-finder-group="Mahadoshas">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <h3 className="mr-1 text-xs font-mono font-semibold text-emerald-700 dark:text-green-400">{t('Mahādoṣas to keep clear of')}</h3>
+          <button type="button" className={smallButton} onClick={() => set('avoid', [...DOSHA_IDS])}>{t('all')}</button>
+          <button type="button" className={smallButton} onClick={() => set('avoid', [])}>{t('none')}</button>
+          {choices.avoid.length > 0 && <span className="text-[9px] font-mono text-amber-700 dark:text-amber-400">{choices.avoid.length} / {DOSHA_IDS.length}</span>}
+        </div>
+        <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+          {t('The great faults of a muhūrta, to be avoided for all important occasions. The stretches found are free of the ones chosen. Together they leave very little, so choose the ones that matter. With one that depends on the Ascendant the search looks every 5 minutes.')}
+        </p>
+        <div className="grid gap-1 lg:grid-cols-2">
+          {[...DOSHA_IDS].sort((a, b) => DOSHAS[a].number - DOSHAS[b].number).map(id => {
+            const on = choices.avoid.includes(id);
+            return (
+              <label key={id} className="flex min-w-0 cursor-pointer items-start gap-2 rounded-md border border-zinc-200 p-1.5 dark:border-zinc-700" data-finder-dosha={id}>
+                <input
+                  type="checkbox"
+                  checked={on}
+                  onChange={() => set('avoid', on ? choices.avoid.filter(item => item !== id) : [...choices.avoid, id])}
+                  className="mt-0.5"
+                  aria-label={`${DOSHAS[id].number}. ${DOSHAS[id].name}`}
+                />
+                <span className="min-w-0 text-[10px] font-mono text-zinc-600 dark:text-zinc-300">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-100">{DOSHAS[id].number}. {DOSHAS[id].name}</span>
+                  <span className="block text-[9px] text-zinc-500 dark:text-zinc-400">{t(DOSHAS[id].what)}</span>
+                  {DOSHAS[id].notApplied && <span className="block text-[9px] text-zinc-400 dark:text-zinc-600">{t('Not applied')}: {t(DOSHAS[id].notApplied!)}</span>}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+        {choices.avoid.includes('sankranti') && (
+          <label className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+            <span>{t('Hours on each side of the Sun entering a sign')}</span>
+            <input
+              type="number" min={0} max={48} step={0.1} value={choices.sankrantiHours}
+              onChange={event => { const value = Number(event.target.value); if (Number.isFinite(value) && value >= 0 && value <= 48) set('sankrantiHours', value); }}
+              className="w-20 rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+              aria-label={t('Hours on each side of the Sun entering a sign')}
+            />
+            <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{t('The text gives no length: 16 ghaṭīs (6.4 hours) is the default.')}</span>
+          </label>
+        )}
+        <details className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+          <summary className="cursor-pointer">{t('Not worked out')} ({DOSHAS_NOT_WORKED_OUT.length})</summary>
+          <ul className="mt-1 space-y-0.5">
+            {DOSHAS_NOT_WORKED_OUT.map(item => (
+              <li key={item.number}>{item.number}. {item.name}: {t(item.reason)}</li>
+            ))}
+          </ul>
+        </details>
+      </section>
 
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className={smallButton} onClick={() => { setChoices(allChoices()); setPresetId(null); }}>{t('choose everything again')}</button>
