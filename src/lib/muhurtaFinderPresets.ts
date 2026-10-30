@@ -18,6 +18,8 @@ export interface FinderPreset {
   rules?: FinderRule[];
   /** The houses from the Moon at birth that suit (Chandrabala). */
   chandra?: number[];
+  /** The tārās (1 to 9) that suit (Tarabala). */
+  tara?: number[];
 }
 
 const without = (size: number, first: number, out: number[]) =>

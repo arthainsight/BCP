@@ -102,6 +102,13 @@ async function main() {
   assert.equal((await call(muhurtaFinder, `${finder}&avoid=`)).status, 200, 'none');
   assert.equal(((await call(muhurtaFinder, `${finder}&avoid=sankranti&sankrantiHours=0`)).body.windows as unknown[]).length >= 1, true);
   for (const bad of ['avoid=vishaGhati', 'avoid=panchanga,nope', 'natal=12:1', 'natal=1', 'natal=a:b', 'sankrantiHours=49', 'sankrantiHours=abc', 'sankrantiHours=-1']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
+  // Tarabala: the nakshatra of the Moon at birth and the taras (1 to 9) of the Moon's nakshatra that suit.
+  const taraSome = await call(muhurtaFinder, `${finder}&tara=3:2,4,6,8,9`);
+  assert.equal(taraSome.status, 200);
+  assert.ok((taraSome.body.windows as unknown[]).length >= 1);
+  assert.deepEqual((await call(muhurtaFinder, `${finder}&tara=3:`)).body.windows, [], 'no tara can never be met');
+  assert.equal(((await call(muhurtaFinder, `${finder}&tara=3:1,2,3,4,5,6,7,8,9`)).body.windows as unknown[]).length, 1, 'every tara is no condition');
+  for (const bad of ['tara=', 'tara=3', 'tara=27:1', 'tara=a:1', 'tara=3:0', 'tara=3:10', 'tara=3:1:2']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
   // Rules about the houses from the Ascendant: any number up to twelve, each any|none:grahas:houses.
   const moonInLagna = await call(muhurtaFinder, `${finder}&rule=any:Moon:1`);
   assert.equal(moonInLagna.status, 200);

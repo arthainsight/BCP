@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AYANAMSA_OFFSET_RANGE, PLACE_RANGES, readClampedInt, readIntList, readNumbers } from '@/lib/apiValidation';
-import { SANKRANTI_HOURS, FINDER_GRAHAS, FINDER_SIZES, parseChandra, parseRule, type FinderCriteria, type FinderRule } from '@/lib/muhurtaFinder';
+import { SANKRANTI_HOURS, FINDER_GRAHAS, FINDER_SIZES, parseChandra, parseRule, parseTara, type FinderCriteria, type FinderRule } from '@/lib/muhurtaFinder';
 import { DOSHA_IDS, isDoshaId } from '@/lib/mahadosha';
 import { MAX_FINDER_DAYS, MAX_FINDER_STEPS, finderStepCount, finderStepMinutes, runMuhurtaFinder } from '@/lib/muhurtaFinderRun';
 
@@ -52,6 +52,13 @@ export async function GET(request: NextRequest) {
     if ('error' in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
     chandra = parsed;
   }
+  let tara: FinderCriteria['tara'];
+  const taraText = searchParams.get('tara');
+  if (taraText !== null) {
+    const parsed = parseTara(taraText);
+    if ('error' in parsed) return NextResponse.json({ error: parsed.error }, { status: 400 });
+    tara = parsed;
+  }
   let avoid: string[] | undefined;
   const avoidText = searchParams.get('avoid');
   if (avoidText !== null) {
@@ -83,6 +90,7 @@ export async function GET(request: NextRequest) {
     signs,
     rules,
     chandra,
+    tara,
     avoid,
     natal,
     sankrantiHours,

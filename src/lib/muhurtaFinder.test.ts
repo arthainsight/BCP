@@ -3,8 +3,8 @@
 // panchāṅga of the app at the middle of what it finds.
 import assert from 'node:assert/strict';
 import {
-  BENEFICS, CHANDRABALA_USUAL, FINDER_SIZES, KARANA_NAMES, MALEFICS, effectiveRules, findWindows, formatChandra, formatRule, houseFrom, isImpossible, isLimited, karanaOf, localParts,
-  matchesVara, momentMatches, nakshatraOf, neededBodies, parseChandra, parseRule, ruleMatches, signOf, tithiLabel, tithiOf, yogaOf,
+  BENEFICS, CHANDRABALA_USUAL, FINDER_SIZES, TARABALA_USUAL, TARA_NAMES, KARANA_NAMES, MALEFICS, effectiveRules, findWindows, formatChandra, formatRule, houseFrom, isImpossible, isLimited, karanaOf, localParts,
+  matchesVara, momentMatches, nakshatraOf, neededBodies, parseChandra, parseRule, parseTara, formatTara, taraOf, ruleMatches, signOf, tithiLabel, tithiOf, yogaOf,
   type FinderCriteria, type FinderMoment, type FinderRule,
 } from './muhurtaFinder';
 import { FINDER_PRESETS } from './muhurtaFinderPresets';
@@ -212,6 +212,36 @@ assert.equal(houseFrom(11, 0), 2, 'Pisces rising: Aries is the 2nd');
 }
 
 // ---------------------------------------------------------------------------
+// Tarabala: the Moon's nakṣatra counted from the nakṣatra at birth, in nines (worked by hand)
+// ---------------------------------------------------------------------------
+{
+  // Born in Rohiṇī (3): Rohiṇī itself is the 1st (Janma), Mṛgaśīrṣa (4) the 2nd (Sampat), Ārdrā (5) the 3rd (Vipat), Kṛttikā (2) the 27th, which is the 9th round.
+  assert.equal(TARA_NAMES.length, 9);
+  assert.deepEqual([3, 4, 5, 6, 7, 8, 9, 10, 11].map(nakshatra => taraOf(3, nakshatra)), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  assert.equal(taraOf(3, 12), 1, 'the 10th nakṣatra from the birth one is Janma again');
+  assert.equal(taraOf(3, 21), 1, 'and the 19th');
+  assert.equal(taraOf(3, 2), 9, 'Kṛttikā, the one before the birth nakṣatra, is the 27th: Parama Mitra');
+  assert.equal(taraOf(0, 26), 9, 'Revatī from Aśvinī is the 27th');
+  assert.equal(taraOf(26, 0), 2, 'Aśvinī from Revatī is the 2nd');
+  assert.equal(TARA_NAMES[taraOf(3, 4) - 1], 'Sampat');
+  const at = (moon: number): FinderMoment => ({ vara: 1, sun: 200, moon, others: {} });
+  const usual = only({ tara: { nakshatra: 3, taras: TARABALA_USUAL } });
+  // The Moon at 55° is in Mṛgaśīrṣa (53°20′ to 66°40′): Sampat, suits. At 45° (Rohiṇī, 40° to 53°20′): Janma, does not. At 70° (Ārdrā 66°40′ to 80°): Vipat, does not.
+  assert.deepEqual([55, 45, 70, 85, 140].map(moon => momentMatches(at(moon), usual)), [true, false, false, true, true]);
+  // 85° is Punarvasu (80° to 93°20′): the 4th, Kṣema, suits; 140° is Pūrva Phalgunī (133°20′ to 146°40′, the 11th nakṣatra, index 10): the 8th from Rohiṇī.
+  assert.equal(taraOf(3, 10), 8, 'Pūrva Phalgunī is the 8th from Rohiṇī: Mitra');
+    assert.equal(momentMatches(at(140), only({ tara: { nakshatra: 3, taras: all(9, 1) } })), true, 'every tārā is no condition');
+  assert.equal(isImpossible(only({ tara: { nakshatra: 3, taras: [] } })), true);
+  assert.equal(isImpossible(only({ tara: { nakshatra: 3, taras: [2] } })), false);
+  assert.equal(neededBodies(only({ tara: { nakshatra: 3, taras: [2] } })).luminaries, true);
+  assert.equal(neededBodies(only({ tara: { nakshatra: 3, taras: all(9, 1) } })).luminaries, false);
+  assert.equal(formatTara({ nakshatra: 3, taras: [2, 4] }), '3:2,4');
+  assert.deepEqual(parseTara('3:9,2,2'), { nakshatra: 3, taras: [2, 9] });
+  assert.deepEqual(parseTara('26:'), { nakshatra: 26, taras: [] });
+  for (const bad of ['', '3', '27:1', '-1:1', 'a:1', '3:0', '3:10', '3:x', '3:1:2', '3:12']) assert.ok('error' in parseTara(bad), `"${bad}" is refused`);
+}
+
+// ---------------------------------------------------------------------------
 // The walk through time: stretches found to the minute from a rule with known edges
 // ---------------------------------------------------------------------------
 async function walks() {
@@ -379,6 +409,24 @@ async function searches() {
     assert.ok(suiting.includes(moonSign), `the Moon in sign ${moonSign} at the middle of ${middle.toISOString()}`);
   }
   assert.equal(chandra.stepMinutes, 15, 'the Moon alone is looked at every 15 minutes');
+
+  // Tarabala against the chart of the app: born in Rohiṇī, the usual five tārās. At the middle of each stretch the Moon's nakṣatra counted from Rohiṇī is Sampat, Kṣema, Sādhana, Mitra or Parama Mitra.
+  const tara = await runMuhurtaFinder(request(only({ tara: { nakshatra: 3, taras: TARABALA_USUAL } }), 60));
+  assert.ok(tara.windows.length >= 15, `${tara.windows.length} stretches of the suiting tārās in 60 days`);
+  let taraCovered = 0;
+  for (const window of tara.windows) taraCovered += window.end - window.start;
+  assert.ok(taraCovered / (tara.to - tara.from) > 0.45 && taraCovered / (tara.to - tara.from) < 0.65, 'five tārās of nine: about five ninths of the time');
+  for (const window of tara.windows.slice(0, 8)) {
+    const middle = new Date((window.start + window.end) / 2);
+    const local = new Date(middle.getTime() + 2 * 3_600_000);
+    const chart = await calculateChart(
+      local.getUTCFullYear(), local.getUTCMonth() + 1, local.getUTCDate(), local.getUTCHours(), local.getUTCMinutes(), 0,
+      PLACE.lat, PLACE.lng, 2, 'lahiri',
+    );
+    const moonNakshatra = Math.floor((chart.planets.find(planet => planet.name === 'Moon')!.longitude % 360) / (360 / 27));
+    assert.ok(TARABALA_USUAL.includes(((moonNakshatra - 3 + 27) % 27) % 9 + 1), `the Moon in nakṣatra ${moonNakshatra} at the middle of ${middle.toISOString()}`);
+  }
+  assert.equal(tara.stepMinutes, 15);
 
   // The Ascendant in a sign: a window of an hour or two each day, found with the finer step.
   const rising = await runMuhurtaFinder(request(only({ signs: { Asc: [0] } }), 5));
