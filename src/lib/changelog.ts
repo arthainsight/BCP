@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v3.47',
+    date: '2026-10-30',
+    title: 'Bhāva Bala: fixed limits of 420 and 480',
+    changes: [
+      'The bar for each house in the Bhāva Bala no longer compares the house with the average of the twelve. It shows the total in virūpa with lines at 420 (7 rūpa) and 480 (8 rūpa): under 420 is weak (✕), from 420 ok (!) and from 480 strong (✓). The verses give no minimum strength for a house, so the two limits are a reading of the application, not figures of BPHS (the manuals say so in section 9). No calculation changed.',
+      'Updated the application version to v3.47.',
+    ],
+  },
+  {
     version: 'v3.46',
     date: '2026-10-30',
     title: 'Muhurta Finder',

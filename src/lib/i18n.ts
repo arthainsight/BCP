@@ -122,10 +122,10 @@ export const FI: Record<string, string> = {
   'The six balas in virūpa, added up to the total. Dṛg can be negative, which goes to the left of the zero.': 'Kuusi balaa virūpoina, yhteensä kokonaisuus. Dṛg voi olla negatiivinen, jolloin se on nollan vasemmalla puolella.',
   'Required strength': 'Vaadittu voima',
   'Bhāva Bala of the houses': 'Talojen Bhāva Bala',
-  'Bhāva Bala against the average': 'Bhāva Bala suhteessa keskiarvoon',
+  'Bhāva Bala of the houses against the limits': 'Talojen Bhāva Bala rajoja vasten',
   'The total strength of each house in virūpa, the number over the column. What each total is made of is in the table below.': 'Kunkin talon kokonaisvoima virūpoina, luku pylvään päällä. Mistä kukin summa muodostuu, näkyy alla olevassa taulukossa.',
   'Average': 'Keskiarvo',
-  'Each house in one colour: its total as a percentage of the average of the twelve houses of this chart (the line at 100 %). The verses give no minimum strength for a house, so this is the chart against itself: under 90 % is weak, from 110 % strong, and between ok.': 'Jokainen talo yhdellä värillä: sen summa prosentteina tämän kartan kahdentoista talon keskiarvosta (viiva kohdassa 100 %). Säkeet eivät anna talolle vähimmäisvoimaa, joten tämä on kartta itseään vasten: alle 90 % on heikko, 110 %:sta alkaen vahva ja siltä väliltä kelpo.',
+  'Each house in one colour: its total in virūpa. The verses give no minimum strength for a house, so the limits are a reading of this application, not of the text: under 420 (7 rūpa) is weak, from 420 ok, from 480 (8 rūpa) strong.': 'Jokainen talo yhdellä värillä: sen summa virūpoina. Säkeet eivät anna talolle vähimmäisvoimaa, joten rajat ovat tämän sovelluksen tulkinta, eivät tekstin: alle 420 (7 rūpaa) on heikko, 420:sta alkaen kelpo, 480:sta (8 rūpaa) alkaen vahva.',
   "The strength of each house in virūpa: its lord's Ṣaḍbala, its Dig Bala, the aspects of benefics (Drig+) and malefics (Drig−, below the zero), the grahas in it and its Kāla Bala. The number over a column is the total.": 'Kunkin talon voima virūpoina: herran Ṣaḍbala, talon Dig Bala, hyvien (Drig+) ja pahojen (Drig−, nollan alapuolella) aspektit, talossa olevat grahat ja talon Kāla Bala. Pylvään päällä oleva luku on summa.',
   // Sensitive degrees and the Yogi points
   'Sensitive Degrees': 'Herkät asteet',
