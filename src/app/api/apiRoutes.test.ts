@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server';
 import { GET as chart } from './chart/route';
 import { GET as muhurta } from './muhurta/route';
+import { GET as muhurtaFinder } from './muhurta-finder/route';
 import { GET as signChanges } from './sign-changes/route';
 import { GET as transitHits } from './transit-hits/route';
 import { GET as transitSeries } from './transit-series/route';
@@ -68,6 +69,23 @@ async function main() {
   for (const bad of ['date=2024-06-01', 'date=2024-06-01&lat=60&lng=24', 'date=2024-06-01&lat=95&lng=24&tz=3', 'date=2024-06-01&lat=60&lng=24&tz=abc', 'date=2024-06-01&lat=60&lng=24&tz=20', 'date=2024-6-1&lat=60&lng=24&tz=3']) {
     assert.equal((await call(muhurta, bad)).status, 400, bad);
   }
+
+  // /api/muhurta-finder: the stretches in which every condition holds; a condition left out is no condition.
+  const finder = 'start=2026-11-01&days=10&lat=60.47&lng=26.95&tz=2&zone=Europe/Helsinki';
+  const noCondition = await call(muhurtaFinder, finder);
+  assert.equal(noCondition.status, 200);
+  assert.equal((noCondition.body.windows as unknown[]).length, 1, 'no condition is the whole span');
+  const thursdays = await call(muhurtaFinder, `${finder}&vara=4`);
+  assert.equal(thursdays.status, 200);
+  assert.ok((thursdays.body.windows as unknown[]).length >= 1 && (thursdays.body.windows as unknown[]).length <= 2, 'a Thursday in ten days');
+  assert.deepEqual((await call(muhurtaFinder, `${finder}&vara=`)).body.windows, [], 'an empty list can never be met');
+  assert.equal((await call(muhurtaFinder, `${finder}&tithi=1,2,3&sign_Moon=0,1,2,3,4,5&sign_Asc=0,1,2,3,4,5,6,7,8,9,10,11`)).status, 200);
+  for (const bad of ['', 'start=2026-11-01', 'start=2026-13-01&lat=60&lng=25&tz=2', 'start=2026-11-1&lat=60&lng=25&tz=2', `${finder}&vara=7`, `${finder}&vara=a`, `${finder}&tithi=0`, `${finder}&tithi=31`, `${finder}&nakshatra=27`, `${finder}&yoga=-1`,
+    `${finder}&karana=11`, `${finder}&sign_Moon=12`, `${finder}&sign_Asc=1.5`, `${finder}&sign_Mars=1,,2`, withParam(finder, 'lat', '95'), withParam(finder, 'tz', 'abc'), `${finder}&ayanamsaOffset=Infinity`]) {
+    assert.equal((await call(muhurtaFinder, bad)).status, 400, bad);
+  }
+  assert.equal((await call(muhurtaFinder, `${finder}&sign_Ketu=1`)).status, 200, 'a name that is not a graha of the grid is not read');
+  assert.equal((await call(muhurtaFinder, withParam(finder, 'days', '99999'))).status, 200, 'a span that is too long is cut to the longest');
 
   // The annual routes share one reading of the request.
   const annual = `${BIRTH}&target=2024-06-01`;

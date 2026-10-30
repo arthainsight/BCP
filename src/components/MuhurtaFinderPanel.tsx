@@ -1,0 +1,373 @@
+'use client';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CalculationSettings, ChartData } from '@/types';
+import { AnnualPlaceControl, type AnnualPlace } from './annualShared';
+import { calculationParams } from '@/lib/apiParams';
+import { pad2 } from '@/lib/dateFormat';
+import { SIGN_ABBR } from '@/lib/signs';
+import { NAKSHATRA_NAMES } from '@/lib/nakshatras';
+import { YOGA_NAMES } from '@/lib/panchang';
+import {
+  FINDER_GRAHAS, FINDER_SIZES, KARANA_NAMES, isImpossible, isLimited, localParts, tithiLabel,
+  type FinderCriteria, type FinderGraha,
+} from '@/lib/muhurtaFinder';
+import type { FinderResult } from '@/lib/muhurtaFinderRun';
+import { useT } from '@/lib/i18n';
+
+type Props = {
+  chart: ChartData;
+  /** The day the search starts from, YYYY-MM-DD (the target date of the chart). */
+  targetDate: string;
+  /** The time zone of the birthplace, for the clock times of the results. */
+  ianaTimezone?: string;
+  calculationSettings?: CalculationSettings;
+  /** Sets the moment of the target of the chart, DD.MM.YYYY HH.MM.SS. */
+  onSetTarget?: (value: string) => void;
+};
+
+const STORAGE_KEY = 'muhurtaFinderChoices';
+const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+const WEEKDAY_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+const GRAHA_HEAD: Record<FinderGraha, string> = { Asc: 'As', Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra' };
+const DAYS = [7, 30, 90, 180, 366] as const;
+
+const range = (size: number, first = 0) => Array.from({ length: size }, (_, index) => first + index);
+
+/** What is chosen in each group: every item at first, which is no condition. */
+type Choices = {
+  vara: number[]; tithi: number[]; nakshatra: number[]; yoga: number[]; karana: number[];
+  signs: Record<FinderGraha, number[]>;
+};
+
+const allChoices = (): Choices => ({
+  vara: range(FINDER_SIZES.vara), tithi: range(FINDER_SIZES.tithi, 1), nakshatra: range(FINDER_SIZES.nakshatra),
+  yoga: range(FINDER_SIZES.yoga), karana: range(FINDER_SIZES.karana),
+  signs: Object.fromEntries(FINDER_GRAHAS.map(graha => [graha, range(12)])) as Record<FinderGraha, number[]>,
+});
+
+/** The choices kept in the browser, each list read back only as far as it is made of numbers that exist. */
+function readChoices(): Choices {
+  const choices = allChoices();
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? 'null') as Partial<Record<string, unknown>> | null;
+    if (!saved || typeof saved !== 'object') return choices;
+    const list = (value: unknown, first: number, size: number): number[] | null =>
+      Array.isArray(value) && value.every(item => Number.isInteger(item) && item >= first && item < first + size) ? [...new Set(value as number[])] : null;
+    choices.vara = list(saved.vara, 0, 7) ?? choices.vara;
+    choices.tithi = list(saved.tithi, 1, 30) ?? choices.tithi;
+    choices.nakshatra = list(saved.nakshatra, 0, 27) ?? choices.nakshatra;
+    choices.yoga = list(saved.yoga, 0, 27) ?? choices.yoga;
+    choices.karana = list(saved.karana, 0, 11) ?? choices.karana;
+    const signs = saved.signs as Partial<Record<string, unknown>> | undefined;
+    for (const graha of FINDER_GRAHAS) choices.signs[graha] = list(signs?.[graha], 0, 12) ?? choices.signs[graha];
+  } catch {
+    // No storage, or something else in it: the choices are all.
+  }
+  return choices;
+}
+
+const chip = (on: boolean) =>
+  `rounded-md border px-2 py-1 text-[10px] font-mono ${on
+    ? 'border-emerald-500 bg-emerald-500 text-white dark:border-green-600 dark:bg-green-600'
+    : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400'}`;
+const smallButton = 'rounded border border-zinc-300 px-1.5 py-0.5 text-[9px] font-mono uppercase text-zinc-600 dark:border-zinc-600 dark:text-zinc-300';
+
+/** One group of choices: a title, the buttons that choose all, flip or none, and the items. */
+function Group({
+  title, items, size, first = 0, chosen, onChange, columns = 'flex flex-wrap gap-1', note,
+}: {
+  title: string;
+  items: { value: number; label: string; title?: string }[];
+  size: number;
+  first?: number;
+  chosen: number[];
+  onChange: (values: number[]) => void;
+  columns?: string;
+  note?: string;
+}) {
+  const t = useT();
+  const set = new Set(chosen);
+  const values = range(size, first);
+  return (
+    <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700" data-finder-group={title}>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <h3 className="mr-1 text-xs font-mono font-semibold text-emerald-700 dark:text-green-400">{title}</h3>
+        <button type="button" className={smallButton} onClick={() => onChange(values)}>{t('all')}</button>
+        <button type="button" className={smallButton} onClick={() => onChange(values.filter(value => !set.has(value)))}>{t('flip')}</button>
+        <button type="button" className={smallButton} onClick={() => onChange([])}>{t('none')}</button>
+        {isLimited(chosen, size) && <span className="text-[9px] font-mono text-amber-700 dark:text-amber-400">{chosen.length} / {size}</span>}
+      </div>
+      {note && <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{note}</p>}
+      <div className={columns}>
+        {items.map(item => (
+          <button
+            key={item.value}
+            type="button"
+            aria-pressed={set.has(item.value)}
+            title={item.title}
+            className={chip(set.has(item.value))}
+            onClick={() => onChange(set.has(item.value) ? chosen.filter(value => value !== item.value) : [...chosen, item.value].sort((a, b) => a - b))}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function clock(parts: { hour: number; minute: number }) {
+  return `${pad2(parts.hour)}:${pad2(parts.minute)}`;
+}
+
+/**
+ * The Muhūrta Finder: choose the vāra, tithi, nakṣatra, yoga and karaṇa that suit, and the signs the Ascendant and the
+ * grahas may be in, and it lists the stretches of time, in a span of days at a place, in which all of them hold at once.
+ */
+export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, calculationSettings, onSetTarget }: Props) {
+  const t = useT();
+  // The panel opens after the page has, never in the page the server builds, so the browser's choices can be read at once.
+  const [choices, setChoices] = useState<Choices>(readChoices);
+  const [place, setPlace] = useState<AnnualPlace>(null);
+  const [start, setStart] = useState(() => (/^\d{4}-\d{2}-\d{2}$/.test(targetDate) ? targetDate : new Date().toISOString().slice(0, 10)));
+  const [days, setDays] = useState<number>(30);
+  const [state, setState] = useState<{ loading: boolean; error?: string; result?: FinderResult; zone?: string; tz: number }>({ loading: false, tz: 0 });
+  const [showAll, setShowAll] = useState(false);
+  const request = useRef(0);
+
+  // The choices are kept in the browser, and written back as they change.
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(choices));
+    } catch {
+      // The choices are then for this visit only.
+    }
+  }, [choices]);
+
+  const criteria: FinderCriteria = useMemo(() => {
+    const signs: FinderCriteria['signs'] = {};
+    for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) signs[graha] = choices.signs[graha];
+    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs };
+  }, [choices]);
+  const impossible = isImpossible(criteria);
+  const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0;
+
+  const zone = place ? place.timezone : ianaTimezone;
+  const lat = place ? place.latitude : chart.debug?.latitude;
+  const lng = place ? place.longitude : chart.debug?.longitude;
+  const tz = chart.debug?.utcOffset ?? 0;
+  const canSearch = typeof lat === 'number' && typeof lng === 'number' && /^\d{4}-\d{2}-\d{2}$/.test(start) && !impossible;
+
+  const search = async () => {
+    if (!canSearch) return;
+    const params = new URLSearchParams({ start, days: String(days), lat: String(lat), lng: String(lng), tz: String(tz), ...(zone ? { zone } : {}), ...calculationParams(calculationSettings) });
+    const lists: [string, number[], number][] = [
+      ['vara', choices.vara, 7], ['tithi', choices.tithi, 30], ['nakshatra', choices.nakshatra, 27], ['yoga', choices.yoga, 27], ['karana', choices.karana, 11],
+    ];
+    for (const [key, list, size] of lists) if (isLimited(list, size)) params.set(key, list.join(','));
+    for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) params.set(`sign_${graha}`, choices.signs[graha].join(','));
+    const id = ++request.current;
+    setState({ loading: true, tz });
+    setShowAll(false);
+    try {
+      const response = await fetch(`/api/muhurta-finder?${params}`);
+      const data = await response.json();
+      if (id !== request.current) return;
+      setState(data.error ? { loading: false, error: String(data.error), tz } : { loading: false, result: data as FinderResult, zone, tz });
+    } catch (error) {
+      if (id === request.current) setState({ loading: false, error: String(error), tz });
+    }
+  };
+
+  const set = <K extends keyof Choices>(key: K, value: Choices[K]) => setChoices(current => ({ ...current, [key]: value }));
+  const setSigns = (graha: FinderGraha, value: number[]) => setChoices(current => ({ ...current, signs: { ...current.signs, [graha]: value } }));
+
+  const shown = state.result ? (showAll ? state.result.windows : state.result.windows.slice(0, 60)) : [];
+  const local = (ms: number) => localParts(ms, state.zone, state.tz);
+  const emptyGroups = [
+    ['Vāra', choices.vara], ['Tithi', choices.tithi], ['Nakṣatra', choices.nakshatra], ['Yoga', choices.yoga], ['Karaṇa', choices.karana],
+    ...FINDER_GRAHAS.map(graha => [GRAHA_HEAD[graha], choices.signs[graha]] as [string, number[]]),
+  ].filter(([, list]) => (list as number[]).length === 0).map(([name]) => name as string);
+
+  return (
+    <div className="min-w-0 space-y-3" data-testid="muhurta-finder">
+      <div>
+        <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('Muhurta Finder')}</div>
+        <p className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+          {t('Choose what suits and press search: the stretches of time in which every choice holds at once are listed. A group with everything chosen puts no condition. The vāra changes at sunrise. Times are local to the place.')}
+        </p>
+      </div>
+
+      <AnnualPlaceControl place={place} onChange={setPlace} />
+
+      <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+        <label className="flex items-center gap-1.5">
+          <span className="uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('from')}</span>
+          <input
+            type="date"
+            value={start}
+            onChange={event => setStart(event.target.value)}
+            className="rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+            aria-label={t('Search from')}
+          />
+        </label>
+        <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('Days to search')}>
+          {DAYS.map(count => (
+            <button key={count} type="button" aria-pressed={days === count} className={chip(days === count)} onClick={() => setDays(count)}>{count} {t('d')}</button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={search}
+          disabled={!canSearch || state.loading}
+          className="rounded-md bg-emerald-600 px-3 py-1.5 text-[10px] font-mono font-semibold uppercase tracking-wide text-white disabled:opacity-40 dark:bg-green-700"
+        >
+          {state.loading ? t('searching…') : t('search')}
+        </button>
+      </div>
+      {impossible && (
+        <p className="text-[10px] font-mono text-rose-600 dark:text-rose-400">{t('Nothing is chosen in')} {emptyGroups.join(', ')}.</p>
+      )}
+
+      <div className="grid gap-2 lg:grid-cols-2">
+        <Group
+          title={t('Vāra')} size={7} chosen={choices.vara} onChange={value => set('vara', value)}
+          items={WEEKDAYS.map((label, value) => ({ value, label, title: WEEKDAY_FULL[value] }))}
+        />
+        <Group
+          title={t('Karaṇa')} size={11} chosen={choices.karana} onChange={value => set('karana', value)}
+          items={KARANA_NAMES.map((label, value) => ({ value, label }))}
+        />
+        <Group
+          title={t('Tithi')} size={30} first={1} chosen={choices.tithi} onChange={value => set('tithi', value)}
+          columns="grid grid-cols-5 gap-1"
+          items={range(30, 1).map(value => ({ value, label: tithiLabel(value), title: value <= 15 ? t('bright half') : t('dark half') }))}
+        />
+        <Group
+          title={t('Yoga')} size={27} chosen={choices.yoga} onChange={value => set('yoga', value)}
+          items={YOGA_NAMES.map((label, value) => ({ value, label }))}
+        />
+        <Group
+          title={t('Nakṣatra')} size={27} chosen={choices.nakshatra} onChange={value => set('nakshatra', value)}
+          items={NAKSHATRA_NAMES.map((label, value) => ({ value, label }))}
+        />
+        <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700" data-finder-group="Graha">
+          <h3 className="text-xs font-mono font-semibold text-emerald-700 dark:text-green-400">{t('Graha')}</h3>
+          <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('The signs the Ascendant and each graha may be in. A column header chooses or clears the whole column.')}</p>
+          <div className="overflow-x-auto">
+            <table className="border-collapse text-[10px] font-mono">
+              <thead>
+                <tr>
+                  {FINDER_GRAHAS.map(graha => (
+                    <th key={graha} className="p-0.5">
+                      <button
+                        type="button"
+                        className={`${smallButton} w-full ${isLimited(choices.signs[graha], 12) ? 'border-amber-500 text-amber-700 dark:text-amber-400' : ''}`}
+                        aria-label={`${GRAHA_HEAD[graha]}: ${t('choose or clear all')}`}
+                        onClick={() => setSigns(graha, choices.signs[graha].length === 12 ? [] : range(12))}
+                      >
+                        {GRAHA_HEAD[graha]}
+                      </button>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {range(12).map(sign => (
+                  <tr key={sign}>
+                    {FINDER_GRAHAS.map(graha => {
+                      const on = choices.signs[graha].includes(sign);
+                      return (
+                        <td key={graha} className="p-0.5">
+                          <button
+                            type="button"
+                            aria-pressed={on}
+                            aria-label={`${GRAHA_HEAD[graha]} ${SIGN_ABBR[sign]}`}
+                            className={`${chip(on)} w-full`}
+                            onClick={() => setSigns(graha, on ? choices.signs[graha].filter(value => value !== sign) : [...choices.signs[graha], sign].sort((a, b) => a - b))}
+                          >
+                            {SIGN_ABBR[sign]}
+                          </button>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button type="button" className={smallButton} onClick={() => setChoices(allChoices())}>{t('choose everything again')}</button>
+      </div>
+
+      {state.error && <p className="text-xs font-mono text-rose-600 dark:text-rose-400" role="alert">{state.error}</p>}
+      {state.result && (
+        <section className="space-y-1.5" data-testid="muhurta-finder-results" aria-live="polite">
+          <div className="text-xs font-mono text-zinc-700 dark:text-zinc-200">
+            {state.result.windows.length === 0
+              ? t('No time in the span meets every choice.')
+              : `${state.result.windows.length}${state.result.truncated ? '+' : ''} ${t('stretches')}`}
+            {!anyCondition && state.result.windows.length > 0 && <span className="ml-2 text-[10px] text-zinc-400 dark:text-zinc-600">{t('No choice limits anything: the whole span.')}</span>}
+          </div>
+          {state.result.truncated && <p className="text-[10px] font-mono text-amber-700 dark:text-amber-400">{t('Only the first stretches are listed: narrow the choices or the days.')}</p>}
+          {shown.length > 0 && (
+            <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+              <table className="w-full min-w-[640px] border-collapse text-xs font-mono">
+                <thead>
+                  <tr className="bg-zinc-100 text-left text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                    <th className="p-2">#</th><th className="p-2">{t('Date')}</th><th className="p-2">{t('From – to')}</th><th className="p-2">{t('Length')}</th><th className="p-2">{t('At the start')}</th><th className="p-2" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {shown.map((window, index) => {
+                    const from = local(Math.round(window.start / 60000) * 60000);
+                    const to = local(Math.round(window.end / 60000) * 60000);
+                    const minutes = Math.round((window.end - window.start) / 60000);
+                    const sameDay = from.year === to.year && from.month === to.month && from.day === to.day;
+                    const length = minutes >= 1440 ? `${Math.floor(minutes / 1440)} d ${Math.floor((minutes % 1440) / 60)} h` : `${Math.floor(minutes / 60)} h ${pad2(minutes % 60)} min`;
+                    return (
+                      <tr key={window.start} data-finder-window={index} className="border-t border-zinc-100 align-top dark:border-zinc-800">
+                        <td className="p-2 text-zinc-400 dark:text-zinc-600">{index + 1}</td>
+                        <td className="whitespace-nowrap p-2 text-emerald-700 dark:text-green-400">
+                          {t(WEEKDAY_FULL[from.weekday])} {pad2(from.day)}.{pad2(from.month)}.{from.year}
+                        </td>
+                        <td className="whitespace-nowrap p-2 text-zinc-700 dark:text-zinc-200">
+                          {clock(from)} – {sameDay ? '' : `${pad2(to.day)}.${pad2(to.month)}. `}{clock(to)}
+                        </td>
+                        <td className="whitespace-nowrap p-2 text-zinc-500 dark:text-zinc-400">{length}</td>
+                        <td className="p-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                          {tithiLabel(window.at.tithi)} · {NAKSHATRA_NAMES[window.at.nakshatra]} · {YOGA_NAMES[window.at.yoga]} · {KARANA_NAMES[window.at.karana]} · {t('Asc')} {SIGN_ABBR[window.at.ascendantSign]}
+                        </td>
+                        <td className="p-2">
+                          {onSetTarget && (
+                            <button
+                              type="button"
+                              className={smallButton}
+                              onClick={() => {
+                                const at = local(Math.ceil(window.start / 60000) * 60000);
+                                onSetTarget(`${pad2(at.day)}.${pad2(at.month)}.${at.year} ${pad2(at.hour)}.${pad2(at.minute)}.00`);
+                              }}
+                            >
+                              {t('use as target')}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {state.result.windows.length > shown.length && (
+            <button type="button" className={smallButton} onClick={() => setShowAll(true)}>{t('show all')} ({state.result.windows.length})</button>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}

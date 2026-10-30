@@ -175,6 +175,21 @@ export const FAQ_ENTRIES: FaqEntry[] = [
 
   // ── Timing ─────────────────────────────────────────────────────────
   {
+    id: 'muhurta-finder',
+    section: 'timing',
+    q: { en: 'How do I find a good time with the Muhurta Finder?', fi: 'Miten löydän hyvän ajan Muhurta-haulla?' },
+    a: {
+      en: [
+        'TIMING → Muhurta Finder. Choose what suits from the vāra (the weekday, which changes at sunrise), the tithi (S1 to S15 for the bright half and K1 to K15 for the dark), the karaṇa, the yoga and the nakṣatra of the Moon, and in the grid the signs the Ascendant and each graha (Su to Sa and Ra) may be in. Each group has all, flip and none; a group with everything chosen puts no condition, and one with nothing chosen can never be met (the page says where). Then choose the date to start from and the number of days (7 to 366), and press search.',
+        'The list is the stretches of time at the place (the birthplace, or the residence that you look up) in which every choice holds at once, with the clock times to the minute, the length of each, and the tithi, nakṣatra, yoga, karaṇa and rising sign at its start. "use as target" sets the start of a stretch as the target of the chart. The zodiac, the ayanamsa and the node are the chart\'s. The sky is looked at every 15 minutes (every 5 when the Ascendant is limited), so a stretch shorter than that can be missed; your choices are kept in the browser.',
+      ],
+      fi: [
+        'AJANKOHTA → Muhurta-haku. Valitse, mikä sopii: vāra (viikonpäivä, joka vaihtuu auringonnousussa), tithi (S1–S15 kasvavalle ja K1–K15 vähenevälle puolelle), karaṇa, yoga ja Kuun nakṣatra, sekä ruudukossa merkit, joissa Ascendantti ja kukin graha (Su–Sa ja Ra) saa olla. Jokaisessa ryhmässä on kaikki, käännä ja ei mitään; ryhmä, jossa kaikki on valittu, ei aseta ehtoa, ja ryhmä, jossa mitään ei ole valittu, ei voi täyttyä (sivu kertoo missä). Valitse sitten päivä, josta haetaan, ja päivien määrä (7–366) ja paina haku.',
+        'Lista on ajanjaksoja paikassa (syntymäpaikka tai hakemasi asuinpaikka), joissa kaikki valinnat pätevät yhtä aikaa, kellonaikoineen minuutin tarkkuudella, kunkin kestoineen sekä tithi, nakṣatra, yoga, karaṇa ja nouseva merkki alussa. "aseta kohteeksi" asettaa jakson alun kartan kohteeksi. Vyöhyke, ayanamsa ja solmu ovat kartan omat. Taivasta katsotaan 15 minuutin välein (5 minuutin, kun Ascendanttia on rajattu), joten sitä lyhyempi jakso voi jäädä huomaamatta; valintasi säilyvät selaimessa.',
+      ],
+    },
+  },
+  {
     id: 'timing-views',
     section: 'timing',
     q: { en: 'What is in TIMING?', fi: 'Mitä AJANKOHTA sisältää?' },
