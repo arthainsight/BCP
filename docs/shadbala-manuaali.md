@@ -281,7 +281,7 @@ Kokonaisvoima = Sthāna + Dig + Kāla + Cheṣṭā + Naisargika + Dṛg virūpo
 
 Talot ovat kokonaisia merkkejä Lagna-merkistä laskien, ensimmäinen talo alkaa Lagna-merkin 0°:sta (LagnaOnen tasatalot); kunkin talon keskipiste, jonka mukaan aspektit ja Dig Bala lasketaan, on 15° merkin sisällä (C9). Vertailukartan nouseva merkki on Cancer, joten 1. talo on Cancer (keskipiste 105°), 2. Leo (135°), 3. Virgo (165°) ja niin edelleen.
 
-**Miten näkymä sen näyttää.** Ensimmäinen kaavio on yksivärinen palkki jokaiselle talolle, jotta vahvat ja heikot talot näkee yhdellä silmäyksellä: talon summa prosentteina kartan kahdentoista talon keskiarvosta, ✕ heikko alle 90 %, ! kelpo 110 %:iin asti ja ✓ vahva 110 %:sta. Säkeet eivät anna talolle vähimmäisvoimaa (Ṣaḍbalalla on kullekin grahalle, §8), joten tila on kartta itseään vasten ja sovelluksen tulkinta, ei BPHS:n luku. Toinen kaavio näyttää, mistä kukin summa muodostuu.
+**Miten näkymä sen näyttää.** Ensimmäinen kaavio on yksivärinen palkki jokaiselle talolle, jotta vahvat ja heikot talot näkee yhdellä silmäyksellä: talon summa prosentteina kartan kahdentoista talon keskiarvosta, ✕ heikko alle 90 %, ! kelpo 110 %:iin asti ja ✓ vahva 110 %:sta. Säkeet eivät anna talolle vähimmäisvoimaa (Ṣaḍbalalla on kullekin grahalle, §8), joten tila on kartta itseään vasten ja sovelluksen tulkinta, ei BPHS:n luku. Toinen kaavio on sininen pylväs jokaiselle talolle summineen virūpoina; mistä kukin summa muodostuu, näkyy taulukossa.
 
 Talon voima on viiden osan summa:
 

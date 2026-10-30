@@ -123,7 +123,7 @@ export const FI: Record<string, string> = {
   'Required strength': 'Vaadittu voima',
   'Bhāva Bala of the houses': 'Talojen Bhāva Bala',
   'Bhāva Bala against the average': 'Bhāva Bala suhteessa keskiarvoon',
-  'What the Bhāva Bala of the houses is made of': 'Mistä talojen Bhāva Bala muodostuu',
+  'The total strength of each house in virūpa, the number over the column. What each total is made of is in the table below.': 'Kunkin talon kokonaisvoima virūpoina, luku pylvään päällä. Mistä kukin summa muodostuu, näkyy alla olevassa taulukossa.',
   'Average': 'Keskiarvo',
   'Each house in one colour: its total as a percentage of the average of the twelve houses of this chart (the line at 100 %). The verses give no minimum strength for a house, so this is the chart against itself: under 90 % is weak, from 110 % strong, and between ok.': 'Jokainen talo yhdellä värillä: sen summa prosentteina tämän kartan kahdentoista talon keskiarvosta (viiva kohdassa 100 %). Säkeet eivät anna talolle vähimmäisvoimaa, joten tämä on kartta itseään vasten: alle 90 % on heikko, 110 %:sta alkaen vahva ja siltä väliltä kelpo.',
   "The strength of each house in virūpa: its lord's Ṣaḍbala, its Dig Bala, the aspects of benefics (Drig+) and malefics (Drig−, below the zero), the grahas in it and its Kāla Bala. The number over a column is the total.": 'Kunkin talon voima virūpoina: herran Ṣaḍbala, talon Dig Bala, hyvien (Drig+) ja pahojen (Drig−, nollan alapuolella) aspektit, talossa olevat grahat ja talon Kāla Bala. Pylvään päällä oleva luku on summa.',
