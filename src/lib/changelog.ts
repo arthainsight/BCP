@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.42',
+    date: '2026-10-30',
+    title: 'Vimśopaka Bala by the Sanskrit text',
+    changes: [
+      'The points of a graha in a sign now follow BPHS 7.24-25: 20 in its own or its exaltation sign, 18 in the sign of an adhimitra, 15 of a mitra, 10 of a sama, 7 of a śatru and 5 of an adhiśatru. Before, the app used the natural friendship only (friend 15, neutral 10, enemy 7), so the two grades adhimitra and adhiśatru and the temporary friendship were missing, and the Vimśopaka numbers moved by 1.3 points out of 20 in the middle and by up to 5 in the three charts checked. The weights of the four schemes were right and are checked against the verses (7.17-23).',
+      'The Vimśopaka view prints what the total gives by 7.26-27 next to the number: under 5 no results, over 5 little, over 10 middling and over 15 full results. The view has its own Calculation choices: a graha in its debilitation sign (nothing, as in 7.11, or the points of the relation to the sign lord) and the temporary friendship, read from the rāśi chart or from each varga, which it shares with the Saptavargaja Bala.',
+      'The signs of all sixteen vargas were checked against their definitions in BPHS 6 on three charts, and the four schemes against a separate program: they agree. Section 15 of the manuals (English and Finnish) says how every number is made, with the reference chart worked; the verses are in docs/shadbala-sources.md.',
+      'Updated the application version to v3.42.',
+    ],
+  },
+  {
     version: 'v3.41',
     date: '2026-10-30',
     title: 'Iṣṭa and Kaṣṭa Phala under the Ṣaḍbala',

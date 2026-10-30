@@ -131,3 +131,23 @@ The reference chart (Kotka, 1987) was the only chart the expected numbers had be
 
 The two translations of the app's audit (Santhanam as digitized in the archive copy, Sharma's) and Raman agree on the rays; the only difference is Raman's geometric mean. Verses 28.7–20 (the Subhaṅkas of the signs, the Dig and Kāla results and the results of the houses) are not implemented.
 
+## Vimśopaka Bala (BPHS 7.10–32, October 2026)
+
+The Sanskrit of chapter 7 was read verse by verse; the site translation was used only as a pointer, because it garbles several of the number words.
+
+| Verse | What the Sanskrit says | The app |
+|---|---|---|
+| 7.17 | The six vargas: Lagna (rāśi), horā, dṛkkāṇa, aṅka-bhāga (navāṃśa), sūryaka (dvādaśāṃśa), triṃśāṃśa. | D1, D2, D3, D9, D12, D30. |
+| 7.18 | *rama-netra-abdhi-pañca-aśvi-bhūmayaḥ*: 3, 2, 4, 5, 2, 1 for the six; for the seven *sasaptāṃśake … viśvakāḥ pañca locanam*: rāśi 5, horā 2. | Ṣaḍvarga 6, 2, 4, 5, 2, 1. *rama* is a slip for *rasa* (6): with 3 the scheme would add up to 17, and the translations and the tradition have 6. The Saptavarga starts 5, 2 as the verse says. |
+| 7.19 | *trayaḥ sārdhaṃ dvayaṃ sārdhavedā dvau rātrināyakaḥ*: 3, 2½, 4½, 2, 1 (the Moon, *rātrināyaka*, is one). | Saptavarga D3 3, D7 2.5, D9 4.5, D12 2, D30 1. |
+| 7.20–21 | The ten vargas: *trayaṃ kṣetrasya … pañca ṣaṣṭyaṃśakasya*: 3 for the rāśi, 5 for the ṣaṣṭyaṃśa; *sārdhaukabhāgāḥ śeṣāṇām*: 1½ for each of the rest. | Daśavarga D1 3, D60 5, the other eight 1.5. |
+| 7.22–23 | The sixteen: horā, triṃśāṃśa and dṛkkāṇa 1 each (*ku-candra-śaśinaḥ*); *kalāṃśa* (D16) 2; *nandāṃśaka* (D9) 3; rāśi 3½; ṣaṣṭyaṃśa 4; *ardham ardhaṃ tu śeṣāṇām*: ½ for the rest. | Ṣoḍaśavarga D1 3.5, D2, D3, D30 1, D9 3, D16 2, D60 4, the nine others 0.5. All four add up to 20. |
+| 7.24–25 | *pūrṇaṃ viṃśopakaṃ … dhṛtiḥ syād adhimitrake, mitre pañcadaśa, same daśa, śatrau sapta, adhiśatrau pañca*: full 20 (own sign), 18 (*dhṛti*, the 18-syllable metre) for an adhimitra, 15, 10, 7 and 5. | 20 / 18 / 15 / 10 / 7 / 5 by the compound relation. The site translation does not give 18 and 5 as such. |
+| 7.11 | Full strength in the own sign or the exaltation (*svagṛhocce balaṃ pūrṇam*), none in the seventh from it. | Exaltation 20, debilitation 0 (C16 gives the other reading). |
+| 7.26–27 | *pañconaṃ phalado na hi*: under 5 no results; over 5 little; *daśordhvaṃ madhyamam*: over 10 middling; *tithyūrdhvaṃ pūrṇaphalam*: over 15 full. | The view prints the word. The site translation reads *tithi* as thirty; it is 15. |
+| 7.12–16, 7.28–29 | A strength that runs through the sign by degrees (*anupāta*), the results of the horā, and the strength from the distance to the Sun (*udayāsta*). | Not calculated. |
+
+**What was wrong before.** The app scored a graha in a sign by the natural friendship only (15 friend, 10 neutral, 7 enemy), so the verse's adhimitra 18 and adhiśatru 5 never occurred, and the temporary friendship, which the verse's five grades need, was left out. Debilitation 0 and the weights were right. The vargas of D4, D10, D16, D20, D24, D27, D40, D45 and D60 were checked against their definitions in BPHS 6 and agree on every graha of three charts.
+
+PyJHora, used for comparison only, gives its Saptavarga weights as D7 1, D9 2.5, D12 4.5, D30 2, which are not the verse's (2.5, 4.5, 2, 1).
+

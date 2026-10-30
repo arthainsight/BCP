@@ -320,7 +320,7 @@ Dṛṣṭi = −¼ × (5.18 + 4.92 + 0 + 34.07) + 16.85 + 51.62 + ¼ × 11.94 =
 
 ## 10. Choice points
 
-These are the places where the verses are silent or the sources disagree. The "Used" column is the default, the reading of the Sanskrit text, and it is the first choice of each setting. **Every other alternative can be chosen in the Bala views, under "Calculation choices"** (above the Ṣaḍbala and the Bhāva Bala; the choices are kept in this browser and change nothing but these two views). C1–C11 and C13–C15 are settings; C6 and C7 (doubling the Sun's Ayana and the Moon's Pakṣa) are in the third choice of C5; C12 (Yuddha Bala) is not a setting.
+These are the places where the verses are silent or the sources disagree. The "Used" column is the default, the reading of the Sanskrit text, and it is the first choice of each setting. **Every other alternative can be chosen in the Bala views, under "Calculation choices"** (above the Ṣaḍbala and the Bhāva Bala; the choices are kept in this browser and change nothing but these two views). C1–C11 and C13–C16 are settings; C6 and C7 (doubling the Sun's Ayana and the Moon's Pakṣa) are in the third choice of C5; C12 (Yuddha Bala) is not a setting.
 
 | | Question | Used | Alternatives and who holds them |
 |---|---|---|---|
@@ -339,6 +339,7 @@ These are the places where the verses are silent or the sources disagree. The "U
 | C13 | The mean positions of Cheṣṭā Bala | Raman's tables (Dutt, with the yearly corrections), in Lahiri's zodiac | The Sūrya Siddhānta's own revolutions from the Kali Yuga, without the corrections (Mars the same; Mercury up to 2.2 virūpa different) |
 | C14 | The order of the decanates in Drekkana Bala (27.6) | Males, neuters, females: the Sanskrit text and Raman | Males, females, neuters: the translations of Santhanam (the edition of Sitaram Jha) and Sharma |
 | C15 | The formula of Iṣṭa and Kaṣṭa Phala (28.6) | The mean of Uccha Bala and Cheṣṭā Bala; Kaṣṭa is what is left of sixty (the verse) | The square root of the product of the two; Kaṣṭa from what each lacks of sixty (B. V. Raman) |
+| C16 | A graha in its debilitation sign in Vimśopaka Bala (7.11, 7.24–25) | Nothing, as in 7.11 | The points of its relation to the sign's lord, like any other sign |
 
 ## 11. Changing the choices
 
@@ -383,3 +384,29 @@ Chapter 28 turns two of the strengths into a measure of the good and the harm a 
 | Saturn | 48.95 | 18.33 | 33.64 | 26.36 | 29.96 | 21.46 |
 
 The tests are in `src/lib/ishtaKashta.test.ts`: Raman's printed examples (61–64) and the three charts of the audit, against numbers worked out by a separate program. The rest of chapter 28 (28.7–20: the Iṣṭa and Kaṣṭa of the sign a graha stands in, with the scores 60, 45, 30, 22, 15, 8, 4, 2 and 0 and half of them in the other vargas, those of Dig and Kāla Bala, and the results for the houses) is not included.
+
+## 15. Vimśopaka Bala (BPHS 7.10–27)
+
+Vimśopaka Bala says how well a graha stands in the divisional charts, out of 20. It is the third tab of ANALYSIS → Bala. A graha gets points for the sign it holds in each varga of a scheme, and each varga counts for its weight out of 20.
+
+1. **The schemes and their weights (7.17–23).** Ṣaḍvarga: D1 6, D2 2, D3 4, D9 5, D12 2, D30 1. Saptavarga: D1 5, D2 2, D3 3, D7 2.5, D9 4.5, D12 2, D30 1. Daśavarga: D1 3, D60 5 and 1.5 each for D2, D3, D7, D9, D10, D12, D16, D30. Ṣoḍaśavarga: D1 3.5, D9 3, D60 4, D16 2, D2, D3 and D30 1 each, and 0.5 each for the other nine (D4, D7, D10, D12, D20, D24, D27, D40, D45). Each scheme adds up to 20. (The Sanskrit of 7.18 has *rama* where the Ṣaḍvarga's D1 6 should be *rasa*; with 3 the scheme would add up to 17, so the printed word is a slip, shared by the editions.)
+2. **The points of a sign (7.24–25).** 20 in its own sign; 18 in the sign of an **adhimitra** (great friend), 15 of a **mitra**, 10 of a **sama**, 7 of a **śatru** and 5 of an **adhiśatru**. The relation is the compound one of the Saptavargaja Bala (§2.2): the natural friendship together with the temporary one, which is read from the rāśi chart (choice C3, shared with the Saptavargaja Bala; the other reading takes it from the varga's own chart).
+3. **Exaltation and debilitation (7.11).** Full strength, 20, in the exaltation sign as in the own sign, and none in the seventh from it. A graha in its debilitation sign gets 0 (choice C16); the other reading gives it the points of its relation to the sign's lord, like any other sign.
+4. **The sum.** For each varga of the scheme: weight × points / 20; the sum is the graha's Vimśopaka Bala out of 20.
+5. **What the total gives (7.26–27).** Under 5 it gives no results, over 5 little, over 10 middling and over 15 the full (*tithi* in the verse is 15; the site translation of the audit reads it as thirty). The view prints that word next to the number.
+
+**Choice points.** C3 (the temporary friendship: from the rāśi chart, the default, or from each varga's own chart) and **C16** (the debilitation sign: 0 by 7.11, the default; or the points of the relation). The Vimśopaka view shows them under "Calculation choices".
+
+**Worked on the reference chart** (the defaults):
+
+| Graha | Ṣaḍvarga | Saptavarga | Daśavarga | Ṣoḍaśavarga |
+|---|---:|---:|---:|---:|
+| Sun | 15.80 | 16.55 | 13.60 | 13.65 |
+| Moon | 8.95 | 10.45 | 12.75 | 10.12 |
+| Mars | 9.00 | 9.62 | 10.88 | 12.00 |
+| Mercury | 8.50 | 9.12 | 12.38 | 11.45 |
+| Jupiter | 10.00 | 10.00 | 12.50 | 11.38 |
+| Venus | 15.45 | 14.15 | 15.28 | 15.20 |
+| Saturn | 12.00 | 13.25 | 14.62 | 14.18 |
+
+The divisional charts are the sixteen of §2.2 with D4, D10, D16, D20, D24, D27, D40, D45 and D60 worked from their definitions in BPHS 6. The tests are in `src/lib/vimsopaka.test.ts`: the weights, the points of a sign, the thresholds, the signs of the sixteen vargas and the four schemes of every graha on three charts, against a separate program. Not included: the strength that runs by degrees through the sign (*gṛhaviṃśopaka*, 7.11–16) and the one from the distance to the Sun (*udayāsta*, 7.28–29).

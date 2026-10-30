@@ -13,6 +13,7 @@ export type DigPoints = 'angles' | 'equal-houses';
 export type LuminaryCheshta = 'in-total' | 'left-out' | 'doubled-in-kala';
 export type CheshtaMeans = 'raman' | 'surya-siddhanta';
 export type IshtaFormula = 'bphs' | 'raman';
+export type VimsopakaDebilitated = 'zero' | 'relation';
 export type AyanaMethod = 'table' | 'declination';
 export type DrekkanaOrder = 'neuter-second' | 'female-second';
 export type DrigMercuryJupiter = 'quarter' | 'full-addon';
@@ -31,6 +32,7 @@ export interface BalaOptions {
   luminaryCheshta: LuminaryCheshta;
   cheshtaMeans: CheshtaMeans;
   ishtaFormula: IshtaFormula;
+  vimsopakaDebilitated: VimsopakaDebilitated;
   ayana: AyanaMethod;
   drekkana: DrekkanaOrder;
   drigMercuryJupiter: DrigMercuryJupiter;
@@ -51,6 +53,7 @@ export const DEFAULT_BALA_OPTIONS: BalaOptions = {
   luminaryCheshta: 'in-total',
   cheshtaMeans: 'raman',
   ishtaFormula: 'bphs',
+  vimsopakaDebilitated: 'zero',
   ayana: 'table',
   drekkana: 'neuter-second',
   drigMercuryJupiter: 'quarter',
@@ -77,7 +80,9 @@ export interface BalaOptionChoice<V extends string = string> {
 export interface BalaOptionDefinition {
   key: keyof BalaOptions;
   /** Which view the choice belongs to. */
-  view: 'shadbala' | 'bhava';
+  view: 'shadbala' | 'bhava' | 'vimsopaka';
+  /** A choice of the Ṣaḍbala that the Vimśopaka Bala also makes (the temporary friendship). */
+  alsoFor?: 'vimsopaka';
   /** The choice point of the manual. */
   choicePoint: string;
   label: string;
@@ -121,8 +126,8 @@ export const BALA_OPTION_DEFINITIONS: readonly BalaOptionDefinition[] = [
     ],
   },
   {
-    key: 'temporaryRelation', view: 'shadbala', choicePoint: 'C3', label: 'Saptavargaja Bala: the temporary friendship',
-    note: 'Where the 2nd, 3rd, 4th, 10th, 11th and 12th places are counted from.',
+    key: 'temporaryRelation', view: 'shadbala', alsoFor: 'vimsopaka', choicePoint: 'C3', label: 'The temporary friendship in the divisional charts',
+    note: 'Where the 2nd, 3rd, 4th, 10th, 11th and 12th places are counted from. Used by Saptavargaja Bala and by Vimśopaka Bala.',
     choices: [
       { value: 'rasi', label: 'From the rāśi chart in every varga (Santhanam, Raman)' },
       { value: 'varga', label: 'From the chart of each varga' },
@@ -159,6 +164,14 @@ export const BALA_OPTION_DEFINITIONS: readonly BalaOptionDefinition[] = [
     choices: [
       { value: 'bphs', label: 'The mean of Uccha Bala and Cheṣṭā Bala; Kaṣṭa is what is left of sixty (the verse)' },
       { value: 'raman', label: 'The square root of their product; Kaṣṭa from what each lacks of sixty (B. V. Raman)' },
+    ],
+  },
+  {
+    key: 'vimsopakaDebilitated', view: 'vimsopaka', choicePoint: 'C16', label: 'Vimśopaka Bala: a graha in its debilitation sign',
+    note: 'BPHS 7.11 gives no strength to a graha in the seventh from its exaltation sign. The six points of 7.24-25 go by the sign\'s lord.',
+    choices: [
+      { value: 'zero', label: 'Nothing, as in 7.11' },
+      { value: 'relation', label: 'The points of the relation to the sign\'s lord, like any other sign (7.24-25)' },
     ],
   },
   {
