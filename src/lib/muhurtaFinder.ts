@@ -89,18 +89,26 @@ export interface FinderCriteria {
   tara?: { nakshatra: number; taras: number[] };
   /** The groups that are wishes, not conditions: they score instead of limiting. */
   prefer?: PreferKey[];
+  /** The wishes about the Rāśi chart (ids of muhurtaD1.ts), one point each. */
+  d1?: string[];
   /** The lowest score a stretch may have to be listed, when there are wishes. */
   minScore?: number;
   /** The Mahādoṣas (ids of mahadosha.ts) the stretches must be free of. */
   avoid?: string[];
   /** The signs (0 to 11) of the Ascendant and the Moon of the birth chart, for the Aṣṭama Lagna. */
   natal?: { ascSign: number; moonSign: number };
-  /** Hours on each side of the Sun entering a sign that the Saṅkrānti doṣa keeps clear of (16 ghaṭīs, 6.4 hours, if not given). */
-  sankrantiHours?: number;
+  /** Minutes of arc of the Sun's longitude on each side of its entry into a sign that the Saṅkrānti doṣa keeps clear of (16, if not given), and degrees at Cancer and Capricorn (3). */
+  sankrantiArc?: number;
+  sankrantiSolstice?: number;
+  /** The part of the nakṣatra that is Gaṇḍānta: the pada (the text), 4 ghaṭīs or 2 ghaṭīs. */
+  gandantaNakshatra?: 'pada' | 'four' | 'two';
+  /** The time kept clear of at a Vyatipāta or Vaidhṛti: the three days (the text) or the short time around the moment (the book). */
+  vyatipataLength?: 'days' | 'short';
 }
 
-/** The hours on each side of a Saṅkrānti that are kept clear of: 16 ghaṭīs of 24 minutes. */
-export const SANKRANTI_HOURS = 6.4;
+/** What the Saṅkrānti doṣa keeps clear of: 16 nāḍīs of the Sun's longitude (16′) on each side, and 3° at the entries into Cancer and Capricorn. */
+export const SANKRANTI_ARC_MINUTES = 16;
+export const SANKRANTI_SOLSTICE_DEGREES = 3;
 
 /** The groups that can be a wish, and their weights. */
 export const PREFER_KEYS = ['tithi', 'nakshatra', 'vara', 'karana', 'yoga', 'tara', 'chandra'] as const;

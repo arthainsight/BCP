@@ -93,15 +93,16 @@ async function main() {
   assert.deepEqual((await call(muhurtaFinder, `${finder}&chandra=1:`)).body.windows, [], 'no house can never be met');
   assert.equal(((await call(muhurtaFinder, `${finder}&chandra=1:1,2,3,4,5,6,7,8,9,10,11,12`)).body.windows as unknown[]).length, 1, 'every house is no condition');
   for (const bad of ['chandra=', 'chandra=1', 'chandra=12:1', 'chandra=a:1', 'chandra=1:0', 'chandra=1:13', 'chandra=1:1:2']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
-  // The Mahādoṣas to keep clear of: `avoid` names them, `natal` gives the birth signs for the Aṣṭama Lagna, `sankrantiHours` the time around a Saṅkrānti.
+  // The Mahādoṣas to keep clear of: `avoid` names them, `natal` gives the birth signs for the Aṣṭama Lagna, `sankrantiArc`/`sankrantiSolstice` the time around a Saṅkrānti, `gandanta` and `vyatipata` the choices of two doṣas.
   const avoided = await call(muhurtaFinder, `${finder}&avoid=panchanga,sankranti`);
   assert.equal(avoided.status, 200);
   assert.ok((avoided.body.windows as unknown[]).length >= 1);
   assert.equal(avoided.body.stepMinutes, 15);
   assert.equal((await call(muhurtaFinder, `${finder}&avoid=kartari&natal=3:5`)).body.stepMinutes, 5, 'a doṣa of the Ascendant');
   assert.equal((await call(muhurtaFinder, `${finder}&avoid=`)).status, 200, 'none');
-  assert.equal(((await call(muhurtaFinder, `${finder}&avoid=sankranti&sankrantiHours=0`)).body.windows as unknown[]).length >= 1, true);
-  for (const bad of ['avoid=vishaGhati', 'avoid=panchanga,nope', 'natal=12:1', 'natal=1', 'natal=a:b', 'sankrantiHours=49', 'sankrantiHours=abc', 'sankrantiHours=-1']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
+  assert.equal(((await call(muhurtaFinder, `${finder}&avoid=sankranti&sankrantiArc=0&sankrantiSolstice=0`)).body.windows as unknown[]).length >= 1, true);
+  assert.equal((await call(muhurtaFinder, `${finder}&avoid=gandanta,vyatipata,vaidhriti,vishaGhati,durmuhurta,papashadvarga,ekargala,dashaYoga,jamitra,latta,upagraha,pata&gandanta=two&vyatipata=short&natal=3:5`)).status, 200, 'the new doṣas');
+  for (const bad of ['avoid=vajra', 'avoid=panchanga,nope', 'natal=12:1', 'natal=1', 'natal=a:b', 'sankrantiArc=601', 'sankrantiArc=abc', 'sankrantiArc=-1', 'sankrantiSolstice=16', 'sankrantiSolstice=x', 'gandanta=none', 'vyatipata=week']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
   // Tarabala: the nakshatra of the Moon at birth and the taras (1 to 9) of the Moon's nakshatra that suit.
   const taraSome = await call(muhurtaFinder, `${finder}&tara=3:2,4,6,8,9`);
   assert.equal(taraSome.status, 200);
@@ -120,6 +121,14 @@ async function main() {
   assert.equal(((await call(muhurtaFinder, `${finder}&tithi=&prefer=tithi`)).body.windows as unknown[]).length, 1, 'a wish with nothing chosen limits nothing');
   assert.deepEqual((await call(muhurtaFinder, `${finder}&tithi=`)).body.windows, [], 'but a condition with nothing chosen is never met');
   for (const bad of ['prefer=nope', 'prefer=tithi,asc', 'minScore=-1', 'minScore=1001', 'minScore=abc', 'minScore=1.5']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
+  // Wishes about the Rāśi chart, a point each: `d1`.
+  const d1 = await call(muhurtaFinder, `${finder}&d1=lagnaBenefic,navamsaLagnaBenefic,beneficsInAngles,moonUpachaya,eighthTwelfthEmpty`);
+  assert.equal(d1.status, 200);
+  const d1Windows = d1.body.windows as { score: number; maxScore: number; held: string[] }[];
+  assert.ok(d1Windows.length >= 5 && d1Windows.every(window => window.maxScore === 5 && window.held.length === window.score));
+  assert.equal(d1.body.stepMinutes, 5);
+  assert.equal(((await call(muhurtaFinder, `${finder}&d1=`)).body.windows as unknown[]).length, 1, 'no wishes');
+  for (const bad of ['d1=nope', 'd1=lagnaBenefic,asc']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
   // Rules about the houses from the Ascendant: any number up to twelve, each any|none:grahas:houses.
   const moonInLagna = await call(muhurtaFinder, `${finder}&rule=any:Moon:1`);
   assert.equal(moonInLagna.status, 200);

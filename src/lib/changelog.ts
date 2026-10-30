@@ -1,5 +1,26 @@
 export const CHANGELOG = [
   {
+    version: 'v3.54',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: wishes about the Rāśi chart (D1)',
+    changes: [
+      'The Muhurta Finder has a new group, Wishes about the Rāśi chart (D1): five places of the Lagna and the grahas that Classical Muhurta (chapters 15 and 16) names as favourable. The Lagna in a sign of a benefic; the Navāṁśa Lagna in a sign of a benefic; more benefics than malefics in the angles; the Moon in the 3rd, 10th or 11th (an upachaya, not the 6th); the 8th and 12th houses empty. The Moon is a benefic 120° to 240° from the Sun and a malefic within 60° of it, as the book has it.',
+      'The book gives no weights for them, so each is a wish worth one point, added to the score of the Pañcāṅga wishes (a stretch with the suiting Chandrabala and the Moon in an upachaya has 101). They limit nothing, and the Mahādoṣas stay conditions. With a wish the search looks every 5 minutes. They are off at the start.',
+      'Updated the application version to v3.54.',
+    ],
+  },
+  {
+    version: 'v3.53',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: the Mahādoṣas as the classical source has them',
+    changes: [
+      'The source of the list of 21 great faults was found and read: Ernst Wilhelm\'s Classical Muhurta (chapter 17, Rishi Nārada\'s twenty-one great detriments) with the weekday–nakṣatra yogas of his article Muhurta Yogas. It gives the definitions and tables of nine doṣas that waited, and shows where the first version differed. Nine more are in the list now: Pāpaṣaḍvarga (4), Viṣa Ghaṭī (12, the poison nāḍīs of the tithi, the nakṣatra and the weekday), Dūrmuhūrta (13, by the tithyaṁśa), and six of the ten Daśa Doṣas (15: Ekārgalā, Daśa Yoga, Jāmitra, Lattā, Upagraha, Pāta), which makes 24 to choose from. Only Vedha, Yuti, Bāṇa and Vajra of the Daśa Doṣas, Krūraviddha Nakṣatra and the storms wait.',
+      'Corrected by the source: the Saṅkrānti is 16′ of the Sun\'s longitude on each side of its entry into a sign and 3° at Cancer and Capricorn, in the zodiac of the chart (the minutes and degrees can be changed); the Gaṇḍānta of the nakṣatra is the last or first pada (3°20′; 4 or 2 ghaṭīs can be chosen), and of the Lagna the last or first 3° of the junction signs; the Kartarī is also counted from the 7th house; the Pañcāṅga Doṣa has the Mṛtyu yoga and the Śūnya tithis of the lunar month; the Vāra Doṣa has the Ardhayāma. The Vyatipāta and Vaidhṛti can be the three days or the short time of the book (1 h 2 min on each side).',
+      'docs/mahadosha-sources.md says for each doṣa what is avoided, from which table, what of it is not applied and where the user\'s text and the book differ. The tables of the Viṣanāḍī are compared with the book\'s printed ones over the whole circle in the tests.',
+      'Updated the application version to v3.53.',
+    ],
+  },
+  {
     version: 'v3.52',
     date: '2026-10-30',
     title: 'Muhurta Finder: wishes with weights',

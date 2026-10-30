@@ -8,16 +8,20 @@ import {
   sweCalcUt, sweGetAscendant, sweGetAyanamsa, sweJulday,
 } from './ephemerisAdapter';
 import {
-  MINUTE_JD, SANKRANTI_HOURS, effectiveRules, findStretches, findWindows, houseFrom, isImpossible, isLimited, karanaOf, matchesVara, momentMatches, momentScore, nakshatraOf, neededBodies,
+  SANKRANTI_ARC_MINUTES, SANKRANTI_SOLSTICE_DEGREES, effectiveRules, findStretches, findWindows, houseFrom, isImpossible, isLimited, karanaOf, matchesVara, momentMatches, momentScore, nakshatraOf, neededBodies,
   ruleMatches, scoredKeys, signOf, tithiOf, yogaOf, type FinderCriteria, type FinderGraha, type FinderMoment, type PreferKey,
 } from './muhurtaFinder';
 import {
   DOSHA_IDS, EVENT_DOSHAS, doshaNeeds, doshaUsesAscendant, hasDosha, isDoshaId, type DoshaId, type DoshaSky,
 } from './mahadosha';
 import {
-  aroundEvent, calendarDays, declinationEqualities, eclipseMoments, insideWindows, mergeWindows, sankrantiMoments, type JdWindow,
+  VYATIPATA_SHORT_HOURS, aroundEvent, ardhayama, calendarDays, declinationEqualities, eclipseMoments, insideWindows, mergeWindows, sankrantiWindows,
+  varaVishanadi, type JdWindow,
 } from './mahadoshaEvents';
+import { lunarMonthAt } from './lunisolar';
+import { D1_GRAHAS, d1Held as d1HeldBy, isD1Key, type D1Key } from './muhurtaD1';
 import { rahuKala, yamaganda } from './muhurta';
+import { VARA_VISHANADI_START } from './mahadosha';
 import { calculateSunTimes } from './sunTimes';
 import { getUtcOffsetHours } from './timezone';
 
@@ -51,7 +55,7 @@ export interface FinderResultWindow {
   /** The score of the stretch when some groups are wishes: the weights of the wishes it holds, out of all the weights, and which. */
   score?: number;
   maxScore?: number;
-  held?: PreferKey[];
+  held?: (PreferKey | D1Key)[];
   /** What the sky is at the start of the stretch. */
   at: { tithi: number; nakshatra: number; yoga: number; karana: number; ascendantSign: number };
 }
@@ -71,8 +75,9 @@ export const jdToMs = (jd: number) => (jd - JD_UNIX_EPOCH) * 86_400_000;
 /** The minutes between looks: finer when the Ascendant, which changes sign in an hour or two, is limited or the houses are asked about. */
 export function finderStepMinutes(criteria: FinderCriteria): number {
   const ascendant = criteria.signs.Asc !== undefined && isLimited(criteria.signs.Asc, 12);
+  const wishes = (criteria.d1 ?? []).some(isD1Key);
   const doshas = (criteria.avoid ?? []).filter(isDoshaId).some(doshaUsesAscendant);
-  return ascendant || doshas || effectiveRules(criteria).length > 0 ? 5 : 15;
+  return ascendant || wishes || doshas || effectiveRules(criteria).length > 0 ? 5 : 15;
 }
 
 /** Whether a request is small enough to run: the number of moments the walk looks at. */
@@ -168,24 +173,34 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
   const eclipseNakshatras: { startJd: number; endJd: number; nakshatra: number }[] = [];
   if (!isImpossible(criteria)) {
     if (avoid.has('sankranti')) {
-      const hours = (criteria.sankrantiHours ?? SANKRANTI_HOURS) / 24;
-      for (const moment of await sankrantiMoments(jd => longitudeOf('Sun', jd), fromJd - 2, toJd + 2)) blockedWindows.push(aroundEvent(moment, hours, hours));
+      blockedWindows.push(...await sankrantiWindows(
+        jd => longitudeOf('Sun', jd), fromJd, toJd, criteria.sankrantiArc ?? SANKRANTI_ARC_MINUTES, criteria.sankrantiSolstice ?? SANKRANTI_SOLSTICE_DEGREES,
+      ));
     }
     if (avoid.has('varaDosha')) {
-      for (const row of rows) {
-        if (row.sunriseHour === undefined || row.sunsetHour === undefined) continue;
+      rows.forEach((row, index) => {
+        if (row.sunriseHour === undefined || row.sunsetHour === undefined || index + 1 >= rows.length) return;
         const day = { sunrise: row.sunriseHour, sunset: row.sunsetHour, nextSunrise: row.sunsetHour };
         for (const span of [rahuKala(day, row.weekday), yamaganda(day, row.weekday)]) {
           blockedWindows.push({ startJd: row.midnightJd + span.start / 24, endJd: row.midnightJd + span.end / 24 });
         }
-      }
+        blockedWindows.push(...ardhayama(row.weekday, row.sunriseJd, row.midnightJd + row.sunsetHour / 24, rows[index + 1].sunriseJd));
+      });
+    }
+    if (avoid.has('vishaGhati')) {
+      // The Viṣanāḍī of the weekday: 4 nāḍīs from the nāḍī of its table after sunrise, in the weekday that lasts to the next sunrise.
+      rows.forEach((row, index) => {
+        if (index + 1 < rows.length) blockedWindows.push(varaVishanadi(row.sunriseJd, rows[index + 1].sunriseJd, VARA_VISHANADI_START[row.weekday]));
+      });
     }
     if (avoid.has('vyatipata') || avoid.has('vaidhriti')) {
       const found = await declinationEqualities(fromJd - 3, toJd + 3);
       for (const [id, moments] of [['vyatipata', found.vyatipata], ['vaidhriti', found.vaidhriti]] as const) {
         if (!avoid.has(id)) continue;
-        // The day before, the day of and the day after, by the clock of the place.
-        for (const moment of moments) blockedWindows.push(calendarDays(moment, offsetAt(moment), 1, 1));
+        // The day before, the day of and the day after, by the clock of the place; or the short time of the book around the moment.
+        for (const moment of moments) {
+          blockedWindows.push(criteria.vyatipataLength === 'short' ? aroundEvent(moment, VYATIPATA_SHORT_HOURS / 24, VYATIPATA_SHORT_HOURS / 24) : calendarDays(moment, offsetAt(moment), 1, 1));
+        }
       }
     }
     if (avoid.has('eclipse')) {
@@ -198,6 +213,22 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
       }
     }
   }
+  // The lunar month, for the Śūnya tithis of the Pañcāṅga Doṣa: the months of the span, each from new Moon to new Moon.
+  const masaWindows: { startJd: number; endJd: number; masa: number }[] = [];
+  if (avoid.has('panchanga') && !isImpossible(criteria)) {
+    try {
+      for (let at = fromJd; at < toJd + 1;) {
+        const month = await lunarMonthAt(at, request.ayanamsa, request.ayanamsaOffset);
+        masaWindows.push({ startJd: month.startJd, endJd: month.endJd, masa: month.masaIndex });
+        at = month.endJd + 0.5;
+      }
+    } catch {
+      // A zodiac the month cannot be named in (the tropical): the Śūnya tithis are then left out.
+      masaWindows.length = 0;
+    }
+  }
+  const masaAt = (jd: number) => masaWindows.find(window => jd >= window.startJd && jd < window.endJd)?.masa;
+  const gandantaOptions = { gandantaNakshatra: criteria.gandantaNakshatra };
   const blocked = mergeWindows(blockedWindows);
   const watchedNakshatras = eclipseNakshatras.filter(entry => entry.endJd > fromJd && entry.startJd < toJd);
 
@@ -236,7 +267,7 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
       const position = async (key: string) => {
         let value = found.get(key);
         if (value === undefined) {
-          value = key === 'AscBefore' ? await longitudeOf('Asc', jd - 12 * MINUTE_JD) : key === 'AscAfter' ? await longitudeOf('Asc', jd + 12 * MINUTE_JD) : await longitudeOf(key as FinderGraha, jd);
+          value = await longitudeOf(key as FinderGraha, jd);
           found.set(key, value);
         }
         return value;
@@ -245,14 +276,13 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
         const required = doshaNeeds(id);
         if (required.luminaries) { await position('Sun'); await position('Moon'); }
         if (required.asc) await position('Asc');
-        if (required.ascAround) { await position('AscBefore'); await position('AscAfter'); }
         for (const graha of required.grahas) await position(graha);
         const sky: DoshaSky = {
           vara: varaAt(jd), sun: found.get('Sun') ?? 0, moon: found.get('Moon') ?? 0, asc: found.get('Asc') ?? 0,
-          ascBefore: found.get('AscBefore'), ascAfter: found.get('AscAfter'),
-          others: Object.fromEntries([...found].filter(([key]) => !['Sun', 'Moon', 'Asc', 'AscBefore', 'AscAfter'].includes(key))) as DoshaSky['others'],
+          masa: masaAt(jd),
+          others: Object.fromEntries([...found].filter(([key]) => !['Sun', 'Moon', 'Asc'].includes(key))) as DoshaSky['others'],
         };
-        if (hasDosha(id, sky, criteria.natal)) return false;
+        if (hasDosha(id, sky, criteria.natal, gandantaOptions)) return false;
       }
     }
     return true;
@@ -263,12 +293,27 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
 
   // The wishes: a moment out of the conditions is -1, any other has the score of the wishes it holds.
   const wishes = scoredKeys(criteria);
+  const d1Wishes = [...new Set((criteria.d1 ?? []).filter(isD1Key))];
   const momentAt = async (jd: number): Promise<FinderMoment> => ({ vara: varaAt(jd), sun: await longitudeOf('Sun', jd), moon: await longitudeOf('Moon', jd), others: {} });
-  const valueAt = async (jd: number): Promise<number> => ((await holds(jd)) ? momentScore(await momentAt(jd), criteria).score : -1);
+  // The wishes about the Rāśi chart, one point each: the sky of the moment with the Ascendant and the grahas the wishes name.
+  const d1Sky = async (jd: number): Promise<DoshaSky> => {
+    const others: DoshaSky['others'] = {};
+    for (const graha of D1_GRAHAS) if (graha !== 'Sun' && graha !== 'Moon') others[graha] = await longitudeOf(graha, jd);
+    return { vara: varaAt(jd), sun: await longitudeOf('Sun', jd), moon: await longitudeOf('Moon', jd), asc: await longitudeOf('Asc', jd), others };
+  };
+  const d1Held = async (jd: number): Promise<D1Key[]> => {
+    if (d1Wishes.length === 0) return [];
+    const sky = await d1Sky(jd);
+    return d1Wishes.filter(key => d1HeldBy(key, sky));
+  };
+  const valueAt = async (jd: number): Promise<number> => {
+    if (!(await holds(jd))) return -1;
+    return (wishes.length > 0 ? momentScore(await momentAt(jd), criteria).score : 0) + (await d1Held(jd)).length;
+  };
 
   let windows: { startJd: number; endJd: number }[];
   let truncated: boolean;
-  if (wishes.length === 0) {
+  if (wishes.length === 0 && d1Wishes.length === 0) {
     ({ windows, truncated } = await findWindows(holds, fromJd, toJd, stepMinutes, MAX_FINDER_WINDOWS));
   } else {
     const lowest = Math.max(0, criteria.minScore ?? 0);
@@ -282,7 +327,11 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
     const jd = window.startJd + 0.5 / 1440;
     const sun = await longitudeOf('Sun', jd);
     const moon = await longitudeOf('Moon', jd);
-    const scored = wishes.length > 0 ? momentScore({ vara: varaAt(jd), sun, moon, others: {} }, criteria) : undefined;
+    const panchanga = wishes.length > 0 ? momentScore({ vara: varaAt(jd), sun, moon, others: {} }, criteria) : { score: 0, max: 0, held: [] as PreferKey[] };
+    const d1 = await d1Held(jd);
+    const scored = wishes.length > 0 || d1Wishes.length > 0
+      ? { score: panchanga.score + d1.length, max: panchanga.max + d1Wishes.length, held: [...panchanga.held, ...d1] }
+      : undefined;
     result.push({
       start: jdToMs(window.startJd),
       end: jdToMs(window.endJd),
