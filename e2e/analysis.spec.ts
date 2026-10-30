@@ -1678,6 +1678,23 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(rows.first()).toContainText('Thursday 05.11.2026');
   await expect(rows.first()).toContainText('1 d 0 h');
 
+  // The placements: a ready-made choice sets the groups and three rules; a rule is added and removed by hand.
+  await finder.getByRole('button', { name: 'Store or business opening', exact: true }).click();
+  const placements = finder.locator('[data-finder-group="Placements"]');
+  await expect(placements.locator('[data-finder-rule]')).toHaveCount(3);
+  await expect(finder.locator('[data-finder-group="Vāra"]').getByRole('button', { name: 'tue', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(finder.locator('[data-finder-group="Nakṣatra"]').getByRole('button', { name: 'Rohini', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(placements.getByRole('button', { name: 'Rule 1 Venus', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await placements.getByRole('button', { name: 'remove rule 3', exact: true }).click();
+  await placements.getByRole('button', { name: 'add a rule', exact: true }).click();
+  await expect(placements.locator('[data-finder-rule]')).toHaveCount(3);
+  // A new rule has no graha and no house: it can never hold, and the page says so.
+  await expect(placements).toContainText('this rule can never hold');
+  await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeDisabled();
+  await placements.getByRole('button', { name: 'remove rule 3', exact: true }).click();
+  await finder.getByRole('button', { name: 'choose everything again', exact: true }).click();
+  await expect(placements.locator('[data-finder-rule]')).toHaveCount(0);
+
   // Setting a stretch as the target does not fail.
   await rows.first().getByRole('button', { name: 'use as target', exact: true }).click();
 

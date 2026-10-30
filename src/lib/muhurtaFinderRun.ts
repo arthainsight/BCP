@@ -8,8 +8,8 @@ import {
   sweCalcUt, sweGetAscendant, sweGetAyanamsa, sweJulday,
 } from './ephemerisAdapter';
 import {
-  findWindows, isImpossible, isLimited, karanaOf, matchesVara, momentMatches, nakshatraOf, neededBodies, signOf,
-  tithiOf, yogaOf, type FinderCriteria, type FinderGraha, type FinderMoment,
+  effectiveRules, findWindows, houseFrom, isImpossible, isLimited, karanaOf, matchesVara, momentMatches, nakshatraOf, neededBodies,
+  ruleMatches, signOf, tithiOf, yogaOf, type FinderCriteria, type FinderGraha, type FinderMoment,
 } from './muhurtaFinder';
 import { calculateSunTimes } from './sunTimes';
 import { getUtcOffsetHours } from './timezone';
@@ -57,9 +57,10 @@ export interface FinderResult {
 const JD_UNIX_EPOCH = 2440587.5;
 export const jdToMs = (jd: number) => (jd - JD_UNIX_EPOCH) * 86_400_000;
 
-/** The minutes between looks: finer when the Ascendant, which changes sign in an hour or two, is limited. */
+/** The minutes between looks: finer when the Ascendant, which changes sign in an hour or two, is limited or the houses are asked about. */
 export function finderStepMinutes(criteria: FinderCriteria): number {
-  return criteria.signs.Asc !== undefined && isLimited(criteria.signs.Asc, 12) ? 5 : 15;
+  const ascendant = criteria.signs.Asc !== undefined && isLimited(criteria.signs.Asc, 12);
+  return ascendant || effectiveRules(criteria).length > 0 ? 5 : 15;
 }
 
 /** Whether a request is small enough to run: the number of moments the walk looks at. */
@@ -127,17 +128,21 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
     const ayanamsa = await ayanamsaAt(jd);
     if (graha === 'Asc') return normalizeDegrees((await sweGetAscendant(jd, request.lat, request.lng)) - ayanamsa);
     if (graha === 'Rahu') return normalizeDegrees((await sweCalcUt(jd, nodeId)).longitude - ayanamsa);
+    if (graha === 'Ketu') return normalizeDegrees((await sweCalcUt(jd, nodeId)).longitude - ayanamsa + 180);
     return normalizeDegrees((await sweCalcUt(jd, BODY_IDS[graha])).longitude - ayanamsa);
   };
 
   const needs = neededBodies(criteria);
-  // The conditions on the Sun and the Moon, with the panchāṅga; those on the others are looked at after them.
+  // The conditions on the Sun and the Moon, with the panchāṅga; those on the others and the rules are looked at after them.
   const luminaryCriteria: FinderCriteria = {
     ...criteria,
+    rules: [],
     signs: Object.fromEntries(Object.entries(criteria.signs).filter(([graha]) => graha === 'Sun' || graha === 'Moon')) as FinderCriteria['signs'],
   };
   // Slow grahas first, the Ascendant, which costs the same but changes fastest, last.
   const others = [...needs.others].sort((a, b) => Number(a === 'Asc') - Number(b === 'Asc'));
+
+  const rules = effectiveRules(criteria);
 
   const holds = async (jd: number): Promise<boolean> => {
     if (!matchesVara(criteria, varaAt(jd))) return false;
@@ -148,6 +153,17 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
     for (const graha of others) {
       const allowed = criteria.signs[graha]!;
       if (!allowed.includes(signOf(await longitudeOf(graha, jd)))) return false;
+    }
+    if (rules.length > 0) {
+      // The houses of the grahas the rules name, from the sign of the Ascendant; each graha is worked out once.
+      const ascSign = signOf(await longitudeOf('Asc', jd));
+      const houses = new Map<FinderGraha, number>();
+      for (const rule of rules) {
+        for (const graha of rule.grahas) {
+          if (!houses.has(graha)) houses.set(graha, houseFrom(ascSign, await longitudeOf(graha, jd)));
+        }
+        if (!ruleMatches(rule, graha => houses.get(graha))) return false;
+      }
     }
     return true;
   };

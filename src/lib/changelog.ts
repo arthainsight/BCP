@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.48',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: the places of the grahas, and a ready-made choice for opening a store',
+    changes: [
+      'Placements: the Muhurta Finder can now ask where the grahas are in the houses, counted from the sign of the Ascendant (the 1st house). Add rules of two kinds: "at least one of" some grahas in some houses (Venus or the Moon in the 1st) and "none of" them in some houses (no malefic in the 8th and the 12th). Every rule must hold at once, and the benefics and malefics buttons fill in the grahas. Ketu is now in the grid of the signs too (always opposite Rāhu). With a rule the sky is looked at every 5 minutes.',
+      'Ready-made choices: Store or business opening sets the favourable nakṣatras (Aśvinī, Rohiṇī, Mṛgaśīrṣa, Puṣya, Uttara Phalgunī, Hasta, Citrā, Anurādhā, Uttara Āṣāḍhā, Uttara Bhādrapadā, Revatī), leaves out the 4th, 9th and 14th tithi of both halves, Tuesday and Aquarius rising, and adds the rules Venus or the Moon in the Lagna, no malefic in the 8th and 12th, and a benefic in the 2nd, 10th or 11th. The source says benefics are "best" there rather than required, so remove that rule if it narrows the search too much.',
+      'Updated the application version to v3.48.',
+    ],
+  },
+  {
     version: 'v3.47',
     date: '2026-10-30',
     title: 'Bhāva Bala: fixed limits of 420 and 480',
