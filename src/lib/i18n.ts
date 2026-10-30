@@ -1004,6 +1004,7 @@ export const FI: Record<string, string> = {
   "The verses give the method of the cheṣṭā-kendra but no mean positions of the grahas. Mars is the same in both; Mercury differs by up to 2 virūpa, the others by less.": "Säkeet antavat cheṣṭā-kendran menetelmän mutta eivät grahojen keskipituuksia. Mars on kummassakin sama; Mercury eroaa enintään 2 virūpaa, muut vähemmän.",
   "B. V. Raman's tables from Kedarnath Dutt, with the yearly corrections (Raman, JHora)": "B. V. Ramanin taulukot Kedarnath Duttilta vuosikorjauksineen (Raman, JHora)",
   "The Sūrya Siddhānta's own revolutions from the Kali Yuga, without the corrections": "Sūrya Siddhāntan omat kierrokset Kali-yugasta ilman korjauksia",
+  "Tap to change how the numbers are calculated": "Napauta muuttaaksesi, miten luvut lasketaan",
   "Iṣṭa and Kaṣṭa Phala: the formula": "Iṣṭa- ja Kaṣṭa-phala: kaava",
   "BPHS 28.6 adds the two rays and halves them. B. V. Raman takes the square root of their product.": "BPHS 28.6 laskee kaksi sädettä yhteen ja puolittaa. B. V. Raman ottaa niiden tulon neliöjuuren.",
   "The mean of Uccha Bala and Cheṣṭā Bala; Kaṣṭa is what is left of sixty (the verse)": "Uccha Balan ja Cheṣṭā Balan keskiarvo; Kaṣṭa on se, mikä jää kuudestakymmenestä (säe)",
