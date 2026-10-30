@@ -109,6 +109,17 @@ async function main() {
   assert.deepEqual((await call(muhurtaFinder, `${finder}&tara=3:`)).body.windows, [], 'no tara can never be met');
   assert.equal(((await call(muhurtaFinder, `${finder}&tara=3:1,2,3,4,5,6,7,8,9`)).body.windows as unknown[]).length, 1, 'every tara is no condition');
   for (const bad of ['tara=', 'tara=3', 'tara=27:1', 'tara=a:1', 'tara=3:0', 'tara=3:10', 'tara=3:1:2']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
+  // Wishes: the groups that score by their weights instead of limiting, and the lowest score listed.
+  const wished = await call(muhurtaFinder, `${finder}&chandra=1:1,3,6,7,10,11&tara=3:2,4,6,8,9&prefer=chandra,tara`);
+  assert.equal(wished.status, 200);
+  const wishedWindows = wished.body.windows as { score: number; maxScore: number }[];
+  assert.ok(wishedWindows.length >= 3 && wishedWindows.every(window => window.maxScore === 160 && [0, 60, 100, 160].includes(window.score)));
+  const bestOnly = await call(muhurtaFinder, `${finder}&chandra=1:1,3,6,7,10,11&tara=3:2,4,6,8,9&prefer=chandra,tara&minScore=160`);
+  assert.ok((bestOnly.body.windows as { score: number }[]).every(window => window.score === 160) && (bestOnly.body.windows as unknown[]).length >= 1);
+  assert.equal((await call(muhurtaFinder, `${finder}&prefer=`)).status, 200, 'no wishes');
+  assert.equal(((await call(muhurtaFinder, `${finder}&tithi=&prefer=tithi`)).body.windows as unknown[]).length, 1, 'a wish with nothing chosen limits nothing');
+  assert.deepEqual((await call(muhurtaFinder, `${finder}&tithi=`)).body.windows, [], 'but a condition with nothing chosen is never met');
+  for (const bad of ['prefer=nope', 'prefer=tithi,asc', 'minScore=-1', 'minScore=1001', 'minScore=abc', 'minScore=1.5']) assert.equal((await call(muhurtaFinder, `${finder}&${bad}`)).status, 400, bad);
   // Rules about the houses from the Ascendant: any number up to twelve, each any|none:grahas:houses.
   const moonInLagna = await call(muhurtaFinder, `${finder}&rule=any:Moon:1`);
   assert.equal(moonInLagna.status, 200);

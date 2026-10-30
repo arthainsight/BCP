@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.52',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: wishes with weights',
+    changes: [
+      'Each of the seven groups of the Muhurta Finder (tithi, nakṣatra, vāra, karaṇa, yoga, Tarabala, Chandrabala) can now be a wish instead of a condition, with the button "wish ×N" in its title. A wish limits nothing; the stretch that holds it earns its weight, the scale of the Atharvaṇa Jyotiṣa as the Phalita Navaratna Saṅgraha extends it: tithi 1, nakṣatra 4, vāra 8, karaṇa 16, yoga 32, Tarabala 60, Chandrabala 100.',
+      'With wishes the time is divided into stretches over which the score stays the same, each shown with its score out of the most it could be and the wishes it holds. They can be put in time order or best first, and "lowest score" lists only those that reach a score (160 is both of Tarabala and Chandrabala). A wish with every item chosen scores nothing; a wish with nothing chosen is never held and limits nothing.',
+      'At the start the suiting Tarabala (Sampat, Kṣema, Sādhana, Mitra, Parama Mitra) and Chandrabala (the 1st, 3rd, 6th, 7th, 10th, 11th house) are wishes, so the first search gives the whole span scored. "Choose everything again" clears everything, and "back to the start choices" returns to this. The readings of D1 (the Lagna and the places of the grahas) are conditions as before, with no weights, since the scale gives none.',
+      'Updated the application version to v3.52.',
+    ],
+  },
+  {
     version: 'v3.51',
     date: '2026-10-30',
     title: 'Muhurta Finder: Tarabala',

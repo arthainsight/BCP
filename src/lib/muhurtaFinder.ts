@@ -10,6 +10,9 @@
 // in the 8th and the 12th".
 //
 // Chandrabala is the Moon's house counted from the sign of the Moon at birth: the houses chosen are the ones that suit.
+// A group can be a wish instead of a condition: it then limits nothing, and a moment that holds it earns the weight of the
+// group (the scale of the Atharvaṇa Jyotiṣa, extended by the Phalita Navaratna Saṅgraha: tithi 1, nakṣatra 4, vāra 8,
+// karaṇa 16, yoga 32, tārābala 60, candrabala 100), so that the stretches found are told apart by their score.
 // Tarabala is the Moon's nakṣatra counted from the nakṣatra of the Moon at birth, in nines: the tārās chosen are the ones that suit.
 //
 // This file is the part that needs no ephemeris: what a pair of longitudes says about the panchāṅga, whether a
@@ -84,6 +87,10 @@ export interface FinderCriteria {
   chandra?: { moonSign: number; houses: number[] };
   /** Tarabala: the tārās (1 to 9) of the Moon's nakṣatra counted from the nakṣatra of the Moon at birth (`nakshatra`, 0 Aśvinī to 26). */
   tara?: { nakshatra: number; taras: number[] };
+  /** The groups that are wishes, not conditions: they score instead of limiting. */
+  prefer?: PreferKey[];
+  /** The lowest score a stretch may have to be listed, when there are wishes. */
+  minScore?: number;
   /** The Mahādoṣas (ids of mahadosha.ts) the stretches must be free of. */
   avoid?: string[];
   /** The signs (0 to 11) of the Ascendant and the Moon of the birth chart, for the Aṣṭama Lagna. */
@@ -94,6 +101,12 @@ export interface FinderCriteria {
 
 /** The hours on each side of a Saṅkrānti that are kept clear of: 16 ghaṭīs of 24 minutes. */
 export const SANKRANTI_HOURS = 6.4;
+
+/** The groups that can be a wish, and their weights. */
+export const PREFER_KEYS = ['tithi', 'nakshatra', 'vara', 'karana', 'yoga', 'tara', 'chandra'] as const;
+export type PreferKey = (typeof PREFER_KEYS)[number];
+export const FINDER_WEIGHTS: Record<PreferKey, number> = { tithi: 1, nakshatra: 4, vara: 8, karana: 16, yoga: 32, tara: 60, chandra: 100 };
+export const isPreferKey = (value: string): value is PreferKey => (PREFER_KEYS as readonly string[]).includes(value);
 
 /** The houses from the Moon at birth that are usually taken to suit: the 1st, 3rd, 6th, 7th, 10th and 11th. */
 export const CHANDRABALA_USUAL = [1, 3, 6, 7, 10, 11];
@@ -197,10 +210,16 @@ export const FINDER_SIZES = { vara: 7, tithi: 30, nakshatra: 27, yoga: 27, karan
 /** Whether a list is limited at all: it is not when it holds every one of the `size` items. */
 export const isLimited = (allowed: readonly number[], size: number) => new Set(allowed).size < size;
 
-/** Whether the conditions can never be met: some limited group has nothing chosen. */
+/** Whether the conditions can never be met: some limited group that is a condition (not a wish) has nothing chosen. */
 export function isImpossible(criteria: FinderCriteria): boolean {
-  const groups = [criteria.vara, criteria.tithi, criteria.nakshatra, criteria.yoga, criteria.karana, ...Object.values(criteria.signs)];
-  return groups.some(group => group !== undefined && group.length === 0) || (criteria.rules ?? []).some(isImpossibleRule) || (criteria.chandra !== undefined && criteria.chandra.houses.length === 0) || (criteria.tara !== undefined && criteria.tara.taras.length === 0);
+  const wished = new Set(criteria.prefer ?? []);
+  const groups = [
+    ...(wished.has('vara') ? [] : [criteria.vara]), ...(wished.has('tithi') ? [] : [criteria.tithi]), ...(wished.has('nakshatra') ? [] : [criteria.nakshatra]),
+    ...(wished.has('yoga') ? [] : [criteria.yoga]), ...(wished.has('karana') ? [] : [criteria.karana]), ...Object.values(criteria.signs),
+  ];
+  return groups.some(group => group !== undefined && group.length === 0) || (criteria.rules ?? []).some(isImpossibleRule)
+    || (criteria.chandra !== undefined && !wished.has('chandra') && criteria.chandra.houses.length === 0)
+    || (criteria.tara !== undefined && !wished.has('tara') && criteria.tara.taras.length === 0);
 }
 
 /** What a moment is, for the conditions: the longitudes (sidereal) the conditions ask about, and the weekday. */
@@ -236,18 +255,20 @@ export function neededBodies(criteria: FinderCriteria): { luminaries: boolean; o
 }
 
 /** The conditions of the weekday alone, for the check that needs no ephemeris. */
-export const matchesVara = (criteria: FinderCriteria, vara: number) => !isLimited(criteria.vara, FINDER_SIZES.vara) || criteria.vara.includes(vara);
+export const matchesVara = (criteria: FinderCriteria, vara: number) =>
+  (criteria.prefer ?? []).includes('vara') || !isLimited(criteria.vara, FINDER_SIZES.vara) || criteria.vara.includes(vara);
 
 /** Whether a moment meets every condition. A body the moment lacks is a condition not met. */
 export function momentMatches(moment: FinderMoment, criteria: FinderCriteria): boolean {
   if (!matchesVara(criteria, moment.vara)) return false;
   const { sun, moon } = moment;
-  if (isLimited(criteria.tithi, FINDER_SIZES.tithi) && !criteria.tithi.includes(tithiOf(sun, moon))) return false;
-  if (isLimited(criteria.nakshatra, FINDER_SIZES.nakshatra) && !criteria.nakshatra.includes(nakshatraOf(moon))) return false;
-  if (isLimited(criteria.yoga, FINDER_SIZES.yoga) && !criteria.yoga.includes(yogaOf(sun, moon))) return false;
-  if (isLimited(criteria.karana, FINDER_SIZES.karana) && !criteria.karana.includes(karanaOf(sun, moon))) return false;
-  if (criteria.chandra !== undefined && isLimited(criteria.chandra.houses, 12) && !criteria.chandra.houses.includes(houseFrom(criteria.chandra.moonSign, moon))) return false;
-  if (criteria.tara !== undefined && isLimited(criteria.tara.taras, 9) && !criteria.tara.taras.includes(taraOf(criteria.tara.nakshatra, nakshatraOf(moon)))) return false;
+  const wished = new Set(criteria.prefer ?? []);
+  if (!wished.has('tithi') && isLimited(criteria.tithi, FINDER_SIZES.tithi) && !criteria.tithi.includes(tithiOf(sun, moon))) return false;
+  if (!wished.has('nakshatra') && isLimited(criteria.nakshatra, FINDER_SIZES.nakshatra) && !criteria.nakshatra.includes(nakshatraOf(moon))) return false;
+  if (!wished.has('yoga') && isLimited(criteria.yoga, FINDER_SIZES.yoga) && !criteria.yoga.includes(yogaOf(sun, moon))) return false;
+  if (!wished.has('karana') && isLimited(criteria.karana, FINDER_SIZES.karana) && !criteria.karana.includes(karanaOf(sun, moon))) return false;
+  if (!wished.has('chandra') && criteria.chandra !== undefined && isLimited(criteria.chandra.houses, 12) && !criteria.chandra.houses.includes(houseFrom(criteria.chandra.moonSign, moon))) return false;
+  if (!wished.has('tara') && criteria.tara !== undefined && isLimited(criteria.tara.taras, 9) && !criteria.tara.taras.includes(taraOf(criteria.tara.nakshatra, nakshatraOf(moon)))) return false;
   for (const graha of Object.keys(criteria.signs) as FinderGraha[]) {
     const allowed = criteria.signs[graha];
     if (allowed === undefined || !isLimited(allowed, 12)) continue;
@@ -266,6 +287,36 @@ export function momentMatches(moment: FinderMoment, criteria: FinderCriteria): b
     if (!rules.every(rule => ruleMatches(rule, houseOf))) return false;
   }
   return true;
+}
+
+/** The groups that are wishes and that limit something (a wish with every item chosen scores nothing). */
+export function scoredKeys(criteria: FinderCriteria): PreferKey[] {
+  return (criteria.prefer ?? []).filter(key => {
+    if (key === 'vara') return isLimited(criteria.vara, FINDER_SIZES.vara);
+    if (key === 'tithi') return isLimited(criteria.tithi, FINDER_SIZES.tithi);
+    if (key === 'nakshatra') return isLimited(criteria.nakshatra, FINDER_SIZES.nakshatra);
+    if (key === 'yoga') return isLimited(criteria.yoga, FINDER_SIZES.yoga);
+    if (key === 'karana') return isLimited(criteria.karana, FINDER_SIZES.karana);
+    if (key === 'tara') return criteria.tara !== undefined && isLimited(criteria.tara.taras, 9);
+    return criteria.chandra !== undefined && isLimited(criteria.chandra.houses, 12);
+  });
+}
+
+/** The score of a moment: the weights of the wishes it holds, out of the weights of all the wishes there are. */
+export function momentScore(moment: FinderMoment, criteria: FinderCriteria): { score: number; max: number; held: PreferKey[] } {
+  const { sun, moon } = moment;
+  const holds: Record<PreferKey, () => boolean> = {
+    vara: () => criteria.vara.includes(moment.vara),
+    tithi: () => criteria.tithi.includes(tithiOf(sun, moon)),
+    nakshatra: () => criteria.nakshatra.includes(nakshatraOf(moon)),
+    yoga: () => criteria.yoga.includes(yogaOf(sun, moon)),
+    karana: () => criteria.karana.includes(karanaOf(sun, moon)),
+    tara: () => criteria.tara!.taras.includes(taraOf(criteria.tara!.nakshatra, nakshatraOf(moon))),
+    chandra: () => criteria.chandra!.houses.includes(houseFrom(criteria.chandra!.moonSign, moon)),
+  };
+  const keys = scoredKeys(criteria);
+  const held = keys.filter(key => holds[key]());
+  return { score: held.reduce((sum, key) => sum + FINDER_WEIGHTS[key], 0), max: keys.reduce((sum, key) => sum + FINDER_WEIGHTS[key], 0), held };
 }
 
 /** The tithi as a table writes it: S1 to S15 in the bright half (śukla), K1 to K15 in the dark (kṛṣṇa). */
@@ -346,4 +397,64 @@ export async function findWindows(
   }
   if (start !== null) windows.push({ startJd: start, endJd: toJd });
   return { windows, truncated: false };
+}
+
+export interface ScoredStretch {
+  startJd: number;
+  endJd: number;
+  /** The score of the stretch (it is the same all through it). */
+  value: number;
+}
+
+/**
+ * The stretches between `fromJd` and `toJd` over which `valueAt` stays the same, those whose value `keep` accepts. Where the
+ * value changes the moment is found to the minute by halving. A stretch shorter than a step can be missed, and one cut by
+ * the ends of the span is cut there. A value below 0 means the moment is out (a condition fails): `keep` should refuse it.
+ */
+export async function findStretches(
+  valueAt: (jd: number) => Promise<number>,
+  fromJd: number,
+  toJd: number,
+  stepMinutes: number,
+  keep: (value: number) => boolean,
+  limit = Infinity,
+): Promise<{ stretches: ScoredStretch[]; truncated: boolean }> {
+  const step = stepMinutes * MINUTE_JD;
+  const stretches: ScoredStretch[] = [];
+  /** The first moment between `low` (where the value is `value`) and `high` (where it is not) at which it is not, to the minute. */
+  const edge = async (low: number, high: number, value: number): Promise<number> => {
+    let a = low;
+    let b = high;
+    while (b - a > MINUTE_JD) {
+      const middle = (a + b) / 2;
+      if ((await valueAt(middle)) === value) a = middle; else b = middle;
+    }
+    return b;
+  };
+
+  let start = fromJd;
+  let current = await valueAt(fromJd);
+  let previousJd = fromJd;
+  for (let jd = fromJd + step; ; jd += step) {
+    const at = Math.min(jd, toJd);
+    const now = await valueAt(at);
+    // The value may change more than once inside a step: follow it from change to change.
+    let from = previousJd;
+    let guard = 0;
+    while (now !== current && guard < 8) {
+      const change = await edge(from, at, current);
+      if (keep(current)) {
+        stretches.push({ startJd: start, endJd: change, value: current });
+        if (stretches.length >= limit) return { stretches, truncated: true };
+      }
+      start = change;
+      current = await valueAt(change);
+      from = change;
+      guard += 1;
+    }
+    previousJd = at;
+    if (at >= toJd) break;
+  }
+  if (keep(current)) stretches.push({ startJd: start, endJd: toJd, value: current });
+  return { stretches, truncated: false };
 }

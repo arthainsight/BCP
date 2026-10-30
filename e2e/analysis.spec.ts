@@ -1659,6 +1659,16 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(finder.locator('[data-finder-group="Tithi"]').getByRole('button', { name: 'K15', exact: true })).toBeVisible();
   await expect(finder.getByRole('button', { name: 'Su Ar', exact: true })).toBeVisible();
 
+  // At the start the suiting Tarabala and Chandrabala are wishes: they limit nothing and score 60 and 100.
+  for (const group of ['Chandrabala', 'Tarabala']) {
+    await expect(finder.locator(`[data-finder-group="${group}"]`).getByRole('button', { name: `${group}: wish`, exact: true })).toHaveAttribute('aria-pressed', 'true');
+  }
+  await expect(finder.locator('[data-finder-group="Chandrabala"]')).toContainText('6 / 12');
+  await expect(finder.locator('[data-finder-group="Tarabala"]')).toContainText('5 / 9');
+  // Everything again: no wishes, no conditions.
+  await finder.getByRole('button', { name: 'choose everything again', exact: true }).click();
+  await expect(finder.locator('[data-finder-group="Chandrabala"]').getByRole('button', { name: 'Chandrabala: wish', exact: true })).toHaveAttribute('aria-pressed', 'false');
+
   // Nothing is chosen in a group: no search is possible and it says where.
   const vara = finder.locator('[data-finder-group="Vāra"]');
   await vara.getByRole('button', { name: 'none', exact: true }).click();
@@ -1735,6 +1745,23 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
 
   // Setting a stretch as the target does not fail.
   await rows.first().getByRole('button', { name: 'use as target', exact: true }).click();
+
+  // The wishes: back to the start choices, search a week, and the stretches have a score (the weights of the wishes they hold) and can be put best first.
+  await finder.getByRole('button', { name: 'back to the start choices', exact: true }).click();
+  await expect(finder.getByLabel('Lowest score listed')).toHaveValue('0');
+  await finder.getByRole('button', { name: 'search', exact: true }).click();
+  await expect(visible(page, page.getByTestId('muhurta-finder-results'))).toContainText('Score', { timeout: 30_000 });
+  const scores = visible(page, page.getByTestId('muhurta-finder-results')).locator('[data-finder-score]');
+  expect(await scores.count()).toBeGreaterThanOrEqual(3);
+  const allScores = await scores.evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-finder-score'))));
+  expect(allScores.every(score => [0, 60, 100, 160].includes(score))).toBe(true);
+  await visible(page, page.getByTestId('muhurta-finder-results')).getByRole('button', { name: 'best first', exact: true }).click();
+  const sorted = await visible(page, page.getByTestId('muhurta-finder-results')).locator('[data-finder-score]').evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-finder-score'))));
+  expect(sorted).toEqual([...sorted].sort((a, b) => b - a));
+  // The lowest score: only the stretches that hold both wishes.
+  await finder.getByLabel('Lowest score listed').fill('160');
+  await finder.getByRole('button', { name: 'search', exact: true }).click();
+  await expect.poll(async () => (await visible(page, page.getByTestId('muhurta-finder-results')).locator('[data-finder-score]').evaluateAll(cells => cells.map(cell => cell.getAttribute('data-finder-score')))).every(score => score === '160')).toBe(true);
 
   // The choices are kept in the browser.
   await page.reload();
