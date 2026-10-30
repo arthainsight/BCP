@@ -1665,17 +1665,21 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeDisabled();
   await expect(finder).toContainText('Nothing is chosen in Vāra');
 
-  // Thursday alone, for a week: one or two stretches of a day, from sunrise to sunrise.
+  // Thursday alone, for the week from Monday 2 November 2026: the one Thursday, from its sunrise to the next (the vāra changes at sunrise).
   await vara.getByRole('button', { name: 'thu', exact: true }).click();
   await expect(vara.getByRole('button', { name: 'thu', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await finder.getByLabel('Search from').fill('2026-11-02');
   await finder.getByRole('button', { name: '7 d', exact: true }).click();
   await finder.getByRole('button', { name: 'search', exact: true }).click();
   const results = visible(page, page.getByTestId('muhurta-finder-results'));
   await expect(results).toBeVisible({ timeout: 30_000 });
   const rows = results.locator('[data-finder-window]');
-  expect(await rows.count()).toBeGreaterThanOrEqual(1);
-  expect(await rows.count()).toBeLessThanOrEqual(2);
-  await expect(rows.first()).toContainText('Thursday');
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText('Thursday 05.11.2026');
+  await expect(rows.first()).toContainText('1 d 0 h');
+
+  // Setting a stretch as the target does not fail.
+  await rows.first().getByRole('button', { name: 'use as target', exact: true }).click();
 
   // The choices are kept in the browser.
   await page.reload();
