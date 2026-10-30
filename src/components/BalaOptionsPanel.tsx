@@ -25,10 +25,14 @@ export default function BalaOptionsPanel({
   const definitions = BALA_OPTION_DEFINITIONS.filter((definition) => view === 'vimsopaka' ? definition.view === 'vimsopaka' || definition.alsoFor === 'vimsopaka' : view === 'bhava' || definition.view === 'shadbala');
 
   return (
-    <details className="rounded-lg border border-zinc-200 dark:border-zinc-700" data-testid="bala-options">
-      <summary className="cursor-pointer select-none px-3 py-2 text-xs font-mono text-zinc-600 dark:text-zinc-300">
-        &gt; {t('Calculation choices')}
-        {custom && <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">{t('changed from the Sanskrit reading')}</span>}
+    <details className="group rounded-lg border border-emerald-300 bg-emerald-50/40 dark:border-emerald-800 dark:bg-emerald-950/20" data-testid="bala-options">
+      <summary className="flex cursor-pointer select-none flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2.5 text-xs font-mono text-emerald-800 dark:text-green-300">
+        <span aria-hidden="true">⚙</span>
+        <span className="font-semibold">{t('Calculation choices')}</span>
+        <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-800 dark:bg-emerald-900/40 dark:text-green-300">{definitions.length}</span>
+        <span className="text-[10px] text-zinc-500 dark:text-zinc-400">{t('Tap to change how the numbers are calculated')}</span>
+        {custom && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">{t('changed from the Sanskrit reading')}</span>}
+        <span aria-hidden="true" className="ml-auto text-[10px] text-zinc-500 transition-transform group-open:rotate-180 dark:text-zinc-400">▼</span>
       </summary>
       <div className="space-y-3 border-t border-zinc-200 px-3 py-3 dark:border-zinc-700">
         <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
@@ -46,6 +50,7 @@ export default function BalaOptionsPanel({
               >
                 {definition.choices.map((choice) => <option key={choice.value} value={choice.value}>{t(choice.label)}</option>)}
               </select>
+              <span className="block text-[10px] font-mono text-emerald-700 dark:text-green-400" data-testid="bala-option-chosen">{t(definition.choices.find((choice) => choice.value === options[definition.key])?.label ?? '')}</span>
               <span className="block text-[10px] font-mono text-zinc-400 dark:text-zinc-500">{t(definition.note)}</span>
             </label>
           ))}
