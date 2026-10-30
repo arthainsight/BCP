@@ -1691,6 +1691,19 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await chandra.getByRole('button', { name: 'all', exact: true }).click();
   await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeEnabled();
 
+  // Tarabala: the tārās of the Moon's nakṣatra from the birth nakṣatra; the usual five, then none (no search), then every tārā again.
+  const tara = finder.locator('[data-finder-group="Tarabala"]');
+  await expect(tara).toBeVisible();
+  await tara.getByRole('button', { name: 'usual five', exact: true }).click();
+  await expect(tara.getByRole('button', { name: '2 Sampat', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(tara.getByRole('button', { name: '3 Vipat', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(tara).toContainText('5 / 9');
+  await tara.getByRole('button', { name: 'none', exact: true }).click();
+  await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeDisabled();
+  await expect(finder).toContainText('Tarabala');
+  await tara.getByRole('button', { name: 'all', exact: true }).click();
+  await expect(finder.getByRole('button', { name: 'search', exact: true })).toBeEnabled();
+
   // The Mahādoṣas to keep clear of: the 15 that are worked out, each with what it avoids, and the 6 that are not worked out listed with their reason.
   const doshas = finder.locator('[data-finder-group="Mahadoshas"]');
   await expect(doshas.locator('[data-finder-dosha]')).toHaveCount(15);

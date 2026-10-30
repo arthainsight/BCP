@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v3.51',
+    date: '2026-10-30',
+    title: 'Muhurta Finder: Tarabala',
+    changes: [
+      'The Muhurta Finder has a new group, Tarabala: the tārā of the Moon\'s nakṣatra, counted from the nakṣatra of the Moon at birth (the birth nakṣatra is the 1st) in nines: 1 Janma, 2 Sampat, 3 Vipat, 4 Kṣema, 5 Pratyak, 6 Sādhana, 7 Naidhana, 8 Mitra, 9 Parama Mitra. The button "usual five" chooses Sampat, Kṣema, Sādhana, Mitra and Parama Mitra; Janma, Vipat, Pratyak and Naidhana are the ones usually avoided. The tooltip of each tārā names its three nakṣatras. The tārās to choose are yours, like the houses of the Chandrabala, and it needs the birth chart that is open.',
+      'Updated the application version to v3.51.',
+    ],
+  },
+  {
     version: 'v3.50',
     date: '2026-10-30',
     title: 'Muhurta Finder: the Mahādoṣas',

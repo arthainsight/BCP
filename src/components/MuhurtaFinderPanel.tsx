@@ -9,8 +9,8 @@ import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
 import { NAKSHATRA_NAMES } from '@/lib/nakshatras';
 import { YOGA_NAMES } from '@/lib/panchang';
 import {
-  BENEFICS, CHANDRABALA_USUAL, FINDER_GRAHAS, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, effectiveRules, formatChandra, formatRule, isImpossible, isImpossibleRule,
-  SANKRANTI_HOURS, isLimited, localParts, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule,
+  BENEFICS, CHANDRABALA_USUAL, FINDER_GRAHAS, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, TARABALA_USUAL, TARA_NAMES, effectiveRules, formatChandra, formatRule, formatTara, isImpossible, isImpossibleRule,
+  SANKRANTI_HOURS, isLimited, localParts, nakshatraOf, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule,
 } from '@/lib/muhurtaFinder';
 import { DOSHAS, DOSHAS_NOT_WORKED_OUT, DOSHA_IDS, isDoshaId, type DoshaId } from '@/lib/mahadosha';
 import { FINDER_PRESETS, type FinderPreset } from '@/lib/muhurtaFinderPresets';
@@ -44,6 +44,8 @@ type Choices = {
   rules: FinderRule[];
   /** The houses from the Moon at birth that suit (Chandrabala); every house is no condition. */
   chandra: number[];
+  /** The tārās (1 to 9) of the Moon's nakṣatra from the birth nakṣatra that suit (Tarabala); every tārā is no condition. */
+  tara: number[];
   /** The Mahādoṣas to keep clear of. */
   avoid: DoshaId[];
   /** Hours on each side of a Saṅkrānti. */
@@ -56,6 +58,7 @@ const allChoices = (): Choices => ({
   signs: Object.fromEntries(FINDER_GRAHAS.map(graha => [graha, range(12)])) as Record<FinderGraha, number[]>,
   rules: [],
   chandra: range(12, 1),
+  tara: range(9, 1),
   avoid: [],
   sankrantiHours: SANKRANTI_HOURS,
 });
@@ -66,6 +69,7 @@ function presetChoices(preset: FinderPreset): Choices {
   for (const key of ['vara', 'tithi', 'nakshatra', 'yoga', 'karana'] as const) choices[key] = preset[key] ?? choices[key];
   for (const graha of FINDER_GRAHAS) choices.signs[graha] = preset.signs?.[graha] ?? choices.signs[graha];
   choices.chandra = preset.chandra ?? choices.chandra;
+  choices.tara = preset.tara ?? choices.tara;
   choices.rules = (preset.rules ?? []).map(rule => ({ ...rule, grahas: [...rule.grahas], houses: [...rule.houses] }));
   return choices;
 }
@@ -84,6 +88,7 @@ function readChoices(): Choices {
     choices.yoga = list(saved.yoga, 0, 27) ?? choices.yoga;
     choices.karana = list(saved.karana, 0, 11) ?? choices.karana;
     choices.chandra = list(saved.chandra, 1, 12) ?? choices.chandra;
+    choices.tara = list(saved.tara, 1, 9) ?? choices.tara;
     if (Array.isArray(saved.avoid)) choices.avoid = [...new Set((saved.avoid as unknown[]).filter((item): item is DoshaId => typeof item === 'string' && isDoshaId(item)))];
     if (typeof saved.sankrantiHours === 'number' && saved.sankrantiHours >= 0 && saved.sankrantiHours <= 48) choices.sankrantiHours = saved.sankrantiHours;
     const signs = saved.signs as Partial<Record<string, unknown>> | undefined;
@@ -188,16 +193,18 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   // The sign (0 to 11) of the Moon at birth, for the Chandrabala.
   const natalMoon = chart.planets.find(planet => planet.name === 'Moon');
   const natalMoonSign = natalMoon ? natalMoon.sign - 1 : undefined;
+  const natalNakshatra = natalMoon ? nakshatraOf(natalMoon.longitude) : undefined;
   const natalAscSign = chart.ascendant ? chart.ascendant.sign - 1 : undefined;
   const criteria: FinderCriteria = useMemo(() => {
     const signs: FinderCriteria['signs'] = {};
     for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) signs[graha] = choices.signs[graha];
     const chandra = natalMoonSign !== undefined && isLimited(choices.chandra, 12) ? { moonSign: natalMoonSign, houses: choices.chandra } : undefined;
+    const tara = natalNakshatra !== undefined && isLimited(choices.tara, 9) ? { nakshatra: natalNakshatra, taras: choices.tara } : undefined;
     const natal = natalMoonSign !== undefined && natalAscSign !== undefined ? { ascSign: natalAscSign, moonSign: natalMoonSign } : undefined;
-    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, avoid: choices.avoid, natal, sankrantiHours: choices.sankrantiHours };
-  }, [choices, natalMoonSign, natalAscSign]);
+    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, tara, avoid: choices.avoid, natal, sankrantiHours: choices.sankrantiHours };
+  }, [choices, natalMoonSign, natalAscSign, natalNakshatra]);
   const impossible = isImpossible(criteria);
-  const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0 || effectiveRules(criteria).length > 0 || criteria.chandra !== undefined || choices.avoid.length > 0;
+  const anyCondition = isLimited(choices.vara, 7) || isLimited(choices.tithi, 30) || isLimited(choices.nakshatra, 27) || isLimited(choices.yoga, 27) || isLimited(choices.karana, 11) || Object.keys(criteria.signs).length > 0 || effectiveRules(criteria).length > 0 || criteria.chandra !== undefined || criteria.tara !== undefined || choices.avoid.length > 0;
 
   const zone = place ? place.timezone : ianaTimezone;
   const lat = place ? place.latitude : chart.debug?.latitude;
@@ -215,6 +222,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     for (const graha of FINDER_GRAHAS) if (isLimited(choices.signs[graha], 12)) params.set(`sign_${graha}`, choices.signs[graha].join(','));
     for (const rule of choices.rules) params.append('rule', formatRule(rule));
     if (criteria.chandra) params.set('chandra', formatChandra(criteria.chandra));
+    if (criteria.tara) params.set('tara', formatTara(criteria.tara));
     if (choices.avoid.length > 0) {
       params.set('avoid', choices.avoid.join(','));
       if (criteria.natal) params.set('natal', `${criteria.natal.ascSign}:${criteria.natal.moonSign}`);
@@ -246,6 +254,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   ].filter(([, list]) => (list as number[]).length === 0).map(([name]) => name as string);
   if (choices.rules.some(isImpossibleRule)) emptyGroups.push(t('a placement rule'));
   if (natalMoonSign !== undefined && choices.chandra.length === 0) emptyGroups.push('Chandrabala');
+  if (natalNakshatra !== undefined && choices.tara.length === 0) emptyGroups.push('Tarabala');
 
   return (
     <div className="min-w-0 space-y-3" data-testid="muhurta-finder">
@@ -329,6 +338,18 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
             note={`${t('The house of the Moon from the sign of the Moon at birth')} (${SIGN_NAMES[natalMoonSign]}). ${t('The 1st, 3rd, 6th, 7th, 10th and 11th are the houses usually taken to suit; the 8th is the Candrāṣṭama to avoid.')}`}
             extra={<button type="button" className={smallButton} onClick={() => set('chandra', CHANDRABALA_USUAL)}>{t('usual six')}</button>}
             items={range(12, 1).map(value => ({ value, label: String(value), title: SIGN_NAMES[(natalMoonSign + value - 1) % 12] }))}
+          />
+        )}
+        {natalNakshatra !== undefined && (
+          <Group
+            title="Tarabala" size={9} first={1} chosen={choices.tara} onChange={value => set('tara', value)}
+            note={`${t("The tārā of the Moon's nakṣatra, counted from the nakṣatra of the Moon at birth")} (${NAKSHATRA_NAMES[natalNakshatra]}). ${t('Sampat, Kshema, Sadhana, Mitra and Parama Mitra are the tārās usually taken to suit; Janma, Vipat, Pratyak and Naidhana are the ones to avoid.')}`}
+            extra={<button type="button" className={smallButton} onClick={() => set('tara', TARABALA_USUAL)}>{t('usual five')}</button>}
+            items={range(9, 1).map(value => ({
+              value,
+              label: `${value} ${TARA_NAMES[value - 1]}`,
+              title: [0, 1, 2].map(round => NAKSHATRA_NAMES[(natalNakshatra + value - 1 + 9 * round) % 27]).join(', '),
+            }))}
           />
         )}
         <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700" data-finder-group="Graha">

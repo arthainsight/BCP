@@ -10,6 +10,7 @@
 // in the 8th and the 12th".
 //
 // Chandrabala is the Moon's house counted from the sign of the Moon at birth: the houses chosen are the ones that suit.
+// Tarabala is the Moon's nakṣatra counted from the nakṣatra of the Moon at birth, in nines: the tārās chosen are the ones that suit.
 //
 // This file is the part that needs no ephemeris: what a pair of longitudes says about the panchāṅga, whether a
 // moment suits the conditions, and the walk through time that finds where the answer changes (muhurtaFinderRun.ts
@@ -81,6 +82,8 @@ export interface FinderCriteria {
   rules?: FinderRule[];
   /** Chandrabala: the houses (1 to 12) from the sign of the Moon at birth (`moonSign`, 0 Aries to 11 Pisces) the Moon may be in. */
   chandra?: { moonSign: number; houses: number[] };
+  /** Tarabala: the tārās (1 to 9) of the Moon's nakṣatra counted from the nakṣatra of the Moon at birth (`nakshatra`, 0 Aśvinī to 26). */
+  tara?: { nakshatra: number; taras: number[] };
   /** The Mahādoṣas (ids of mahadosha.ts) the stretches must be free of. */
   avoid?: string[];
   /** The signs (0 to 11) of the Ascendant and the Moon of the birth chart, for the Aṣṭama Lagna. */
@@ -122,6 +125,31 @@ export function ruleMatches(rule: FinderRule, houseOf: (graha: FinderGraha) => n
   if (houses.some(house => house === undefined)) return false;
   const inside = houses.some(house => rule.houses.includes(house as number));
   return rule.kind === 'any' ? inside : !inside;
+}
+
+/** The names of the nine tārās, from the 1st: the nakṣatra counted from the birth nakṣatra (itself the 1st) in nines. */
+export const TARA_NAMES = ['Janma', 'Sampat', 'Vipat', 'Kshema', 'Pratyak', 'Sadhana', 'Naidhana', 'Mitra', 'Parama Mitra'] as const;
+/** The tārās usually taken to suit: Sampat, Kṣema, Sādhana, Mitra and Parama Mitra. Janma, Vipat, Pratyak and Naidhana are the ones to avoid. */
+export const TARABALA_USUAL = [2, 4, 6, 8, 9];
+
+/** The tārā, 1 to 9, of a nakṣatra (0 to 26) counted from the birth nakṣatra: the 1st, 10th and 19th are Janma, the 2nd, 11th and 20th Sampat, and so on. */
+export const taraOf = (birthNakshatra: number, nakshatra: number) => ((((nakshatra - birthNakshatra + 27) % 27)) % 9) + 1;
+
+/** The text of the Tarabala for the address of a request: `3:2,4,6,8,9` (the nakṣatra of the Moon at birth, then the tārās). */
+export const formatTara = (tara: { nakshatra: number; taras: number[] }) => `${tara.nakshatra}:${tara.taras.join(',')}`;
+
+/** The Tarabala from its text, or what is wrong with it. */
+export function parseTara(text: string): { nakshatra: number; taras: number[] } | { error: string } {
+  const parts = text.split(':');
+  if (parts.length !== 2 || !/^\d{1,2}$/.test(parts[0].trim()) || Number(parts[0]) > 26) return { error: 'tara must be the nakshatra of the Moon from 0 to 26, a colon and the taras' };
+  const items = parts[1].trim() === '' ? [] : parts[1].split(',').map(item => item.trim());
+  const taras = new Set<number>();
+  for (const item of items) {
+    const value = /^\d$/.test(item) ? Number(item) : NaN;
+    if (!(value >= 1 && value <= 9)) return { error: 'tara numbers must be whole numbers from 1 to 9' };
+    taras.add(value);
+  }
+  return { nakshatra: Number(parts[0]), taras: [...taras].sort((a, b) => a - b) };
 }
 
 /** The text of the Chandrabala for the address of a request: `1:1,3,6,7,10,11` (the sign of the Moon at birth, then the houses). */
@@ -172,7 +200,7 @@ export const isLimited = (allowed: readonly number[], size: number) => new Set(a
 /** Whether the conditions can never be met: some limited group has nothing chosen. */
 export function isImpossible(criteria: FinderCriteria): boolean {
   const groups = [criteria.vara, criteria.tithi, criteria.nakshatra, criteria.yoga, criteria.karana, ...Object.values(criteria.signs)];
-  return groups.some(group => group !== undefined && group.length === 0) || (criteria.rules ?? []).some(isImpossibleRule) || (criteria.chandra !== undefined && criteria.chandra.houses.length === 0);
+  return groups.some(group => group !== undefined && group.length === 0) || (criteria.rules ?? []).some(isImpossibleRule) || (criteria.chandra !== undefined && criteria.chandra.houses.length === 0) || (criteria.tara !== undefined && criteria.tara.taras.length === 0);
 }
 
 /** What a moment is, for the conditions: the longitudes (sidereal) the conditions ask about, and the weekday. */
@@ -201,6 +229,7 @@ export function neededBodies(criteria: FinderCriteria): { luminaries: boolean; o
     isLimited(criteria.tithi, FINDER_SIZES.tithi) || isLimited(criteria.nakshatra, FINDER_SIZES.nakshatra) ||
     isLimited(criteria.yoga, FINDER_SIZES.yoga) || isLimited(criteria.karana, FINDER_SIZES.karana) ||
     (criteria.chandra !== undefined && isLimited(criteria.chandra.houses, 12)) ||
+    (criteria.tara !== undefined && isLimited(criteria.tara.taras, 9)) ||
     (criteria.signs.Sun !== undefined && isLimited(criteria.signs.Sun, 12)) ||
     (criteria.signs.Moon !== undefined && isLimited(criteria.signs.Moon, 12));
   return { luminaries, others };
@@ -218,6 +247,7 @@ export function momentMatches(moment: FinderMoment, criteria: FinderCriteria): b
   if (isLimited(criteria.yoga, FINDER_SIZES.yoga) && !criteria.yoga.includes(yogaOf(sun, moon))) return false;
   if (isLimited(criteria.karana, FINDER_SIZES.karana) && !criteria.karana.includes(karanaOf(sun, moon))) return false;
   if (criteria.chandra !== undefined && isLimited(criteria.chandra.houses, 12) && !criteria.chandra.houses.includes(houseFrom(criteria.chandra.moonSign, moon))) return false;
+  if (criteria.tara !== undefined && isLimited(criteria.tara.taras, 9) && !criteria.tara.taras.includes(taraOf(criteria.tara.nakshatra, nakshatraOf(moon)))) return false;
   for (const graha of Object.keys(criteria.signs) as FinderGraha[]) {
     const allowed = criteria.signs[graha];
     if (allowed === undefined || !isLimited(allowed, 12)) continue;
