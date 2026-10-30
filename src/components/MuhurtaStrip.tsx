@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { localParts } from '@/lib/muhurtaFinder';
 import type { StripResult } from '@/lib/muhurtaStrip';
-import { stripRows, vtnOfState, type StripChoices, type StripRowId, type StripTone } from '@/lib/muhurtaStripView';
+import { greenWindows, stripRows, vtnOfState, type StripChoices, type StripRowId, type StripTone } from '@/lib/muhurtaStripView';
 import { vtnVerdict } from '@/lib/vtnYogas';
 import { NAKSHATRA_NAMES } from '@/lib/nakshatras';
 import { YOGA_NAMES } from '@/lib/panchang';
@@ -60,6 +60,8 @@ export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, c
   const month = picked ?? monthOf(start);
   const [data, setData] = useState<{ key: string; result?: StripResult; error?: string }>({ key: '' });
   const [at, setAt] = useState<number | null>(null);
+  // The rows the user makes green by choice: only the times when all of them are green are shown.
+  const [required, setRequired] = useState<StripRowId[]>([]);
   const request = useRef(0);
   const key = useMemo(
     () => new URLSearchParams({ start: `${month}-01`, days: String(daysIn(month)), lat: String(lat), lng: String(lng), tz: String(tz), ...(zone ? { zone } : {}), ...calculation }).toString(),
@@ -78,6 +80,7 @@ export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, c
   const result = loading ? undefined : data.result;
   const goTo = (by: number) => { setPicked(shiftMonth(month, by)); setAt(null); };
   const rows = useMemo(() => (result ? stripRows(result.states, choices) : []), [result, choices]);
+  const windows = useMemo(() => (required.length > 0 ? greenWindows(rows, required) : undefined), [rows, required]);
   if (!result) {
     return <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600" data-finder-strip-status>{loading ? t('calculating') : data.error}</p>;
   }
@@ -92,6 +95,20 @@ export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, c
     return `${pad(parts.day)}.${pad(parts.month)}. ${pad(parts.hour)}:${pad(parts.minute)}`;
   };
   const yogas = atState ? vtnOfState(atState, choices) : [];
+  // What is outside the times of the choice is covered.
+  const gaps: { start: number; end: number }[] = [];
+  if (windows) {
+    let from = result.start;
+    for (const window of windows) {
+      if (window.start > from) gaps.push({ start: from, end: window.start });
+      from = window.end;
+    }
+    if (from < result.end) gaps.push({ start: from, end: result.end });
+  }
+  const length = (window: { start: number; end: number }) => {
+    const minutes = Math.round((window.end - window.start) / 60_000);
+    return minutes >= 60 ? `${Math.floor(minutes / 60)} h ${minutes % 60} min` : `${minutes} min`;
+  };
 
   return (
     <div className="space-y-1.5" data-finder-strip>
@@ -102,7 +119,7 @@ export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, c
       </div>
       <div className="overflow-x-auto">
         <div className="min-w-[900px] space-y-px">
-          <div className="grid grid-cols-[6.5rem_1fr] items-end gap-1">
+          <div className="grid grid-cols-[9.5rem_1fr] items-end gap-1">
             <span />
             <div className="relative h-7">
               {result.days.map(day => (
@@ -114,8 +131,17 @@ export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, c
             </div>
           </div>
           {rows.map(row => (
-            <div key={row.id} className="grid grid-cols-[6.5rem_1fr] items-center gap-1" data-finder-strip-row={row.id}>
-              <span className="truncate text-[9px] font-mono text-zinc-500 dark:text-zinc-400" title={t(ROW_NAMES[row.id])}>{t(ROW_NAMES[row.id])}</span>
+            <div key={row.id} className="grid grid-cols-[9.5rem_1fr] items-center gap-1" data-finder-strip-row={row.id}>
+              <label className="flex min-w-0 cursor-pointer items-center gap-1 text-[9px] font-mono text-zinc-500 dark:text-zinc-400" title={t('Tick to show only the times when this row is green')}>
+                <input
+                  type="checkbox"
+                  className="shrink-0"
+                  checked={required.includes(row.id)}
+                  onChange={event => setRequired(current => (event.target.checked ? [...current, row.id] : current.filter(id => id !== row.id)))}
+                  data-finder-strip-require={row.id}
+                />
+                <span className="truncate">{t(ROW_NAMES[row.id])}</span>
+              </label>
               <div
                 className="relative h-5 cursor-crosshair overflow-hidden rounded-sm bg-zinc-100 dark:bg-zinc-900"
                 onClick={event => {
@@ -134,6 +160,9 @@ export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, c
                     {segment.end - segment.start > span / 40 ? segment.label : ''}
                   </div>
                 ))}
+                {gaps.map(gap => (
+                  <div key={gap.start} className="pointer-events-none absolute top-0 h-full bg-white/80 dark:bg-zinc-950/80" style={{ left: left(gap.start), width: width(gap.start, gap.end) }} data-finder-strip-gap />
+                ))}
                 {at !== null && <div className="pointer-events-none absolute top-0 h-full w-px bg-zinc-900 dark:bg-white" style={{ left: left(at) }} />}
               </div>
             </div>
@@ -141,8 +170,21 @@ export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, c
         </div>
       </div>
       <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+        {t('Tick a row to make it green by choice: only the times when all the ticked rows are green are shown.')} <br />
         <span className="text-emerald-600 dark:text-green-500">■</span> {t('chosen (favourable in the book)')} · <span className="text-amber-500">■</span> {t('middling in the book')} · <span className="text-red-500">■</span> {t('not chosen')}
       </p>
+      {windows && (
+        <div className="space-y-1 text-[10px] font-mono text-zinc-600 dark:text-zinc-300" data-finder-strip-windows>
+          <div className="font-semibold">{windows.length === 0 ? t('No time of this month has all the ticked rows green.') : `${t('Times when all the ticked rows are green')}: ${windows.length}`}</div>
+          <div className="flex flex-wrap gap-1">
+            {windows.map(window => (
+              <button key={window.start} type="button" className="rounded border border-emerald-500 px-1.5 py-0.5 text-emerald-700 dark:border-green-600 dark:text-green-400" onClick={() => setAt(Math.round((window.start + window.end) / 2))}>
+                {clock(window.start)} – {clock(window.end)} · {length(window)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {atState && (
         <div className="rounded-md border border-zinc-200 p-2 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:text-zinc-300" data-finder-strip-detail>
           <div className="font-semibold">{clock(at!)}</div>

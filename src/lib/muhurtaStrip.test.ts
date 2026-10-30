@@ -6,7 +6,7 @@ import { calculatePanchang } from './panchang';
 import { NAKSHATRA_NAMES } from './nakshatras';
 import { YOGA_NAMES } from './panchang';
 import { runMuhurtaStrip, type StripState } from './muhurtaStrip';
-import { stripRows, vtnOfState, type StripChoices } from './muhurtaStripView';
+import { greenWindows, stripRows, vtnOfState, type StripChoices } from './muhurtaStripView';
 
 const PLACE = { lat: 60.46667, lng: 26.94583, zone: 'Europe/Helsinki', tz: 2 };
 const all = (size: number, first = 0) => Array.from({ length: size }, (_, index) => first + index);
@@ -63,6 +63,30 @@ async function main() {
   assert.deepEqual(rows.tara.map(segment => [segment.label, segment.tone]), [['1', 'bad'], ['2', 'good']], 'Hasta is the Janma nakṣatra of a native born in it; Chitra is the next, Sampat');
   // Moon in Virgo (5) for a native with the Moon in Virgo: the 1st house; in Libra (6): the 2nd, which is not chosen.
   assert.deepEqual(rows.chandra.map(segment => [segment.label, segment.tone]), [['1', 'good'], ['2', 'bad']]);
+
+  // The stretches where the Tarabala and the Chandrabala are both green. Natal Moon in Aśvinī (0) and Aries (0); the tārās 2, 4, 6, 8, 9 and the houses 1, 3, 6, 7, 10, 11 suit.
+  {
+    const natal = { tara: { nakshatra: 0, taras: [2, 4, 6, 8, 9] }, chandra: { moonSign: 0, houses: [1, 3, 6, 7, 10, 11] } };
+    const at = (start: number, nakshatra: number, moonSign: number, karana = 0): StripState => ({ start, end: start + 10, vara: 1, tithi: 2, nakshatra, karana, yoga: 0, moonSign });
+    const sky = [
+      at(0, 1, 1),  // Bharani (the 2nd, Sampat) with the Moon in Taurus (the 2nd house): the house does not suit
+      at(10, 1, 2), // Bharani with the Moon in Gemini (the 3rd house): both suit
+      at(20, 2, 2), // Krittika (the 3rd, Vipat): the tārā does not suit
+      at(30, 3, 2), // Rohini (the 4th, Kshema), Gemini: both suit
+      at(40, 3, 2, 1), // the same, with another karaṇa: one stretch with the one before
+      at(50, 3, 3), // Rohini with the Moon in Cancer (the 4th house): no
+      at(60, 4, 6), // Mrigashira (the 5th, Pratyak): no
+      at(70, 5, 6), // Ardra (the 6th, Sadhana) with the Moon in Libra (the 7th house): both suit
+    ];
+    const natalChoices: StripChoices = { ...openChoices, ...natal };
+    const rowsOf = (choices: StripChoices) => stripRows(sky, choices);
+    assert.deepEqual(greenWindows(rowsOf(natalChoices), ['tara', 'chandra']), [{ start: 10, end: 20 }, { start: 30, end: 50 }, { start: 70, end: 80 }]);
+    assert.deepEqual(greenWindows(rowsOf(natalChoices), ['tara']), [{ start: 0, end: 20 }, { start: 30, end: 60 }, { start: 70, end: 80 }], 'only the tārā: the Moon in Taurus does not matter');
+    assert.deepEqual(greenWindows(rowsOf(natalChoices), []), [], 'no row forced: nothing to show');
+    assert.deepEqual(greenWindows(rowsOf({ ...natalChoices, chandra: { moonSign: 0, houses: all(12, 1) } }), ['tara', 'chandra']), [{ start: 0, end: 20 }, { start: 30, end: 60 }, { start: 70, end: 80 }], 'every house chosen is no condition');
+    // Any rows: forcing the nakṣatra row with only Rohiṇī chosen, together with the tārā.
+    assert.deepEqual(greenWindows(rowsOf({ ...natalChoices, nakshatra: [3] }), ['nakshatra', 'tara']), [{ start: 30, end: 60 }], 'Rohini with a tārā that suits');
+  }
 
   // The yogas: Friday and Hasta are Siddha (Vāra/Nakṣatra, Venus), Friday and the 6th (a Nanda) Siddha of Vāra/Tithi: good.
   assert.equal(rows.vtn[0].tone, 'good');
