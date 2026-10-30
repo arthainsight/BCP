@@ -773,6 +773,9 @@ test('ANALYSIS Bala has a diagram and a table for the Ṣaḍbala, the Bhāva Ba
   // Bhāva Bala: a column for each of the twelve houses.
   await visible(page, page.getByRole('button', { name: 'Bhāva Bala', exact: true })).click();
   await expect(visible(page, page.getByRole('img', { name: 'Bhāva Bala of the houses', exact: true }))).toBeVisible();
+  // One bar for each house in one colour against the average, with the status in words and an icon.
+  await expect(visible(page, page.getByRole('img', { name: 'Bhāva Bala against the average', exact: true }))).toBeVisible();
+  await expect(visible(page, page.getByRole('img', { name: /^H1 · [A-Z][a-z] · \w+: Total -?\d+ vp, Average \d+ vp, Status [✕!✓] (weak|ok|strong)/ }))).toBeVisible();
   await expect(visible(page, page.getByRole('img', { name: /^H12 · / }))).toBeVisible();
   await expect(visible(page, page.getByText('bhava.bala.beta'))).toBeVisible();
 

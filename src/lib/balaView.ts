@@ -29,6 +29,28 @@ export function shadbalaComposition(row: ShadbalaRow): Record<ShadbalaPart, numb
   };
 }
 
+/** A house is weak under this share of the average of the twelve, and strong from the upper one. */
+export const BHAVA_WEAK_BELOW = 0.9;
+export const BHAVA_STRONG_FROM = 1.1;
+
+/**
+ * Each house's total against the average of the twelve houses of the chart. The verses give no minimum for a
+ * house (the Ṣaḍbala has one for each graha), so the comparison is with the chart's own average: under 90 % of it
+ * is weak, from 110 % strong, and in between ok. The status is the app's reading, not a figure of BPHS.
+ */
+export function bhavaAgainstAverage(rows: BhavaBalaRow[]): { average: number; houses: Array<{ house: number; ratio: number; status: BalaStatus }> } {
+  const average = rows.length ? rows.reduce((sum, row) => sum + row.total, 0) / rows.length : 0;
+  return {
+    average,
+    houses: rows.map(row => {
+      const ratio = average > 0 ? row.total / average : 0;
+      // The status goes by the whole percent that is shown, so that 110 % is never called ok.
+      const percent = Math.round(ratio * 100);
+      return { house: row.house, ratio, status: percent < Math.round(BHAVA_WEAK_BELOW * 100) ? 'weak' : percent < Math.round(BHAVA_STRONG_FROM * 100) ? 'ok' : 'strong' };
+    }),
+  };
+}
+
 export const BHAVA_PARTS = ['bhavesha', 'dig', 'drigBenefic', 'drigMalefic', 'occupants', 'kala'] as const;
 export type BhavaPart = (typeof BHAVA_PARTS)[number];
 

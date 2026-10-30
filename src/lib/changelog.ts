@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.44',
+    date: '2026-10-30',
+    title: 'Bhāva Bala: one colour for each house, strong or weak at a glance',
+    changes: [
+      'Bhāva Bala now starts with a bar for each house in one colour, like the Ṣaḍbala: the house\'s total as a percentage of the average of the twelve houses of the chart, with the status in words and an icon (✕ weak under 90 %, ! ok up to 110 %, ✓ strong from 110 %). The coloured columns that show what each total is made of are kept under it.',
+      'The verses give no minimum strength for a house, as the Ṣaḍbala has for each graha, so the status sets the chart against itself and is the app\'s reading, not a figure of BPHS. The manuals (English and Finnish) say so in section 9. No calculation changed.',
+      'Updated the application version to v3.44.',
+    ],
+  },
+  {
     version: 'v3.43',
     date: '2026-10-30',
     title: 'The Moon\'s Aṣṭakavarga by the Sanskrit text',
