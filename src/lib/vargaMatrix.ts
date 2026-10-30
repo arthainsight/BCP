@@ -1,14 +1,12 @@
 import type { ChartData } from '@/types';
 import { getVargaSignIndex } from '@/lib/varga';
-import { getDignity, SCORE_PLANETS, type Dignity } from '@/lib/shadbala';
+import { getDignity, SCORE_PLANETS, type Dignity, type RasiSigns } from '@/lib/shadbala';
+import { DEFAULT_BALA_OPTIONS, type BalaOptions } from '@/lib/balaOptions';
+import { vimsopakaViswa } from '@/lib/vimsopaka';
 import { SIGN_ABBR } from '@/lib/signs';
 
 export const DEFAULT_DIVISIONS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 export const ROW_ORDER = ['Lagna', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
-// Mūlatrikoṇa only appears when getDignity is given a degree, which the varga
-// matrix does not do — its cells are whole-sign. The entries are here so the
-// maps stay total against the Dignity union.
-export const DIGNITY_VISWA: Record<Dignity, number> = { exalted: 20, moolatrikona: 20, own: 20, friend: 15, neutral: 10, enemy: 7, debilitated: 0, none: 0 };
 export const DIGNITY_LABELS: Record<Dignity, string> = { exalted: 'Ex', moolatrikona: 'MT', own: 'Own', friend: 'Fr', neutral: 'Neu', enemy: 'En', debilitated: 'Deb', none: '—' };
 export const VIMSOPAKA_SCHEMES = {
   shadvarga: { label: 'Ṣaḍvarga', weights: { D1: 6, D2: 2, D3: 4, D9: 5, D12: 2, D30: 1 } },
@@ -45,17 +43,33 @@ export function buildVargaMatrix(planets: Record<string, number>, lagna: number 
   return matrix;
 }
 
-/** Vimsopaka: the dignity of a planet in each divisional chart of a scheme, weighted, out of 20. */
-export function buildVimsopakaStrength(planets: Record<string, number>, matrix: Matrix): VimsopakaRow[] {
+/**
+ * Vimśopaka Bala (BPHS 7.10-27, see vimsopaka.ts): the points of a graha in the sign it holds in each varga of a scheme,
+ * weighted, out of 20. The points go by the compound relation to the sign's lord; the temporary friendship is read from
+ * the rāśi chart, or from the varga's own (the choice C3).
+ */
+export function buildVimsopakaStrength(planets: Record<string, number>, matrix: Matrix, options: BalaOptions = DEFAULT_BALA_OPTIONS): VimsopakaRow[] {
   const rows: VimsopakaRow[] = [];
+  const signsIn = (divisionKey: string): RasiSigns => {
+    const signs: RasiSigns = {};
+    for (const planet of SCORE_PLANETS) {
+      const signIndex = matrix[planet]?.[divisionKey]?.signIndex;
+      if (typeof signIndex === 'number') signs[planet] = signIndex;
+    }
+    return signs;
+  };
+  const rasiSigns = signsIn('D1');
+  const vargaSigns: Record<string, RasiSigns> = {};
+  const relationSignsOf = (divisionKey: string) => options.temporaryRelation === 'varga' ? (vargaSigns[divisionKey] ??= signsIn(divisionKey)) : rasiSigns;
   for (const planet of SCORE_PLANETS) {
     if (typeof planets[planet] !== 'number') continue;
     const row = { planet } as VimsopakaRow;
     for (const [schemeKey, scheme] of Object.entries(VIMSOPAKA_SCHEMES) as [SchemeKey, (typeof VIMSOPAKA_SCHEMES)[SchemeKey]][]) {
-      row[schemeKey] = Object.entries(scheme.weights).reduce(
-        (sum, [divisionKey, weight]) => sum + (weight * DIGNITY_VISWA[matrix[planet]?.[divisionKey]?.dignity ?? 'none']) / 20,
-        0,
-      );
+      row[schemeKey] = Object.entries(scheme.weights).reduce((sum, [divisionKey, weight]) => {
+        const signIndex = matrix[planet]?.[divisionKey]?.signIndex;
+        if (typeof signIndex !== 'number') return sum;
+        return sum + (weight * vimsopakaViswa(planet, signIndex, relationSignsOf(divisionKey), options.vimsopakaDebilitated)) / 20;
+      }, 0);
     }
     rows.push(row);
   }
@@ -73,9 +87,9 @@ export function mapPlanetLongitudes(chart: ChartData): Record<string, number> {
 
 
 /** The Vimsopaka of a chart (the four schemes, out of 20), strongest first. */
-export function calculateVimsopaka(chart: ChartData): { rows: VimsopakaRow[]; matrix: Matrix } {
+export function calculateVimsopaka(chart: ChartData, options: BalaOptions = DEFAULT_BALA_OPTIONS): { rows: VimsopakaRow[]; matrix: Matrix } {
   const planets = mapPlanetLongitudes(chart);
   const lagna = typeof chart.ascendant?.longitude === 'number' ? chart.ascendant.longitude : undefined;
   const matrix = buildVargaMatrix(planets, lagna, DEFAULT_DIVISIONS);
-  return { rows: buildVimsopakaStrength(planets, matrix), matrix };
+  return { rows: buildVimsopakaStrength(planets, matrix, options), matrix };
 }

@@ -38,10 +38,10 @@ export default function BalaPanel({ chart }: { chart: ChartData | null | undefin
           </button>
         ))}
       </div>
-      {(view === 'shadbala' || view === 'bhava') && <BalaOptionsPanel view={view} options={options} onChange={update} onReset={reset} />}
+      <BalaOptionsPanel view={view} options={options} onChange={update} onReset={reset} />
       {view === 'shadbala' && <ShadbalaPanel chart={chart} options={options} />}
       {view === 'bhava' && <BhavaBalaPanel chart={chart} options={options} />}
-      {view === 'vimsopaka' && <VimsopakaPanel chart={chart} />}
+      {view === 'vimsopaka' && <VimsopakaPanel chart={chart} options={options} />}
     </div>
   );
 }

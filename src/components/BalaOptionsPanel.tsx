@@ -13,7 +13,7 @@ const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-
 export default function BalaOptionsPanel({
   view, options, onChange, onReset,
 }: {
-  view: 'shadbala' | 'bhava';
+  view: 'shadbala' | 'bhava' | 'vimsopaka';
   options: BalaOptions;
   onChange: (change: Partial<BalaOptions>) => void;
   onReset: () => void;
@@ -21,7 +21,8 @@ export default function BalaOptionsPanel({
   const t = useT();
   const custom = balaOptionsAreCustom(options);
   // Bhāva Bala is made from the Ṣaḍbala of the lords, so its view shows the Ṣaḍbala choices too.
-  const definitions = BALA_OPTION_DEFINITIONS.filter((definition) => view === 'bhava' || definition.view === 'shadbala');
+  // Vimśopaka Bala has its own choices and the temporary friendship that it shares with the Ṣaḍbala.
+  const definitions = BALA_OPTION_DEFINITIONS.filter((definition) => view === 'vimsopaka' ? definition.view === 'vimsopaka' || definition.alsoFor === 'vimsopaka' : view === 'bhava' || definition.view === 'shadbala');
 
   return (
     <details className="rounded-lg border border-zinc-200 dark:border-zinc-700" data-testid="bala-options">
@@ -31,7 +32,7 @@ export default function BalaOptionsPanel({
       </summary>
       <div className="space-y-3 border-t border-zinc-200 px-3 py-3 dark:border-zinc-700">
         <p className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
-          {t('Where the verses are silent or the sources disagree, the first choice of each is the reading of the Sanskrit text. The choices change only these two views and are kept in this browser.')}
+          {t('Where the verses are silent or the sources disagree, the first choice of each is the reading of the Sanskrit text. The choices change only these three views and are kept in this browser.')}
         </p>
         <div className="grid gap-3 sm:grid-cols-2">
           {definitions.map((definition) => (

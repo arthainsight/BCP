@@ -782,6 +782,13 @@ test('ANALYSIS Bala has a diagram and a table for the Ṣaḍbala, the Bhāva Ba
   await visible(page, page.getByRole('button', { name: 'Ṣaḍvarga', exact: true })).click();
   await expect(visible(page, page.getByRole('img', { name: /Ṣaḍvarga/ }))).toBeVisible();
   await expect(visible(page, page.getByText('varga.strength.vimsopaka'))).toBeVisible();
+  // Its own calculation choices: a graha in its debilitation sign, and the temporary friendship it shares with the Ṣaḍbala.
+  const vimsopakaOptions = visible(page, page.getByTestId('bala-options'));
+  // The folded line stays as it was left in the other views.
+  if (!(await vimsopakaOptions.evaluate(element => (element as HTMLDetailsElement).open))) await vimsopakaOptions.getByText('Calculation choices').click();
+  await expect(vimsopakaOptions.getByLabel('Vimśopaka Bala: a graha in its debilitation sign', { exact: true })).toBeVisible();
+  await expect(vimsopakaOptions.getByLabel('The temporary friendship in the divisional charts', { exact: true })).toBeVisible();
+  await expect(vimsopakaOptions.getByLabel('Dig Bala: the points', { exact: true })).toHaveCount(0);
 
   expect(errors).toEqual([]);
 });

@@ -319,7 +319,7 @@ Dṛṣṭi = −¼ × (5,18 + 4,92 + 0 + 34,07) + 16,85 + 51,62 + ¼ × 11,94 =
 
 ## 10. Valintakohdat
 
-Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä"-sarake on oletus, sanskritin tekstin lukutapa, ja se on kunkin asetuksen ensimmäinen vaihtoehto. **Kaikki muut vaihtoehdot voi valita Bala-näkymissä kohdasta "Laskennan valinnat"** (Ṣaḍbalan ja Bhāva Balan yläpuolella; valinnat tallentuvat tähän selaimeen eivätkä muuta muuta kuin näitä kahta näkymää). C1–C11 ja C13–C15 ovat asetuksia; C6 ja C7 (Auringon Ayanan ja Kuun Pakṣan kahdennus) ovat C5:n kolmannessa vaihtoehdossa; C12 (Yuddha Bala) ei ole asetus.
+Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä"-sarake on oletus, sanskritin tekstin lukutapa, ja se on kunkin asetuksen ensimmäinen vaihtoehto. **Kaikki muut vaihtoehdot voi valita Bala-näkymissä kohdasta "Laskennan valinnat"** (Ṣaḍbalan ja Bhāva Balan yläpuolella; valinnat tallentuvat tähän selaimeen eivätkä muuta muuta kuin näitä kahta näkymää). C1–C11 ja C13–C16 ovat asetuksia; C6 ja C7 (Auringon Ayanan ja Kuun Pakṣan kahdennus) ovat C5:n kolmannessa vaihtoehdossa; C12 (Yuddha Bala) ei ole asetus.
 
 | | Kysymys | Käytössä | Vaihtoehdot ja kuka niitä pitää |
 |---|---|---|---|
@@ -338,6 +338,7 @@ Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä
 | C13 | Cheṣṭā Balan keskipituudet | Ramanin taulukot (Dutt, vuosikorjauksineen), Lahirin vyöhykkeessä | Sūrya Siddhāntan omat kierrokset Kali-yugasta ilman korjauksia (Mars sama; Mercury enintään 2,2 virūpaa eri) |
 | C14 | Dekaanien järjestys Drekkana Balassa (27.6) | Miehet, neutrit, naiset: sanskritin teksti ja Raman | Miehet, naiset, neutrit: Santhanamin (Sitaram Jhan painos) ja Sharman käännökset |
 | C15 | Iṣṭa- ja Kaṣṭa-phalan kaava (28.6) | Uccha Balan ja Cheṣṭā Balan keskiarvo; Kaṣṭa on se, mikä jää kuudestakymmenestä (säe) | Kahden tulon neliöjuuri; Kaṣṭa siitä, mitä kummaltakin puuttuu kuudestakymmenestä (B. V. Raman) |
+| C16 | Heikentymismerkissä oleva graha Vimśopaka Balassa (7.11, 7.24–25) | Ei mitään, kuten 7.11:ssä | Suhteen mukaiset pisteet merkin herraan, kuten muillakin merkeillä |
 
 ## 11. Valintojen muuttaminen
 
@@ -382,3 +383,29 @@ Luku 28 muuttaa kaksi voimaa mitaksi siitä, kuinka paljon hyvää ja kuinka pal
 | Saturn | 48,95 | 18,33 | 33,64 | 26,36 | 29,96 | 21,46 |
 
 Testit ovat tiedostossa `src/lib/ishtaKashta.test.ts`: Ramanin painetut esimerkit (61–64) ja auditoinnin kolme karttaa erillisellä ohjelmalla lasketuja lukuja vasten. Luvun 28 loppuosa (28.7–20: grahan merkin Iṣṭa ja Kaṣṭa pisteillä 60, 45, 30, 22, 15, 8, 4, 2 ja 0 sekä puolet niistä muissa vargoissa, Dig Balan ja Kāla Balan vastaavat ja talojen tulokset) ei ole mukana.
+
+## 15. Vimśopaka Bala (BPHS 7.10–27)
+
+Vimśopaka Bala kertoo, kuinka hyvin graha seisoo jakokartoissa, asteikolla 20. Se on kolmas välilehti kohdassa ANALYYSI → Bala. Graha saa pisteitä merkistä, jossa se on laskentatavan kussakin vargassa, ja jokainen varga painaa omalla painollaan 20:stä.
+
+1. **Laskentatavat ja niiden painot (7.17–23).** Ṣaḍvarga: D1 6, D2 2, D3 4, D9 5, D12 2, D30 1. Saptavarga: D1 5, D2 2, D3 3, D7 2,5, D9 4,5, D12 2, D30 1. Daśavarga: D1 3, D60 5 ja 1,5 kullekin D2, D3, D7, D9, D10, D12, D16, D30. Ṣoḍaśavarga: D1 3,5, D9 3, D60 4, D16 2, D2, D3 ja D30 kukin 1 sekä 0,5 kullekin yhdeksälle muulle (D4, D7, D10, D12, D20, D24, D27, D40, D45). Jokainen laskentatapa on yhteensä 20. (7.18:n sanskritissa on *rama* siellä, missä Ṣaḍvargan D1:n 6:n pitäisi olla *rasa*; kolmella laskentatapa olisi yhteensä 17, joten painettu sana on lipsahdus, jonka painokset jakavat.)
+2. **Merkin pisteet (7.24–25).** 20 omassa merkissä; 18 **adhimitran** (suuren ystävän) merkissä, 15 **mitran**, 10 **saman**, 7 **śatrun** ja 5 **adhiśatrun**. Suhde on Saptavargaja Balan (§2.2) yhdistetty: luonnollinen ystävyys yhdessä tilapäisen kanssa, joka luetaan rāśi-kartasta (valinta C3, jaettu Saptavargaja Balan kanssa; toinen lukutapa ottaa sen varganin omasta kartasta).
+3. **Korotus ja heikentymys (7.11).** Täysi voima, 20, korotusmerkissä kuten omassa merkissä, ja ei mitään seitsemännessä siitä. Heikentymismerkissä oleva graha saa 0 (valinta C16); toinen lukutapa antaa sille suhteensa mukaiset pisteet merkin herraan, kuten muillekin merkeille.
+4. **Summa.** Laskentatavan jokaiselle vargalle: paino × pisteet / 20; summa on grahan Vimśopaka Bala 20:stä.
+5. **Mitä summa antaa (7.26–27).** Alle 5 ei anna tuloksia, yli 5 vähän, yli 10 kohtalaisesti ja yli 15 täydet (säkeen *tithi* on 15; auditoinnin sivuston käännös lukee sen kolmenakymmenenä). Näkymä tulostaa tämän sanan luvun viereen.
+
+**Valintakohdat.** C3 (tilapäinen ystävyys: rāśi-kartasta, oletus, tai kunkin varganin omasta kartasta) ja **C16** (heikentymismerkki: 0 kohdan 7.11 mukaan, oletus; tai suhteen mukaiset pisteet). Vimśopaka-näkymä näyttää ne kohdassa "Laskennan valinnat".
+
+**Laskettuna vertailukartalle** (oletuksilla):
+
+| Graha | Ṣaḍvarga | Saptavarga | Daśavarga | Ṣoḍaśavarga |
+|---|---:|---:|---:|---:|
+| Sun | 15,80 | 16,55 | 13,60 | 13,65 |
+| Moon | 8,95 | 10,45 | 12,75 | 10,12 |
+| Mars | 9,00 | 9,62 | 10,88 | 12,00 |
+| Mercury | 8,50 | 9,12 | 12,38 | 11,45 |
+| Jupiter | 10,00 | 10,00 | 12,50 | 11,38 |
+| Venus | 15,45 | 14,15 | 15,28 | 15,20 |
+| Saturn | 12,00 | 13,25 | 14,62 | 14,18 |
+
+Jakokartat ovat §2.2:n kuusi sekä D4, D10, D16, D20, D24, D27, D40, D45 ja D60 laskettuna niiden määritelmistä BPHS 6:ssa. Testit ovat tiedostossa `src/lib/vimsopaka.test.ts`: painot, merkin pisteet, rajat, kuudentoista vargan merkit ja jokaisen grahan neljä laskentatapaa kolmella kartalla erillistä ohjelmaa vasten. Ei mukana: merkin läpi asteittain kulkeva voima (*gṛhaviṃśopaka*, 7.11–16) ja Auringon etäisyydestä johtuva (*udayāsta*, 7.28–29).
