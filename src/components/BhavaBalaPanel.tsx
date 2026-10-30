@@ -5,7 +5,7 @@ import { buildShadbalaRows } from '@/lib/shadbala';
 import type { BalaOptions } from '@/lib/balaOptions';
 import { buildClassicalBhavaBala } from '@/lib/bhavaBala';
 import { formatScore } from '@/lib/vargaMatrix';
-import { STATUS_ICON, bhavaAgainstAverage, type BalaStatus } from '@/lib/balaView';
+import { BHAVA_OK_FROM, BHAVA_STRONG_FROM, STATUS_ICON, bhavaStrength, type BalaStatus } from '@/lib/balaView';
 import { useT } from '@/lib/i18n';
 import { HorizontalBars, SERIES_COLORS, STATUS_COLORS, StackedColumns } from './BalaCharts';
 import { Heading, ManualLink, NAME_CELL, ROW, ScrollTable, TOTAL_CELL, VALUE_CELL } from './balaShared';
@@ -16,33 +16,32 @@ const STATUS_COLOR: Record<BalaStatus, string> = { weak: STATUS_COLORS.critical,
 export default function BhavaBalaPanel({ chart, options }: { chart: ChartData; options?: BalaOptions }) {
   const t = useT();
   const rows = buildClassicalBhavaBala(chart, buildShadbalaRows(chart, options), options);
-  const { average, houses } = bhavaAgainstAverage(rows);
+  const houses = bhavaStrength(rows);
   const series = [{ key: 'total', label: t('Total'), color: SERIES_COLORS[0] }];
 
   return (
     <div className="min-w-0 space-y-4">
       <HorizontalBars
-        title={t('Bhāva Bala against the average')}
-        note={t('Each house in one colour: its total as a percentage of the average of the twelve houses of this chart (the line at 100 %). The verses give no minimum strength for a house, so this is the chart against itself: under 90 % is weak, from 110 % strong, and between ok.')}
+        title={t('Bhāva Bala of the houses against the limits')}
+        note={t('Each house in one colour: its total in virūpa. The verses give no minimum strength for a house, so the limits are a reading of this application, not of the text: under 420 (7 rūpa) is weak, from 420 ok, from 480 (8 rūpa) strong.')}
         legend={(['weak', 'ok', 'strong'] as BalaStatus[]).map(status => ({ label: `${STATUS_ICON[status]} ${t(status)}`, color: STATUS_COLOR[status] }))}
-        ariaLabel={t('Bhāva Bala against the average')}
-        max={150}
-        referenceAt={100}
-        referenceLabel="100 %"
-        formatTick={value => `${value} %`}
+        ariaLabel={t('Bhāva Bala of the houses against the limits')}
+        max={600}
+        referenceAt={BHAVA_OK_FROM}
+        referenceLabel={String(BHAVA_OK_FROM)}
+        extraReferences={[{ at: BHAVA_STRONG_FROM, label: String(BHAVA_STRONG_FROM) }]}
         rows={rows.map((row, index) => {
-          const { ratio, status } = houses[index];
-          const percent = Math.round(ratio * 100);
+          const { status } = houses[index];
+          const total = Math.round(row.total);
           return {
             key: String(row.house),
             label: `H${row.house} ${row.sign}`,
-            value: percent,
-            display: `${STATUS_ICON[status]} ${percent} % ${t(status)}`,
+            value: total,
+            display: `${STATUS_ICON[status]} ${total} vp ${t(status)}`,
             color: STATUS_COLOR[status],
             title: `H${row.house} · ${row.sign} · ${row.lord}`,
             lines: [
-              { label: t('Total'), value: `${Math.round(row.total)} vp` },
-              { label: t('Average'), value: `${Math.round(average)} vp` },
+              { label: t('Total'), value: `${total} vp` },
               { label: t('Status'), value: `${STATUS_ICON[status]} ${t(status)}` },
             ],
           };

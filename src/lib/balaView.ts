@@ -29,26 +29,20 @@ export function shadbalaComposition(row: ShadbalaRow): Record<ShadbalaPart, numb
   };
 }
 
-/** A house is weak under this share of the average of the twelve, and strong from the upper one. */
-export const BHAVA_WEAK_BELOW = 0.9;
-export const BHAVA_STRONG_FROM = 1.1;
+/** A house is weak under this total (7 rūpa), and strong from the upper one (8 rūpa). */
+export const BHAVA_OK_FROM = 420;
+export const BHAVA_STRONG_FROM = 480;
 
 /**
- * Each house's total against the average of the twelve houses of the chart. The verses give no minimum for a
- * house (the Ṣaḍbala has one for each graha), so the comparison is with the chart's own average: under 90 % of it
- * is weak, from 110 % strong, and in between ok. The status is the app's reading, not a figure of BPHS.
+ * Each house's total against two fixed limits: under 420 virūpa weak, from 420 ok, from 480 strong. The verses give
+ * no minimum for a house (the Ṣaḍbala has one for each graha), so the limits are the app's reading, not figures of BPHS.
  */
-export function bhavaAgainstAverage(rows: BhavaBalaRow[]): { average: number; houses: Array<{ house: number; ratio: number; status: BalaStatus }> } {
-  const average = rows.length ? rows.reduce((sum, row) => sum + row.total, 0) / rows.length : 0;
-  return {
-    average,
-    houses: rows.map(row => {
-      const ratio = average > 0 ? row.total / average : 0;
-      // The status goes by the whole percent that is shown, so that 110 % is never called ok.
-      const percent = Math.round(ratio * 100);
-      return { house: row.house, ratio, status: percent < Math.round(BHAVA_WEAK_BELOW * 100) ? 'weak' : percent < Math.round(BHAVA_STRONG_FROM * 100) ? 'ok' : 'strong' };
-    }),
-  };
+export function bhavaStrength(rows: BhavaBalaRow[]): Array<{ house: number; total: number; status: BalaStatus }> {
+  // The status goes by the whole virūpa that is shown, so that 420 is never called weak.
+  return rows.map(row => {
+    const shown = Math.round(row.total);
+    return { house: row.house, total: row.total, status: shown < BHAVA_OK_FROM ? 'weak' : shown < BHAVA_STRONG_FROM ? 'ok' : 'strong' };
+  });
 }
 
 export const BHAVA_PARTS = ['bhavesha', 'dig', 'drigBenefic', 'drigMalefic', 'occupants', 'kala'] as const;

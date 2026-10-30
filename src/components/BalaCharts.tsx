@@ -118,7 +118,7 @@ export interface BarRow {
   lines: TipLine[];
 }
 
-export function HorizontalBars({ title, note, legend, ariaLabel, rows, max, referenceAt, referenceLabel, formatTick = (value: number) => String(value) }: {
+export function HorizontalBars({ title, note, legend, ariaLabel, rows, max, referenceAt, referenceLabel, extraReferences, formatTick = (value: number) => String(value) }: {
   title: string;
   note?: string;
   /** What the colours of the bars mean, when the rows are not all one colour. */
@@ -129,13 +129,15 @@ export function HorizontalBars({ title, note, legend, ariaLabel, rows, max, refe
   max: number;
   referenceAt?: number;
   referenceLabel?: string;
+  /** More lines across the bars, dashed. */
+  extraReferences?: { at: number; label: string }[];
   formatTick?: (value: number) => string;
 }) {
   const [ref, width] = useWidth();
   const [tip, setTip] = useState<Tip | null>(null);
   const labelWidth = 74;
   const rightPad = 112;
-  const top = referenceAt !== undefined ? 18 : 6;
+  const top = referenceAt !== undefined || extraReferences?.length ? 18 : 6;
   const rowHeight = 30;
   const axisHeight = 22;
   const height = top + rows.length * rowHeight + axisHeight;
@@ -165,6 +167,12 @@ export function HorizontalBars({ title, note, legend, ariaLabel, rows, max, refe
               {referenceLabel && <text x={x(referenceAt)} y={top - 7} textAnchor="middle" fontSize={10} fill="var(--viz-ink-2)">{referenceLabel}</text>}
             </g>
           )}
+          {extraReferences?.map(reference => (
+            <g key={reference.at}>
+              <line x1={x(reference.at)} x2={x(reference.at)} y1={top - 4} y2={top + rows.length * rowHeight} stroke="var(--viz-ink)" strokeWidth={1.5} strokeDasharray="4 3" />
+              <text x={x(reference.at)} y={top - 7} textAnchor="middle" fontSize={10} fill="var(--viz-ink-2)">{reference.label}</text>
+            </g>
+          ))}
           {rows.map((row, index) => {
             const y = top + index * rowHeight;
             const barY = y + (rowHeight - BAR_THICKNESS) / 2;
