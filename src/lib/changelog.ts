@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.41',
+    date: '2026-10-30',
+    title: 'Iṣṭa and Kaṣṭa Phala under the Ṣaḍbala',
+    changes: [
+      'Under the Ṣaḍbala table there is a new table, Iṣṭa and Kaṣṭa Phala (BPHS 28.2–6): how much good and how much harm the daśā of each graha is likely to bring, in virūpa, with which of the two is greater. It is made from the Uccha Bala and the Cheṣṭā Bala by the kendra; for the Sun the kendra is the sāyana Sun and three signs, for the Moon the Moon less the Sun, as the verse says (these are not the Ayana Bala and the Pakṣa Bala of the total).',
+      'The verse takes the mean of the two strengths as the Iṣṭa and what is left of sixty as the Kaṣṭa. B. V. Raman takes the square roots of the products instead; that is a new choice, C15, under Calculation choices. The manuals (English and Finnish) have a new section 14 with the worked reference chart; the tests check Raman\'s printed examples and three charts against numbers worked out by a separate program.',
+      'Updated the application version to v3.41.',
+    ],
+  },
+  {
     version: 'v3.40',
     date: '2026-10-30',
     title: 'The Sūrya Siddhānta\'s mean positions as a choice in Cheṣṭā Bala',

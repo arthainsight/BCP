@@ -319,7 +319,7 @@ Dṛṣṭi = −¼ × (5,18 + 4,92 + 0 + 34,07) + 16,85 + 51,62 + ¼ × 11,94 =
 
 ## 10. Valintakohdat
 
-Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä"-sarake on oletus, sanskritin tekstin lukutapa, ja se on kunkin asetuksen ensimmäinen vaihtoehto. **Kaikki muut vaihtoehdot voi valita Bala-näkymissä kohdasta "Laskennan valinnat"** (Ṣaḍbalan ja Bhāva Balan yläpuolella; valinnat tallentuvat tähän selaimeen eivätkä muuta muuta kuin näitä kahta näkymää). C1–C11, C13 ja C14 ovat asetuksia; C6 ja C7 (Auringon Ayanan ja Kuun Pakṣan kahdennus) ovat C5:n kolmannessa vaihtoehdossa; C12 (Yuddha Bala) ei ole asetus.
+Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä"-sarake on oletus, sanskritin tekstin lukutapa, ja se on kunkin asetuksen ensimmäinen vaihtoehto. **Kaikki muut vaihtoehdot voi valita Bala-näkymissä kohdasta "Laskennan valinnat"** (Ṣaḍbalan ja Bhāva Balan yläpuolella; valinnat tallentuvat tähän selaimeen eivätkä muuta muuta kuin näitä kahta näkymää). C1–C11 ja C13–C15 ovat asetuksia; C6 ja C7 (Auringon Ayanan ja Kuun Pakṣan kahdennus) ovat C5:n kolmannessa vaihtoehdossa; C12 (Yuddha Bala) ei ole asetus.
 
 | | Kysymys | Käytössä | Vaihtoehdot ja kuka niitä pitää |
 |---|---|---|---|
@@ -337,6 +337,7 @@ Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä
 | C12 | Yuddha Bala | Jätetty pois | Ramanin sääntö (Ṣaḍbalojen erotus jaettuna kiekkojen erotuksella, voittaja pienempi pituus); Saravali-dokumentaatio (voittaja suurempi pituus) |
 | C13 | Cheṣṭā Balan keskipituudet | Ramanin taulukot (Dutt, vuosikorjauksineen), Lahirin vyöhykkeessä | Sūrya Siddhāntan omat kierrokset Kali-yugasta ilman korjauksia (Mars sama; Mercury enintään 2,2 virūpaa eri) |
 | C14 | Dekaanien järjestys Drekkana Balassa (27.6) | Miehet, neutrit, naiset: sanskritin teksti ja Raman | Miehet, naiset, neutrit: Santhanamin (Sitaram Jhan painos) ja Sharman käännökset |
+| C15 | Iṣṭa- ja Kaṣṭa-phalan kaava (28.6) | Uccha Balan ja Cheṣṭā Balan keskiarvo; Kaṣṭa on se, mikä jää kuudestakymmenestä (säe) | Kahden tulon neliöjuuri; Kaṣṭa siitä, mitä kummaltakin puuttuu kuudestakymmenestä (B. V. Raman) |
 
 ## 11. Valintojen muuttaminen
 
@@ -352,6 +353,32 @@ Näissä kohdissa säkeet vaikenevat tai lähteet ovat eri mieltä. "Käytössä
 ## 13. Mitä ei ole mukana
 
 - Yuddha Bala (C12).
+- Luvun 28 loppuosa (28.7–20) §14:n Iṣṭa- ja Kaṣṭa-phalan jälkeen.
 - Ṣaḍbalan osien vähimmäisvoimat (27.34–36: Jupiterille, Mercurylle ja Auringolle Sthāna 165, Dig 35, Kāla 50, Cheṣṭā 112, Ayana 30 virūpaa; Kuulle ja Venukselle 133, 50, 30, 100, 40; Marsille ja Saturnukselle 96, 30, 40, 67, 20). Näkymä näyttää vain kokonaisvoiman suhteessa vaadittuun.
 - Talon vähimmäisvoima: säkeet eivät anna sellaista.
 - Painos: sanskrit on yhdestä verkkopainoksesta, ja sanskritin lukijan kannattaa tarkistaa tiedoston [shadbala-sources.md](shadbala-sources.md) luettelemat säkeet.
+
+## 14. Iṣṭa-phala ja Kaṣṭa-phala (BPHS 28.2–6)
+
+Luku 28 muuttaa kaksi voimaa mitaksi siitä, kuinka paljon hyvää ja kuinka paljon pahaa grahan daśā todennäköisesti tuo. Se näytetään Ṣaḍbala-taulukon alla. Säkeet käyttävät "säteitä" (*raśmi*):
+
+1. **Uccha-säde (28.2).** Grahan etäisyys heikentymispisteestään, enintään 180°, merkkeinä, plus yksi merkki, ja jäljelle jäävät asteet kaksinkertaisina (eli asteet jaettuna 30:llä). Kun säteestä vähennetään yksi ja tulos kerrotaan kymmenellä, saadaan kulma jaettuna kolmella: se on §2.1:n Uccha Bala.
+2. **Cheṣṭā-säde (28.3–4).** Sama cheṣṭā-kendrasta: Marsille–Saturnukselle §5:n kendra; Auringolle sāyana-Aurinko ja kolme merkkiä (28.4); Kuulle Kuu miinus Aurinko. Kukin supistetaan enintään 180°:een; Cheṣṭā-voima on kendra jaettuna kolmella. Auringon ja Kuun Cheṣṭā ei siis ole tässä niiden Ayana Bala ja Pakṣa Bala (§5), eikä asetus C5 vaikuta siihen.
+3. **Iṣṭa-phala (28.6).** Vähennä kustakin säteestä yksi, kerro kumpikin kymmenellä, laske yhteen ja puolita: tämä on **Uccha Balan ja Cheṣṭā Balan keskiarvo** virūpoina (0–60). **Kaṣṭa-phala** on se, mikä jää kuudestakymmenestä. (28.5 antaa myös "suotuisan säteen", kahden säteen summan puolikkaan, ja "epäsuotuisan säteen", sen mikä jää kahdeksasta; sovellus näyttää 28.6:n virūpa-muodon.)
+4. **Kumpi on suurempi** kertoo, voittaako hyvä vai paha; säkeen kaavalla kaksi on yhteensä aina 60, joten Iṣṭa yli 30 on sama kuin Iṣṭa suurempi kuin Kaṣṭa.
+
+**Valintakohta C15.** B. V. Raman (artikkelit 138–139) ottaa Iṣṭa-phalaksi Uccha Balan ja Cheṣṭā Balan tulon neliöjuuren ja Kaṣṭa-phalaksi sen tulon neliöjuuren, joka saadaan siitä, mitä kummaltakin puuttuu kuudestakymmenestä. Hänen kaavallaan kaksi ei ole yhteensä 60 (Ramanin Kuu: 38,13 ja 20,66). Säe on keskiarvo, joka on oletus; Ramanin kaava on valinta kohdassa "Laskennan valinnat".
+
+**Laskettuna vertailukartalle** (viidelle grahalle Sūrya Siddhāntan keskipituudet, C13; oletuksena oleva Ramanin taulukko siirtää Mercurya ja Venusta hieman):
+
+| Graha | Uccha | Cheṣṭā (kendra) | Iṣṭa (säe) | Kaṣṭa (säe) | Iṣṭa (Raman) | Kaṣṭa (Raman) |
+|---|---:|---:|---:|---:|---:|---:|
+| Sun | 4,88 | 23,65 | 14,27 | 45,73 | 10,74 | 44,76 |
+| Moon | 49,28 | 36,73 | 43,01 | 16,99 | 42,55 | 15,79 |
+| Mars | 13,65 | 7,36 | 10,51 | 49,49 | 10,02 | 49,39 |
+| Mercury | 48,76 | 46,84 | 47,80 | 12,20 | 47,79 | 12,16 |
+| Jupiter | 28,92 | 58,01 | 43,46 | 16,54 | 40,96 | 7,87 |
+| Venus | 3,96 | 10,74 | 7,35 | 52,65 | 6,52 | 52,54 |
+| Saturn | 48,95 | 18,33 | 33,64 | 26,36 | 29,96 | 21,46 |
+
+Testit ovat tiedostossa `src/lib/ishtaKashta.test.ts`: Ramanin painetut esimerkit (61–64) ja auditoinnin kolme karttaa erillisellä ohjelmalla lasketuja lukuja vasten. Luvun 28 loppuosa (28.7–20: grahan merkin Iṣṭa ja Kaṣṭa pisteillä 60, 45, 30, 22, 15, 8, 4, 2 ja 0 sekä puolet niistä muissa vargoissa, Dig Balan ja Kāla Balan vastaavat ja talojen tulokset) ei ole mukana.

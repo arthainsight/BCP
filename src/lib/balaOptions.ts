@@ -12,6 +12,7 @@ export type TemporaryRelationChart = 'rasi' | 'varga';
 export type DigPoints = 'angles' | 'equal-houses';
 export type LuminaryCheshta = 'in-total' | 'left-out' | 'doubled-in-kala';
 export type CheshtaMeans = 'raman' | 'surya-siddhanta';
+export type IshtaFormula = 'bphs' | 'raman';
 export type AyanaMethod = 'table' | 'declination';
 export type DrekkanaOrder = 'neuter-second' | 'female-second';
 export type DrigMercuryJupiter = 'quarter' | 'full-addon';
@@ -29,6 +30,7 @@ export interface BalaOptions {
   digPoints: DigPoints;
   luminaryCheshta: LuminaryCheshta;
   cheshtaMeans: CheshtaMeans;
+  ishtaFormula: IshtaFormula;
   ayana: AyanaMethod;
   drekkana: DrekkanaOrder;
   drigMercuryJupiter: DrigMercuryJupiter;
@@ -48,6 +50,7 @@ export const DEFAULT_BALA_OPTIONS: BalaOptions = {
   digPoints: 'angles',
   luminaryCheshta: 'in-total',
   cheshtaMeans: 'raman',
+  ishtaFormula: 'bphs',
   ayana: 'table',
   drekkana: 'neuter-second',
   drigMercuryJupiter: 'quarter',
@@ -148,6 +151,14 @@ export const BALA_OPTION_DEFINITIONS: readonly BalaOptionDefinition[] = [
     choices: [
       { value: 'raman', label: 'B. V. Raman\'s tables from Kedarnath Dutt, with the yearly corrections (Raman, JHora)' },
       { value: 'surya-siddhanta', label: 'The Sūrya Siddhānta\'s own revolutions from the Kali Yuga, without the corrections' },
+    ],
+  },
+  {
+    key: 'ishtaFormula', view: 'shadbala', choicePoint: 'C15', label: 'Iṣṭa and Kaṣṭa Phala: the formula',
+    note: 'BPHS 28.6 adds the two rays and halves them. B. V. Raman takes the square root of their product.',
+    choices: [
+      { value: 'bphs', label: 'The mean of Uccha Bala and Cheṣṭā Bala; Kaṣṭa is what is left of sixty (the verse)' },
+      { value: 'raman', label: 'The square root of their product; Kaṣṭa from what each lacks of sixty (B. V. Raman)' },
     ],
   },
   {
