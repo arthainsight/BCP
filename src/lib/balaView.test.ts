@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import type { ShadbalaRow } from './shadbala';
 import type { BhavaBalaRow } from './bhavaBala';
 import type { VimsopakaRow } from './vargaMatrix';
-import { BHAVA_PARTS, SHADBALA_PARTS, STATUS_ICON, bhavaComposition, shadbalaComposition, shadbalaStatus, vimsopakaBy } from './balaView';
+import { BHAVA_PARTS, BHAVA_STRONG_FROM, BHAVA_WEAK_BELOW, SHADBALA_PARTS, STATUS_ICON, bhavaAgainstAverage, bhavaComposition, shadbalaComposition, shadbalaStatus, vimsopakaBy } from './balaView';
 
 // --- The status of a planet against its required Ṣaḍbala ----------------------------------------------------------------------
 assert.equal(shadbalaStatus(0.99), 'weak');
@@ -29,6 +29,27 @@ assert.equal(houseParts.drigBenefic, 110);
 assert.equal(houseParts.drigMalefic, -55);
 assert.equal(houseParts.occupants, 60);
 assert.equal(Object.values(houseParts).reduce((sum, value) => sum + value, 0), house.total);
+
+// --- The houses against the average of the twelve --------------------------------------------------------------------------------
+assert.equal(BHAVA_WEAK_BELOW, 0.9);
+assert.equal(BHAVA_STRONG_FROM, 1.1);
+{
+  // Totals of 80, 90, 100, 110, 120 and 100: the average is 100.
+  const totals = [80, 90, 100, 110, 120, 100];
+  const houses = totals.map((total, index) => ({ house: index + 1, total }) as unknown as BhavaBalaRow);
+  const result = bhavaAgainstAverage(houses);
+  assert.equal(result.average, 100);
+  assert.deepEqual(result.houses.map(entry => entry.status), ['weak', 'ok', 'ok', 'strong', 'strong', 'ok'], 'under 90 % weak, from 110 % strong, the boundaries 90 % ok and 110 % strong');
+  assert.deepEqual(result.houses.map(entry => Math.round(entry.ratio * 100)), [80, 90, 100, 110, 120, 100]);
+  assert.deepEqual(result.houses.map(entry => entry.house), [1, 2, 3, 4, 5, 6], 'in the order of the houses');
+  assert.deepEqual(bhavaAgainstAverage([]), { average: 0, houses: [] });
+  // The status goes by the percent that is shown: 109.8 % reads 110 % and is strong, 89.6 % reads 90 % and is ok.
+  const rounded = bhavaAgainstAverage([109.8, 89.6, 100.3, 100.3].map((total, index) => ({ house: index + 1, total }) as unknown as BhavaBalaRow));
+  assert.deepEqual(rounded.houses.map(entry => Math.round(entry.ratio * 100)).slice(0, 2), [110, 90]);
+  assert.deepEqual(rounded.houses.slice(0, 2).map(entry => entry.status), ['strong', 'ok']);
+  // A chart whose houses are all alike has no weak or strong house.
+  assert.ok(bhavaAgainstAverage([1, 2, 3].map(house => ({ house, total: 400 }) as unknown as BhavaBalaRow)).houses.every(entry => entry.status === 'ok'));
+}
 
 // --- Vimsopaka by a scheme ------------------------------------------------------------------------------------------------------------
 const rows = [
