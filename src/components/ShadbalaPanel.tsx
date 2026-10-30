@@ -2,7 +2,8 @@
 
 import type { ChartData } from '@/types';
 import { buildShadbalaRows } from '@/lib/shadbala';
-import type { BalaOptions } from '@/lib/balaOptions';
+import { buildIshtaKashtaRows, type IshtaKashtaVerdict } from '@/lib/ishtaKashta';
+import { DEFAULT_BALA_OPTIONS, type BalaOptions } from '@/lib/balaOptions';
 import { formatScore } from '@/lib/vargaMatrix';
 import { SHADBALA_PARTS, STATUS_ICON, shadbalaComposition, shadbalaStatus, type BalaStatus, type ShadbalaPart } from '@/lib/balaView';
 import { useT } from '@/lib/i18n';
@@ -11,12 +12,16 @@ import { BODY_CELL, Heading, ManualLink, NAME_CELL, ROW, ScrollTable, TOTAL_CELL
 
 const STATUS_COLOR: Record<BalaStatus, string> = { weak: STATUS_COLORS.critical, ok: STATUS_COLORS.warning, strong: STATUS_COLORS.good };
 const STATUS_TEXT: Record<BalaStatus, string> = { weak: 'text-red-600 dark:text-red-400', ok: 'text-amber-600 dark:text-amber-400', strong: 'text-emerald-600 dark:text-emerald-400' };
+const VERDICT_TEXT: Record<IshtaKashtaVerdict, string> = { ishta: 'Iṣṭa greater', kashta: 'Kaṣṭa greater', equal: 'Equal' };
+const VERDICT_ICON: Record<IshtaKashtaVerdict, string> = { ishta: '✓', kashta: '✕', equal: '=' };
+const VERDICT_CLASS: Record<IshtaKashtaVerdict, string> = { ishta: STATUS_TEXT.strong, kashta: STATUS_TEXT.weak, equal: STATUS_TEXT.ok };
 const PART_LABEL: Record<ShadbalaPart, string> = { sthana: 'Sthāna', dig: 'Dig', kala: 'Kāla', cheshta: 'Cheṣṭā', naisargika: 'Naisargika', drik: 'Dṛg' };
 
 /** Ṣaḍbala: the strength of each graha against what it needs, how it is made of the six balas, and the table. */
 export default function ShadbalaPanel({ chart, options }: { chart: ChartData; options?: BalaOptions }) {
   const t = useT();
   const rows = buildShadbalaRows(chart, options);
+  const phala = buildIshtaKashtaRows(chart, rows, options?.ishtaFormula ?? DEFAULT_BALA_OPTIONS.ishtaFormula);
   const series = SHADBALA_PARTS.map((key, index) => ({ key, label: PART_LABEL[key], color: SERIES_COLORS[index] }));
 
   return (
@@ -96,6 +101,22 @@ export default function ShadbalaPanel({ chart, options }: { chart: ChartData; op
               </tr>
             );
           })}
+        </ScrollTable>
+      </div>
+
+      <div className="space-y-2" data-testid="ishta-kashta">
+        <Heading command="ishta_kashta">{t('Iṣṭa and Kaṣṭa Phala (BPHS 28.2–6): how much good and how much harm the daśā of a graha is likely to bring, from its Uccha Bala and its Cheṣṭā Bala by the kendra. For the Sun and the Moon the Cheṣṭā here is the one of the kendra, whatever the choices above say. Values in virūpa.')}</Heading>
+        <ScrollTable minWidth="min-w-[560px]" headers={[t('Planet'), 'Uccha', t('Cheṣṭā (kendra)'), 'Iṣṭa', 'Kaṣṭa', t('Greater')]}>
+          {phala.map(row => (
+            <tr key={row.planet} className={ROW}>
+              <td className={NAME_CELL}>{row.planet}</td>
+              <td className={VALUE_CELL}>{formatScore(row.uccha)}</td>
+              <td className={VALUE_CELL}>{row.cheshta === null ? '–' : formatScore(row.cheshta)}</td>
+              <td className={TOTAL_CELL}>{row.ishta === null ? '–' : formatScore(row.ishta)}</td>
+              <td className={TOTAL_CELL}>{row.kashta === null ? '–' : formatScore(row.kashta)}</td>
+              <td className={`${BODY_CELL} font-bold ${row.verdict ? VERDICT_CLASS[row.verdict] : ''}`}>{row.verdict ? `${VERDICT_ICON[row.verdict]} ${t(VERDICT_TEXT[row.verdict])}` : '–'}</td>
+            </tr>
+          ))}
         </ScrollTable>
         <ManualLink label={t('How every number is calculated (manual)')} />
       </div>

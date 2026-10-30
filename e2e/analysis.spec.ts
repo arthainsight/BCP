@@ -760,6 +760,16 @@ test('ANALYSIS Bala has a diagram and a table for the Ṣaḍbala, the Bhāva Ba
   await visible(page, page.getByRole('button', { name: 'Back to the Sanskrit reading', exact: true })).click();
   await expect.poll(sunTotal).toBe(before);
 
+  // Iṣṭa and Kaṣṭa Phala under the table: the verse's mean by default, Raman's square root as a choice.
+  const phala = visible(page, page.getByTestId('ishta-kashta'));
+  await expect(phala).toContainText('ishta_kashta');
+  await expect(phala.getByRole('row')).toHaveCount(8);
+  const phalaText = await phala.innerText();
+  await visible(page, page.getByLabel('Iṣṭa and Kaṣṭa Phala: the formula', { exact: true })).selectOption('raman');
+  await expect.poll(async () => phala.innerText()).not.toBe(phalaText);
+  await visible(page, page.getByRole('button', { name: 'Back to the Sanskrit reading', exact: true })).click();
+  await expect.poll(async () => phala.innerText()).toBe(phalaText);
+
   // Bhāva Bala: a column for each of the twelve houses.
   await visible(page, page.getByRole('button', { name: 'Bhāva Bala', exact: true })).click();
   await expect(visible(page, page.getByRole('img', { name: 'Bhāva Bala of the houses', exact: true }))).toBeVisible();

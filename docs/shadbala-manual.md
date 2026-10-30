@@ -320,7 +320,7 @@ Dṛṣṭi = −¼ × (5.18 + 4.92 + 0 + 34.07) + 16.85 + 51.62 + ¼ × 11.94 =
 
 ## 10. Choice points
 
-These are the places where the verses are silent or the sources disagree. The "Used" column is the default, the reading of the Sanskrit text, and it is the first choice of each setting. **Every other alternative can be chosen in the Bala views, under "Calculation choices"** (above the Ṣaḍbala and the Bhāva Bala; the choices are kept in this browser and change nothing but these two views). C1–C11, C13 and C14 are settings; C6 and C7 (doubling the Sun's Ayana and the Moon's Pakṣa) are in the third choice of C5; C12 (Yuddha Bala) is not a setting.
+These are the places where the verses are silent or the sources disagree. The "Used" column is the default, the reading of the Sanskrit text, and it is the first choice of each setting. **Every other alternative can be chosen in the Bala views, under "Calculation choices"** (above the Ṣaḍbala and the Bhāva Bala; the choices are kept in this browser and change nothing but these two views). C1–C11 and C13–C15 are settings; C6 and C7 (doubling the Sun's Ayana and the Moon's Pakṣa) are in the third choice of C5; C12 (Yuddha Bala) is not a setting.
 
 | | Question | Used | Alternatives and who holds them |
 |---|---|---|---|
@@ -338,6 +338,7 @@ These are the places where the verses are silent or the sources disagree. The "U
 | C12 | Yuddha Bala | Left out | Raman's rule (the difference of the Ṣaḍbalas over the difference of the discs, the winner the one with the smaller longitude); the Saravali documentation (the winner the one with the greater longitude) |
 | C13 | The mean positions of Cheṣṭā Bala | Raman's tables (Dutt, with the yearly corrections), in Lahiri's zodiac | The Sūrya Siddhānta's own revolutions from the Kali Yuga, without the corrections (Mars the same; Mercury up to 2.2 virūpa different) |
 | C14 | The order of the decanates in Drekkana Bala (27.6) | Males, neuters, females: the Sanskrit text and Raman | Males, females, neuters: the translations of Santhanam (the edition of Sitaram Jha) and Sharma |
+| C15 | The formula of Iṣṭa and Kaṣṭa Phala (28.6) | The mean of Uccha Bala and Cheṣṭā Bala; Kaṣṭa is what is left of sixty (the verse) | The square root of the product of the two; Kaṣṭa from what each lacks of sixty (B. V. Raman) |
 
 ## 11. Changing the choices
 
@@ -353,6 +354,32 @@ Above the Ṣaḍbala and the Bhāva Bala there is a folded line, **Calculation 
 ## 13. What is not included
 
 - Yuddha Bala (C12).
+- The rest of chapter 28 (28.7–20) beyond the Iṣṭa and Kaṣṭa Phala of §14.
 - The minimum strengths of the parts of the Ṣaḍbala (27.34–36: for Jupiter, Mercury and the Sun Sthāna 165, Dig 35, Kāla 50, Cheṣṭā 112, Ayana 30 virūpa; for the Moon and Venus 133, 50, 30, 100, 40; for Mars and Saturn 96, 30, 40, 67, 20). The view shows only the total against its required strength.
 - A minimum strength for a house: the verses give none.
 - The edition: the Sanskrit comes from one online edition, and a reader of Sanskrit should check the verses listed in [shadbala-sources.md](shadbala-sources.md).
+
+## 14. Iṣṭa Phala and Kaṣṭa Phala (BPHS 28.2–6)
+
+Chapter 28 turns two of the strengths into a measure of the good and the harm a graha's daśā is likely to bring. It is shown under the Ṣaḍbala table. The verses work with "rays" (*raśmi*):
+
+1. **Uccha ray (28.2).** The distance of the graha from its debilitation point, taken to 180° at most, as signs, plus one sign, with the remaining degrees doubled (the degrees over 30, that is). Take one from the ray and multiply by ten, and you have the angle over three: this is Uccha Bala of §2.1.
+2. **Cheṣṭā ray (28.3–4).** The same from the cheṣṭā-kendra: for Mars to Saturn the kendra of §5; for the Sun the sāyana Sun and three signs (28.4); for the Moon the Moon less the Sun. Each is reduced to 180° at most; the Cheṣṭā strength is the kendra over three. The Sun's and the Moon's Cheṣṭā here is therefore not their Ayana Bala and Pakṣa Bala (§5), and the setting C5 does not touch it.
+3. **Iṣṭa Phala (28.6).** Take one from each ray, multiply each by ten, add them and halve: this is the **mean of Uccha Bala and Cheṣṭā Bala**, in virūpa (0–60). **Kaṣṭa Phala** is what is left of sixty. (28.5 also gives a "benefic ray", half the sum of the two rays, and an "inauspicious ray", that taken from eight; the app shows the virūpa form of 28.6.)
+4. **Which is greater** tells whether the good or the harm is likely to prevail; with the verse's formula the two always add up to 60, so Iṣṭa over 30 is the same as Iṣṭa over Kaṣṭa.
+
+**Choice point C15.** B. V. Raman (articles 138–139) takes instead the square root of the product of Uccha Bala and Cheṣṭā Bala as the Iṣṭa Phala and the square root of the product of what each lacks of sixty as the Kaṣṭa Phala. With his formula the two do not add up to 60 (Raman's Moon: 38.13 and 20.66). The verse is the mean, which is the default; Raman's is a choice under "Calculation choices".
+
+**Worked on the reference chart** (the Sūrya Siddhānta's mean positions for the five grahas, C13; the default Raman's table moves Mercury and Venus a little):
+
+| Graha | Uccha | Cheṣṭā (kendra) | Iṣṭa (verse) | Kaṣṭa (verse) | Iṣṭa (Raman) | Kaṣṭa (Raman) |
+|---|---:|---:|---:|---:|---:|---:|
+| Sun | 4.88 | 23.65 | 14.27 | 45.73 | 10.74 | 44.76 |
+| Moon | 49.28 | 36.73 | 43.01 | 16.99 | 42.55 | 15.79 |
+| Mars | 13.65 | 7.36 | 10.51 | 49.49 | 10.02 | 49.39 |
+| Mercury | 48.76 | 46.84 | 47.80 | 12.20 | 47.79 | 12.16 |
+| Jupiter | 28.92 | 58.01 | 43.46 | 16.54 | 40.96 | 7.87 |
+| Venus | 3.96 | 10.74 | 7.35 | 52.65 | 6.52 | 52.54 |
+| Saturn | 48.95 | 18.33 | 33.64 | 26.36 | 29.96 | 21.46 |
+
+The tests are in `src/lib/ishtaKashta.test.ts`: Raman's printed examples (61–64) and the three charts of the audit, against numbers worked out by a separate program. The rest of chapter 28 (28.7–20: the Iṣṭa and Kaṣṭa of the sign a graha stands in, with the scores 60, 45, 30, 22, 15, 8, 4, 2 and 0 and half of them in the other vargas, those of Dig and Kāla Bala, and the results for the houses) is not included.
