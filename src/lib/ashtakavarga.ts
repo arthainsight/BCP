@@ -33,10 +33,16 @@ const PLANETS: AshtakavargaPlanet[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupite
 type Contributor = AshtakavargaPlanet | 'Ascendant';
 const CONTRIBUTORS: Contributor[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Ascendant'];
 
-// Full Parashara Ashtakavarga bindu tables (BPHS).
+// Full Parashara Ashtakavarga bindu tables (BPHS 66.16-68).
 // For each planet P, for each contributing body C, the house positions
 // (counted from C's natal sign) that grant one bindu to P's BAV.
-const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = {
+//
+// These are the places the verses call sthana (the rekha, the auspicious ones); the karana (the bindu of the
+// verses, the inauspicious ones) are the rest. Read from the Sanskrit: the Sun's, the Moon's, Mars's and
+// Mercury's sthana verse by verse, the others from the karana verses and their numbers (docs/ashtakavarga-sources.md).
+// Until v3.43 the Moon's table was another printed one, which differs from the verses in three places
+// (see the Moon block).
+export const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = {
   Sun: {
     Sun:        [1, 2, 4, 7, 8, 9, 10, 11],
     Moon:       [3, 6, 10, 11],
@@ -48,11 +54,12 @@ const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = 
     Ascendant:  [3, 4, 6, 10, 11, 12],
   },
   Moon: {
+    // BPHS 66.20-23 and 66.46-48: the Moon at the 9th and Mars not, Jupiter at the 2nd and not at the 12th.
     Sun:        [3, 6, 7, 8, 10, 11],
-    Moon:       [1, 3, 6, 7, 10, 11],
-    Mars:       [2, 3, 5, 6, 9, 10, 11],
+    Moon:       [1, 3, 6, 7, 9, 10, 11],
+    Mars:       [2, 3, 5, 6, 10, 11],
     Mercury:    [1, 3, 4, 5, 7, 8, 10, 11],
-    Jupiter:    [1, 4, 7, 8, 10, 11, 12],
+    Jupiter:    [1, 2, 4, 7, 8, 10, 11],
     Venus:      [3, 4, 5, 7, 9, 10, 11],
     Saturn:     [3, 5, 6, 11],
     Ascendant:  [3, 6, 10, 11],

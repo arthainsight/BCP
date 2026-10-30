@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.43',
+    date: '2026-10-30',
+    title: 'The Moon\'s Aṣṭakavarga by the Sanskrit text',
+    changes: [
+      'The Aṣṭakavarga tables (BPHS 66.16-68) were checked against the Sanskrit: the numbers of the karaṇa verses, which say how many bodies have no point in each house, and the names of the sthāna verses. The tables of the Sun, Mars, Mercury, Jupiter, Venus and Saturn agree with the verses in every house.',
+      'The Moon\'s table had three entries that the verses do not have, and is corrected: the Moon gives a point to itself at the 9th (not Mars at the 9th), and Jupiter gives a point at the 2nd (not the 12th). The eight-body totals stay 49 and 337, but the Moon\'s Bhinnāṣṭakavarga and the Sarvāṣṭakavarga change in the houses that these entries fall in. The verses\' own numbers (6 bodies without a point in the 2nd house of the Moon\'s chart, 8 in the 12th) fit only the corrected table.',
+      'The tests now hold the verses\' numbers (84 of them) and the names that were read from the Sanskrit for the Sun, Moon, Mars and Mercury. The verse ledger and the finding are in docs/ashtakavarga-sources.md.',
+      'Updated the application version to v3.43.',
+    ],
+  },
+  {
     version: 'v3.42',
     date: '2026-10-30',
     title: 'Vimśopaka Bala by the Sanskrit text',
