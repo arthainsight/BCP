@@ -28,7 +28,7 @@ export const DOSHA_IDS = [
   'sangraha', 'ashtamaLagna', 'vishaGhati', 'durmuhurta', 'varaDosha',
   'ekargala', 'dashaYoga', 'jamitra', 'latta', 'upagraha', 'pata',
   'eclipse', 'kunavamsa', 'vyatipata', 'vaidhriti',
-  'shunyaRasi', 'blindDeafLame', 'mrityubhaga', 'dagdha', 'jupiterVenus',
+  'shunyaRasi', 'blindDeafLame', 'mrityubhaga', 'dagdha', 'jupiterVenus', 'varaMuhurta',
 ] as const;
 export type DoshaId = (typeof DOSHA_IDS)[number];
 export const isDoshaId = (value: string): value is DoshaId => (DOSHA_IDS as readonly string[]).includes(value);
@@ -163,6 +163,11 @@ export const DOSHAS: Record<DoshaId, DoshaInfo> = {
     what: 'The tithi of the half that is burnt by the sign of the Sun (v. 66): the 2nd with the Sun in Sagittarius or Pisces, the 4th in Taurus or Aquarius, the 6th in Cancer or Aries, the 8th in Gemini or Virgo, the 10th in Leo or Scorpio, the 12th in Capricorn or Libra, in either half.',
     notApplied: 'The text says these are described for Madhyadeśa only: with the region chosen the fault counts only there.',
   },
+  varaMuhurta: {
+    number: 0, name: 'Forbidden muhūrta of the weekday',
+    what: 'The muhūrtas (a fifteenth of the day from sunrise to sunset) the Muhūrtacintāmaṇi forbids on each weekday (v. 54): Sunday Aryaman (the 14th), Monday Brahmā and Rākṣasa (the 9th and 12th), Tuesday Pitṛ (the 4th), Wednesday Abhijit (the 8th), Thursday Jala and Rākṣasa (the 6th and 12th), Friday Brahmā and Pitṛ (the 9th and 4th), Saturday Īśa and Sarpa (the 1st and 2nd).',
+    notApplied: 'Tuesday\'s Agni, which the day\'s list of 15 does not have (only Indrāgnī), and the night. It is the text\'s own Dūrmuhūrta; the doṣa of that name above is the thirtieth of the tithi from Wilhelm\'s book.',
+  },
   jupiterVenus: {
     number: 0, name: 'Guru and Śukra (asta, Siṃha, Makara)',
     what: 'Jupiter or Venus combust (asta, v. 46 and 47: the works are not done then), and Jupiter in Leo or Capricorn, where the works of the asta are forbidden too (v. 48). Jupiter in Leo is forbidden over the whole sign in the land between the Gaṅgā and the Godāvarī and in Kaliṅga, Gauḍa and Gurjara, elsewhere only in the first 16°40′ of Leo (v. 50 and 51), and not at all with the Sun in Aries (v. 49 and 51).',
@@ -216,6 +221,9 @@ export const NAKSHATRA_VISHANADI_START: number[] = [
 /** The nāḍī after sunrise at which the Viṣanāḍī of each weekday begins (the weekday from sunrise to the next, in 60 nāḍīs). */
 export const VARA_VISHANADI_START = [30, 42, 41, 31, 2, 22, 20];
 export const VISHANADI_NADIS = 4;
+
+/** The muhūrtas (1 to 15 of the day) forbidden on each weekday, Sunday first (Muhūrtacintāmaṇi, vivāha v. 54); Tuesday's Agni is left out. */
+export const VARA_FORBIDDEN_MUHURTAS = [[14], [9, 12], [4], [8], [6, 12], [4, 9], [1, 2]];
 
 /** The unfavourable tithyaṁśas (1 to 30), and those of each weekday (0 Sunday) in addition. */
 export const TITHYAMSA_UNFAVOURABLE = [1, 2, 4, 10, 11, 12, 15, 16, 17, 21, 22];
@@ -292,6 +300,7 @@ const NEEDS: Record<DoshaId, DoshaNeeds> = {
   mrityubhaga: { luminaries: true, asc: true, grahas: [...ALL_OTHERS] },
   dagdha: { luminaries: true, asc: false, grahas: [] },
   jupiterVenus: { luminaries: true, asc: false, grahas: ['Jupiter', 'Venus'] },
+  varaMuhurta: { luminaries: false, asc: false, grahas: [] },
 };
 /** What the doṣa needs of a moment; with the pariharas on, the whole sky (the strength of the grahas, the houses from the Lagna). */
 export const doshaNeeds = (id: DoshaId, parihara?: PariharaMode): DoshaNeeds =>
@@ -587,6 +596,7 @@ const HAS: Record<DoshaId, (sky: DoshaSky, natal: DoshaNatal | undefined, option
     const yogaLord = NAKSHATRA_LORDS[(yogaOf(sky.sun, sky.moon) + 7) % 27 % 9];
     return fatal('Lagna', sky.asc) || check('Moon') || check(SIGN_LORDS[signOf(sky.asc)]) || check(nakshatraLord) || check(yogaLord);
   },
+  varaMuhurta: () => false,
   dagdha: sky => ((tithiOf(sky.sun, sky.moon) - 1) % 15) + 1 === DAGDHA_TITHI_OF_SUN_SIGN[signOf(sky.sun)],
   jupiterVenus: (sky, _natal, options, relief) => {
     const combust = (['Jupiter', 'Venus'] as const).some(graha => combustionOf(graha, longitudeIn(sky, graha), sky.sun, sky.retro?.[graha] ?? false) !== null);
@@ -618,4 +628,4 @@ export function hasDosha(id: DoshaId, sky: DoshaSky, natal?: DoshaNatal, options
 }
 
 /** The doṣas that are only a span of time around an event, not a state of the sky. */
-export const EVENT_DOSHAS: DoshaId[] = ['sankranti', 'varaDosha', 'eclipse', 'vyatipata', 'vaidhriti'];
+export const EVENT_DOSHAS: DoshaId[] = ['sankranti', 'varaDosha', 'varaMuhurta', 'eclipse', 'vyatipata', 'vaidhriti'];

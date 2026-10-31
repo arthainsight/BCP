@@ -186,3 +186,13 @@ export function ardhayama(weekday: number, sunriseJd: number, sunsetJd: number, 
   const eighth = (from: number, to: number): JdWindow => ({ startJd: from + ((part - 1) * (to - from)) / 8, endJd: from + (part * (to - from)) / 8 });
   return [eighth(sunriseJd, sunsetJd), eighth(sunsetJd, nextSunriseJd)];
 }
+
+/**
+ * The forbidden muhūrtas of the weekday (Muhūrtacintāmaṇi, vivāha v. 52 to 54): the day from sunrise to sunset is 15 muhūrtas, named
+ * Mahādeva (Īśa) 1, Sarpa 2, Mitra 3, Pitṛ 4, Vasu 5, Jala 6, Viśvedeva 7, Abhijit 8, Brahmā 9, Indra 10, Indrāgnī 11, Rākṣasa 12,
+ * Varuṇa 13, Aryaman 14, Bhaga 15; the muhūrta of the number (1 to 15) is the stretch of a fifteenth of the day.
+ */
+export function dayMuhurta(number: number, sunriseJd: number, sunsetJd: number): JdWindow {
+  const length = (sunsetJd - sunriseJd) / 15;
+  return { startJd: sunriseJd + (number - 1) * length, endJd: sunriseJd + number * length };
+}

@@ -16,13 +16,13 @@ import {
 } from './mahadosha';
 import { isPariharaMode, isRegionId, isStrengthLevel } from './mahadoshaParihara';
 import {
-  VYATIPATA_SHORT_HOURS, aroundEvent, ardhayama, calendarDays, declinationEqualities, eclipseMoments, insideWindows, mergeWindows, sankrantiWindows,
+  VYATIPATA_SHORT_HOURS, aroundEvent, ardhayama, calendarDays, dayMuhurta, declinationEqualities, eclipseMoments, insideWindows, mergeWindows, sankrantiWindows,
   varaVishanadi, type JdWindow,
 } from './mahadoshaEvents';
 import { lunarMonthAt } from './lunisolar';
 import { D1_GRAHAS, d1Held as d1HeldBy, isD1Key, type D1Key } from './muhurtaD1';
 import { rahuKala, yamaganda } from './muhurta';
-import { VARA_VISHANADI_START } from './mahadosha';
+import { VARA_FORBIDDEN_MUHURTAS, VARA_VISHANADI_START } from './mahadosha';
 import { calculateSunTimes } from './sunTimes';
 import { getUtcOffsetHours } from './timezone';
 
@@ -192,6 +192,13 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
         }
         blockedWindows.push(...ardhayama(row.weekday, row.sunriseJd, row.midnightJd + row.sunsetHour / 24, rows[index + 1].sunriseJd));
       });
+    }
+    if (avoid.has('varaMuhurta')) {
+      // The forbidden muhūrtas of the weekday: a fifteenth of the day from sunrise to sunset each.
+      for (const row of rows) {
+        if (row.sunriseHour === undefined || row.sunsetHour === undefined) continue;
+        for (const number of VARA_FORBIDDEN_MUHURTAS[row.weekday]) blockedWindows.push(dayMuhurta(number, row.midnightJd + row.sunriseHour / 24, row.midnightJd + row.sunsetHour / 24));
+      }
     }
     if (avoid.has('vishaGhati')) {
       // The Viṣanāḍī of the weekday: 4 nāḍīs from the nāḍī of its table after sunrise, in the weekday that lasts to the next sunrise.

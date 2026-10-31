@@ -8,7 +8,7 @@ import {
   vishanadiOfSky, type DoshaId, type DoshaNatal, type DoshaOptions, type DoshaSky,
 } from './mahadosha';
 import {
-  VYATIPATA_SHORT_HOURS, aroundEvent, ardhayama, calendarDays, declinationEqualities, eclipseMoments, insideWindows, mergeWindows,
+  VYATIPATA_SHORT_HOURS, aroundEvent, ardhayama, calendarDays, dayMuhurta, declinationEqualities, eclipseMoments, insideWindows, mergeWindows,
   sankrantiMoments, varaVishanadi,
 } from './mahadoshaEvents';
 import { isStrong } from './mahadoshaParihara';
@@ -39,9 +39,9 @@ const has = (id: DoshaId, value: DoshaSky, natal?: DoshaNatal, options?: DoshaOp
 // ---------------------------------------------------------------------------
 // The list
 // ---------------------------------------------------------------------------
-assert.equal(DOSHA_IDS.length, 29);
+assert.equal(DOSHA_IDS.length, 30);
 assert.equal(new Set(DOSHA_IDS.map(id => DOSHAS[id].number)).size, 20, 'each has its own place in the list, the six Daśa Doṣas the 15th, the three blemishes outside the list 0');
-assert.deepEqual(DOSHA_IDS.filter(id => DOSHAS[id].number === 0).sort(), ['blindDeafLame', 'dagdha', 'jupiterVenus', 'mrityubhaga', 'shunyaRasi']);
+assert.deepEqual(DOSHA_IDS.filter(id => DOSHAS[id].number === 0).sort(), ['blindDeafLame', 'dagdha', 'jupiterVenus', 'mrityubhaga', 'shunyaRasi', 'varaMuhurta']);
 assert.deepEqual(DOSHA_IDS.filter(id => DOSHAS[id].number === 15).sort(), ['dashaYoga', 'ekargala', 'jamitra', 'latta', 'pata', 'upagraha']);
 assert.deepEqual(
   [...new Set([...DOSHA_IDS.map(id => DOSHAS[id].number), ...DOSHAS_NOT_WORKED_OUT.map(item => item.number)])].filter(number => number > 0).sort((a, b) => a - b),
@@ -359,6 +359,12 @@ const nearRanges = (value: number, ranges: [number, number][]) => ranges.some(([
   const broad: DoshaOptions = { parihara: 'broad' };
   const everything: DoshaOptions = { parihara: 'all' };
 
+  // The muhūrtas of the day: a fifteenth each from sunrise to sunset.
+  assert.deepEqual(dayMuhurta(1, 100, 115), { startJd: 100, endJd: 101 });
+  assert.deepEqual(dayMuhurta(14, 100, 115), { startJd: 113, endJd: 114 });
+  assert.deepEqual(dayMuhurta(15, 100, 115), { startJd: 114, endJd: 115 });
+  assert.ok(EVENT_DOSHAS.includes('varaMuhurta'), 'a stretch of the day, not a state of the sky');
+
   // Dagdha tithi (v. 66): the Sun in Leo burns the 10th tithi of either half (the Sun at Leo 5°, 125°; the 10th tithi is 108° to 120° ahead).
   assert.equal(has('dagdha', sky({ moon: 125 + 110 })), true, 'the 10th of the bright half');
   assert.equal(has('dagdha', sky({ moon: 125 + 125 })), false, 'the 11th');
@@ -617,6 +623,13 @@ async function searches() {
   const withParihara = await runMuhurtaFinder(request({ ...open, avoid: ['kartari', 'sangraha'], parihara: 'named' }, 10, '2026-11-02'));
   const asWritten = await runMuhurtaFinder(request({ ...open, avoid: ['kartari', 'sangraha'] }, 10, '2026-11-02'));
   assert.ok(totalDays(withParihara.windows) >= totalDays(asWritten.windows) - 0.01, 'the pariharas only take faults away');
+
+  // The forbidden muhūrtas of the weekday (v. 54): a fifteenth of the day each; Sunday has one, Monday two.
+  const oneDay = async (vara: number, avoid: DoshaId[]) => totalDays((await runMuhurtaFinder(request({ ...open, vara: [vara], avoid }, 7, '2026-11-01'))).windows);
+  const sunday = (await oneDay(0, [])) - (await oneDay(0, ['varaMuhurta']));
+  const monday = (await oneDay(1, [])) - (await oneDay(1, ['varaMuhurta']));
+  assert.ok(sunday > 0.015 && sunday < 0.025, `Sunday loses a fifteenth of a short November day: ${(sunday * 24 * 60).toFixed(0)} min`);
+  assert.ok(Math.abs(monday - 2 * sunday) < 0.004, `Monday loses two: ${(monday * 24 * 60).toFixed(0)} min`);
 
   // Aṣṭama Lagna: the Ascendant of the chart is never the 8th sign from the Ascendant or the Moon of the birth.
   const natal = { ascSign: 0, moonSign: 5 }; // Aries rising, the Moon in Virgo: the 8th signs are Scorpio and Aries
