@@ -4,7 +4,7 @@ import { SIGN_ABBR, SIGN_NAMES } from './signs';
 import { atmakarakaOf, brahmaByText } from './brahmaGraha';
 import { jaiminiSubSigns } from './charaClean';
 import {
-  charaYears, drigOrder, kendradiOrder, kendradiStart, shulaOrder, SHULA_HOUSES, sthiraYears, trikonaOrder, yogardhaOrder, yogardhaYears,
+  charaYears, drigOrder, kendradiOrder, kendradiStart, mandookaOrder, mandookaStart, shulaOrder, SHULA_HOUSES, sthiraYears, trikonaOrder, yogardhaOrder, yogardhaYears,
 } from './jaiminiRasiDashas';
 import { addDashaYears } from './time';
 type PlanetData = { name: string; sign: number; degree: number; longitude: number; house?: number };
@@ -30,9 +30,9 @@ const NARAYANA_KETU = [
   [10,5,0,7,2,9,4,11,6,1,8,3], [11,7,3,2,10,6,5,1,9,8,4,0],
 ] as const;
 
-export type RasiDashaSystem = 'narayana' | 'moola' | 'sthira' | 'yogardha' | 'drig' | 'trikona' | 'shula';
+export type RasiDashaSystem = 'narayana' | 'moola' | 'sthira' | 'yogardha' | 'drig' | 'trikona' | 'shula' | 'mandooka';
 /** The systems the Jaimini Sūtras give (and BPHS 46); the Nārāyaṇa is PVR's and not in the edition read. */
-export const JAIMINI_RASI_SYSTEMS: readonly RasiDashaSystem[] = ['sthira', 'yogardha', 'drig', 'trikona', 'shula'];
+export const JAIMINI_RASI_SYSTEMS: readonly RasiDashaSystem[] = ['sthira', 'yogardha', 'drig', 'trikona', 'shula', 'mandooka'];
 
 /** What the page knows that the planets do not say: the degree of the Lagna and how the Ātmakāraka is chosen. */
 export interface RasiDashaContext { ascendantLongitude?: number; karaka?: { rankMode?: 'degree' | 'minute'; count?: 7 | 8 } }
@@ -78,7 +78,9 @@ function childOrder(system: RasiDashaSystem, sign: number, planets: PlanetData[]
   const sthiraLike = () => sign % 2 === 1 ? sequentialOrder(norm(sign + 6), -1) : sequentialOrder(sign, 1);
   if (system === 'sthira') return sthiraJaimini ? sthiraLike() : sequentialOrder(sign, 1);
   // Dṛg, Trikoṇa and Śūla take the sub-periods as the Sthira does (2.3.1–2 and the verse quoted with 2.4.25); the Yogārdha as the Chara (2.4.7–10).
-  if (system === 'drig' || system === 'trikona' || system === 'shula') return sthiraLike();
+  if (system === 'drig' || system === 'trikona') return sthiraLike();
+  // Śūla and Maṇḍūka: the Maṇḍūka antardaśā of the Sūtras 2.4.15–16, from the stronger of the sign and its 7th.
+  if (system === 'shula' || system === 'mandooka') return mandookaOrder(mandookaStart(toJaiminiChart(planets, ascSign), sign));
   if (system === 'yogardha') {
     const chart = toJaiminiChart(planets, ascSign);
     return jaiminiSubSigns(sign + 1, strongerSignOf(chart, sign, norm(sign + 6)) + 1).map(item => item - 1);
@@ -199,14 +201,26 @@ export function calculateRasiDasha(system: RasiDashaSystem, planets: PlanetData[
     method = 'Trikoṇa · Jaimini Sūtras 2.4.24–25, BPHS 46.183–184';
     audit.push('Order: each sign with its 5th and 9th, four such groups in the order of the start (direct from an odd sign, reverse from an even one)', 'Years: as in the Chara daśā');
     singleRound = sign => ({ years: charaYears(chart, sign), explanation: `Chara years of ${SIGN_NAMES[sign]} → ${charaYears(chart, sign)} y` });
-  } else {
+  } else if (system === 'shula') {
     const house = SHULA_HOUSES[options.shulaFor ?? 'self'];
     const shula = shulaOrder(chart, asc, house);
     seed = shula.start;
     order = shula.order;
     basis = `stronger of the ${house}th from the Lagna and from the 7th: ${SIGN_NAMES[seed]}`;
-    method = `Śūla · Jaimini Sūtras 2.3.18–25, BPHS 46.181–182 · ${options.shulaFor ?? 'self'}`;
-    audit.push(`Read for: ${options.shulaFor ?? 'self'} (the ${house}th)`, 'Order: direct from an odd sign, reverse from an even one; years as in the Sthira daśā');
+    const sthiraYearsToo = options.shulaYears === 'sthira';
+    method = `Śūla · Jaimini Sūtras 2.3.18–25, 2.4.15–16, BPHS 46.181–182 · ${options.shulaFor ?? 'self'}`;
+    audit.push(`Read for: ${options.shulaFor ?? 'self'} (the ${house}th)`, 'Order: direct from an odd sign, reverse from an even one',
+      sthiraYearsToo ? 'Years: as in the Sthira daśā (BPHS 46.182, "sthiravat")' : 'Years: as in the Chara daśā (the commentary of the Sūtras: where nothing else is said the years are the Chara\'s); BPHS 46.182 has the Sthira years, a choice in Settings',
+      'Sub-periods: the Maṇḍūka antardaśā (2.4.15–16): from the stronger of the sign and its 7th, the angles first, then the 2nd/5th/8th/11th, then the rest');
+    singleRound = sign => sthiraYearsToo ? { years: sthiraYears(sign), explanation: `Sthira years → ${sthiraYears(sign)} y` } : { years: charaYears(chart, sign), explanation: `Chara years of ${SIGN_NAMES[sign]} → ${charaYears(chart, sign)} y` };
+  } else {
+    // 'mandooka'
+    seed = stronger;
+    order = mandookaOrder(seed);
+    basis = `stronger of Lagna/7th: ${SIGN_NAMES[seed]}`;
+    method = 'Maṇḍūka (Trikūṭa) · BPHS 46.179–180, Jaimini Sūtras 2.4.15';
+    audit.push('Order: from the stronger of the Lagna and the 7th, direct from an odd sign and reverse from an even one, the angles first, then the 2nd/5th/8th/11th, then the rest (the frog\'s jumps)',
+      'Years: as in the Sthira daśā (46.180); the sub-periods the Maṇḍūka order of each sign (the Sūtras give it for the antardaśā; BPHS names the daśā)');
     singleRound = sign => ({ years: sthiraYears(sign), explanation: `Sthira years → ${sthiraYears(sign)} y` });
   }
   if (system === 'narayana') audit.push(`Progression: ${signOf(planets, 'Ketu') === seed ? 'Ketu exception' : signOf(planets, 'Saturn') === seed ? 'Saturn exception' : 'normal table'}`, 'Cycle 2 duration: 12 − cycle 1 duration');

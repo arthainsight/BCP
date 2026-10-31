@@ -49,7 +49,7 @@ for (const entry of jaiminiSthira.entries.slice(0, 3)) {
 }
 for (const system of ['narayana', 'moola', 'sthira'] as const) assert.equal(validateRasiDashaRegression(system)?.passed, true);
 assert.ok((validateRasiDashaRegression('moola')?.checks ?? 0) >= 18);
-for (const system of ['yogardha', 'drig', 'trikona', 'shula'] as const) assert.equal(validateRasiDashaRegression(system), null, `${system} is the text's only: nothing of PyJHora to compare`);
+for (const system of ['yogardha', 'drig', 'trikona', 'shula', 'mandooka'] as const) assert.equal(validateRasiDashaRegression(system), null, `${system} is the text's only: nothing of PyJHora to compare`);
 console.log('Rasi Dasha tests passed');
 
 // --- The Mūla by the Kendrādi rāśi daśā of the Jaimini Sūtras (2.4.11–14), the default; the PyJHora way is the other choice ---------------------
@@ -71,7 +71,7 @@ console.log('Rasi Dasha tests passed');
 }
 
 // --- The other Jaimini rāśi daśās (2.4.19–25, 2.3.18–25) -------------------------------------------------------------------------------------------
-for (const system of ['yogardha', 'drig', 'trikona', 'shula'] as const) {
+for (const system of ['yogardha', 'drig', 'trikona', 'shula', 'mandooka'] as const) {
   const result = calculateRasiDasha(system, planets, 4, birth);
   assert.ok(result.entries.length >= 10 && result.entries.length <= 12, system);
   assert.equal(result.entries[0].startDate.getTime(), birth.getTime());
@@ -90,4 +90,30 @@ for (const system of ['yogardha', 'drig', 'trikona', 'shula'] as const) {
   const shula = calculateRasiDasha('shula', planets, 4, birth, { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'jaimini', shulaFor: 'father' });
   assert.match(shula.method, /father/);
   assert.ok(shula.audit.some(line => line.startsWith('Read for: father (the 9th)')));
+}
+
+// --- Śūla: the Chara years of the commentary and the Maṇḍūka sub-periods (2.4.15–16); the Sthira years of BPHS 46.182 are the other choice ---------------
+{
+  const shula = calculateRasiDasha('shula', planets, 4, birth);
+  assert.ok(shula.audit.some(line => line.startsWith('Years: as in the Chara daśā')));
+  const sthira = calculateRasiDasha('shula', planets, 4, birth, { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'jaimini', shulaYears: 'sthira' });
+  assert.ok(sthira.entries.every(entry => [7, 8, 9].includes(entry.durationYears)), 'the Sthira years');
+  assert.deepEqual(sthira.entries.map(entry => entry.sign), shula.entries.map(entry => entry.sign), 'the order is the same');
+  // The sub-periods run through the angles first, in jumps of three signs, from the stronger of the sign and its 7th.
+  const first = shula.entries[0];
+  const children = calculateRasiSubDashas(first, planets, 'shula').map(child => child.sign);
+  assert.equal(new Set(children).size, 12);
+  const step = (children[1] - children[0] + 12) % 12;
+  assert.ok(step === 3 || step === 9, 'a jump of three signs');
+  assert.equal((children[2] - children[1] + 12) % 12, step);
+}
+// --- Maṇḍūka (Trikūṭa, BPHS 46.179–180): the Sthira years, the angles first -------------------------------------------------------------------------------
+{
+  const mandooka = calculateRasiDasha('mandooka', planets, 4, birth);
+  assert.match(mandooka.method, /BPHS 46\.179–180/);
+  assert.ok(mandooka.entries.every(entry => [7, 8, 9].includes(entry.durationYears)), 'the Sthira years');
+  assert.equal(mandooka.entries.length, 12);
+  const jump = (mandooka.entries[1].sign - mandooka.entries[0].sign + 12) % 12;
+  assert.ok(jump === 3 || jump === 9, 'the frog jumps three signs');
+  assert.equal(mandooka.entries[0].sign, mandooka.seedSign);
 }
