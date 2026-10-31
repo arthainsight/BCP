@@ -27,6 +27,7 @@ import { yogiRoles } from '@/lib/yogiPoints';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
+import { applyChartEdits, moveBody, resetBody, type ChartEdits } from '@/lib/chartEdit';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
 import { calculationParams } from '@/lib/apiParams';
 import { parseClock } from '@/lib/specialSphutas';
@@ -67,7 +68,7 @@ function tabToWorkspace(tab: TabId): Workspace {
   }
 }
 
-const PANE_LABELS: Record<SplitWorkspace, string> = { chart: 'CHART', timing: 'TIMING', analysis: 'ANALYSIS', palm: 'LIFE' };
+const PANE_LABELS: Record<SplitWorkspace, string> = { chart: 'CHART', timing: 'TIMING', analysis: 'ANALYSIS', palm: 'PALM' };
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabId>('data');
@@ -522,13 +523,26 @@ export default function Home() {
   };
 
   const hasChart = !!chartData;
+
+  // Moving a graha or the Lagna to another house in the chart view. The moves belong to the chart they were made on: a new
+  // calculation starts without them. Only the chart view and the panchāṅga beside it read the edited chart; the other
+  // workspaces keep the calculated one.
+  const [editState, setEditState] = useState<{ chart: ChartData | null; edits: ChartEdits }>({ chart: null, edits: {} });
+  const chartEdits = useMemo<ChartEdits>(() => (editState.chart === chartData ? editState.edits : {}), [editState, chartData]);
+  const shownChart = useMemo(() => (chartData ? applyChartEdits(chartData, chartEdits) : null), [chartData, chartEdits]);
+  const moveChartBody = (name: string, step: 1 | -1) => setEditState(current => ({ chart: chartData, edits: moveBody(current.chart === chartData ? current.edits : {}, name, step) }));
+  const resetChartEdits = (name?: string) => setEditState(current => ({ chart: chartData, edits: resetBody(current.chart === chartData ? current.edits : {}, name) }));
+  const [panchangOpen, togglePanchangOpen] = useStoredFlag('panchangOpen', true);
   const hasSnapshotData = !!birthDatetime && !!manualLat && !!manualLng;
   const displayChartName = activeChartName ?? (hasSnapshotData ? 'Untitled' : 'None');
 
   // Shared props objects
   const chartSectionProps = {
     bcp: bcpResult,
-    chart: chartData,
+    chart: shownChart,
+    edits: chartEdits,
+    onMoveBody: moveChartBody,
+    onResetEdits: resetChartEdits,
     transitPlanets,
     chartDisplaySettings,
     karakaByPlanet,
@@ -618,14 +632,17 @@ export default function Home() {
       ? <TimingPanel chart={chartData} birthDatetime={birthDatetime} targetDate={targetDate} dashaSettings={timingDashaSettings} onUpdateDashaSettings={updateDashaSettings} transitPlanets={transitPlanets} transitDatetime={transitDatetime} onSetTransitDatetime={setTargetMoment} onOpenDateInChart={openDateInChart} onOpenVargaMatrix={showVargaMatrix} calculationSettings={calculationSettings} chartDisplaySettings={chartDisplaySettings} nakshatraAdjust={nakshatraAdjust} ianaTimezone={ianaTimezone || undefined} transitLocation={transitLocation} {...wideControl} />
       : <EmptyState message="Calculate a chart to see Dasha analysis" />
   );
-  const panchangPanel = chartDisplaySettings.showPanchang && chartData && (
+  const panchangPanel = shownChart && (
     <Panel>
       <PanchangPanel
-        chart={chartData}
+        chart={shownChart}
         birthDatetime={birthDatetime}
         utcOffsetHours={effectiveTzOffset ?? 0}
         ayanamsaName={calculationSettings.ayanamsa}
         nakshatraAdjust={nakshatraAdjust}
+        edited={shownChart !== chartData}
+        open={panchangOpen}
+        onToggle={togglePanchangOpen}
       />
     </Panel>
   );

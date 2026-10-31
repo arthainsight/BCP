@@ -296,10 +296,7 @@ test('the nakshatra zodiac can be any ayanamsa of the list, and the panchang fol
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
-  // The panchang is part of the chart workspace when it is switched on.
-  await page.addInitScript(() => {
-    if (!localStorage.getItem('chartDisplaySettings')) localStorage.setItem('chartDisplaySettings', JSON.stringify({ showPanchang: true }));
-  });
+  // The panchang is part of the chart workspace.
   await calculateChart(page);
   // The chart of 15.08.1947 in Lahiri: the Moon at 99.8° of the Lahiri zodiac is in Pushya, 2nd pada (96°40′ to 100°).
   await selectWorkspace(page, 'CHART');

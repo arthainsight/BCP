@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.59',
+    date: '2026-10-31',
+    title: 'The panchang in the chart view, editing the chart, and PALM',
+    changes: [
+      'The panchang is now part of the chart view, under the chart on every screen, and can be folded away with the − button (the choice is remembered). The setting "panchang" in Settings is gone, since the panchang is always there.',
+      'The chart can be edited in the chart view: press ✎ edit above the chart, pick a graha (or the Lagna, or Rāhu, which takes Ketu with it) from the buttons or by tapping it in the chart, and move it to the next or the previous house with ◀ and ▶. The graha keeps its degree in the sign. The houses, the Āruḍha padas, the divisional charts and the panchang follow: tithi, nakṣatra, karaṇa and yoga are read from the Sun and the Moon where they have been moved, so the effect of a move on the day can be seen at once. Moving the Lagna turns the houses round it. The moves are not saved, a new calculation starts without them, and the other workspaces keep the calculated chart. Vāra, horā, masa and the times are of the real moment, and the special lagnas are left out while a move stands. The buttons take one graha back or all of them.',
+      'The workspace LIFE is PALM again and stands between TIMING and LIBRARY (CHART, ANALYSIS, TIMING, PALM, LIBRARY).',
+      'Updated the application version to v3.59.',
+    ],
+  },
+  {
     version: 'v3.58',
     date: '2026-10-30',
     title: 'Muhurta Finder: make rows of the strip green by choice',

@@ -9,7 +9,7 @@ import { migrateChartDisplaySettings } from './chartDisplaySettings';
 assert.equal(DEFAULT_CHART_DISPLAY.showSigns, true);
 assert.equal(DEFAULT_CHART_DISPLAY.showNatalPlanets, true);
 assert.equal(DEFAULT_CHART_DISPLAY.degreePrecision, 'minute');
-for (const layer of ['showNakshatra', 'showCharaKaraka', 'showOuterPlanets', 'showSpecialLagnas', 'showPanchang', 'showBnnMajorHighlight', 'showBnnMinorHighlight', 'showTransitOverlay', 'showNadiParaya', 'showBcpHighlight', 'showYogiMarks', 'showDashaLords', 'showDashaHouses'] as const) {
+for (const layer of ['showNakshatra', 'showCharaKaraka', 'showOuterPlanets', 'showSpecialLagnas', 'showBnnMajorHighlight', 'showBnnMinorHighlight', 'showTransitOverlay', 'showNadiParaya', 'showBcpHighlight', 'showYogiMarks', 'showDashaLords', 'showDashaHouses'] as const) {
   assert.equal(DEFAULT_CHART_DISPLAY[layer], false, `${layer} is off to begin with`);
 }
 

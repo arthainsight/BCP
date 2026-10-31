@@ -3,15 +3,20 @@ import { calculateChart, selectWorkspace, visible } from './helpers';
 
 // Navigation and layout: the primary navigation, the split view, the full-width panels and the phone layout.
 
-test('the primary navigation exposes CHART / TIMING / ANALYSIS / LIFE / LIBRARY / Settings', async ({ page }) => {
+test('the primary navigation exposes CHART / ANALYSIS / TIMING / PALM / LIBRARY / Settings', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
 
-  for (const label of ['CHART', 'TIMING', 'ANALYSIS', 'LIFE', 'LIBRARY', '⚙']) {
+  for (const label of ['CHART', 'ANALYSIS', 'TIMING', 'PALM', 'LIBRARY', '⚙']) {
     await expect(visible(page, page.getByRole('button', { name: label, exact: true }))).toBeVisible();
   }
+
+  // PALM comes between TIMING and LIBRARY.
+  const order = await visible(page, page.getByRole('navigation', { name: 'Primary' })).locator('[data-primary-nav-items] button').allInnerTexts();
+  const labels = order.map(text => text.trim()).filter(text => ['CHART', 'ANALYSIS', 'TIMING', 'PALM', 'LIBRARY', 'LIFE'].includes(text));
+  expect(labels).toEqual(['CHART', 'ANALYSIS', 'TIMING', 'PALM', 'LIBRARY']);
 
   // The name of the app and its maker are at the bottom of the page.
   await expect(page.getByRole('contentinfo')).toContainText('bhrigu.code by Riku Forsell');
@@ -143,7 +148,7 @@ test('phone: the place is one line, the form folds away with the chart, and the 
   expect(errors).toEqual([]);
 });
 
-test('split view: CHART, TIMING, ANALYSIS and LIFE side by side on a wide screen', async ({ page }, info) => {
+test('split view: CHART, TIMING, ANALYSIS and PALM side by side on a wide screen', async ({ page }, info) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -405,7 +410,7 @@ test('the analysis can take the whole width on a wide screen, as the timing and 
   const chart = page.locator('svg[aria-label="North Indian Jyotish chart"]').locator('visible=true');
   await expect(chart).toHaveCount(1);
 
-  // The same ⤢ full button as in TIMING and LIFE, in view beside the tabs: the chart steps aside and the analysis is as wide as the screen.
+  // The same ⤢ full button as in TIMING and PALM, in view beside the tabs: the chart steps aside and the analysis is as wide as the screen.
   await expect(visible(page, page.getByRole('button', { name: '⤢ full', exact: true }))).toBeInViewport({ ratio: 1 });
   await visible(page, page.getByRole('button', { name: '⤢ full', exact: true })).click();
   await expect(chart).toHaveCount(0);
@@ -424,7 +429,7 @@ test('the analysis can take the whole width on a wide screen, as the timing and 
   await selectWorkspace(page, 'TIMING');
   await expect(visible(page, page.getByRole('button', { name: '⤢ full', exact: true }))).toBeVisible();
   await expect(chart).toHaveCount(1);
-  await selectWorkspace(page, 'LIFE');
+  await selectWorkspace(page, 'PALM');
   await expect(visible(page, page.getByRole('button', { name: '⤢ full', exact: true }))).toBeVisible();
 
   expect(errors).toEqual([]);

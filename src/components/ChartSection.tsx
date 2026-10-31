@@ -24,6 +24,8 @@ import { annotatePlanets } from '@/lib/planetMarks';
 import { buildLayerControls, CHART_LAYER_LABELS, withDashaLayers, type DashaLordMarks } from './chartLayers';
 import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
+import { editCount, movedSigns, type ChartEdits } from '@/lib/chartEdit';
+import { SIGN_NAMES } from '@/lib/signs';
 import { useT } from '@/lib/i18n';
 
 export interface ChartSectionProps {
@@ -47,7 +49,17 @@ export interface ChartSectionProps {
   dashaLordsFromParent?: DashaLordMarks | null;
   onToggleChartDisplay?: (key: keyof ChartDisplaySettings) => void;
   onUpdateChartDisplay?: (update: Partial<ChartDisplaySettings>) => void;
+  /** The grahas and the Lagna that have been moved to another house, and how to move one or take the moves back. The chart given is the edited one. */
+  edits?: ChartEdits;
+  onMoveBody?: (name: string, step: 1 | -1) => void;
+  onResetEdits?: (name?: string) => void;
 }
+
+/** The bodies that can be moved in the chart view, with their short names. Ketu goes with Rāhu, so it is not a body of its own here. */
+const EDIT_BODIES: { name: string; short: string }[] = [
+  { name: 'Asc', short: 'As' }, { name: 'Sun', short: 'Su' }, { name: 'Moon', short: 'Mo' }, { name: 'Mars', short: 'Ma' }, { name: 'Mercury', short: 'Me' },
+  { name: 'Jupiter', short: 'Ju' }, { name: 'Venus', short: 'Ve' }, { name: 'Saturn', short: 'Sa' }, { name: 'Rahu', short: 'Ra/Ke' },
+];
 
 function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: boolean; onToggle: () => void }) {
   const t = useT();
@@ -98,6 +110,9 @@ export default function ChartSection({
   dashaLordsFromParent = null,
   onToggleChartDisplay,
   onUpdateChartDisplay,
+  edits = {},
+  onMoveBody,
+  onResetEdits,
 }: ChartSectionProps) {
   const t = useT();
   const [chartStyle, setChartStyle] = useState<ChartStyle>(chartDisplaySettings.chartStyle ?? 'north');
@@ -106,6 +121,10 @@ export default function ChartSection({
   // highlight only — it never hides the other bodies.
   const [selectedPlanet, setSelectedPlanet] = useState<{ kind: 'natal' | 'transit'; name: string } | null>(null);
   const [showDisplay, setShowDisplay] = useState(false);
+  // The edit bar: which body is picked to be moved. A graha that is tapped in the chart while editing is the one picked.
+  const [editing, setEditing] = useState(false);
+  const [editBody, setEditBody] = useState('Moon');
+  const canEdit = onMoveBody !== undefined && onResetEdits !== undefined;
   // Which divisional charts are shown; D1 alone is the full chart with its layers.
   const [divisions, setDivisions] = useChartDivisions();
   // The Āruḍha padas the viewer marks on the charts.
@@ -228,7 +247,10 @@ export default function ChartSection({
     nadiParayaHouses: parayaHouses,
     dashaLords: dashaLords,
     selectedPlanet: selectedPlanet,
-    onPlanetSelect: setSelectedPlanet,
+    onPlanetSelect: (selection: { kind: 'natal' | 'transit'; name: string } | null) => {
+      setSelectedPlanet(selection);
+      if (editing && selection?.kind === 'natal') setEditBody(selection.name === 'Ketu' ? 'Rahu' : selection.name);
+    },
   };
 
   // The chart outside in the mixed style: a varga, with the layers that are marked on the vargas, and a planet that is
@@ -354,6 +376,20 @@ export default function ChartSection({
               </>
             )}
           </div>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => setEditing(on => !on)}
+              aria-pressed={editing}
+              title={t('Move a graha or the Lagna to the next or the previous house to see what the chart would be')}
+              className={`shrink-0 rounded-md border px-2 py-1.5 text-[10px] font-mono ${editing || editCount(edits) > 0
+                ? 'border-amber-500 bg-amber-50 text-amber-800 dark:border-amber-600 dark:bg-amber-950/30 dark:text-amber-300'
+                : 'border-zinc-200 text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100'}`}
+              data-chart-edit-toggle
+            >
+              {t('✎ edit')}{editCount(edits) > 0 ? ` (${editCount(edits)})` : ''}
+            </button>
+          )}
           <button
             type="button"
             onClick={fullscreen ? () => setFullscreen(false) : enterFullscreen}
@@ -365,6 +401,68 @@ export default function ChartSection({
           </button>
         </div>
       </div>
+
+      {canEdit && (editing || editCount(edits) > 0) && (() => {
+        const planet = editBody === 'Asc' ? null : chart.planets.find(entry => entry.name === editBody);
+        const sign = editBody === 'Asc' ? chart.ascendant.sign : planet?.sign;
+        const degree = editBody === 'Asc' ? chart.ascendant.degree : planet?.degree;
+        const house = planet?.house;
+        const moved = movedSigns(edits, editBody);
+        return (
+          <div className="space-y-1.5 rounded-md border border-amber-300 bg-amber-50/60 p-2 dark:border-amber-800 dark:bg-amber-950/20" data-chart-edit>
+            {editing && (
+              <>
+                <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('graha or Lagna to move')}>
+                  {EDIT_BODIES.map(body => (
+                    <button
+                      key={body.name}
+                      type="button"
+                      onClick={() => setEditBody(body.name)}
+                      aria-pressed={editBody === body.name}
+                      title={body.name === 'Rahu' ? 'Rāhu and Ketu' : body.name === 'Asc' ? t('Lagna') : body.name}
+                      className={`rounded border px-1.5 py-1 text-[10px] font-mono ${editBody === body.name
+                        ? 'border-amber-600 bg-amber-500 text-white dark:border-amber-500 dark:bg-amber-600'
+                        : 'border-zinc-300 text-zinc-600 dark:border-zinc-600 dark:text-zinc-300'}${movedSigns(edits, body.name) !== 0 ? ' ring-1 ring-amber-500' : ''}`}
+                      data-chart-edit-body={body.name}
+                    >
+                      {body.short}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-zinc-700 dark:text-zinc-300">
+                  <button type="button" onClick={() => onMoveBody?.(editBody, -1)} className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600" data-chart-edit-move="-1">
+                    ◀ {t('previous house')}
+                  </button>
+                  <button type="button" onClick={() => onMoveBody?.(editBody, 1)} className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600" data-chart-edit-move="1">
+                    {t('next house')} ▶
+                  </button>
+                  <span data-chart-edit-readout>
+                    {editBody === 'Asc' ? t('Lagna') : editBody === 'Rahu' ? 'Rāhu / Ketu' : editBody}
+                    {sign !== undefined && degree !== undefined ? `: ${SIGN_NAMES[sign - 1]} ${Math.floor(degree)}°` : ''}
+                    {house !== undefined ? ` · ${t('house')} ${house}` : ''}
+                    {moved !== 0 ? ` · ${moved > 0 ? '+' : ''}${moved}` : ''}
+                  </span>
+                  {moved !== 0 && (
+                    <button type="button" onClick={() => onResetEdits?.(editBody)} className="rounded border border-zinc-300 px-2 py-1 dark:border-zinc-600" data-chart-edit-reset-one>
+                      {t('back to where it was')}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+            {editCount(edits) > 0 && (
+              <div className="flex flex-wrap items-center gap-2 text-[10px] font-mono text-amber-800 dark:text-amber-300">
+                <span data-chart-edit-note>
+                  {t('Edited chart: the moves are not saved and the other workspaces show the calculated chart. The special lagnas are left out while a move stands.')}
+                </span>
+                <button type="button" onClick={() => onResetEdits?.()} className="rounded border border-amber-600 px-2 py-1 text-amber-800 dark:border-amber-500 dark:text-amber-300" data-chart-edit-reset-all>
+                  {t('↺ reset all')}
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
         {!mixedShape(chartStyle) && <ChartDivisionBar selected={divisions} onChange={setDivisions} />}
 

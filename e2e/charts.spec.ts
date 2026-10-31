@@ -536,3 +536,48 @@ test('Mars, Mercury and Venus can be tried as Paraya grahas (beta), and are off 
 
   expect(errors).toEqual([]);
 });
+
+test('the panchang is in the chart view, and a graha moved to the next or the previous house moves the chart and the panchang with it', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'CHART');
+
+  // The panchang is there without any setting, and can be folded away.
+  const panchang = visible(page, page.locator('[data-panchang]'));
+  await expect(panchang).toContainText('Pushya · Pada 2'); // the Moon at 99.8° of the Lahiri zodiac
+  await panchang.getByRole('button', { name: 'hide the panchang' }).click();
+  await expect(panchang.locator('[data-panchang-row]')).toHaveCount(0);
+  await panchang.getByRole('button', { name: 'show the panchang' }).click();
+  await expect(panchang.locator('[data-panchang-row]').first()).toBeVisible();
+
+  // Editing: the Moon one house on is in Leo at the same 9°, in Maghā (129.8°, the 3rd pada); the panchang is of that chart.
+  await visible(page, page.locator('[data-chart-edit-toggle]')).click();
+  const edit = visible(page, page.locator('[data-chart-edit]'));
+  await edit.locator('[data-chart-edit-body="Moon"]').click();
+  await expect(edit.locator('[data-chart-edit-readout]')).toContainText('Moon: Cancer 9°');
+  await edit.locator('[data-chart-edit-move="1"]').click();
+  await expect(edit.locator('[data-chart-edit-readout]')).toContainText('Moon: Leo 9°');
+  await expect(panchang).toContainText('Magha · Pada 3');
+  await expect(panchang.locator('[data-panchang-edited]')).toBeVisible();
+  await expect(edit.locator('[data-chart-edit-note]')).toBeVisible();
+
+  // Two houses back from there is Gemini, in Ārdrā (69.8°, the 1st pada); taking the Moon back puts it where it was.
+  await edit.locator('[data-chart-edit-move="-1"]').click();
+  await edit.locator('[data-chart-edit-move="-1"]').click();
+  await expect(edit.locator('[data-chart-edit-readout]')).toContainText('Moon: Gemini 9°');
+  await expect(panchang).toContainText('Ardra · Pada 1');
+  await edit.locator('[data-chart-edit-reset-one]').click();
+  await expect(panchang).toContainText('Pushya · Pada 2');
+  await expect(panchang.locator('[data-panchang-edited]')).toHaveCount(0);
+
+  // The Lagna can be moved as well, and everything is taken back at once.
+  await edit.locator('[data-chart-edit-body="Asc"]').click();
+  await edit.locator('[data-chart-edit-move="1"]').click();
+  await expect(edit.locator('[data-chart-edit-note]')).toBeVisible();
+  await edit.locator('[data-chart-edit-reset-all]').click();
+  await expect(edit.locator('[data-chart-edit-note]')).toHaveCount(0);
+
+  expect(errors).toEqual([]);
+});
