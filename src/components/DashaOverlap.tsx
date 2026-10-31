@@ -5,10 +5,11 @@ import type { DashaSettings, PlanetData } from '@/types';
 import { DEFAULT_DASHA_SETTINGS } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { calculateDashaEventSnapshots, type DashaEventSnapshot } from '@/lib/dashaEvents';
+import { NAKSHATRA_SYSTEM_KEYS, type NakshatraSystemKey } from '@/lib/nakshatraSystems';
 
 import { useT } from '@/lib/i18n';
 type Key = DashaEventSnapshot['key'];
-const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', naisargika: 'naisargika', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
+const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', naisargika: 'naisargika', narayana: 'narayana', moola: 'moola', sthira: 'sthira', ...(Object.fromEntries(NAKSHATRA_SYSTEM_KEYS.map(key => [key, key])) as Record<NakshatraSystemKey, NakshatraSystemKey>) };
 const isoToday = () => { const date = new Date(); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
 
 interface Props { planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashaSettings: DashaSettings; }

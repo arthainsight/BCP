@@ -8,11 +8,12 @@ import { calculateYogini, calculateYoginiSubDashas } from './yogini';
 import { calculateNaisargika, calculateNaisargikaSubDashas } from './naisargika';
 import { calculateAshtottari, calculateAshtottariSubDashas, evaluateAshtottariEligibility } from './ashtottari';
 import type { NakshatraDashaEntry } from './nakshatraDasha';
+import { calculateNakshatraSystem, evaluateNakshatraSystem, NAKSHATRA_SYSTEMS, nakshatraSystemSubDashas, type NakshatraSystemKey } from './nakshatraSystems';
 import { calculateRasiDasha, calculateRasiSubDashas, type RasiDashaEntry, type RasiDashaSystem } from './rasiDashas';
 
 export interface DashaEventLevel { level: string; value: string; }
 export interface DashaEventSnapshot {
-  key: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'naisargika' | 'narayana' | 'moola' | 'sthira';
+  key: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | NakshatraSystemKey;
   label: string;
   levels: DashaEventLevel[];
   mdRange?: { startDate: Date; endDate: Date };
@@ -20,7 +21,7 @@ export interface DashaEventSnapshot {
 }
 
 /** The daśā systems an event is read in, in the order they are shown. Each is also the name of its switch in `DashaSettings.dashas`. */
-export const DASHA_SNAPSHOT_KEYS: readonly DashaEventSnapshot['key'][] = ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', 'kalaChakra', 'naisargika', 'narayana', 'moola', 'sthira'];
+export const DASHA_SNAPSHOT_KEYS: readonly DashaEventSnapshot['key'][] = ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', ...NAKSHATRA_SYSTEMS.map(system => system.key), 'kalaChakra', 'naisargika', 'narayana', 'moola', 'sthira'];
 interface SnapshotInput {
   eventDate: Date;
   birthDate: Date;
@@ -88,6 +89,7 @@ export const DASHA_SYSTEM_LABELS = {
   narayana: 'Narayana Dasha',
   moola: 'Mula Dasha',
   sthira: 'Sthira Dasha',
+  ...(Object.fromEntries(NAKSHATRA_SYSTEMS.map(system => [system.key, `${system.name} Dasha`])) as Record<NakshatraSystemKey, string>),
 } as const;
 
 export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSnapshot[] {
@@ -132,11 +134,19 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
   if (moon) {
     const yogini = calculateYogini(moon.longitude, birthDate);
     snapshots.push({ key: 'yogini', label: DASHA_SYSTEM_LABELS.yogini, levels: nakshatraDashaLevels(yogini.entries, eventDate, calculateYoginiSubDashas), mdRange: activeRange(yogini.entries, eventDate) });
-    const eligibility = evaluateAshtottariEligibility(planets, ascendant.sign);
+    const eligibility = evaluateAshtottariEligibility(planets, ascendant.sign, ascendant.longitude);
     const ashtottari = calculateAshtottari(moon.longitude, birthDate);
     snapshots.push(eligibility.eligible
       ? { key: 'ashtottari', label: DASHA_SYSTEM_LABELS.ashtottari, levels: nakshatraDashaLevels(ashtottari.entries, eventDate, calculateAshtottariSubDashas), mdRange: activeRange(ashtottari.entries, eventDate) }
       : { key: 'ashtottari', label: DASHA_SYSTEM_LABELS.ashtottari, levels: [], note: `Conditional: not applicable (${eligibility.relativeHouse ?? '?'}H Rahu from Lagna lord)` });
+    // The conditional daśās of BPHS 46.24–43 are read only for a birth that meets the condition of the text: a row for one that does
+    // not would say nothing.
+    const chart = { planets, ascendant };
+    for (const system of NAKSHATRA_SYSTEMS) {
+      if (evaluateNakshatraSystem(system.key, chart).met !== true) continue;
+      const result = calculateNakshatraSystem(system.key, moon.longitude, birthDate);
+      snapshots.push({ key: system.key, label: DASHA_SYSTEM_LABELS[system.key], levels: nakshatraDashaLevels(result.entries, eventDate, parent => nakshatraSystemSubDashas(system.key, parent)), mdRange: activeRange(result.entries, eventDate) });
+    }
   } else {
     snapshots.push({ key: 'yogini', label: DASHA_SYSTEM_LABELS.yogini, levels: [], note: 'Moon unavailable' });
     snapshots.push({ key: 'ashtottari', label: DASHA_SYSTEM_LABELS.ashtottari, levels: [], note: 'Moon unavailable' });
@@ -218,7 +228,7 @@ export function grahaDashaTable(
     case 'naisargika':
       return lordTable(calculateNaisargika(birthDate).entries, md => calculateNaisargikaSubDashas(md, planets, ascendant.sign));
     case 'ashtottari':
-      if (!evaluateAshtottariEligibility(planets, ascendant.sign).eligible) return null;
+      if (!evaluateAshtottariEligibility(planets, ascendant.sign, ascendant.longitude).eligible) return null;
       return lordTable(calculateAshtottari(moon.longitude, birthDate).entries, calculateAshtottariSubDashas);
   }
 }

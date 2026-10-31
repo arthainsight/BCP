@@ -122,7 +122,7 @@ test('the panels and the sentences the calculations write are in Finnish', async
   await visible(page, page.getByRole('button', { name: 'Argala', exact: true })).click();
   await expect(visible(page, page.getByText('4. ⊣ 10.'))).toBeVisible();
 
-  // TIMING: the annual charts, with their ordinals, and the dasha note about the Aṣṭottarī condition.
+  // TIMING: the annual charts, with their ordinals, and the Aṣṭottarī, which this chart meets by the day and the half of the month.
   await selectWorkspace(page, 'AJANKOHTA');
   await visible(page, page.getByRole('button', { name: 'Tithi Praveśa', exact: true })).click();
   await expect(visible(page, page.getByText('Tithi Praveśa — vuosikartta'))).toBeVisible();
@@ -140,7 +140,10 @@ test('the panels and the sentences the calculations write are in Finnish', async
   await expect(visible(page, page.getByText('Neljä vuosikarttaa rinnakkain'))).toBeVisible();
   await expect(visible(page, page.getByText('vuoden herra'))).toBeVisible();
   await visible(page, page.getByRole('button', { name: 'Daśā', exact: true })).click();
-  await expect(visible(page, page.getByText(/Ehdollinen: ei sovellettavissa \(Rahu \d+\. talossa Lagnan herrasta\)/))).toBeVisible();
+  // This chart is born by day in the dark half of the month, which is the second condition of the Aṣṭottarī (BPHS 46.23): the daśā
+  // is read, with no note that it does not apply. (The note itself, in Finnish, is in dashaText.test.ts.)
+  await expect(visible(page, page.getByText('Ashtottari Dasha'))).toBeVisible();
+  await expect(page.getByText(/Ehdollinen: ei sovellettavissa/)).toHaveCount(0);
 
   expect(errors).toEqual([]);
 });

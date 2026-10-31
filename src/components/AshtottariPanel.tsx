@@ -2,15 +2,15 @@
 import { useMemo, useState } from 'react';
 import type { PlanetData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
-import { calculateAshtottari, calculateAshtottariSubDashas, evaluateAshtottariEligibility } from '@/lib/ashtottari';
+import { ASHTOTTARI_CONDITION, calculateAshtottari, calculateAshtottariSubDashas, evaluateAshtottariEligibility } from '@/lib/ashtottari';
 import NakshatraDashaPanel from './NakshatraDashaPanel';
 
 import { fill, useT } from '@/lib/i18n';
 import { translateDashaText } from '@/lib/dashaText';
-export default function AshtottariPanel({ planets, ascendant, birthDatetime }: { planets: PlanetData[]; ascendant: { sign: number }; birthDatetime: string }) {
+export default function AshtottariPanel({ planets, ascendant, birthDatetime }: { planets: PlanetData[]; ascendant: { sign: number; longitude?: number }; birthDatetime: string }) {
   const t = useT();
   const [forceCalculation, setForceCalculation] = useState(false);
-  const eligibility = useMemo(() => evaluateAshtottariEligibility(planets, ascendant.sign), [planets, ascendant.sign]);
+  const eligibility = useMemo(() => evaluateAshtottariEligibility(planets, ascendant.sign, ascendant.longitude), [planets, ascendant.sign, ascendant.longitude]);
   const result = useMemo(() => {
     const moon = planets.find(planet => planet.name === 'Moon');
     const birth = parseDateTime(birthDatetime);
@@ -22,13 +22,17 @@ export default function AshtottariPanel({ planets, ascendant, birthDatetime }: {
     <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-[10px] text-amber-900 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
       <div className="font-semibold">{translateDashaText(eligibility.method, t)}</div>
       {eligibility.reasons.map(reason => <div key={reason}>· {translateDashaText(reason, t)}</div>)}
-      <p className="mt-2 text-amber-700 dark:text-amber-400">{t('Applicability is disputed between traditions. This check uses the named BPHS/PVR Rahu rule.')}</p>
+      <p className="mt-2 text-amber-700 dark:text-amber-400">{t('Applicability is disputed between traditions. The check uses the two conditions of BPHS: the Rahu rule of 46.17 and the day and the half of the month of 46.23.')}</p>
     </div>
     <button type="button" onClick={() => setForceCalculation(true)} className="rounded border border-zinc-300 px-2.5 py-1.5 text-[10px] text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">{t('Calculate anyway')}</button>
   </div>;
   const status = eligibility.eligible ? t('Condition met') : t('Forced · condition not met');
   return <div className="space-y-2">
     <div className={`inline-flex rounded border px-1.5 py-0.5 text-[9px] font-mono uppercase ${eligibility.eligible ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300' : 'border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300'}`}>{status}</div>
+    <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 font-mono text-[10px] text-amber-900 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
+      <div className="font-semibold">{t('When the daśā applies')}: {t(ASHTOTTARI_CONDITION)}</div>
+      {eligibility.reasons.map(reason => <div key={reason}>· {translateDashaText(reason, t)}</div>)}
+    </div>
     <NakshatraDashaPanel title="aṣṭottarī daśā" subtitle={fill(t('{nakshatra} · {lord} birth balance · {method} · conditional 108-year system'), { nakshatra: result.nakshatra, lord: result.startLord, method: translateDashaText(eligibility.method, t) })} entries={result.entries} calculateChildren={calculateAshtottariSubDashas} />
   </div>;
 }

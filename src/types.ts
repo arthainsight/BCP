@@ -277,6 +277,15 @@ export interface DashaSettings {
     narayana?: boolean;
     moola?: boolean;
     sthira?: boolean;
+    /** The conditional nakṣatra daśās of BPHS 46.24–43: each is read only for a birth that meets the condition the text gives it. */
+    shodashottari?: boolean;
+    dvadashottari?: boolean;
+    panchottari?: boolean;
+    shatabdika?: boolean;
+    chaturashitisama?: boolean;
+    dvisaptatisama?: boolean;
+    shashtihayani?: boolean;
+    shattrimshatsama?: boolean;
   };
   charaOptions?: CharaOptions;
   rasiOptions?: RasiDashaOptions;
@@ -299,6 +308,15 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     narayana: true,
     moola: true,
     sthira: true,
+    // Off to begin with: each is for a birth that meets its own condition, which most charts do not (the panel says whether this one does).
+    shodashottari: false,
+    dvadashottari: false,
+    panchottari: false,
+    shatabdika: false,
+    chaturashitisama: false,
+    dvisaptatisama: false,
+    shashtihayani: false,
+    shattrimshatsama: false,
   },
   charaOptions: {
     method: 'jaimini',

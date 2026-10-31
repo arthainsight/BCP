@@ -23,19 +23,23 @@ const snapshots = calculateDashaEventSnapshots({
   rasiOptions: DEFAULT_DASHA_SETTINGS.rasiOptions,
 });
 
-assert.deepEqual(snapshots.map((snapshot) => snapshot.key), ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', 'kalaChakra', 'naisargika', 'narayana', 'moola', 'sthira']);
+// The conditional daśās of BPHS 46.24–43 are listed only when the chart meets the condition of the text. This chart (Lagna at Cancer 0°):
+// Cancer 0° is in the Moon's hora and the Moon is 104° behind the Sun, in the dark half (Ṣoḍaśottarī); its navāṁśa is Cancer, the
+// sign of the Lagna (Śatābdikā); and the Sun is 80° from the Lagna, below the horizon, in the Moon's hora (Ṣaṭtriṃśatsamā).
+assert.deepEqual(snapshots.map((snapshot) => snapshot.key), ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', 'shodashottari', 'shatabdika', 'shattrimshatsama', 'kalaChakra', 'naisargika', 'narayana', 'moola', 'sthira']);
 assert.equal(snapshots[0].levels.length, 3);
 assert.equal(snapshots[1].levels.length, 3);
 assert.equal(snapshots[3].levels.length, 3);
 assert.equal(snapshots[4].levels.length, 3);
-assert.equal(snapshots[6].levels.length, 2);
+assert.equal(snapshots.find(snapshot => snapshot.key === 'kalaChakra')!.levels.length, 2);
+for (const key of ['shodashottari', 'shatabdika', 'shattrimshatsama'] as const) assert.equal(snapshots.find(snapshot => snapshot.key === key)!.levels.length, 3, key);
 // Naisargika: the Moon's year ends 20 hours before the event, so the Mars period has run 20 hours. The grahas in the signs counted from
 // Mars's (Virgo, sign 6) in the order of the houses 1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12: the Sun (sign 6), the Moon (sign 3, the
 // 10th), Mercury and Venus (sign 7, the 2nd), Jupiter (sign 1, the 8th) and Saturn (sign 8, the 3rd); Mars itself and the nodes
 // are left out. The first of the six is the Sun, and inside it Mars is the first of the grahas of the signs from the Sun's.
 const naisargika = snapshots.find(snapshot => snapshot.key === 'naisargika')!;
 assert.deepEqual(naisargika.levels, [{ level: 'MD', value: 'Mars' }, { level: 'AD', value: 'Sun' }, { level: 'PD', value: 'Mars' }]);
-assert.ok(snapshots.slice(7).every((snapshot) => snapshot.levels.length === 3));
+assert.ok(snapshots.slice(snapshots.findIndex(snapshot => snapshot.key === 'naisargika')).every((snapshot) => snapshot.levels.length === 3));
 assert.ok(snapshots.filter(snapshot => snapshot.levels.length).every(snapshot => snapshot.mdRange && snapshot.mdRange.startDate < snapshot.mdRange.endDate));
 assert.ok(snapshots.filter(snapshot => snapshot.mdRange).every(snapshot => snapshot.mdRange!.startDate <= new Date(2001, 0, 1, 12) && snapshot.mdRange!.endDate > new Date(2001, 0, 1, 12)));
 

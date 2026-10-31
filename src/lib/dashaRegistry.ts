@@ -1,8 +1,9 @@
 import { DashaSettings } from '@/types';
+import { NAKSHATRA_SYSTEMS, type NakshatraSystemKey } from './nakshatraSystems';
 
 export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta';
-export type DashaRendererKey = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'naisargika' | 'narayana' | 'moola' | 'sthira';
+export type DashaRendererKey = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | NakshatraSystemKey;
 
 /**
  * How the Dasas tab sorts the daśās: those that run by the Moon's nakṣatra (Vimśottarī and its kin, Yoginī, Aṣṭottarī), those
@@ -34,6 +35,8 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'chara', label: 'Chara Daśā', group: 'Core', status: 'implemented', family: 'rasi', renderer: 'chara' },
   { key: 'yogini', label: 'Yoginī Daśā', group: 'Core', status: 'implemented', family: 'nakshatra', renderer: 'yogini' },
   { key: 'ashtottari', label: 'Aṣṭottarī Daśā', group: 'Core', status: 'implemented', family: 'nakshatra', renderer: 'ashtottari', kind: 'nakshatra', conditional: true },
+  // The eight conditional nakṣatra daśās of BPHS 46.24–43, each with the condition the text gives it (nakshatraSystems.ts).
+  ...NAKSHATRA_SYSTEMS.map((system): DashaRegistryItem => ({ key: system.key, label: `${system.name} Daśā`, group: 'Core', status: 'implemented', family: 'nakshatra', renderer: system.key, kind: 'nakshatra', conditional: true })),
   { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Core', status: 'implemented', family: 'rasi', renderer: 'kalachakra' },
   { key: 'naisargika', label: 'Naisargika Daśā', group: 'Core', status: 'implemented', family: 'other', renderer: 'naisargika', kind: 'graha' },
   { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'narayana', kind: 'rasi' },

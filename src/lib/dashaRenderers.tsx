@@ -11,6 +11,8 @@ import YoginiPanel from '@/components/YoginiPanel';
 import AshtottariPanel from '@/components/AshtottariPanel';
 import NaisargikaPanel from '@/components/NaisargikaPanel';
 import RasiDashaPanel from '@/components/RasiDashaPanel';
+import NakshatraSystemPanel from '@/components/NakshatraSystemPanel';
+import { NAKSHATRA_SYSTEM_KEYS, type NakshatraSystemKey } from './nakshatraSystems';
 
 export type DashaRendererContext = {
   planets: PlanetData[];
@@ -47,6 +49,9 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
   narayana: ({ planets, ascendant, birthDatetime, rasiOptions }) => <RasiDashaPanel system="narayana" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} />,
   moola: ({ planets, ascendant, birthDatetime, rasiOptions }) => <RasiDashaPanel system="moola" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} />,
   sthira: ({ planets, ascendant, birthDatetime, rasiOptions }) => <RasiDashaPanel system="sthira" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} />,
+  ...(Object.fromEntries(NAKSHATRA_SYSTEM_KEYS.map(system => [system, ({ planets, ascendant, birthDatetime }: DashaRendererContext) => (
+    <NakshatraSystemPanel system={system} planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
+  )])) as Record<NakshatraSystemKey, (ctx: DashaRendererContext) => ReactNode>),
 };
 
 export function renderDasha(rendererKey: DashaRendererKey, ctx: DashaRendererContext) {
