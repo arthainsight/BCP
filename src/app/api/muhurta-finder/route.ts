@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AYANAMSA_OFFSET_RANGE, PLACE_RANGES, readClampedInt, readIntList, readNumbers } from '@/lib/apiValidation';
 import { PREFER_KEYS, SANKRANTI_ARC_MINUTES, SANKRANTI_SOLSTICE_DEGREES, FINDER_GRAHAS, FINDER_SIZES, isPreferKey, parseChandra, parseRule, parseTara, type FinderCriteria, type FinderRule } from '@/lib/muhurtaFinder';
 import { DOSHA_IDS, isDoshaId } from '@/lib/mahadosha';
+import { REGION_IDS, isPariharaMode, isRegionId, type RegionId } from '@/lib/mahadoshaParihara';
 import { D1_KEYS, isD1Key } from '@/lib/muhurtaD1';
 import { MAX_FINDER_DAYS, MAX_FINDER_STEPS, finderStepCount, finderStepMinutes, runMuhurtaFinder } from '@/lib/muhurtaFinderRun';
 
@@ -13,7 +14,7 @@ const MAX_RULES = 12;
 // the groups that are wishes with weights, not conditions (`prefer=chandra,tara`, with `minScore` the lowest score to list), the wishes about
 // the Rāśi chart, a point each (`d1=lagnaBenefic,moonUpachaya`),
 // the Mahādoṣas to keep clear of (`avoid=panchanga,udayasta,...`, with `natal=<Ascendant sign>:<Moon sign>` for the Aṣṭama Lagna and
-// `sankrantiArc` and `sankrantiSolstice` for the time around a Saṅkrānti, `gandanta=pada|four|two`, `vyatipata=days|short`), and the Chandrabala (`chandra=1:1,3,6,7,10,11`: the sign of the Moon at birth, 0 Aries to 11 Pisces, then the houses from it the Moon may be in).
+// `sankrantiArc` and `sankrantiSolstice` for the time around a Saṅkrānti, `gandanta=pada|four|two`, `vyatipata=days|short`, the neutralisations `parihara=off|named|broad|all` and the countries of the place `regions=madhyadesha,...`), and the Chandrabala (`chandra=1:1,3,6,7,10,11`: the sign of the Moon at birth, 0 Aries to 11 Pisces, then the houses from it the Moon may be in).
 // A condition that is left out is not a condition; one given as an empty list can never be met.
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -111,6 +112,16 @@ export async function GET(request: NextRequest) {
   if (!['pada', 'four', 'two'].includes(gandantaText)) return NextResponse.json({ error: 'gandanta must be pada, four or two' }, { status: 400 });
   const vyatipataText = searchParams.get('vyatipata') ?? 'days';
   if (!['days', 'short'].includes(vyatipataText)) return NextResponse.json({ error: 'vyatipata must be days or short' }, { status: 400 });
+  // The neutralisations of the Muhūrtacintāmaṇi (off, named, broad, all) and the countries the place is in (a comma list; none given, every fault counts).
+  const pariharaText = searchParams.get('parihara') ?? 'off';
+  if (!isPariharaMode(pariharaText)) return NextResponse.json({ error: 'parihara must be off, named, broad or all' }, { status: 400 });
+  const regionsText = searchParams.get('regions');
+  let regions: RegionId[] | undefined;
+  if (regionsText !== null) {
+    const names = regionsText === '' ? [] : regionsText.split(',');
+    if (!names.every(isRegionId)) return NextResponse.json({ error: `regions must be a list of ${REGION_IDS.join(', ')}` }, { status: 400 });
+    regions = [...new Set(names)];
+  }
   const all = (size: number, first = 0) => Array.from({ length: size }, (_, index) => first + index);
   const given = (list: number[] | undefined | { error: string }, size: number, first = 0): number[] => (list === undefined ? all(size, first) : (list as number[]));
   const criteria: FinderCriteria = {
@@ -132,6 +143,8 @@ export async function GET(request: NextRequest) {
     sankrantiSolstice,
     gandantaNakshatra: gandantaText as FinderCriteria['gandantaNakshatra'],
     vyatipataLength: vyatipataText as FinderCriteria['vyatipataLength'],
+    parihara: pariharaText,
+    regions,
   };
   if (finderStepCount(days, finderStepMinutes(criteria)) > MAX_FINDER_STEPS) {
     return NextResponse.json({ error: 'That many days is too many to search with these conditions' }, { status: 400 });

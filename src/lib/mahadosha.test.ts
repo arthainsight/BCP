@@ -38,9 +38,9 @@ const has = (id: DoshaId, value: DoshaSky, natal?: DoshaNatal, options?: DoshaOp
 // ---------------------------------------------------------------------------
 // The list
 // ---------------------------------------------------------------------------
-assert.equal(DOSHA_IDS.length, 27);
+assert.equal(DOSHA_IDS.length, 29);
 assert.equal(new Set(DOSHA_IDS.map(id => DOSHAS[id].number)).size, 20, 'each has its own place in the list, the six Daśa Doṣas the 15th, the three blemishes outside the list 0');
-assert.deepEqual(DOSHA_IDS.filter(id => DOSHAS[id].number === 0).sort(), ['blindDeafLame', 'mrityubhaga', 'shunyaRasi']);
+assert.deepEqual(DOSHA_IDS.filter(id => DOSHAS[id].number === 0).sort(), ['blindDeafLame', 'dagdha', 'jupiterVenus', 'mrityubhaga', 'shunyaRasi']);
 assert.deepEqual(DOSHA_IDS.filter(id => DOSHAS[id].number === 15).sort(), ['dashaYoga', 'ekargala', 'jamitra', 'latta', 'pata', 'upagraha']);
 assert.deepEqual(
   [...new Set([...DOSHA_IDS.map(id => DOSHAS[id].number), ...DOSHAS_NOT_WORKED_OUT.map(item => item.number)])].filter(number => number > 0).sort((a, b) => a - b),
@@ -133,7 +133,10 @@ for (const id of DOSHA_IDS) {
   }
 
   // Saṅgraha: the Moon in the sign of another graha; Ketu is opposite Rāhu.
-  assert.equal(has('sangraha', sky({}, { Jupiter: at(1, 3) })), true, 'Jupiter with the Moon in Taurus');
+  assert.equal(has('sangraha', sky({}, { Jupiter: at(1, 3) })), false, 'Jupiter with the Moon is happiness, not a fault (v. 45)');
+  assert.equal(has('sangraha', sky({}, { Mercury: at(1, 3) })), false, 'Mercury with the Moon is good (v. 45)');
+  assert.equal(has('sangraha', sky({}, { Venus: at(1, 3) })), true, 'Venus with the Moon: a rival wife');
+  assert.equal(has('sangraha', sky({}, { Mars: at(1, 3) })), true, 'Mars with the Moon: death');
   assert.equal(has('sangraha', sky({ sun: at(1, 3) })), true, 'the Sun with the Moon');
   assert.equal(has('sangraha', sky({}, { Rahu: at(7, 5) })), true, 'Rāhu in Scorpio puts Ketu in Taurus with the Moon');
   assert.equal(has('sangraha', sky({}, { Rahu: at(1, 5) })), true, 'Rāhu in Taurus with the Moon');
@@ -216,11 +219,12 @@ const TITHI_TABLE: [number, number][] = [
   [125.8, 126.6], [133.2, 134], [146.6, 147.4], [160.2, 161], [175, 175.8],
 ];
 const TITHI_RANGES: [number, number][] = [...TITHI_TABLE, ...TITHI_TABLE.map(([from, to]) => [from + 180, to + 180] as [number, number])];
-/** Not Rohiṇī, Mṛgaśīrṣa, Ārdrā, Svāti, Anurādhā, Uttara Āṣāḍhā and Śravaṇa, which have none of significance; Mūla has two. */
+/** All 27 nakṣatras, by the table of the Muhūrtacintāmaṇi (v. 49 to 51); Mūla only from the 56th nāḍī. */
 const NAKSHATRA_RANGES: [number, number][] = [
-  [11.1111, 12], [18.6667, 19.5556], [33.3333, 34.2222], [86.6667, 87.5556], [97.7778, 98.6667], [113.7778, 114.6667], [126.6667, 127.5556],
-  [137.7778, 138.6667], [150.6667, 151.5556], [164.6667, 165.5556], [177.7778, 178.6667], [203.1111, 204], [229.7778, 230.6667],
-  [244.4444, 245.3333], [252.4444, 253.3333], [258.6667, 259.5556], [295.5556, 296.4444], [310.6667, 311.5556], [323.5556, 324.4444],
+  [11.1111, 12], [18.6667, 19.5556], [33.3333, 34.2222], [48.8889, 49.7778], [56.4444, 57.3333], [71.3333, 72.2222], [86.6667, 87.5556],
+  [97.7778, 98.6667], [113.7778, 114.6667], [126.6667, 127.5556], [137.7778, 138.6667], [150.6667, 151.5556], [164.6667, 165.5556],
+  [177.7778, 178.6667], [189.7778, 190.6667], [203.1111, 204], [215.5556, 216.4444], [229.7778, 230.6667], [252.4444, 253.3333],
+  [258.6667, 259.5556], [271.1111, 272], [282.2222, 283.1111], [295.5556, 296.4444], [310.6667, 311.5556], [323.5556, 324.4444],
   [338.6667, 339.5556], [353.3333, 354.2222],
 ];
 const insideRanges = (value: number, ranges: [number, number][]) => ranges.some(([from, to]) => value >= from && value < to);
@@ -347,6 +351,124 @@ const nearRanges = (value: number, ranges: [number, number][]) => ranges.some(([
 }
 
 // ---------------------------------------------------------------------------
+// Dagdha tithi, Guru and Śukra, the pariharas and the regions of the Muhūrtacintāmaṇi
+// ---------------------------------------------------------------------------
+{
+  const named: DoshaOptions = { parihara: 'named' };
+  const broad: DoshaOptions = { parihara: 'broad' };
+  const everything: DoshaOptions = { parihara: 'all' };
+
+  // Dagdha tithi (v. 66): the Sun in Leo burns the 10th tithi of either half (the Sun at Leo 5°, 125°; the 10th tithi is 108° to 120° ahead).
+  assert.equal(has('dagdha', sky({ moon: 125 + 110 })), true, 'the 10th of the bright half');
+  assert.equal(has('dagdha', sky({ moon: 125 + 125 })), false, 'the 11th');
+  assert.equal(has('dagdha', sky({ moon: 125 + 290 })), true, 'the 10th of the dark half (25th)');
+  assert.equal(has('dagdha', sky({ sun: at(8, 5), moon: at(8, 5) + 15 })), true, 'the Sun in Sagittarius burns the 2nd');
+  assert.equal(has('dagdha', sky({ moon: 125 + 110 }), undefined, { regions: [] }), false, 'bound to Madhyadeśa: not elsewhere');
+  assert.equal(has('dagdha', sky({ moon: 125 + 110 }), undefined, { regions: ['madhyadesha'] }), true);
+
+  // Guru and Śukra (v. 46 to 51).
+  const jupiterAt = (longitude: number, change: Partial<Omit<DoshaSky, 'others'>> = { sun: at(10, 5) }, options?: DoshaOptions) =>
+    has('jupiterVenus', sky(change, { Jupiter: longitude }), undefined, options);
+  assert.equal(has('jupiterVenus', sky()), false, 'the quiet sky');
+  assert.equal(has('jupiterVenus', sky({}, { Jupiter: at(4, 15) })), true, 'Jupiter 10° from the Sun, combust');
+  assert.equal(has('jupiterVenus', sky({}, { Jupiter: at(5, 20) })), false, 'Jupiter in Virgo, 45° from the Sun');
+  assert.equal(has('jupiterVenus', sky({}, { Jupiter: at(4, 17) })), true, 'Jupiter 12° from the Sun is not combust, but is in Leo');
+  assert.equal(has('jupiterVenus', sky({}, { Venus: at(4, 14) })), true, 'Venus 9° from the Sun');
+  assert.equal(has('jupiterVenus', sky({}, { Venus: at(4, 14) }), undefined, { parihara: 'named' }), true, 'no parihāra for a combust Venus');
+  assert.equal(has('jupiterVenus', sky({ retro: { Venus: true } }, { Venus: at(4, 14) })), false, 'a retrograde Venus is combust only within 8°');
+  assert.equal(jupiterAt(at(9, 5)), true, 'Jupiter in Capricorn');
+  assert.equal(jupiterAt(at(9, 5), { sun: at(0, 5) }, named), true, 'the Sun in Aries does not free Capricorn');
+  assert.equal(jupiterAt(at(4, 20)), true, 'Jupiter in Leo, no country named: the whole sign');
+  assert.equal(jupiterAt(at(4, 20), { sun: at(10, 5) }, { regions: [] }), false, 'elsewhere than the countries named, only the first 16°40′ of Leo');
+  assert.equal(jupiterAt(at(4, 10), { sun: at(10, 5) }, { regions: [] }), true, 'the first five pādas');
+  assert.equal(jupiterAt(at(4, 20), { sun: at(10, 5) }, { regions: ['gangaGodavari'] }), true, 'between the Gaṅgā and the Godāvarī: all of Leo');
+  assert.equal(jupiterAt(at(4, 20), { sun: at(10, 5) }, { regions: ['kalingaGaudaGurjara'] }), true, 'Kaliṅga, Gauḍa and Gurjara: all of Leo');
+  assert.equal(jupiterAt(at(4, 20), { sun: at(0, 5) }), true, 'the Sun in Aries frees Leo only with the pariharas on');
+  assert.equal(jupiterAt(at(4, 20), { sun: at(0, 5) }, named), false, 'the Sun in Aries (v. 49 and 51)');
+  assert.equal(jupiterAt(at(4, 20), { sun: at(0, 5) }, everything), false);
+  assert.equal(jupiterAt(at(9, 5), { sun: at(10, 5) }, everything), true, 'v. 91 does not reach the afflictions of Jupiter and Venus');
+
+  // v. 68: the Sun and the Moon strong destroy Kartarī (and Ekārgalā, Upagraha, Pāta, Lattā, Yāmitrī, Udayāsta). The Sun in Pisces (a friend's sign)
+  // and the Moon exalted in Taurus in the bright half; Rāhu (never weak) in Leo and Mars in Gemini are the malefics around the Ascendant (Cancer).
+  const kartariSky = (change: Partial<Omit<DoshaSky, 'others'>> = {}) => sky({ sun: at(11, 5), ...change }, { Rahu: at(4, 10), Mars: at(2, 5), Saturn: at(7, 5) });
+  assert.equal(has('kartari', kartariSky()), true, 'Rāhu in Leo and Mars in Gemini');
+  assert.equal(has('kartari', kartariSky(), undefined, { parihara: 'off' }), true);
+  assert.equal(has('kartari', kartariSky(), undefined, named), false, 'the Sun and the Moon strong (v. 68)');
+  assert.equal(has('kartari', kartariSky({ sun: at(7, 5), moon: at(1, 20) }), undefined, named), true, 'the Sun in its fall region is not strong, the Moon in the dark half is not');
+  // v. 88: the malefics that make it weak, in the sign of an enemy: Saturn in Leo (the Sun\'s sign) and Mars in Gemini (Mercury\'s).
+  const weakKartari = sky({ sun: at(9, 5) }, { Mars: at(2, 5) });
+  assert.equal(has('kartari', weakKartari), true);
+  assert.equal(has('kartari', weakKartari, undefined, named), false, 'Saturn in Leo and Mars in Gemini are both in an enemy sign');
+
+  // v. 88: Venus in the 6th in an enemy sign (Leo from a Pisces Ascendant), the Moon in its fall in the Navāṁśa in the 6th, 8th or 12th.
+  assert.equal(has('bhriguShatka', sky({ asc: at(11, 10) }, { Venus: at(4, 10) })), true);
+  assert.equal(has('bhriguShatka', sky({ asc: at(11, 10) }, { Venus: at(4, 10) }), undefined, named), false, 'Venus in the sign of the Sun');
+  assert.equal(has('ashtamaKuja', sky({}, { Mars: at(10, 5) }), undefined, named), true, 'Mars in a neutral sign');
+  assert.equal(has('ashtamaKuja', sky({ sun: at(10, 12) }, { Mars: at(10, 5) }), undefined, named), false, 'Mars combust');
+  assert.equal(has('chandraShadashtaka', sky({ moon: at(8, 25) })), true, 'the Moon in Sagittarius, the 6th');
+  assert.equal(has('chandraShadashtaka', sky({ moon: at(8, 25) }), undefined, named), false, 'in the Navāṁśa of Scorpio, the Moon\'s fall');
+  assert.equal(has('chandraShadashtaka', sky({ moon: at(8, 5) }), undefined, named), true);
+
+  // v. 46: the Lagna in the 8th from the birth Lagna is no fault if the lords are one or friends of each other.
+  const natal: DoshaNatal = { ascSign: 3, moonSign: 4 };
+  assert.equal(has('ashtamaLagna', sky({ asc: at(10, 5) }), natal, named), true, 'Aquarius (Saturn) from Cancer (the Moon): not friends');
+  assert.equal(has('ashtamaLagna', sky({ asc: at(11, 5) }), natal, named), false, 'Pisces (Jupiter) from Leo (the Sun): friends');
+  assert.equal(has('ashtamaLagna', sky({ asc: at(7, 5) }), { ascSign: 0, moonSign: 0 }), true);
+  assert.equal(has('ashtamaLagna', sky({ asc: at(7, 5) }), { ascSign: 0, moonSign: 0 }, named), false, 'Scorpio and Aries have Mars as their lord');
+
+  // Saṅgraha: the Moon in Taurus (exalted) with Saturn, and in Capricorn, a neutral sign, with Mars.
+  assert.equal(has('sangraha', sky({}, { Saturn: at(1, 3) })), true);
+  assert.equal(has('sangraha', sky({}, { Saturn: at(1, 3) }), undefined, named), false, 'the Moon exalted is not troubled');
+  assert.equal(has('sangraha', sky({ moon: at(9, 5) }, { Mars: at(9, 8) }), undefined, named), true);
+
+  // Gaṇḍānta: the last 24′ of the 5th tithi is freed by a strong Moon, the Lagna's by a strong Jupiter.
+  const tithiEnd = sky({ sun: 350.2, moon: 50 });
+  assert.equal(has('gandanta', tithiEnd), true);
+  assert.equal(has('gandanta', tithiEnd, undefined, named), false, 'the Moon exalted, in the bright half');
+  assert.equal(has('gandanta', sky({ asc: at(3, 29) })), true, 'the Lagna in the last 3° of Cancer');
+  assert.equal(has('gandanta', sky({ asc: at(3, 29) }), undefined, named), false, 'Jupiter in its own sign');
+
+  // Viṣa Ghaṭī: the Moon in an angle or a trine but the Lagna (Aśvinī 50th to 54th nāḍī: 11°06′40″ to 12°). Aries is the 10th from Cancer.
+  assert.equal(has('vishaGhati', sky({ moon: at(0, 11.5) })), true);
+  assert.equal(has('vishaGhati', sky({ moon: at(0, 11.5) }), undefined, named), false);
+
+  // v. 90 and 89 (broad): the Riktā tithi is destroyed by the Moon in an upachaya (Aries is the 10th); Dūrmuhūrta by the Moon in the 11th;
+  // the blind Lagna by Mercury strong in an angle (Libra is the 7th from Aries).
+  assert.equal(has('panchanga', sky({ vara: 3, sun: 0, moon: 36 })), true);
+  assert.equal(has('panchanga', sky({ vara: 3, sun: 0, moon: 36 }), undefined, named), true, 'not in the named exceptions');
+  assert.equal(has('panchanga', sky({ vara: 3, sun: 0, moon: 36 }), undefined, broad), false, 'the Moon in the 10th');
+  assert.equal(has('panchanga', sky({ vara: 3, sun: 100, moon: 138 }, { Mercury: at(0, 5) }), undefined, broad), true, 'a 4th tithi with nothing to destroy it: the Moon in the 2nd, Mercury not strong');
+  assert.equal(has('durmuhurta', sky({ sun: 49.8, moon: 50 })), true, 'the 1st thirtieth of the tithi');
+  assert.equal(has('durmuhurta', sky({ sun: 49.8, moon: 50 }), undefined, named), true);
+  assert.equal(has('durmuhurta', sky({ sun: 49.8, moon: 50 }), undefined, broad), false, 'the Moon in the 11th');
+  assert.equal(has('blindDeafLame', sky({ asc: at(0, 5), day: true })), true, 'Aries by day');
+  assert.equal(has('blindDeafLame', sky({ asc: at(0, 5), day: true }), undefined, named), true);
+  assert.equal(has('blindDeafLame', sky({ asc: at(0, 5), day: true }), undefined, broad), false, 'Mercury strong in Libra, the 7th');
+
+  // v. 91 (all): Mercury in the 4th burns the fault of Mars in the 8th.
+  assert.equal(has('ashtamaKuja', sky({}, { Mars: at(10, 5) }), undefined, broad), true);
+  assert.equal(has('ashtamaKuja', sky({}, { Mars: at(10, 5) }), undefined, everything), false);
+
+  // The regions of v. 69: the Upagraha (the Moon in the 5th nakṣatra from the Sun\'s), the Pāta, the Yāmitra.
+  const upagraha = sky({ sun: 5, moon: 60 });
+  assert.equal(has('upagraha', upagraha), true);
+  assert.equal(has('upagraha', upagraha, undefined, { regions: [] }), false, 'bound to Kuru and Bāhlīka');
+  assert.equal(has('upagraha', upagraha, undefined, { regions: ['kuruBahlika'] }), true);
+  assert.equal(has('upagraha', upagraha, undefined, { regions: ['yamuna'] }), false);
+  const yamitra = sky({}, { Mars: at(9, 5) });
+  assert.equal(has('jamitra', yamitra), true, 'Mars in the 7th');
+  assert.equal(has('jamitra', yamitra, undefined, { regions: [] }), false);
+  assert.equal(has('jamitra', yamitra, undefined, { regions: ['yamuna'] }), true);
+
+  // What a doṣa needs: with the pariharas on, the whole sky.
+  assert.equal(doshaUsesAscendant('sangraha'), false);
+  assert.equal(doshaUsesAscendant('sangraha', 'named'), true);
+  assert.equal(doshaUsesAscendant('sangraha', 'off'), false);
+  assert.equal(doshaNeeds('eclipse', 'all').luminaries, false, 'the doṣas of a stretch need no sky');
+  assert.deepEqual(doshaNeeds('sangraha', 'named').grahas.sort(), ['Jupiter', 'Mars', 'Mercury', 'Rahu', 'Saturn', 'Venus']);
+}
+
+// ---------------------------------------------------------------------------
 // The stretches around events
 // ---------------------------------------------------------------------------
 {
@@ -465,6 +587,20 @@ async function searches() {
     const masa = (await appAt((window.start + window.end) / 2)).chart.lunarMonth!.masaIndex;
     assert.ok(!KALAPRAKASIKA[masa].includes(panchang.tithiNumber) && !CINTAMANI[panchang.paksha][masa].includes(panchang.tithiNumber), `Śūnya: the ${panchang.tithiNumber}th of ${panchang.paksha}, month ${masa}`);
   }
+
+  // Guru and Śukra: Jupiter is in Leo (Lahiri) from the autumn of 2026 and in Cancer again in the spring of 2027.
+  const leo = await runMuhurtaFinder(request({ ...open, avoid: ['jupiterVenus'] }, 20, '2026-11-02'));
+  assert.equal(leo.windows.length, 0, 'Jupiter in Leo all through the twenty days');
+  const cancer = await runMuhurtaFinder(request({ ...open, avoid: ['jupiterVenus'] }, 20, '2027-03-01'));
+  assert.ok(Math.abs(totalDays(cancer.windows) - 20) < 0.01, 'no affliction in the twenty days');
+  assert.equal(cancer.stepMinutes, 15, 'it needs no Ascendant');
+  // With the pariharas on the whole sky is looked at, so the walk is every 5 minutes.
+  assert.equal(finderStepMinutes({ ...open, avoid: ['sangraha'], parihara: 'named' }), 5);
+  assert.equal(finderStepMinutes({ ...open, avoid: ['sangraha'] }), 15);
+  // The same span with the Moon of the stretch: the Sun and the Moon with Jupiter and Venus left out make nothing different for a chosen dosha that is off.
+  const withParihara = await runMuhurtaFinder(request({ ...open, avoid: ['kartari', 'sangraha'], parihara: 'named' }, 10, '2026-11-02'));
+  const asWritten = await runMuhurtaFinder(request({ ...open, avoid: ['kartari', 'sangraha'] }, 10, '2026-11-02'));
+  assert.ok(totalDays(withParihara.windows) >= totalDays(asWritten.windows) - 0.01, 'the pariharas only take faults away');
 
   // Aṣṭama Lagna: the Ascendant of the chart is never the 8th sign from the Ascendant or the Moon of the birth.
   const natal = { ascSign: 0, moonSign: 5 }; // Aries rising, the Moon in Virgo: the 8th signs are Scorpio and Aries

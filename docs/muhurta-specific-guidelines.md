@@ -11,7 +11,7 @@ Source: Ernst Wilhelm, *Classical Muhurta*, chapter 22 "Specific Muhurta Guideli
 | Tithi, Karaṇa, Vāra, Lagna: "avoid" | left out of the group |
 | Lagna "best" / "favourable" | the signs of the Ascendant |
 | Bhāvas ("no malefic in the 8th", "Venus or Moon in the Lagna") | placement rules (`any` / `none`) |
-| "Avoid afflictions of Jupiter and Venus, particularly combustion" | the Mahādoṣa Udayāsta |
+| "Avoid afflictions of Jupiter and Venus, particularly combustion" | the Mahādoṣa "Guru and Śukra" (combustion of Jupiter or Venus, Jupiter in Leo or Capricorn; Muhūrtacintāmaṇi 1.46–51). The Udayāsta Śuddhi is a different thing: the purity of the Lagna and the 7th |
 | The Mahādoṣas the book names for the purpose | the Mahādoṣa group (see the wedding below) |
 | Navāṁśa of Moon, Mercury, Jupiter, Venus | the D1 wish "Navāṁśa Lagna of a benefic" (one point) |
 | Tara, Chandrabala | the start wishes (they apply when a natal chart is given) |

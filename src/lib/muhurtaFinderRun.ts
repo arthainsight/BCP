@@ -12,8 +12,9 @@ import {
   ruleMatches, scoredKeys, signOf, tithiOf, yogaOf, type FinderCriteria, type FinderGraha, type FinderMoment, type PreferKey,
 } from './muhurtaFinder';
 import {
-  DOSHA_IDS, EVENT_DOSHAS, doshaNeeds, doshaUsesAscendant, hasDosha, isDoshaId, type DoshaId, type DoshaSky,
+  DOSHA_IDS, EVENT_DOSHAS, doshaNeeds, doshaUsesAscendant, hasDosha, isDoshaId, type DoshaId, type DoshaOptions, type DoshaSky,
 } from './mahadosha';
+import { isPariharaMode, isRegionId } from './mahadoshaParihara';
 import {
   VYATIPATA_SHORT_HOURS, aroundEvent, ardhayama, calendarDays, declinationEqualities, eclipseMoments, insideWindows, mergeWindows, sankrantiWindows,
   varaVishanadi, type JdWindow,
@@ -76,7 +77,7 @@ export const jdToMs = (jd: number) => (jd - JD_UNIX_EPOCH) * 86_400_000;
 export function finderStepMinutes(criteria: FinderCriteria): number {
   const ascendant = criteria.signs.Asc !== undefined && isLimited(criteria.signs.Asc, 12);
   const wishes = (criteria.d1 ?? []).some(isD1Key);
-  const doshas = (criteria.avoid ?? []).filter(isDoshaId).some(doshaUsesAscendant);
+  const doshas = (criteria.avoid ?? []).filter(isDoshaId).some(id => doshaUsesAscendant(id, criteria.parihara));
   return ascendant || wishes || doshas || effectiveRules(criteria).length > 0 ? 5 : 15;
 }
 
@@ -144,12 +145,17 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
     }
     return value;
   };
+  // The speed of the bodies looked at last, to say which go backwards (the orb of a combust Mercury or Venus is narrower then).
+  const speeds = new Map<string, number>();
   const longitudeOf = async (graha: FinderGraha, jd: number): Promise<number> => {
     const ayanamsa = await ayanamsaAt(jd);
     if (graha === 'Asc') return normalizeDegrees((await sweGetAscendant(jd, request.lat, request.lng)) - ayanamsa);
     if (graha === 'Rahu') return normalizeDegrees((await sweCalcUt(jd, nodeId)).longitude - ayanamsa);
     if (graha === 'Ketu') return normalizeDegrees((await sweCalcUt(jd, nodeId)).longitude - ayanamsa + 180);
-    return normalizeDegrees((await sweCalcUt(jd, BODY_IDS[graha])).longitude - ayanamsa);
+    const body = await sweCalcUt(jd, BODY_IDS[graha]);
+    if (speeds.size > 32) speeds.clear();
+    speeds.set(`${graha}@${jd}`, body.speed);
+    return normalizeDegrees(body.longitude - ayanamsa);
   };
 
   const needs = neededBodies(criteria);
@@ -228,7 +234,11 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
     }
   }
   const masaAt = (jd: number) => masaWindows.find(window => jd >= window.startJd && jd < window.endJd)?.masa;
-  const gandantaOptions = { gandantaNakshatra: criteria.gandantaNakshatra };
+  const gandantaOptions: DoshaOptions = {
+    gandantaNakshatra: criteria.gandantaNakshatra,
+    parihara: criteria.parihara && isPariharaMode(criteria.parihara) ? criteria.parihara : undefined,
+    regions: criteria.regions?.filter(isRegionId),
+  };
   // The daytime of each date (sunrise to sunset), for the blind and deaf signs.
   const dayWindows = avoid.has('blindDeafLame')
     ? mergeWindows(rows.filter(row => row.sunsetHour !== undefined).map(row => ({ startJd: row.sunriseJd, endJd: row.midnightJd + row.sunsetHour! / 24 })))
@@ -277,7 +287,7 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
         return value;
       };
       for (const id of stateDoshas) {
-        const required = doshaNeeds(id);
+        const required = doshaNeeds(id, gandantaOptions.parihara);
         if (required.luminaries) { await position('Sun'); await position('Moon'); }
         if (required.asc) await position('Asc');
         for (const graha of required.grahas) await position(graha);
@@ -286,6 +296,7 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
           masa: masaAt(jd),
           day: avoid.has('blindDeafLame') ? insideWindows(dayWindows, jd) : undefined,
           others: Object.fromEntries([...found].filter(([key]) => !['Sun', 'Moon', 'Asc'].includes(key))) as DoshaSky['others'],
+          retro: Object.fromEntries(['Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'].map(graha => [graha, (speeds.get(`${graha}@${jd}`) ?? 0) < 0])),
         };
         if (hasDosha(id, sky, criteria.natal, gandantaOptions)) return false;
       }

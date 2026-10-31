@@ -104,6 +104,10 @@ export interface FinderCriteria {
   gandantaNakshatra?: 'pada' | 'four' | 'two';
   /** The time kept clear of at a Vyatipāta or Vaidhṛti: the three days (the text) or the short time around the moment (the book). */
   vyatipataLength?: 'days' | 'short';
+  /** How much of the neutralisations (pariharas) of the Muhūrtacintāmaṇi is applied to the Mahādoṣas (none if not given). */
+  parihara?: 'off' | 'named' | 'broad' | 'all';
+  /** The countries of the Muhūrtacintāmaṇi the place is in, for the faults it binds to a country (every fault counts if not given). */
+  regions?: string[];
 }
 
 /** What the Saṅkrānti doṣa keeps clear of: 16 nāḍīs of the Sun's longitude (16′) on each side, and 3° at the entries into Cancer and Capricorn. */

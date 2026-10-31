@@ -11,6 +11,7 @@ What has been found, read and where. "Sanskrit decides": the app follows Ernst W
 | Muhūrtacintāmaṇi with Pīyūṣadhārā and Hindi (1892, Lakshmi Venkateshwar Press) | `kxwd-muhurta-chintamani-piyushadhara-commentary-by-rama` (the file `…Lakshmi Venkateshwar Press_djvu.txt`) | OCR poor. |
 | Muhūrta Mārtaṇḍa (Nārāyaṇa) with Mārtaṇḍavallabha | `crzy-muhurta-martanda-with-martanda-vallabha-commentary` (also `MuhurtaMartandaNarayan843GhaAlm4Shlf5DevanagariJyotish`, `in.ernet.dli.2015.307447`) | OCR very noisy. Quotes Śrīpati and Śaunaka (see below). |
 | Kālaprakāśikā (N. P. Subramania Iyer, Devanagari and English) | `kalaprakasika`, `Kalaprakasika1982EditionByN.Iyer`, `in.ernet.dli.2015.45999` | The general astrology of election; little on shops or Jupiter in Leo. |
+| Muhūrta Mārtaṇḍa with Sanskrit commentary and Hindi (*Prabhā*, Sītārāma Śarmā, Kāśī, Saṁvat 1986) | `in.ernet.dli.2015.307447` | Complete; the Hindi OCR is partly readable; the way to read the Mārtaṇḍa verses. The comparison with the Finder is in `muhurta-martanda-kalaprakasika.md`. |
 | Muhūrta Gaṇapati (1885, Naval Kishore) | `MuhurtaGanapati1885NavalKishorePress` | OCR poor; not read yet. |
 | Brihat Saṃhitā (Varāhamihira, with Bhaṭṭotpala) | several, e.g. `varahamihiras-brihat-samhita-by-v-subrahmanya-sastri`, `htwn-brihat-samhita-vivriti-bhattotpala-sanskrit-in-dev` | Not read yet for muhūrta. |
 | Muhūrta Dīpikā (Telugu) | `muhurtadipikamuh00tyagsher` | Not read yet. |

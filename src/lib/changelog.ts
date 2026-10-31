@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.61',
+    date: '2026-10-31',
+    title: 'Muhurta Finder: the Mahādoṣas checked against the Muhūrtacintāmaṇi',
+    changes: [
+      'The classical Sanskrit text decides: the Mahādoṣas were typed from a modern book and are now set verse by verse beside the Muhūrtacintāmaṇi (Rāma Daivajña, 1600, with the Pīyūṣadhārā), page docs/mahadosha-vs-muhurta-chintamani.md. Saṅgraha no longer counts Mercury or Jupiter with the Moon (v. 45: good and happiness), and the Viṣa Ghaṭī of the nakṣatras is the text\'s table of all 27 (seven nakṣatras had none before, Mūla had a second).',
+      'Neutralisations (pariharas): under the Mahādoṣas a new choice says how much of what the text says destroys a fault is applied. At the start (the exception named with each fault) the strong Sun and Moon destroy Ekārgalā, Upagraha, Pāta, Lattā, Yāmitrī, Kartarī and Udayāsta (v. 68); weak malefics free Kartarī, Bhṛgu ṣaṭka, Aṣṭama Kuja and the Moon in the 6th, 8th and 12th (v. 88); friendly lords free the Aṣṭama Lagna (v. 46); and so on. The broad level adds the verses that name a list of faults and what destroys them all (v. 89, 90), and the third level the verse that burns every fault (v. 91), which lets most times through. "none" keeps every fault as before.',
+      'Regions: the countries of the place can be ticked; the faults the text binds to a country (Upagraha, Pāta, Lattā, Yāmitra, the new Dagdha tithi, and Jupiter in the whole of Leo) then count only there. With none ticked every fault counts everywhere, as before.',
+      'Two new blemishes under the list: Dagdha tithi (the tithi burnt by the Sun\'s sign, v. 66) and Guru and Śukra (Jupiter or Venus combust, Jupiter in Leo or Capricorn; Muhūrtacintāmaṇi 1.46–51). The ready-made choices for laying a foundation, entering a house and starting a journey use the latter; they wrongly named the Udayāsta Śuddhi (the purity of the Lagna and the 7th) for it.',
+      'Updated the application version to v3.61.',
+    ],
+  },
+  {
     version: 'v3.60',
     date: '2026-10-31',
     title: 'Positive yogas, a moment as a chart, and no target bar',
