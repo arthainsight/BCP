@@ -8,12 +8,13 @@ import { calculateYogini, calculateYoginiSubDashas } from './yogini';
 import { calculateNaisargika, calculateNaisargikaSubDashas } from './naisargika';
 import { calculateAshtottari, calculateAshtottariSubDashas, evaluateAshtottariEligibility } from './ashtottari';
 import type { NakshatraDashaEntry } from './nakshatraDasha';
+import { calculateAyurdayaDasha, calculateAyurdayaSubDashas } from './ayurdaya';
 import { calculateNakshatraSystem, evaluateNakshatraSystem, NAKSHATRA_SYSTEMS, nakshatraSystemSubDashas, type NakshatraSystemKey } from './nakshatraSystems';
 import { calculateRasiDasha, calculateRasiSubDashas, type RasiDashaEntry, type RasiDashaSystem } from './rasiDashas';
 
 export interface DashaEventLevel { level: string; value: string; }
 export interface DashaEventSnapshot {
-  key: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | 'yogardha' | 'drig' | 'trikona' | 'shula' | NakshatraSystemKey;
+  key: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | 'paindi' | 'amshi' | 'yogardha' | 'drig' | 'trikona' | 'shula' | NakshatraSystemKey;
   label: string;
   levels: DashaEventLevel[];
   mdRange?: { startDate: Date; endDate: Date };
@@ -21,7 +22,7 @@ export interface DashaEventSnapshot {
 }
 
 /** The daśā systems an event is read in, in the order they are shown. Each is also the name of its switch in `DashaSettings.dashas`. */
-export const DASHA_SNAPSHOT_KEYS: readonly DashaEventSnapshot['key'][] = ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', ...NAKSHATRA_SYSTEMS.map(system => system.key), 'kalaChakra', 'naisargika', 'narayana', 'moola', 'sthira', 'yogardha', 'drig', 'trikona', 'shula'];
+export const DASHA_SNAPSHOT_KEYS: readonly DashaEventSnapshot['key'][] = ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', ...NAKSHATRA_SYSTEMS.map(system => system.key), 'kalaChakra', 'naisargika', 'paindi', 'amshi', 'narayana', 'moola', 'sthira', 'yogardha', 'drig', 'trikona', 'shula'];
 interface SnapshotInput {
   eventDate: Date;
   birthDate: Date;
@@ -89,6 +90,8 @@ export const DASHA_SYSTEM_LABELS = {
   narayana: 'Narayana Dasha',
   moola: 'Mula Dasha',
   sthira: 'Sthira Dasha',
+  paindi: 'Paindi Dasha',
+  amshi: 'Amshi Dasha',
   yogardha: 'Yogardha Dasha',
   drig: 'Drig Dasha',
   trikona: 'Trikona Dasha',
@@ -110,7 +113,7 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
     { key: 'narayana', label: DASHA_SYSTEM_LABELS.narayana, levels: [], note: 'Date is before birth' },
     { key: 'moola', label: DASHA_SYSTEM_LABELS.moola, levels: [], note: 'Date is before birth' },
     { key: 'sthira', label: DASHA_SYSTEM_LABELS.sthira, levels: [], note: 'Date is before birth' },
-    ...(['yogardha', 'drig', 'trikona', 'shula'] as const).map((key) => ({ key, label: DASHA_SYSTEM_LABELS[key], levels: [], note: 'Date is before birth' })),
+    ...(['paindi', 'amshi', 'yogardha', 'drig', 'trikona', 'shula'] as const).map((key) => ({ key, label: DASHA_SYSTEM_LABELS[key], levels: [], note: 'Date is before birth' })),
   ];
 
   const moon = planets.find((planet) => planet.name === 'Moon');
@@ -164,6 +167,13 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
 
   const naisargika = calculateNaisargika(birthDate).entries;
   snapshots.push({ key: 'naisargika', label: DASHA_SYSTEM_LABELS.naisargika, levels: nakshatraDashaLevels(naisargika, eventDate, parent => calculateNaisargikaSubDashas(parent, planets, ascendant.sign)), mdRange: activeRange(naisargika, eventDate) });
+
+  for (const kind of ['paindi', 'amshi'] as const) {
+    const dasha = calculateAyurdayaDasha(kind, planets, ascendant.sign, birthDate);
+    snapshots.push(dasha
+      ? { key: kind, label: DASHA_SYSTEM_LABELS[kind], levels: nakshatraDashaLevels(dasha.entries, eventDate, parent => calculateAyurdayaSubDashas(parent, dasha.definitions)), mdRange: activeRange(dasha.entries, eventDate) }
+      : { key: kind, label: DASHA_SYSTEM_LABELS[kind], levels: [], note: 'Calculation unavailable' });
+  }
 
   for (const [system, key, label] of [
     ['narayana', 'narayana', 'Nārāyaṇa Dasha'],

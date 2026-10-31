@@ -532,7 +532,7 @@ test('TIMING Dasas draws the daśā systems in groups, and the … list chooses 
   await expect(nakshatra).toBeVisible();
   await expect(rasi).toBeVisible();
   const other = visible(page, page.getByRole('region', { name: 'Other daśās' }));
-  await expect(other.getByRole('heading')).toContainText('0/1');
+  await expect(other.getByRole('heading')).toContainText('0/3');
   await expect(other).toContainText('None of these is active.');
   // The default settings: 4 of the 5 nakṣatra systems (the Original of U K Jha is off, and so are the eight conditional ones of BPHS 46.24–43) and 3 of the 9 rāśi ones (the four more of the Jaimini Sūtras are off as well).
   await expect(nakshatra.getByRole('heading')).toContainText('4/13');
@@ -545,22 +545,22 @@ test('TIMING Dasas draws the daśā systems in groups, and the … list chooses 
 
   // The … button counts the active systems and opens the list of all of them, in the same groups.
   const picker = visible(page, page.getByRole('button', { name: 'Choose daśā systems' }));
-  await expect(picker).toContainText('7/23');
+  await expect(picker).toContainText('7/25');
   await expect(picker).toHaveAttribute('aria-expanded', 'false');
   await picker.click();
   await expect(picker).toHaveAttribute('aria-expanded', 'true');
   const list = visible(page, page.getByRole('group', { name: 'Choose daśā systems' }));
-  await expect(list.getByRole('checkbox')).toHaveCount(23);
+  await expect(list.getByRole('checkbox')).toHaveCount(25);
   await expect(list.getByRole('checkbox', { name: /^Chara/ })).not.toBeChecked();
   await expect(list.getByRole('checkbox', { name: /^Vimsottari Original/ })).not.toBeChecked();
   await expect(list.getByRole('checkbox', { name: /^Mūla/ })).toBeChecked();
-  await expect(list.getByText('beta')).toHaveCount(7);
+  await expect(list.getByText('beta')).toHaveCount(9);
 
   // A box makes a system active at once, in its own group; the choice is the one of Settings and is kept.
   await list.getByRole('checkbox', { name: /^Chara/ }).check();
   await expect(rasi.getByRole('button', { name: /^Chara/ })).toBeVisible();
   await expect(rasi.getByRole('heading')).toContainText('4/9');
-  await expect(picker).toContainText('8/23');
+  await expect(picker).toContainText('8/25');
   await list.getByRole('checkbox', { name: /^Yoginī/ }).uncheck();
   await expect(nakshatra.getByRole('button', { name: /^Yoginī/ })).toHaveCount(0);
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('dashaSettings') ?? '{}').dashas);
@@ -571,7 +571,7 @@ test('TIMING Dasas draws the daśā systems in groups, and the … list chooses 
   await expect(rasi.locator('button[aria-expanded]')).toHaveCount(0);
   await expect(rasi).toContainText('None of these is active.');
   await expect(nakshatra.getByRole('button', { name: /^Vimsottari/ }).first()).toBeVisible();
-  await expect(picker).toContainText('3/23');
+  await expect(picker).toContainText('3/25');
   // All switches it on again, the beta ones included.
   await list.getByRole('button', { name: 'all' }).nth(1).click();
   await expect(rasi.locator('button[aria-expanded]')).toHaveCount(9);
@@ -913,6 +913,31 @@ test('the Jaimini rāśi daśās (Yogārdha, Dṛg, Trikoṇa, Śūla) are off t
   await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
   await visible(page, page.getByRole('button', { name: /^Mūla/ })).click();
   await expect(page.locator('#dasha-moola')).toContainText('PVR/JHora');
+
+  expect(errors).toEqual([]);
+});
+
+test('the Paiṇḍī and Aṃśī daśās (the length of life, BPHS 46.201) are off to begin with and show how their order and years were found', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
+  await expect(page.getByRole('button', { name: /^Paiṇḍī/ })).toHaveCount(0);
+  await visible(page, page.getByRole('button', { name: 'Choose daśā systems' })).click();
+  const list = visible(page, page.getByRole('group', { name: 'Choose daśā systems' }));
+  await list.getByRole('checkbox', { name: /^Paiṇḍī/ }).check();
+  await list.getByRole('checkbox', { name: /^Aṃśī/ }).check();
+  await visible(page, page.getByRole('button', { name: /^Paiṇḍī/ })).click();
+  const paindi = page.locator('#dasha-paindi');
+  await expect(paindi).toContainText('Piṇḍāyu');
+  await expect(paindi).toContainText(/grahas · [\d.]+ years in all/);
+  await paindi.getByText('How the order and the years were found').click();
+  await expect(paindi).toContainText('Strongest of the Lagna');
+  await expect(paindi).toContainText('Sun:');
+  await visible(page, page.getByRole('button', { name: /^Aṃśī/ })).click();
+  await expect(page.locator('#dasha-amshi')).toContainText('Aṃśāyu');
 
   expect(errors).toEqual([]);
 });

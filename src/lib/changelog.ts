@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.70',
+    date: '2026-10-31',
+    title: 'The Paiṇḍī and Aṃśī daśās (the length of life)',
+    changes: [
+      'New daśās from BPHS 46.201–202 and chapter 43, off to begin with (beta): the Paiṇḍī and the Aṃśī. The daśā of each of the seven grahas is as long as the span of life it gives, the Piṇḍāyu (the whole at exaltation, a half at the debilitation point, the reductions for combustion, an enemy\'s sign and the house) or the Aṃśāyu (the navāṁśa number modulo 12, three times in the own or exaltation sign, twice in the own navāṁśa). The first daśā is that of the strongest of the Lagna, the Sun and the Moon, then the grahas in the angles from it, by strength. One round. The panel shows how the order and each graha\'s years were found.',
+      'The text leaves points open and the defaults you chose were taken: no row for the Lagna, a retrograde graha excepted from the loss of a third in an enemy\'s sign (the Sanskrit of 43.9), the strength of signs by the Jaimini rules. Not applied: one graha in a sign (43.11), the Lagna\'s degrees (43.12–13), the three spans together (43.31–32), Sandhyā, Pācaka and Tārā. All in docs/ayurdaya-vs-sources.md.',
+      'Updated the application version to v3.70.',
+    ],
+  },
+  {
     version: 'v3.69',
     date: '2026-10-31',
     title: 'Brahma graha, Mūla and four more Jaimini daśās by the Sūtras',

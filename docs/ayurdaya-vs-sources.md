@@ -4,9 +4,10 @@ Read in the Sanskrit with IAST of BPHS (the text of enjoylearningsanskrit.com): 
 has its own Āyurdāya; the OCR of the edition found (`jyotisha`) is too broken in these chapters to quote from (the chapter name itself is spelt "आयुदाय्ाध्यायः"
 and "आयुर्दाचाध्वायः" in different places), so it is not used.
 
-**State at the end of v3.69:** the Naisargika daśā of the app is the natural years of 43.16–17 and matches. The Paiṇḍī and Aṃśī daśās are *not* in the app: the
-text names them in one verse (46.201) and gives the years, but not how the sequence is found beyond one verse, and the years themselves rest on verses that
-leave points open. The list below is what a code would have to settle first.
+**State since v3.70:** the Naisargika daśā of the app is the natural years of 43.16–17 and matches. The **Paiṇḍī and Aṃśī daśās are in the app** (off to begin
+with, beta), with the points below settled by the defaults the user chose on 31 October 2026 ("go with the defaults"): no Lagna row, the Sanskrit reading of
+43.9 (a retrograde graha is excepted from the loss of a third), and the strength of the Lagna, Sun and Moon by the Jaimini rules for signs. The other readings
+are the ones of the section "How the code reads it" below; each can be changed by one line of `src/lib/ayurdaya.ts`.
 
 ## What the text says
 
@@ -26,17 +27,33 @@ leave points open. The list below is what a code would have to settle first.
 | 46.204–206 | Sandhyā and Pācaka: the twelfth of the full life; the sum with "rasa, guṇa" over "candra, vahni" is read differently by each commentator and the cells are not described in the verses |
 | 46.207–209 | Tārā: the Viṃśottarī read by tārās from a strong planet in an angle |
 
-## What would have to be decided before the code is written
+## How the code reads it (`ayurdaya.ts`, v3.70)
 
-1. **43.8, the arc and the divisor.** "bhādimānena" is not clear; the usual reading is a straight line between the half at the debilitation point and the whole at the
+* **Piṇḍāyu (43.6–10).** Full years 19, 25, 15, 12, 15, 21, 20; the arc from the deepest debilitation point (reduced below 180°) gives
+  years = full × (½ + arc / 360°): the half at the debilitation point and the whole at the exaltation point (43.7), in proportion between. Reductions: combust, half
+  (not Venus or Saturn); in an enemy's sign (the natural enemies of the sign's lord), a third, a retrograde graha excepted; by the house from the Lagna 12th: all, 11th: ½,
+  10th: ⅓, 9th: ¼, 8th: ⅕, 7th: ⅙, a benefic losing half of that (the Sun, Mars and Saturn are the malefics; the Moon counts as a benefic whatever its phase, 43.11).
+  Reductions are taken one after another; when two or more apply, the loss is halved (43.22).
+* **Aṃśāyu (43.18–22).** The navāṁśa number of the longitude counted from Aries (of 108), modulo 12, is the years; three times in the exaltation or own sign, twice in the own
+  navāṁśa or drekkāṇa or Vargottama, three times when both (not six); the reductions as above (43.20). The scaling of 43.23 is for other beings than men.
+* **Order (46.202).** The strongest of the Lagna sign, the Sun's sign and the Moon's sign (Jaimini strength of signs); the Sun or the Moon in it comes first, the Lagna has
+  no row; then the grahas in the angles from that sign, the 2nd/5th/8th/11th, the 3rd/6th/9th/12th, each group by the strength of the grahas. One round: the daśās end with the
+  last. A graha with no years has no daśā.
+* **Sub-periods.** The years of the daśā times the years of the lord over the total of the round (51.1), from the lord of the daśā in the order of the round.
+* **Not applied:** 43.11 (of several grahas in a sign only the strong one takes its share), 43.12–13 (the Lagna's degrees and the Sun, Mars and Saturn in the Lagna), the
+  Lagna's own span (43.14–15), the choice between the three spans (43.31–32), Sandhyā, Pācaka and Tārā (46.204–209), and the Bṛhat Jātaka's Āyurdāya.
+
+## What was open (decided by the defaults above where marked)
+
+1. **43.8, the arc and the divisor** (read as the straight line, above). "bhādimānena" is not clear; the usual reading is a straight line between the half at the debilitation point and the whole at the
    exaltation point (years = full × (½ + arc from the debilitation point / 360°)). The verse could also be read to give no half at all at the debilitation point, which
    43.7 contradicts.
-2. **43.9, retrograde.** The Sanskrit excepts a retrograde planet from the loss of a third; the Bṛhat Jātaka says a retrograde planet gives three times (the commentary quoted
+2. **43.9, retrograde** (decided: the Sanskrit). The Sanskrit excepts a retrograde planet from the loss of a third; the Bṛhat Jātaka says a retrograde planet gives three times (the commentary quoted
    in the OCR, "vakrago graha āyurdāyaṃ sabalasvāt triguṇaṃ dadāti"). Which of the two the app should take.
 3. **43.10–11, 43.12–13.** The loss by house, one planet in a sign, the Lagna's reduction: a reduction "of the Piṇḍāyu" which is taken from the planet's years or from a total, and
    in what order the reductions are applied (one after another, or the largest only).
-4. **The Lagna's own span** (43.14 and 43.15 differ by an order of magnitude) and so the first daśā when the Lagna is the strongest of the three in 46.202.
-5. **The strength of the Lagna, the Sun and the Moon** (46.202): the strength of a sign by the Jaimini rules, the Ṣaḍbala, or the Aṣṭakavarga (46.203 mentions it for the results).
+4. **The Lagna's own span** (decided: no Lagna row) (43.14 and 43.15 differ by an order of magnitude) and so the first daśā when the Lagna is the strongest of the three in 46.202.
+5. **The strength of the Lagna, the Sun and the Moon** (46.202; decided: the Jaimini strength of signs): the strength of a sign by the Jaimini rules, the Ṣaḍbala, or the Aṣṭakavarga (46.203 mentions it for the results).
 6. **The sub-periods**: BPHS 47–51 give the Antardaśā of the daśās of 46; whether they are proportional to the years as in 51.1 for these three is not read yet.
 
-Until these are decided any figure given would be a guess dressed as the text.
+What is read above is a reading, not the letter of the text: the figures of the Paiṇḍī and Aṃśī daśās should be taken as such.

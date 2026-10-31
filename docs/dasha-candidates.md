@@ -67,7 +67,7 @@ the sign counted twelve years from the part of it passed), the Pañcasvara (46.1
 lords of 12 years each), the Cakra daśā (46.50–51: from the Lagna by night, the Lagna lord by day, the 2nd at twilight; 10 years each),
 the Tārā daśā (46.207–209: the Viṃśottarī read by the tārās from a strong planet in an angle).
 
-## C. Daśās of the length of life
+## C. Daśās of the length of life — the Paiṇḍī and the Aṃśī in the app since v3.70, see `ayurdaya-vs-sources.md`
 
 | Daśā | The rule | Where |
 |---|---|---|
