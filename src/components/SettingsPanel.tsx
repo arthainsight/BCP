@@ -36,7 +36,6 @@ const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showCharaKaraka', label: 'karaka' },
   { key: 'showOuterPlanets', label: 'outer planets' },
   { key: 'showSpecialLagnas', label: 'special lagnas' },
-  { key: 'showPanchang', label: 'panchang' },
 ];
 
 // The coloured layers listed in the chart legend.

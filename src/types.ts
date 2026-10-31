@@ -132,7 +132,6 @@ export interface ChartDisplaySettings {
   showCharaKaraka: boolean;
   showOuterPlanets: boolean;
   showSpecialLagnas: boolean;
-  showPanchang: boolean;
   showBnnMajorHighlight: boolean;
   showBnnMinorHighlight: boolean;
   showTransitOverlay: boolean;
@@ -168,7 +167,6 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showCharaKaraka: false,
   showOuterPlanets: false,
   showSpecialLagnas: false,
-  showPanchang: false,
   showBnnMajorHighlight: false,
   showBnnMinorHighlight: false,
   showTransitOverlay: false,

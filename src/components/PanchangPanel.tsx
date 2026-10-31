@@ -11,11 +11,16 @@ interface Props {
   utcOffsetHours: number;
   ayanamsaName: string;
   nakshatraAdjust?: number;
+  /** The chart is one with grahas or the Lagna moved by hand: the panchāṅga is read from it as it stands. */
+  edited?: boolean;
+  /** Whether the rows are shown, and the switch for it. */
+  open?: boolean;
+  onToggle?: () => void;
 }
 
 function Row({ label, value }: { label: string; value: string | null }) {
   return (
-    <div className="flex items-baseline gap-2">
+    <div className="flex items-baseline gap-2" data-panchang-row={label}>
       <span className="w-28 shrink-0 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
         {label}
       </span>
@@ -53,7 +58,7 @@ function PanchangRows({ p }: { p: PanchangResult }) {
   );
 }
 
-export default function PanchangPanel({ chart, birthDatetime, utcOffsetHours, ayanamsaName, nakshatraAdjust = 0 }: Props) {
+export default function PanchangPanel({ chart, birthDatetime, utcOffsetHours, ayanamsaName, nakshatraAdjust = 0, edited = false, open = true, onToggle }: Props) {
   const t = useT();
   if (!chart) {
     return (
@@ -66,14 +71,34 @@ export default function PanchangPanel({ chart, birthDatetime, utcOffsetHours, ay
   const p = calculatePanchang(chart, birthDatetime, utcOffsetHours, ayanamsaName, nakshatraAdjust);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; panchang</div>
-        <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
-          {t('times shown in local birth timezone · vāra and horā counted from sunrise')}
+    <div className="space-y-4" data-panchang>
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-xs font-mono text-zinc-500 dark:text-zinc-500">&gt; panchang</div>
+          {open && (
+            <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600 mt-1">
+              {t('times shown in local birth timezone · vāra and horā counted from sunrise')}
+            </div>
+          )}
+          {edited && (
+            <div className="mt-1 text-[10px] font-mono text-amber-700 dark:text-amber-400" data-panchang-edited>
+              {t('of the edited chart: tithi, nakṣatra, karaṇa and yoga follow the grahas where they have been moved; vāra, horā, masa and the times are those of the real moment')}
+            </div>
+          )}
         </div>
+        {onToggle && (
+          <button
+            type="button"
+            onClick={onToggle}
+            aria-expanded={open}
+            aria-label={open ? t('hide the panchang') : t('show the panchang')}
+            className="shrink-0 rounded border border-zinc-200 px-1.5 py-0.5 text-[9px] text-zinc-500 hover:text-zinc-800 dark:border-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-100"
+          >
+            {open ? '−' : '+'}
+          </button>
+        )}
       </div>
-      <PanchangRows p={p} />
+      {open && <PanchangRows p={p} />}
     </div>
   );
 }

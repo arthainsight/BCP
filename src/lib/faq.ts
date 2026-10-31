@@ -173,6 +173,23 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     },
   },
 
+  {
+    id: 'chart-edit',
+    section: 'charts',
+    q: { en: 'How do I see the panchang with the chart, and move a graha to another house?', fi: 'Miten näen panchangin kartan kanssa ja siirrän grahan toiseen taloon?' },
+    a: {
+      en: [
+        'CHART shows the panchang (vāra, tithi, nakṣatra, karaṇa, yoga, horā, the times of sunrise and sunset, masa) under the chart. The − button folds it away and it stays folded until you open it again.',
+        'To try a chart other than the calculated one, press ✎ edit above the chart. Pick a graha, the Lagna, or Rāhu (which takes Ketu with it) from the buttons, or tap the graha in the chart, and move it with ◀ previous house and next house ▶. The graha keeps its degree in the sign. The houses, the Āruḍha padas, the divisional charts and the panchang follow, so the effect of a move can be seen at once: the tithi, nakṣatra, karaṇa and yoga are read from the Sun and the Moon where they stand in the edited chart. Moving the Lagna turns all the houses round it.',
+        'The moves are not saved, a new calculation starts without them, and the other workspaces keep showing the calculated chart. The vāra, horā, masa and the times are those of the real moment, and the special lagnas are left out while a move stands. "back to where it was" takes one graha back, "↺ reset all" every one.',
+      ],
+      fi: [
+        'KARTTA näyttää panchangin (vāra, tithi, nakṣatra, karaṇa, yoga, horā, auringonnousun ja -laskun ajat, masa) kartan alla. −-painike piilottaa sen, ja se pysyy piilossa kunnes avaat sen uudelleen.',
+        'Voit kokeilla muuta karttaa kuin laskettua painamalla kartan yläpuolelta ✎ muokkaa. Valitse painikkeista graha, Lagna tai Rāhu (joka vie Keturin mukanaan) tai napauta grahaa kartassa, ja siirrä se ◀ edellinen talo- ja seuraava talo ▶ -painikkeilla. Graha säilyttää asteensa merkissä. Talot, Āruḍha-padat, jakokartat ja panchang seuraavat mukana, joten siirron vaikutuksen näkee heti: tithi, nakṣatra, karaṇa ja yoga luetaan Auringosta ja Kuusta siitä, missä ne ovat muokatussa kartassa. Lagnan siirto kääntää kaikki talot sen ympäri.',
+        'Siirtoja ei tallenneta, uusi laskenta alkaa ilman niitä, ja muut työtilat näyttävät edelleen lasketun kartan. Vāra, horā, masa ja kellonajat ovat todelliselta hetkeltä, ja erikoislagnat jätetään pois niin kauan kuin siirto on voimassa. "takaisin paikalleen" palauttaa yhden grahan, "↺ palauta kaikki" kaikki.',
+      ],
+    },
+  },
   // ── Timing ─────────────────────────────────────────────────────────
   {
     id: 'muhurta-finder',
@@ -565,11 +582,11 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'How do I add a palm photograph?', fi: 'Miten lisään kuvan kämmenestä?' },
     a: {
       en: [
-        'Open LIFE and press Upload photos, or drop a picture on the page. On a phone, Take a photo opens the camera. Give the photograph a name and say whether it is the right or the left hand. A photograph is deleted with the 🗑 button, after a confirmation.',
+        'Open PALM and press Upload photos, or drop a picture on the page. On a phone, Take a photo opens the camera. Give the photograph a name and say whether it is the right or the left hand. A photograph is deleted with the 🗑 button, after a confirmation.',
         'The photographs stay on your device, in the browser; nothing is sent anywhere. Clearing the browser data deletes them, so keep a backup (see below) or a copy as a picture.',
       ],
       fi: [
-        'Avaa ELÄMÄ-työtila ja paina Lataa kuvia tai pudota kuva sivulle. Puhelimessa Ota kuva avaa kameran. Anna kuvalle nimi ja kerro, onko se oikea vai vasen käsi. Kuva poistetaan 🗑-painikkeella vahvistuksen jälkeen.',
+        'Avaa KÄMMEN-työtila ja paina Lataa kuvia tai pudota kuva sivulle. Puhelimessa Ota kuva avaa kameran. Anna kuvalle nimi ja kerro, onko se oikea vai vasen käsi. Kuva poistetaan 🗑-painikkeella vahvistuksen jälkeen.',
         'Kuvat pysyvät laitteellasi, selaimessa; mitään ei lähetetä minnekään. Selaimen tietojen tyhjennys poistaa ne, joten säilytä varmuuskopio (katso alla) tai kopio kuvana.',
       ],
     },
@@ -617,7 +634,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'How do I compare two hands?', fi: 'Miten vertaan kahta kättä?' },
     a: {
       en: [
-        'With two or more photographs in LIFE, the Compare button shows two of them side by side, with their drawings. The open photograph is on the left and, if you have said which hand each one is, the other hand on the right; either side can be changed from its list.',
+        'With two or more photographs in PALM, the Compare button shows two of them side by side, with their drawings. The open photograph is on the left and, if you have said which hand each one is, the other hand on the right; either side can be changed from its list.',
         'The zoom and the place are shared: zoom or move one photograph and the other goes to the same place at the same zoom, even when the two photographs are different shapes. Fit to window on either one fits both. Untick link the zoom to move them separately.',
       ],
       fi: [
@@ -631,7 +648,7 @@ export const FAQ_ENTRIES: FaqEntry[] = [
   {
     id: 'split',
     section: 'workspace',
-    q: { en: 'How do I see CHART, TIMING, ANALYSIS and LIFE at the same time?', fi: 'Miten näen KARTAN, AJANKOHDAN, ANALYYSIN ja ELÄMÄ-työtilan yhtä aikaa?' },
+    q: { en: 'How do I see CHART, TIMING, ANALYSIS and PALM at the same time?', fi: 'Miten näen KARTAN, AJANKOHDAN, ANALYYSIN ja KÄMMEN-työtilan yhtä aikaa?' },
     a: {
       en: [
         'Press ⊞ split beside the workspaces. The workspaces become switches, and every one that is on is shown side by side. With more than two panes you can choose one row or two rows, or leave it to the screen. On a phone the panes are stacked one under the other. Settings stays a screen of its own.',
@@ -649,10 +666,10 @@ export const FAQ_ENTRIES: FaqEntry[] = [
     q: { en: 'What does the full button do?', fi: 'Mitä full-painike tekee?' },
     a: {
       en: [
-        'TIMING, ANALYSIS and LIFE each have a ⤢ full button. It gives the workspace the whole width of a wide screen and the chart steps aside; ⤡ narrow brings the chart back. Each workspace remembers its own choice.',
+        'TIMING, ANALYSIS and PALM each have a ⤢ full button. It gives the workspace the whole width of a wide screen and the chart steps aside; ⤡ narrow brings the chart back. Each workspace remembers its own choice.',
       ],
       fi: [
-        'AJANKOHDALLA, ANALYYSILLA ja ELÄMÄ-työtilalla on kullakin ⤢ full -painike. Se antaa työtilalle leveän näytön koko leveyden ja kartta väistyy; ⤡ narrow tuo kartan takaisin. Jokainen työtila muistaa oman valintansa.',
+        'AJANKOHDALLA, ANALYYSILLA ja KÄMMEN-työtilalla on kullakin ⤢ full -painike. Se antaa työtilalle leveän näytön koko leveyden ja kartta väistyy; ⤡ narrow tuo kartan takaisin. Jokainen työtila muistaa oman valintansa.',
       ],
     },
   },

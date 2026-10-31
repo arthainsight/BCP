@@ -4,17 +4,17 @@ import { Fragment } from 'react';
 import { useT } from '@/lib/i18n';
 import { SPLIT_ROWS, SPLIT_WORKSPACES, type SplitRows } from '@/lib/splitView';
 
-// The primary workspaces plus the global Settings gear. Research lives in LIBRARY,
-// while LIFE keeps the existing palm workspace under a broader workspace label.
+// The primary workspaces plus the global Settings gear. Research lives in LIBRARY; PALM, the palm workspace, comes
+// between TIMING and LIBRARY.
 export type Workspace = 'chart' | 'timing' | 'analysis' | 'palm' | 'library' | 'settings';
 
 type Item = { id: Workspace; label: string; gear?: boolean };
 
 const ITEMS: Item[] = [
   { id: 'chart', label: 'CHART' },
-  { id: 'palm', label: 'LIFE' },
   { id: 'analysis', label: 'ANALYSIS' },
   { id: 'timing', label: 'TIMING' },
+  { id: 'palm', label: 'PALM' },
   { id: 'library', label: 'LIBRARY' },
   { id: 'settings', label: '⚙', gear: true },
 ];

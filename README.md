@@ -105,12 +105,12 @@ Overlap and Systems), among them:
 
 ### Palmistry, sharing and reports
 
-* **LIFE** workspace (palm photography and annotation): photographs of palms with a pen, lines, arrows, circles,
+* **PALM** workspace (palm photography and annotation): photographs of palms with a pen, lines, arrows, circles,
   a ruler (in pixels or centimetres), age scales, text and pins, an eraser,
   reshaping, and two photographs side by side with a shared zoom
 * **REPORT**: a printable client report (chart, timing summary, palm photographs)
 * **SHARE**: a link that carries the birth data and opens the chart
-* A split view that shows CHART, TIMING, ANALYSIS and LIFE together, a screen
+* A split view that shows CHART, TIMING, ANALYSIS and PALM together, a screen
   recorder, an English and Finnish interface, and a user guide at `/help`
 
 ---
