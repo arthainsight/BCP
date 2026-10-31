@@ -13,6 +13,7 @@ import {
   SANKRANTI_ARC_MINUTES, SANKRANTI_SOLSTICE_DEGREES, isLimited, localParts, nakshatraOf, scoredKeys, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule, type PreferKey,
 } from '@/lib/muhurtaFinder';
 import { DOSHAS, DOSHAS_NOT_WORKED_OUT, DOSHA_IDS, isDoshaId, type DoshaId } from '@/lib/mahadosha';
+import { PARIHARA_MODES, REGION_IDS, REGION_NAMES, isPariharaMode, isRegionId, type PariharaMode, type RegionId } from '@/lib/mahadoshaParihara';
 import { D1_KEYS, D1_WISHES, isD1Key, type D1Key } from '@/lib/muhurtaD1';
 import { FINDER_PRESETS, FINDER_PRESET_CATEGORIES, NOT_APPLIED, type FinderPreset } from '@/lib/muhurtaFinderPresets';
 import type { FinderResult } from '@/lib/muhurtaFinderRun';
@@ -68,6 +69,16 @@ type Choices = {
   /** The part of the nakṣatra that is Gaṇḍānta, and the time of Vyatipāta and Vaidhṛti. */
   gandantaNakshatra: 'pada' | 'four' | 'two';
   vyatipataLength: 'days' | 'short';
+  /** How much of the neutralisations of the Muhūrtacintāmaṇi is applied, and the countries of the place (null: not named, every fault counts). */
+  parihara: PariharaMode;
+  regions: RegionId[] | null;
+};
+
+const PARIHARA_LABELS: Record<PariharaMode, string> = {
+  off: 'none: every fault counts',
+  named: 'the exception named with each fault (the text)',
+  broad: 'also the verses that name a list of faults and what destroys them (v. 89, 90)',
+  all: 'also the verse that burns every fault (v. 91): lets most times through',
 };
 
 const allChoices = (): Choices => ({
@@ -85,6 +96,8 @@ const allChoices = (): Choices => ({
   sankrantiSolstice: SANKRANTI_SOLSTICE_DEGREES,
   gandantaNakshatra: 'pada',
   vyatipataLength: 'days',
+  parihara: 'named',
+  regions: null,
 });
 
 /**
@@ -135,6 +148,9 @@ function readChoices(): Choices {
     if (typeof saved.sankrantiSolstice === 'number' && saved.sankrantiSolstice >= 0 && saved.sankrantiSolstice <= 15) choices.sankrantiSolstice = saved.sankrantiSolstice;
     if (saved.gandantaNakshatra === 'pada' || saved.gandantaNakshatra === 'four' || saved.gandantaNakshatra === 'two') choices.gandantaNakshatra = saved.gandantaNakshatra;
     if (saved.vyatipataLength === 'days' || saved.vyatipataLength === 'short') choices.vyatipataLength = saved.vyatipataLength;
+    if (typeof saved.parihara === 'string' && isPariharaMode(saved.parihara)) choices.parihara = saved.parihara;
+    if (saved.regions === null) choices.regions = null;
+    else if (Array.isArray(saved.regions)) choices.regions = [...new Set((saved.regions as unknown[]).filter((item): item is RegionId => typeof item === 'string' && isRegionId(item)))];
     const signs = saved.signs as Partial<Record<string, unknown>> | undefined;
     for (const graha of FINDER_GRAHAS) choices.signs[graha] = list(signs?.[graha], 0, 12) ?? choices.signs[graha];
     if (Array.isArray(saved.rules)) {
@@ -262,7 +278,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     const chandra = natalMoonSign !== undefined && isLimited(choices.chandra, 12) ? { moonSign: natalMoonSign, houses: choices.chandra } : undefined;
     const tara = natalNakshatra !== undefined && isLimited(choices.tara, 9) ? { nakshatra: natalNakshatra, taras: choices.tara } : undefined;
     const natal = natalMoonSign !== undefined && natalAscSign !== undefined ? { ascSign: natalAscSign, moonSign: natalMoonSign } : undefined;
-    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, tara, prefer: choices.prefer, d1: choices.d1, minScore: choices.minScore, avoid: choices.avoid, natal, sankrantiArc: choices.sankrantiArc, sankrantiSolstice: choices.sankrantiSolstice, gandantaNakshatra: choices.gandantaNakshatra, vyatipataLength: choices.vyatipataLength };
+    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, tara, prefer: choices.prefer, d1: choices.d1, minScore: choices.minScore, avoid: choices.avoid, natal, sankrantiArc: choices.sankrantiArc, sankrantiSolstice: choices.sankrantiSolstice, gandantaNakshatra: choices.gandantaNakshatra, vyatipataLength: choices.vyatipataLength, parihara: choices.parihara, regions: choices.regions ?? undefined };
   }, [choices, natalMoonSign, natalAscSign, natalNakshatra]);
   const impossible = isImpossible(criteria);
   // The wishes that limit something, and the most a stretch can score.
@@ -316,6 +332,8 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
       }
       if (choices.avoid.includes('gandanta')) params.set('gandanta', choices.gandantaNakshatra);
       if (choices.avoid.includes('vyatipata') || choices.avoid.includes('vaidhriti')) params.set('vyatipata', choices.vyatipataLength);
+      params.set('parihara', choices.parihara);
+      if (choices.regions) params.set('regions', choices.regions.join(','));
     }
     const id = ++request.current;
     setState({ loading: true, tz });
@@ -726,6 +744,49 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
             </select>
           </label>
         )}
+        <div className="space-y-1 rounded-md border border-zinc-200 p-1.5 dark:border-zinc-700" data-finder-parihara>
+          <label className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+            <span className="font-semibold text-zinc-700 dark:text-zinc-200">{t('Neutralisations (pariharas)')}</span>
+            <select
+              value={choices.parihara}
+              onChange={event => set('parihara', event.target.value as PariharaMode)}
+              className="rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+              aria-label={t('Neutralisations (pariharas)')}
+            >
+              {PARIHARA_MODES.map(mode => <option key={mode} value={mode}>{t(PARIHARA_LABELS[mode])}</option>)}
+            </select>
+          </label>
+          <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+            {t('A fault is not always a fault: the Muhūrtacintāmaṇi (Rāma Daivajña, 1600) lists what destroys each. The exception the text gives with a fault is on at the start; the verses that name a whole list of faults and what destroys them all make the search much looser.')}
+          </p>
+          <label className="flex cursor-pointer items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+            <input
+              type="checkbox"
+              checked={choices.regions !== null}
+              onChange={() => set('regions', choices.regions === null ? [] : null)}
+              aria-label={t('Name the countries of the place')}
+            />
+            <span>{t('Name the countries of the place (some faults are bound to a country by the text; with none named every fault counts everywhere)')}</span>
+          </label>
+          {choices.regions && (
+            <div className="grid gap-0.5 pl-5 lg:grid-cols-2">
+              {REGION_IDS.map(region => {
+                const on = choices.regions!.includes(region);
+                return (
+                  <label key={region} className="flex cursor-pointer items-center gap-1.5 text-[10px] font-mono text-zinc-600 dark:text-zinc-300" data-finder-region={region}>
+                    <input
+                      type="checkbox"
+                      checked={on}
+                      onChange={() => set('regions', on ? choices.regions!.filter(item => item !== region) : [...choices.regions!, region])}
+                      aria-label={t(REGION_NAMES[region].name)}
+                    />
+                    <span>{t(REGION_NAMES[region].name)} <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{t(REGION_NAMES[region].what)}</span></span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </div>
         <details className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
           <summary className="cursor-pointer">{t('Not worked out')} ({DOSHAS_NOT_WORKED_OUT.length})</summary>
           <ul className="mt-1 space-y-0.5">

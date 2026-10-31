@@ -3,6 +3,9 @@
 // yogas of his article "Muhurta Yogas"): those that can be worked out from the sky, with the definition the text gives,
 // are here; the others are listed with the reason they are not (a table that is not in the text, or a thing that is not a
 // reading of the sky). Nothing is filled in from memory: docs/mahadosha-sources.md says where each table comes from.
+// The rule of the Sanskrit is the Muhūrtacintāmaṇi of Rāma Daivajña (1600), whose chapter on marriage is the one that names
+// most of these faults, their neutralisations (pariharas, mahadoshaParihara.ts) and the countries they are bound to:
+// docs/mahadosha-vs-muhurta-chintamani.md sets each of them beside its verse.
 //
 // This file is the part that needs no ephemeris: whether a moment, given the longitudes of the grahas, has a doṣa.
 // What happens in a span of time (a Saṅkrānti, an eclipse, a Vyatipāta, the Vara Vishanadi, the Rāhu Kāla of a day) is
@@ -12,6 +15,12 @@ import { MALEFICS, houseFrom, karanaOf, nakshatraOf, signOf, tithiOf, yogaOf, ty
 import { NAKSHATRA_LORDS, NAKSHATRA_SIZE } from './nakshatras';
 import { SIGN_LORDS } from './signs';
 import { getVargaSignIndex } from './varga';
+import {
+  DAGDHA_TITHI_OF_SUN_SIGN, GENERAL_EXEMPT, SUN_MOON_DESTROYS, isWeakMalefic, leoJupiterApplies, reliefOf, regionAllows, signRelation,
+  type PariharaMode, type Relief, type RegionId,
+} from './mahadoshaParihara';
+import { combustionOf } from './combustion';
+import { NATURAL_FRIENDS } from './dignity';
 
 /** The doṣas that are worked out. */
 export const DOSHA_IDS = [
@@ -19,7 +28,7 @@ export const DOSHA_IDS = [
   'sangraha', 'ashtamaLagna', 'vishaGhati', 'durmuhurta', 'varaDosha',
   'ekargala', 'dashaYoga', 'jamitra', 'latta', 'upagraha', 'pata',
   'eclipse', 'kunavamsa', 'vyatipata', 'vaidhriti',
-  'shunyaRasi', 'blindDeafLame', 'mrityubhaga',
+  'shunyaRasi', 'blindDeafLame', 'mrityubhaga', 'dagdha', 'jupiterVenus',
 ] as const;
 export type DoshaId = (typeof DOSHA_IDS)[number];
 export const isDoshaId = (value: string): value is DoshaId => (DOSHA_IDS as readonly string[]).includes(value);
@@ -65,19 +74,23 @@ export const DOSHAS: Record<DoshaId, DoshaInfo> = {
   kartari: {
     number: 8, name: 'Kartarī doṣa',
     what: 'Malefics in both the 2nd and the 12th from the Ascendant, from the 7th house or from the Moon.',
-    notApplied: 'The kāraka house.',
+    notApplied: 'The kāraka house and that the text (v. 44) has the one in the 2nd retrograde and the one in the 12th direct. The malefics in the sign of an enemy, in their fall or combust, which take the fault away from the Lagna and the 7th (v. 88), are the exception of the text (a pariharā).',
   },
   chandraShadashtaka: { number: 9, name: 'Ṣaḍaṣṭariṣpha Candra doṣa', what: 'The Moon in the 6th, 8th or 12th house from the Ascendant.' },
-  sangraha: { number: 10, name: 'Saṅgraha', what: 'The Moon in the same sign as another graha (Sun to Saturn, Rāhu, Ketu).' },
+  sangraha: {
+    number: 10, name: 'Saṅgraha',
+    what: 'The Moon in the same sign as the Sun, Mars, Venus, Saturn, Rāhu or Ketu (v. 45: poverty, death, a rival wife, renunciation; with two malefics, death). Mercury and Jupiter with the Moon are not a fault: the text calls it good and happiness.',
+    notApplied: 'Nothing; the Moon in the sign of a friend, in its own or exalted sign or Vargottama is the exception of the text (a pariharā).',
+  },
   ashtamaLagna: {
     number: 11, name: 'Aṣṭama Lagna',
-    what: 'The Lagna in the sign that is the 8th from the Ascendant of the birth chart, or the 8th from its Moon.',
-    notApplied: 'The spouse\'s chart and the exception of friendly lords.',
+    what: 'The Lagna in the sign that is the 8th from the Ascendant of the birth chart, or the 8th from its Moon (v. 46).',
+    notApplied: 'The spouse\'s chart, the Navāṁśa and the 12th (v. 48), and the other exception of the 8th lord in an angle or in exaltation. The friendly lords are the exception of the text (a pariharā).',
   },
   vishaGhati: {
     number: 12, name: 'Viṣa Ghaṭī (Viṣanāḍī)',
-    what: 'The 4 nāḍīs of poison of the tithi (its table, by the Sun–Moon distance), of the nakṣatra (its table, by the Moon\'s longitude; Rohiṇī, Mṛgaśīrṣa, Ārdrā, Svāti, Anurādhā, Uttara Āṣāḍhā and Śravaṇa have none) and of the weekday (4 nāḍīs from the nāḍī of its table after sunrise).',
-    notApplied: 'The Viṣanāḍī of the Lagna (by its navāṁśa and the weekday) and the exceptions.',
+    what: 'The 4 nāḍīs of poison of the tithi (its table, by the Sun–Moon distance), of the nakṣatra (its table of all 27, by the Moon\'s longitude) and of the weekday (4 nāḍīs from the nāḍī of its table after sunrise).',
+    notApplied: 'The Viṣanāḍī of the Lagna (by its navāṁśa and the weekday). The Moon in an angle or a trine but not the Lagna is the exception of the commentary (a pariharā). The table of the tithis is the one of Wilhelm\'s book; the printed table of the Muhūrtacintāmaṇi is a picture that has not been compared with it.',
   },
   durmuhurta: {
     number: 13, name: 'Dūrmuhūrta',
@@ -87,7 +100,7 @@ export const DOSHAS: Record<DoshaId, DoshaInfo> = {
   varaDosha: {
     number: 14, name: 'Vāra Doṣa',
     what: 'Rāhu Kāla, Yamaghaṇṭa (Yamagaṇḍa) and Ardhayāma of the day.',
-    notApplied: 'Kulika and Kāla Velā (the tables are not in the text).',
+    notApplied: 'Kulika (the table of v. 65 of the Muhūrtacintāmaṇi is not typed in until its printed page is checked) and Kāla Velā (not in the text).',
   },
   ekargala: {
     number: 15, name: 'Ekārgalā (Daśa Doṣa)',
@@ -145,6 +158,16 @@ export const DOSHAS: Record<DoshaId, DoshaInfo> = {
   what: 'The Lagna in a blind sign (Aries, Taurus, Leo by day; Gemini, Cancer, Virgo by night), a deaf sign (Libra, Scorpio by day; Capricorn, Sagittarius by night) or a lame sign (Aquarius by day, Pisces by night).',
   notApplied: 'The exceptions (benefics in the angles, Jupiter aspecting the Lagna or its lord, and the like). Day is from sunrise to sunset of the place.',
 },
+  dagdha: {
+    number: 0, name: 'Dagdha tithi (Māsa-dagdha)',
+    what: 'The tithi of the half that is burnt by the sign of the Sun (v. 66): the 2nd with the Sun in Sagittarius or Pisces, the 4th in Taurus or Aquarius, the 6th in Cancer or Aries, the 8th in Gemini or Virgo, the 10th in Leo or Scorpio, the 12th in Capricorn or Libra, in either half.',
+    notApplied: 'The text says these are described for Madhyadeśa only: with the region chosen the fault counts only there.',
+  },
+  jupiterVenus: {
+    number: 0, name: 'Guru and Śukra (asta, Siṃha, Makara)',
+    what: 'Jupiter or Venus combust (asta, v. 46 and 47: the works are not done then), and Jupiter in Leo or Capricorn, where the works of the asta are forbidden too (v. 48). Jupiter in Leo is forbidden over the whole sign in the land between the Gaṅgā and the Godāvarī and in Kaliṅga, Gauḍa and Gurjara, elsewhere only in the first 16°40′ of Leo (v. 50 and 51), and not at all with the Sun in Aries (v. 49 and 51).',
+    notApplied: 'The childhood and old age of the two grahas (a few days after and before the asta), Jupiter retrograde or going fast, Guru–Āditya (Jupiter in the sign of the Sun) and the Viśvaghasra half-month, which the text gives as other views; and that the Siṃha fault concerns marriage and the thread ceremony only, as the commentary on v. 49 has it (the finder does not know the purpose). The orbs of the asta are the usual ones, not the text\'s (it gives none).',
+  },
   mrityubhaga: {
   number: 0, name: 'Mṛtyubhāga (fatal degrees)',
   what: 'The Lagna, the Moon, the Lagna lord, the lord of the Moon\'s nakṣatra or the lord of the yoga within one degree of its fatal degree in the sign (the book\'s table of the degrees of each planet, Rāhu, Ketu and the Lagna in the twelve signs).',
@@ -180,9 +203,15 @@ export const SHUNYA_TITHIS_DARK = [[8, 9], [12], [14], [6], [2, 3], [1, 2], [10,
 
 /** The nādi at which the Viṣanāḍī (4 nāḍīs) of each of the 15 tithis begins, in the 60 nāḍīs of a tithi (0.2° of Sun–Moon distance each). */
 export const TITHI_VISHANADI_START = [24, 12, 55, 5, 54, 5, 34, 10, 21, 7, 29, 6, 13, 21, 35];
-/** The nāḍī at which the Viṣanāḍī of each of the 27 nakṣatras begins, in its 60 nāḍīs (13°20′/60 each); Mūla has two. Rohiṇī, Mṛgaśīrṣa, Ārdrā, Svāti, Anurādhā, Uttara Āṣāḍhā and Śravaṇa have none of significance. */
-export const NAKSHATRA_VISHANADI_START: (number[] | null)[] = [
-  [50], [24], [30], null, null, null, [30], [20], [32], [30], [20], [18], [21], [20], null, [14], null, [14], [20, 56], [24], null, null, [10], [18], [16], [24], [30],
+/**
+ * The nāḍī at which the Viṣanāḍī of each of the 27 nakṣatras begins, in its 60 nāḍīs (13°20′/60 each): the table of the
+ * Muhūrtacintāmaṇi (vivāha, v. 49 to 51), which gives all 27. Aśvinī 50, Bharaṇī 24, Kṛttikā 30, Rohiṇī 40, Mṛgaśīrṣa 14, Ārdrā 21,
+ * Punarvasu 30, Puṣya 20, Āśleṣā 32, Maghā 30, Pūrva Phalgunī 20, Uttara Phalgunī 18, Hasta 21, Citrā 20, Svātī 14, Viśākhā 14,
+ * Anurādhā 10, Jyeṣṭhā 14, Mūla 56, Pūrva Āṣāḍhā 24, Uttara Āṣāḍhā 20, Śravaṇa 10, Dhaniṣṭhā 10, Śatabhiṣā 18, Pūrva Bhādrapadā 16,
+ * Uttara Bhādrapadā 24, Revatī 30.
+ */
+export const NAKSHATRA_VISHANADI_START: number[] = [
+  50, 24, 30, 40, 14, 21, 30, 20, 32, 30, 20, 18, 21, 20, 14, 14, 10, 14, 56, 24, 20, 10, 10, 18, 16, 24, 30,
 ];
 /** The nāḍī after sunrise at which the Viṣanāḍī of each weekday begins (the weekday from sunrise to the next, in 60 nāḍīs). */
 export const VARA_VISHANADI_START = [30, 42, 41, 31, 2, 22, 20];
@@ -261,11 +290,15 @@ const NEEDS: Record<DoshaId, DoshaNeeds> = {
   shunyaRasi: { luminaries: true, asc: true, grahas: [] },
   blindDeafLame: { luminaries: false, asc: true, grahas: [] },
   mrityubhaga: { luminaries: true, asc: true, grahas: [...ALL_OTHERS] },
+  dagdha: { luminaries: true, asc: false, grahas: [] },
+  jupiterVenus: { luminaries: true, asc: false, grahas: ['Jupiter', 'Venus'] },
 };
-export const doshaNeeds = (id: DoshaId): DoshaNeeds => NEEDS[id];
+/** What the doṣa needs of a moment; with the pariharas on, the whole sky (the strength of the grahas, the houses from the Lagna). */
+export const doshaNeeds = (id: DoshaId, parihara?: PariharaMode): DoshaNeeds =>
+  parihara && parihara !== 'off' && !EVENT_DOSHAS.includes(id) ? { luminaries: true, asc: true, grahas: ALL_OTHERS } : NEEDS[id];
 
 /** Whether the doṣa depends on the Ascendant, which changes sign in an hour or two. */
-export const doshaUsesAscendant = (id: DoshaId) => NEEDS[id].asc;
+export const doshaUsesAscendant = (id: DoshaId, parihara?: PariharaMode) => doshaNeeds(id, parihara).asc;
 
 /** The sky of a moment, as far as the doṣas asked for need it. Longitudes are sidereal; Ketu is always opposite Rāhu. */
 export interface DoshaSky {
@@ -280,12 +313,18 @@ export interface DoshaSky {
   masa?: number;
   /** Whether the Sun is above the horizon (sunrise to sunset of the place), for the blind and deaf signs. */
   day?: boolean;
+  /** Which of the grahas go backwards (the orb of a combust Mercury and Venus is narrower then); a graha not named is direct. */
+  retro?: Partial<Record<FinderGraha, boolean>>;
 }
 
 /** What the choices of the user change in the doṣas of a sky. */
 export interface DoshaOptions {
   /** The part of the nakṣatra that is Gaṇḍānta: the pada (3°20′, the text), 4 ghaṭīs (53′20″) or 2 ghaṭīs (26′40″). */
   gandantaNakshatra?: 'pada' | 'four' | 'two';
+  /** How much of the neutralisations of the text is applied (none if not given). */
+  parihara?: PariharaMode;
+  /** The countries the place is in, for the faults the text binds to a country; not given, every fault counts. */
+  regions?: RegionId[];
 }
 
 /** The longitude of a graha in a sky. */
@@ -349,12 +388,14 @@ const NINE: FinderGraha[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus
 export type PanchangaReason = 'vara' | 'tithi' | 'shunya' | 'karana' | 'yoga' | 'yamaghanta' | 'mrityu';
 
 /** Which of the faults of the Pañcāṅga Doṣa a sky has. */
-export function panchangaReasons(sky: DoshaSky): PanchangaReason[] {
+export function panchangaReasons(sky: DoshaSky, relief?: Relief): PanchangaReason[] {
   const reasons: PanchangaReason[] = [];
   const tithi = tithiOf(sky.sun, sky.moon);
   if (sky.vara === 0 || sky.vara === 2) reasons.push('vara');
-  if (RIKTA_TITHIS.includes(tithi)) reasons.push('tithi');
-  if (sky.masa !== undefined) {
+  // The faults of the tithi and of the month (v. 89 and 90) are destroyed by the planets that strengthen the Lagna.
+  const tithiFaults = !relief?.faultsOfLagna;
+  if (tithiFaults && RIKTA_TITHIS.includes(tithi)) reasons.push('tithi');
+  if (tithiFaults && sky.masa !== undefined) {
     const inHalf = ((tithi - 1) % 15) + 1;
     const bright = tithi <= 15 ? SHUNYA_TITHIS_BRIGHT : SHUNYA_TITHIS_DARK;
     if (SHUNYA_TITHIS_MONTH[sky.masa].includes(inHalf) || bright[sky.masa].includes(inHalf)) reasons.push('shunya');
@@ -372,10 +413,10 @@ export function vishanadiOfSky(sky: DoshaSky): { tithi: boolean; nakshatra: bool
   const tithiStart = TITHI_VISHANADI_START[tithiOf(sky.sun, sky.moon) <= 15 ? tithiOf(sky.sun, sky.moon) - 1 : tithiOf(sky.sun, sky.moon) - 16] * (12 / 60);
   const index = nakshatraOf(sky.moon);
   const withinNakshatra = normalize(sky.moon) - index * NAKSHATRA_SIZE;
-  const starts = NAKSHATRA_VISHANADI_START[index];
+  const start = NAKSHATRA_VISHANADI_START[index];
   return {
     tithi: withinTithi >= tithiStart && withinTithi < tithiStart + VISHANADI_NADIS * (12 / 60),
-    nakshatra: !!starts && starts.some(start => withinNakshatra >= start * (NAKSHATRA_SIZE / 60) && withinNakshatra < (start + VISHANADI_NADIS) * (NAKSHATRA_SIZE / 60)),
+    nakshatra: withinNakshatra >= start * (NAKSHATRA_SIZE / 60) && withinNakshatra < (start + VISHANADI_NADIS) * (NAKSHATRA_SIZE / 60),
   };
 }
 
@@ -418,8 +459,11 @@ export function jamitraNavamsa(sky: DoshaSky): boolean {
   return occupies((getVargaSignIndex(sky.asc, 9) + 6) % 12, []) || occupies((getVargaSignIndex(sky.moon, 9) + 6) % 12, ['Moon', 'Mercury']);
 }
 
-const HAS: Record<DoshaId, (sky: DoshaSky, natal?: DoshaNatal, options?: DoshaOptions) => boolean> = {
-  panchanga: sky => panchangaReasons(sky).length > 0,
+/** The pariharas of the sky at the mode asked for, worked out when first needed. */
+type ReliefOf = () => Relief | undefined;
+
+const HAS: Record<DoshaId, (sky: DoshaSky, natal: DoshaNatal | undefined, options: DoshaOptions | undefined, relief: ReliefOf) => boolean> = {
+  panchanga: (sky, _natal, _options, relief) => panchangaReasons(sky, relief()).length > 0,
   udayasta: sky => {
     const ascSign = signOf(sky.asc);
     for (const house of [1, 7]) {
@@ -431,31 +475,67 @@ const HAS: Record<DoshaId, (sky: DoshaSky, natal?: DoshaNatal, options?: DoshaOp
   },
   sankranti: () => false,
   papashadvarga: sky => papashadvarga(sky),
-  bhriguShatka: sky => houseFrom(signOf(sky.asc), longitudeIn(sky, 'Venus')) === 6,
-  ashtamaKuja: sky => houseFrom(signOf(sky.asc), longitudeIn(sky, 'Mars')) === 8,
-  gandanta: (sky, _natal, options) => tithiGandanta(sky) || nakshatraGandanta(sky, options?.gandantaNakshatra ?? 'pada') || lagnaGandanta(sky),
-  kartari: sky => {
-    const around = (pivot: number) => maleficsIn(sky, (pivot + 1) % 12).length > 0 && maleficsIn(sky, (pivot + 11) % 12).length > 0;
+  // v. 88: Venus in the sign of an enemy or in its fall frees the 6th, Mars combust, in the sign of an enemy or in its fall the 8th.
+  bhriguShatka: (sky, _natal, _options, relief) => {
+    if (houseFrom(signOf(sky.asc), longitudeIn(sky, 'Venus')) !== 6) return false;
+    return !(relief() && ['enemy', 'debilitated'].includes(signRelation('Venus', signOf(longitudeIn(sky, 'Venus')))));
+  },
+  ashtamaKuja: (sky, _natal, _options, relief) => {
+    if (houseFrom(signOf(sky.asc), longitudeIn(sky, 'Mars')) !== 8) return false;
+    return !(relief() && isWeakMalefic(sky, 'Mars'));
+  },
+  // The Moon strong frees the tithi's Gaṇḍānta, Jupiter strong the Lagna's (the sources of the commentary on v. 43).
+  gandanta: (sky, _natal, options, relief) =>
+    (tithiGandanta(sky) && !relief()?.moonStrong)
+    || nakshatraGandanta(sky, options?.gandantaNakshatra ?? 'pada')
+    || (lagnaGandanta(sky) && !relief()?.jupiterStrong),
+  // v. 88: malefics that make it, in the sign of an enemy, in their fall or combust, free the Lagna and the 7th (not the Moon).
+  kartari: (sky, _natal, _options, relief) => {
+    const around = (pivot: number, weakFrees: boolean) => {
+      const before = maleficsIn(sky, (pivot + 11) % 12);
+      const after = maleficsIn(sky, (pivot + 1) % 12);
+      if (before.length === 0 || after.length === 0) return false;
+      return !(weakFrees && relief() && [...before, ...after].every(graha => isWeakMalefic(sky, graha)));
+    };
     const ascSign = signOf(sky.asc);
-    return around(ascSign) || around((ascSign + 6) % 12) || around(signOf(sky.moon));
+    return around(ascSign, true) || around((ascSign + 6) % 12, true) || around(signOf(sky.moon), false);
   },
-  chandraShadashtaka: sky => [6, 8, 12].includes(houseFrom(signOf(sky.asc), sky.moon)),
-  sangraha: sky => {
+  // v. 88: the Moon in its fall or in the Navāṁśa of its fall frees the 6th, 8th and 12th.
+  chandraShadashtaka: (sky, _natal, _options, relief) => {
+    if (![6, 8, 12].includes(houseFrom(signOf(sky.asc), sky.moon))) return false;
+    return !(relief() && (signOf(sky.moon) === 7 || getVargaSignIndex(sky.moon, 9) === 7));
+  },
+  // v. 45: Sun, Mars, Venus, Saturn, Rāhu, Ketu with the Moon; Mercury (good) and Jupiter (happiness) are not a fault. The Moon in a friendly,
+  // own or exalted sign or Vargottama is not troubled by them, in the other view the commentary gives.
+  sangraha: (sky, _natal, _options, relief) => {
     const moonSign = signOf(sky.moon);
-    return NINE.filter(graha => graha !== 'Moon').some(graha => signOf(longitudeIn(sky, graha)) === moonSign);
+    if (!NINE.filter(graha => graha !== 'Moon' && graha !== 'Mercury' && graha !== 'Jupiter').some(graha => signOf(longitudeIn(sky, graha)) === moonSign)) return false;
+    const found = relief();
+    if (!found) return true;
+    if (['own', 'exalted', 'friend'].includes(signRelation('Moon', moonSign)) || getVargaSignIndex(sky.moon, 9) === moonSign) return false;
+    return !found.faultsOfLagna;
   },
-  ashtamaLagna: (sky, natal) => {
+  // v. 46: the lords of the two signs are one (Aries and Scorpio) or friends of each other.
+  ashtamaLagna: (sky, natal, _options, relief) => {
     if (!natal) return false;
     const sign = signOf(sky.asc);
-    return sign === (natal.ascSign + 7) % 12 || sign === (natal.moonSign + 7) % 12;
+    const friendly = (birth: number) => {
+      const [a, b] = [SIGN_LORDS[sign], SIGN_LORDS[birth]];
+      return a === b || (NATURAL_FRIENDS[a]?.includes(b) && NATURAL_FRIENDS[b]?.includes(a));
+    };
+    const fromAscendant = sign === (natal.ascSign + 7) % 12 && !(relief() && friendly(natal.ascSign));
+    const fromMoon = sign === (natal.moonSign + 7) % 12 && !(relief() && friendly(natal.moonSign));
+    return fromAscendant || fromMoon;
   },
-  vishaGhati: sky => {
+  // The commentary on v. 49 to 51: the Moon in an angle or a trine, but not in the Lagna, frees the Viṣa Ghaṭī.
+  vishaGhati: (sky, _natal, _options, relief) => {
     const found = vishanadiOfSky(sky);
-    return found.tithi || found.nakshatra;
+    return (found.tithi || found.nakshatra) && !relief()?.moonInAngleOrTrine;
   },
-  durmuhurta: sky => {
+  // v. 90: the Moon in the 11th destroys the Dūrmuhūrta.
+  durmuhurta: (sky, _natal, _options, relief) => {
     const part = tithyamsaOf(sky);
-    return TITHYAMSA_UNFAVOURABLE.includes(part) || TITHYAMSA_BY_VARA[sky.vara].includes(part);
+    return (TITHYAMSA_UNFAVOURABLE.includes(part) || TITHYAMSA_BY_VARA[sky.vara].includes(part)) && !relief()?.moonEleventh;
   },
   varaDosha: () => false,
   ekargala: sky => {
@@ -474,7 +554,9 @@ const HAS: Record<DoshaId, (sky: DoshaSky, natal?: DoshaNatal, options?: DoshaOp
   upagraha: sky => UPAGRAHA_POSITIONS.includes(((nakshatraOf(sky.moon) - nakshatraOf(sky.sun) + 27) % 27) + 1),
   pata: sky => PATA_TARGETS.some(target => nakshatraOf(sky.moon) === (target - nakshatraOf(sky.sun) + 27) % 27),
   eclipse: () => false,
-  kunavamsa: sky => {
+  kunavamsa: (sky, _natal, _options, relief) => {
+    // v. 89 and 90: the Navāṁśa joined by a malefic is destroyed by the planets that strengthen the Lagna, and by the Moon in the 11th.
+    if (relief()?.faultsOfLagna || relief()?.moonEleventh) return false;
     const ascNavamsa = getVargaSignIndex(sky.asc, 9);
     if ((['Sun', 'Mars', 'Saturn'] as string[]).includes(SIGN_LORDS[ascNavamsa])) return true;
     return MALEFICS.some(graha => getVargaSignIndex(longitudeIn(sky, graha), 9) === ascNavamsa);
@@ -487,8 +569,8 @@ const HAS: Record<DoshaId, (sky: DoshaSky, natal?: DoshaNatal, options?: DoshaOp
     if (empty.includes(signOf(sky.asc)) || empty.includes(getVargaSignIndex(sky.asc, 9))) return true;
     return sky.masa !== undefined && signOf(sky.moon) === SHUNYA_RASI_OF_MASA[sky.masa];
   },
-  blindDeafLame: sky => {
-    if (sky.day === undefined) return false;
+  blindDeafLame: (sky, _natal, _options, relief) => {
+    if (sky.day === undefined || relief()?.faultsOfLagna) return false;
     const sign = signOf(sky.asc);
     const set = sky.day ? BLIND_DEAF_LAME.day : BLIND_DEAF_LAME.night;
     return set.blind.includes(sign) || set.deaf.includes(sign) || set.lame.includes(sign);
@@ -503,10 +585,35 @@ const HAS: Record<DoshaId, (sky: DoshaSky, natal?: DoshaNatal, options?: DoshaOp
     const yogaLord = NAKSHATRA_LORDS[(yogaOf(sky.sun, sky.moon) + 7) % 27 % 9];
     return fatal('Lagna', sky.asc) || check('Moon') || check(SIGN_LORDS[signOf(sky.asc)]) || check(nakshatraLord) || check(yogaLord);
   },
+  dagdha: sky => ((tithiOf(sky.sun, sky.moon) - 1) % 15) + 1 === DAGDHA_TITHI_OF_SUN_SIGN[signOf(sky.sun)],
+  jupiterVenus: (sky, _natal, options, relief) => {
+    const combust = (['Jupiter', 'Venus'] as const).some(graha => combustionOf(graha, longitudeIn(sky, graha), sky.sun, sky.retro?.[graha] ?? false) !== null);
+    if (combust) return true;
+    const jupiter = longitudeIn(sky, 'Jupiter');
+    if (signOf(jupiter) === 9) return true;
+    // v. 49 and 51: the Sun in Aries frees Jupiter in Leo; v. 50 and 51: elsewhere than the countries named only the first 16°40′ of it is forbidden.
+    return leoJupiterApplies(jupiter, options?.regions) && !relief()?.sunInAries;
+  },
 };
 
 /** Whether a sky has the doṣa. The doṣas of a span of time (Saṅkrānti, eclipses, Vyatipāta, Vaidhṛti, the Vāra Doṣa) are never in a sky. */
-export const hasDosha = (id: DoshaId, sky: DoshaSky, natal?: DoshaNatal, options?: DoshaOptions): boolean => HAS[id](sky, natal, options);
+export function hasDosha(id: DoshaId, sky: DoshaSky, natal?: DoshaNatal, options?: DoshaOptions): boolean {
+  // A fault the text binds to a country counts only there (v. 66 and 69), if the place is given.
+  if (!regionAllows(id, options?.regions)) return false;
+  let relief: Relief | undefined;
+  let worked = false;
+  const reliefOfSky: ReliefOf = () => {
+    if (!worked) { relief = reliefOf(sky, options?.parihara); worked = true; }
+    return relief;
+  };
+  if (!HAS[id](sky, natal, options, reliefOfSky)) return false;
+  const found = reliefOfSky();
+  if (!found) return true;
+  // v. 68: the Sun and the Moon strong; v. 91: Mercury, Venus, Jupiter or the lord of the Lagna well placed.
+  if (found.sunMoonStrong && (SUN_MOON_DESTROYS as readonly string[]).includes(id)) return false;
+  if (found.general && !(GENERAL_EXEMPT as readonly string[]).includes(id)) return false;
+  return true;
+}
 
 /** The doṣas that are only a span of time around an event, not a state of the sky. */
 export const EVENT_DOSHAS: DoshaId[] = ['sankranti', 'varaDosha', 'eclipse', 'vyatipata', 'vaidhriti'];
