@@ -1685,6 +1685,18 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(rows.first()).toContainText('Thursday 05.11.2026');
   await expect(rows.first()).toContainText('1 d 0 h');
 
+  // "Why so few?": the search again without the one choice there is (the Thursday) gives the whole week; letting it go chooses every vāra.
+  await results.getByRole('button', { name: 'why so few?', exact: true }).click();
+  const advice = results.locator('[data-finder-advice]');
+  await expect(advice).toBeVisible({ timeout: 30_000 });
+  await expect(advice.locator('[data-finder-advice-item]')).toHaveCount(1);
+  await expect(advice.locator('[data-finder-advice-item="vara"]')).toContainText('7.0');
+  await advice.locator('[data-finder-advice-drop="vara"]').click();
+  await expect(vara.getByRole('button', { name: 'mon', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(advice).toHaveCount(0);
+  await vara.getByRole('button', { name: 'none', exact: true }).click();
+  await vara.getByRole('button', { name: 'thu', exact: true }).click();
+
   // Chandrabala: the houses from the Moon at birth; the usual six, then none (no search), then every house again.
   const chandra = finder.locator('[data-finder-group="Chandrabala"]');
   await expect(chandra).toBeVisible();

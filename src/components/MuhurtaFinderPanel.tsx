@@ -19,6 +19,7 @@ import { FINDER_PRESETS, FINDER_PRESET_CATEGORIES, NOT_APPLIED, type FinderPrese
 import type { FinderResult } from '@/lib/muhurtaFinderRun';
 import MuhurtaStrip from './MuhurtaStrip';
 import { muhurtaChartLink } from '@/lib/muhurtaChartLink';
+import type { Advice } from '@/lib/muhurtaFinderAdvice';
 import type { StripChoices } from '@/lib/muhurtaStripView';
 import { useT } from '@/lib/i18n';
 
@@ -263,6 +264,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   const [days, setDays] = useState<number>(30);
   const [state, setState] = useState<{ loading: boolean; error?: string; result?: FinderResult; zone?: string; tz: number }>({ loading: false, tz: 0 });
   const [showAll, setShowAll] = useState(false);
+  const [advice, setAdvice] = useState<{ loading: boolean; error?: string; data?: Advice }>({ loading: false });
   const [bestFirst, setBestFirst] = useState(false);
   const [presetId, setPresetId] = useState<string | null>(null);
   const request = useRef(0);
@@ -316,8 +318,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     if (link) window.open(link, '_blank', 'noopener');
   };
 
-  const search = async () => {
-    if (!canSearch) return;
+  const searchParams = () => {
     const params = new URLSearchParams({ start, days: String(days), lat: String(lat), lng: String(lng), tz: String(tz), ...(zone ? { zone } : {}), ...calculationParams(calculationSettings) });
     const lists: [string, number[], number][] = [
       ['vara', choices.vara, 7], ['tithi', choices.tithi, 30], ['nakshatra', choices.nakshatra, 27], ['yoga', choices.yoga, 27], ['karana', choices.karana, 11],
@@ -345,9 +346,16 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
       params.set('strength', choices.strength);
       if (choices.regions) params.set('regions', choices.regions.join(','));
     }
+    return params;
+  };
+
+  const search = async () => {
+    if (!canSearch) return;
+    const params = searchParams();
     const id = ++request.current;
     setState({ loading: true, tz });
     setShowAll(false);
+    setAdvice({ loading: false });
     try {
       const response = await fetch(`/api/muhurta-finder?${params}`);
       const data = await response.json();
@@ -356,6 +364,47 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     } catch (error) {
       if (id === request.current) setState({ loading: false, error: String(error), tz });
     }
+  };
+
+  // "Why so few?": the search again without one choice at a time, to see which choice decides.
+  const askAdvice = async () => {
+    if (!canSearch) return;
+    const params = searchParams();
+    params.set('advise', '1');
+    setAdvice({ loading: true });
+    try {
+      const response = await fetch(`/api/muhurta-finder?${params}`);
+      const data = await response.json();
+      setAdvice(data.error ? { loading: false, error: String(data.error) } : { loading: false, data: data as Advice });
+    } catch (error) {
+      setAdvice({ loading: false, error: String(error) });
+    }
+  };
+
+  // Letting one choice go: the same keys as the advice names.
+  const dropChoice = (key: string) => {
+    const [kind, rest] = key.split(':');
+    setPresetId(null);
+    setAdvice({ loading: false });
+    if (kind === 'vara') set('vara', range(FINDER_SIZES.vara));
+    else if (kind === 'tithi') set('tithi', range(FINDER_SIZES.tithi, 1));
+    else if (kind === 'nakshatra') set('nakshatra', range(FINDER_SIZES.nakshatra));
+    else if (kind === 'yoga') set('yoga', range(FINDER_SIZES.yoga));
+    else if (kind === 'karana') set('karana', range(FINDER_SIZES.karana));
+    else if (kind === 'chandra') set('chandra', range(12, 1));
+    else if (kind === 'tara') set('tara', range(9, 1));
+    else if (kind === 'sign') setSigns(rest as FinderGraha, range(12));
+    else if (kind === 'rule') removeRule(Number(rest));
+    else if (kind === 'dosha') setChoices(current => ({ ...current, avoid: current.avoid.filter(id => id !== rest) }));
+  };
+  const adviceLabel = (key: string) => {
+    const [kind, rest] = key.split(':');
+    if (kind === 'sign') return `${t('Graha')} ${GRAHA_HEAD[rest as FinderGraha]}`;
+    if (kind === 'rule') return `${t('Rule')} ${Number(rest) + 1}`;
+    if (kind === 'dosha') return DOSHAS[rest as DoshaId].name;
+    if (kind === 'chandra') return 'Chandrabala';
+    if (kind === 'tara') return 'Tarabala';
+    return t({ vara: 'Vāra', tithi: 'Tithi', nakshatra: 'Nakṣatra', yoga: 'Yoga', karana: 'Karaṇa' }[kind] ?? kind);
   };
 
   const set = <K extends keyof Choices>(key: K, value: Choices[K]) => setChoices(current => ({ ...current, [key]: value }));
@@ -834,7 +883,31 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
               ? t('No time in the span meets every choice.')
               : `${state.result.windows.length}${state.result.truncated ? '+' : ''} ${t('stretches')}`}
             {!anyCondition && state.result.windows.length > 0 && <span className="ml-2 text-[10px] text-zinc-400 dark:text-zinc-600">{t('No choice limits anything: the whole span.')}</span>}
+            {anyCondition && state.result.windows.length <= 3 && (
+              <button type="button" className={`${smallButton} ml-2`} onClick={() => void askAdvice()} disabled={advice.loading} data-finder-advice-ask>
+                {advice.loading ? t('calculating') : t('why so few?')}
+              </button>
+            )}
           </div>
+          {advice.error && <p className="text-[10px] font-mono text-rose-600 dark:text-rose-400" role="alert">{advice.error}</p>}
+          {advice.data && (
+            <div className="space-y-1 rounded-md border border-zinc-200 p-2 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:text-zinc-300" data-finder-advice>
+              <p className="text-zinc-500 dark:text-zinc-400">{t('What each choice costs: the search run again without it.')}</p>
+              {advice.data.items.length > 0 && advice.data.items.every(item => item.stretches === 0) && (
+                <p className="text-amber-700 dark:text-amber-400">{t('No single choice explains it: two or more of them together are the cause.')}</p>
+              )}
+              <ul className="space-y-0.5">
+                {advice.data.items.map(item => (
+                  <li key={item.key} className="flex flex-wrap items-center gap-1.5" data-finder-advice-item={item.key}>
+                    <span className="min-w-0 font-semibold text-zinc-800 dark:text-zinc-100">{adviceLabel(item.key)}</span>
+                    <span>{item.stretches}{item.truncated ? '+' : ''} {t('stretches')} · {item.days.toFixed(1)} {t('days')}</span>
+                    <button type="button" className={smallButton} onClick={() => dropChoice(item.key)} data-finder-advice-drop={item.key}>{t('let it go')}</button>
+                  </li>
+                ))}
+              </ul>
+              {advice.data.partial && <p className="text-amber-700 dark:text-amber-400">{t('The time ran out: the rest of the choices were not looked at.')}</p>}
+            </div>
+          )}
           {state.result.truncated && <p className="text-[10px] font-mono text-amber-700 dark:text-amber-400">{t('Only the first stretches are listed: narrow the choices or the days.')}</p>}
           {scored && (
             <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
