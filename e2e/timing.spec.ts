@@ -920,6 +920,38 @@ test('the Jaimini rāśi daśās (Yogārdha, Dṛg, Trikoṇa, Śūla) are off t
   expect(errors).toEqual([]);
 });
 
+test('the Kālachakra says when it applies (Phaladīpikā 22.30), and the span of life the text takes shows beside the Naisargika', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: 'Choose daśā systems' })).click();
+  const list = visible(page, page.getByRole('group', { name: 'Choose daśā systems' }));
+  await list.getByRole('checkbox', { name: /^Kālachakra/ }).check();
+  await list.getByRole('checkbox', { name: /^Naisargika/ }).check();
+  await visible(page, page.getByRole('button', { name: /^Kālachakra/ })).click();
+  const kala = page.locator('#dasha-kalaChakra');
+  await expect(kala).toContainText('Phaladīpikā 22.30');
+  await expect(kala).toContainText('When the daśā applies');
+  await expect(kala).toContainText(/Condition met|Condition not met/);
+  await visible(page, page.getByRole('button', { name: /^Naisargika/ })).click();
+  await expect(page.locator('#dasha-naisargika')).toContainText(/Phaladīpikā 22\.2[89]/);
+
+  // The PyJHora way, always, is a choice in Settings.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /dasha methods/ })).click();
+  await expect(visible(page, page.getByLabel('Kalachakra', { exact: true }))).toHaveValue('text');
+  await visible(page, page.getByLabel('Kalachakra', { exact: true })).selectOption('always');
+  await selectWorkspace(page, 'TIMING');
+  await visible(page, page.getByRole('button', { name: 'Dasas', exact: true })).click();
+  await visible(page, page.getByRole('button', { name: /^Kālachakra/ })).click();
+  await expect(page.locator('#dasha-kalaChakra')).toContainText('kālachakra daśā');
+
+  expect(errors).toEqual([]);
+});
+
 test('the Paiṇḍī and Aṃśī daśās (the length of life, BPHS 46.201) are off to begin with and show how their order and years were found', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

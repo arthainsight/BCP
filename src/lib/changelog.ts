@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.72',
+    date: '2026-10-31',
+    title: 'The Kālachakra condition and the span of life of the Phaladīpikā',
+    changes: [
+      'Kālachakra daśā: the Phaladīpikā (22.30) takes it when the lord of the navāṁśa the Moon is in is strong. The panel now says so, whether this chart meets it and what was found; a chart that does not meet it is not given the daśā unless asked ("Calculate anyway"), and the event list, the date finder and the overlap leave it out for such a chart. The text does not say what strong is: the Phaladīpikā\'s own account of strength is followed (exaltation, own or mūlatrikoṇa or a friend\'s sign; a retrograde graha strong whatever its sign; a combust one weak; a debilitated one weak). The PyJHora way, always, is a choice (Settings → Rashi Dasha → Kalachakra); before this version the Kālachakra was always shown.',
+      'The panels of the Paiṇḍī, the Aṃśī and the Naisargika daśā now say which span of life the text takes for the chart (Phaladīpikā 22.28–29): the Aṃśāyu with the Lagna the strongest of the Lagna, the Sun and the Moon, the Piṇḍāyu with the Sun, the Naisargika with the Moon, the mean of the spans of those that are equal. The app has no summed span of life, so the mean is named, not computed.',
+      'Updated the application version to v3.72.',
+    ],
+  },
+  {
     version: 'v3.71',
     date: '2026-10-31',
     title: 'Śūla corrected after the commentary, and the Maṇḍūka daśā',

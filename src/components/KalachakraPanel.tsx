@@ -5,6 +5,9 @@ import type { PlanetData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { calculateKalachakra, calculateKalachakraSubDashas, type KalachakraEntry } from '@/lib/kalachakra';
 import { formatDate } from '@/lib/dateFormat';
+import { evaluateKalachakraCondition, KALACHAKRA_CONDITION } from '@/lib/kalachakraCondition';
+import type { ConditionFact } from '@/lib/nakshatraSystems';
+import { fill } from '@/lib/i18n';
 
 import { useT } from '@/lib/i18n';
 const ABBR: Record<string, string> = { Aries:'Ar', Taurus:'Ta', Gemini:'Ge', Cancer:'Cn', Leo:'Le', Virgo:'Vi', Libra:'Li', Scorpio:'Sc', Sagittarius:'Sg', Capricorn:'Cp', Aquarius:'Aq', Pisces:'Pi' };
@@ -17,8 +20,10 @@ function active(entry: KalachakraEntry, now: Date) {
   return entry.startDate <= now && now < entry.endDate;
 }
 
-export default function KalachakraPanel({ planets, birthDatetime }: { planets: PlanetData[]; birthDatetime: string }) {
+export default function KalachakraPanel({ planets, birthDatetime, rule = 'text' }: { planets: PlanetData[]; birthDatetime: string; rule?: 'text' | 'always' }) {
   const t = useT();
+  const [forced, setForced] = useState(false);
+  const condition = useMemo(() => evaluateKalachakraCondition(planets), [planets]);
   const [levelIndex, setLevelIndex] = useState(0);
   const [path, setPath] = useState<KalachakraEntry[]>([]);
   const now = useMemo(() => new Date(), []);
@@ -30,6 +35,31 @@ export default function KalachakraPanel({ planets, birthDatetime }: { planets: P
   }, [planets, birthDatetime]);
 
   if (!result) return <div className="text-xs font-mono text-zinc-400 italic">{t('Moon longitude and valid birth datetime required.')}</div>;
+
+  // Phaladīpikā 22.30: the Kālachakra is taken when the lord of the Moon's navāṁśa is strong; PyJHora shows it always.
+  const factText = (fact: ConditionFact) => fill(t(fact.template), Object.fromEntries(Object.entries(fact.values ?? {}).map(([name, value]) => [name, t(value)])));
+  const met = condition.met === true;
+  const badgeClass = met
+    ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300'
+    : 'border-red-300 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300';
+  const conditionBlock = (
+    <div className="space-y-2 font-mono">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={`rounded border px-1.5 py-0.5 text-[9px] uppercase ${badgeClass}`}>{met ? t('Condition met') : condition.met === false ? t('Condition not met') : t('Condition cannot be read')}</span>
+        <span className="text-[9px] text-zinc-400">{t('Phaladīpikā 22.30')}</span>
+      </div>
+      <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-[10px] text-amber-900 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-200">
+        <div className="font-semibold">{t('When the daśā applies')}: {t(KALACHAKRA_CONDITION)}</div>
+        {condition.facts.map(fact => <div key={factText(fact)}>· {factText(fact)}</div>)}
+      </div>
+    </div>
+  );
+  if (rule === 'text' && condition.met === false && !forced) return (
+    <div className="space-y-3">
+      {conditionBlock}
+      <button type="button" onClick={() => setForced(true)} className="rounded border border-zinc-300 px-2.5 py-1.5 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:text-zinc-300">{t('Calculate anyway')}</button>
+    </div>
+  );
 
   const parent = levelIndex > 0 ? path[levelIndex - 1] : null;
   const rows = parent ? calculateKalachakraSubDashas(parent, result.cycle) : result.entries;
@@ -65,6 +95,7 @@ export default function KalachakraPanel({ planets, birthDatetime }: { planets: P
 
   return (
     <div className="space-y-3 min-w-0">
+      {conditionBlock}
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0 break-words font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">&gt; kālachakra daśā</div>
         <button type="button" onClick={openNow} className="min-h-11 rounded border border-cyan-300 px-3 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">{t('NOW')}</button>

@@ -50,12 +50,19 @@ shares (of 13°20′ over 60, 12 and 36), each with a result of its own (three t
   if the rest is under six signs, take it from twelve signs; in minutes, times the years, over 21 600. That is the line from the half at the fall to the whole at the exaltation, the reading
   of `ayurdaya.ts`.
 
+**In the app since v3.72:** the Kālachakra condition (22.30) and the choice of the span of life (22.28–29), as below.
+
 **Which span of life to take (22.28–29):** with a strong Lagna the **Aṃśāyu**, with a strong Sun the **Piṇḍāyu**, with a strong Moon the **Naisargika**; when the three are equal in strength a third of their
 sum, when two are equal half of the sum of those two, and when none is strong the span of Jīvaśarman. This settles the "choice between the three spans (BPHS 43.31–32)" that
-`ayurdaya-vs-sources.md` lists as open; it is not applied in the app, which has the daśās of each span apart.
+`ayurdaya-vs-sources.md` lists as open. **What the app does with it (v3.72, `lifespanMethod.ts`):** the panels of the Paiṇḍī, the Aṃśī and the Naisargika daśā say which span the text takes for the chart, by the strongest
+of the Lagna, the Sun and the Moon (the strength of the signs they are in, by the Jaimini rules; two are equal when they are in the same sign, and then the mean of their spans is named).
+The app has no summed span of life (the classical total of the grahas' years is not worked out), so the mean is named and not computed; "none is strong: Jīvaśarman" is not applied.
 
-**A condition for the Kālachakra (22.30):** "the Kālachakra is to be taken when the lord of the Moon's navāṁśa is strong; the daśā that rests on the nakṣatras (Viṃśottarī) is always strong". The app
-shows the Kālachakra with no condition. (The editor reads the verse so; the Sanskrit "candrāṁśeśe balānvite" is short.)
+**A condition for the Kālachakra (22.30):** "the Kālachakra is to be taken when the lord of the Moon's navāṁśa is strong; the daśā that rests on the nakṣatras (Viṃśottarī) is always strong". **Done in v3.72
+(`kalachakraCondition.ts`):** the Kālachakra panel states the condition and whether the chart meets it, and shows the daśā only when it does (or on request, "Calculate anyway"); the event
+list, the finder and the overlap read it only when it does. The PyJHora way, always, is a choice (Settings → Kalachakra). The text does not say what "strong" is; the Phaladīpikā's own account of
+strength (4.3–4) is followed: strong in its exaltation, own or mūlatrikoṇa sign or a friend's sign, a retrograde graha strong whatever its sign, a combust one weak even in its exaltation, a debilitated
+one weak. (The editor reads the verse so; the Sanskrit "candrāṁśeśe balānvite" is short.)
 
 **Named, not given:** chapter 13.25 names the daśās for the length of life: that "told by Śrīpati", the **Aṣṭakavarga daśā**, the Kālachakra and the Uḍu daśā (Viṃśottarī). The editor's note
 under 22.1 says that many daśās by graha, sign and nakṣatra are in the jātaka books and that the Phaladīpikā has only a few (his Daśāphaladarpaṇa has the rest). The Jātakapārijāta (chapter 5) names eight kinds of

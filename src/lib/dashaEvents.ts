@@ -1,6 +1,7 @@
 import type { CharaOptions, PlanetData, RasiDashaOptions } from '@/types';
 import { calculateCleanCharaMD, calculateCleanCharaSubDashas, type CleanCharaEntry } from './charaClean';
 import { calculateKalachakra, calculateKalachakraAntardashas, type KalachakraEntry } from './kalachakra';
+import { evaluateKalachakraCondition } from './kalachakraCondition';
 import { calculateVds } from './vds';
 import { calculateSubDashas, calculateVimshottari, type MahadashaEntry } from './vimshottari';
 import { calculateVimshottariVariant, moonHouse, VARIANT_LABELS, variantNotApplicable, type VimshottariVariantChoice } from './vimshottariVariants';
@@ -162,8 +163,13 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
   }
 
   if (moon) {
-    const kalachakra = calculateKalachakra(moon.longitude, birthDate);
-    snapshots.push({ key: 'kalaChakra', label: DASHA_SYSTEM_LABELS.kalaChakra, levels: kalachakraLevels(kalachakra.entries, kalachakra.cycle, eventDate), mdRange: activeRange(kalachakra.entries, eventDate) });
+    // Phaladīpikā 22.30: the Kālachakra is taken when the lord of the Moon's navāṁśa is strong (the PyJHora way shows it always).
+    if ((rasiOptions.kalachakraRule ?? 'text') === 'text' && evaluateKalachakraCondition(planets).met === false) {
+      snapshots.push({ key: 'kalaChakra', label: DASHA_SYSTEM_LABELS.kalaChakra, levels: [], note: 'Conditional: not applicable (the lord of the Moon\'s navāṁśa is not strong)' });
+    } else {
+      const kalachakra = calculateKalachakra(moon.longitude, birthDate);
+      snapshots.push({ key: 'kalaChakra', label: DASHA_SYSTEM_LABELS.kalaChakra, levels: kalachakraLevels(kalachakra.entries, kalachakra.cycle, eventDate), mdRange: activeRange(kalachakra.entries, eventDate) });
+    }
   } else snapshots.push({ key: 'kalaChakra', label: DASHA_SYSTEM_LABELS.kalaChakra, levels: [], note: 'Moon unavailable' });
 
   const naisargika = calculateNaisargika(birthDate).entries;
