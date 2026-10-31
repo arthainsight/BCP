@@ -17,14 +17,14 @@ Dates and authors are the traditional ones; most are disputed. "Found" is an edi
 | Laghu Jātaka | Varāhamihira | not searched separately | no |
 | Sārāvalī | Kalyāṇavarman, c. 800 | `saravali00kalyuoft` (san) | downloaded |
 | Phaladīpikā | Mantreśvara, c. 1300–1400 | **found with a good text layer (31 October 2026):** `phaldipika_202310` (Sanskrit verses with a Hindi commentary, 28 adhyāyas, 187 words / 10 kB), `phala-dipika-of-shri-mantreshwar-hindi-commentary-by-dr.-hari-shankar-patak-chau` (Hari Shankar Pathak, 183), `rhag-phala-deepika-bhavartha-bodhini-commentary-by-gope` and `in.ernet.dli.2015.292174` (Gopesh Kumar Ojha's Bhāvārtha Bodhinī, 152 and 144); the English of V. Subrahmanya Sastri `in.ernet.dli.2015.92117` (1937) and `Phaladeepika2ndEd.1950ByVSubrahmanyaSastri` (77 and 74 English craft words / 10 kB). The Sanskrit-only scans `in.ernet.dli.2015.406048` and the Subrahmanya Sastri Sanskrit scans (`…_202003_…`) are poor (10 to 19) | downloaded, not read |
-| Jātakapārijāta | Vaidyanātha Dīkṣita, c. 1400 | `in.ernet.dli.2015.312156` (san), `XpDV_jataka-parijata-…-vimala-hindi-tika` (Hindi) | downloaded |
+| Jātakapārijāta | Vaidyanātha Dīkṣita, c. 1400 | **good edition found (second search): `jataka-parijata` (Hindi, 18 adhyāyas), `dli.ernet.496248`**; the earlier `in.ernet.dli.2015.312156` is poor | downloaded, not read |
 | Uttara Kālāmṛta | Kālidāsa (by name) | `p.-s.-sastri-uttarakaalaamruta-of-kaalidaasa-hindi` (san, Hindi) | downloaded |
 | Laghu Pārāśarī | Udayadivākara | `in.ernet.dli.2015.326279` (san) | downloaded |
 | Sarvārtha Cintāmaṇi | Veṅkaṭeśa Śarmā, c. 1500 | `sarvartha-chintamani-mahidhar-sharma` (san) | downloaded |
 | Jātaka Tattva | Mahādeva | `dli.ernet.496259` (san) | downloaded |
 | Jātakābharaṇa | Dhuṇḍhirāja | `jatakabharana-pt-shyam-lal` (san) | downloaded |
 | Camatkāra Cintāmaṇi | Bhaṭṭa Nārāyaṇa | `chamatkarachintamanigangadhargovindsapkargopaljoshidiksitasatawelkar1865_202003_139_` (san) | downloaded |
-| Horāratna | Balabhadra, 1600s | `in.ernet.dli.2015.487062` (san) | downloaded on the second try: the OCR is too poor to quote (28 words per 10 kB), no other edition with text found |
+| Horāratna | Balabhadra, 1600s | `HoraratnamOfSrimanmishraBalabhadraVol.2Hindi` (volume 2 only, good); `in.ernet.dli.2015.487062` (san) too poor | volume 2 downloaded, not read |
 | Hora Sāra | Pṛthuyaśas, c. 500 | English editions only | no |
 | Jātakadeśamārga | | `120938845-jataka-marga` (san) | downloaded |
 | Mānasāgarī | Mānasāgara | `manasagari-paddhati-with-hindi-tika-vanshidhar` (san, Hindi) | downloaded |
@@ -100,6 +100,34 @@ and how many verse marks (॥). Below about 40 the OCR is too poor to quote from
 | Jātaka Tattva | `dli.ernet.496259` | 263 | 7 | 798 | no |
 
 Not usable: Horāratna (downloaded, the OCR is bad), Grahalāghava (the edition has no text layer).
+
+## The second search (31 October 2026): the texts that had no usable edition
+
+Searched with several spellings and in Devanagari, every edition downloaded and measured as above (words of the craft per 10 kB; the vocabulary is wider here, so the
+figures are not comparable with the table above, the Devanagari share and the verse marks are given beside them). Which can be read, and which not:
+
+| Text | Edition | kB | Words / 10 kB | Verse marks | Verdict |
+|---|---|---|---|---|---|
+| Jātakapārijāta (Hindi, 18 adhyāyas) | `jataka-parijata` | 1421 | 176 | 10255 | **yes**: the first good edition |
+| Jātakapārijāta | `dli.ernet.496248` | 1356 | 166 | 10097 | yes, a second one to compare |
+| Horāratna, Hindi (volume 2: the later chapters) | `HoraratnamOfSrimanmishraBalabhadraVol.2Hindi` | 206 | 228 | 2240 | **yes, volume 2 only**; volume 1 not found, and the Sanskrit scan (`in.ernet.dli.2015.487062`) stays poor |
+| Bhāvārtha Ratnākara (with a Hindi commentary of Krishna Kumar) | `hivz-bhavartha-ratnakara-commentator-krishna-kumar-by-r` | 227 | 312 | 283 | yes, mostly the commentary |
+| Bhṛgu Saṁhitā: Yogāvalī of Nandalal Sastri (1910, Sanskrit) | `Bhrigu_Samhita_Yogavali_-_Nandalal_Sastri_1910_Khemraj` | 374 | 56 | 12641 | yes, to read with care |
+| Bhṛgu Saṁhitā, modern Hindi books (not the old text) | `bhrigu-samhita-hindi-falit-darpan`, `in.ernet.dli.2015.369511` | 868, 861 | 222, 291 | 970, 81 | readable, but modern rule books |
+| Grahalāghava (Sanskrit with the Hindi Mādhurī) | `in.ernet.dli.2015.485468`, `…281234`, `…513880` | 526 to 533 | 62 to 72 | 2596 to 2849 | partly: the verses are clear, the commentary is not |
+| Vedāṅga Jyotiṣa (Hindi research with the verses) | `VedangajyotishResearch` | 417 | 92 | 1126 | yes |
+| Āryabhaṭīya with the Bhaṭadīpikā | `aryabhatiyawithc00arya` | 116 | 39 | 438 | partly |
+| Muhūrta Dīpikā with a commentary | `muhurtadipikatikaofmahadevavenkateswarasteampress_202003_552_S` | 67 | 64 | 310 | yes (a short text) |
+| Muhūrta Gaṇapati | `MuhurtaGanapati1885NavalKishorePress` | 89 | 32 | 1707 | partly |
+| Camatkāra Cintāmaṇi (Hindi translation of Madan Mohan Pathak, 1924) | `chamatkarachintamanihinditranslationmadanmohanpathak1924_202003_98_s` | 67 | 40 | 711 | partly |
+| Sāmudrika Śāstra | `samudrika-shastra`, `samudrika-shastra-ghan-shyam-das-and-radha-krishna-mishra` | 804, 315 | 62, 48 | 8690, 1360 | yes |
+| Nāḍī: Deva Keralam (Candrakalā Nāḍī), parts 1 and 2 | `deva-keralam-1-chandrakala-nadi`, `deva-keralam-2-chandrakala-nadi` | 813, 946 | 51, 46 | 23825, 51640 | partly: Devanagari mixed with Latin |
+| Nāḍī: Dhruva Nāḍī (Satyajātaka) | `satyajatakamdhruvanadiramans.k.astrology_202003_357_T` | 238 | 18 | 1186 | no |
+
+**Still not usable:** Jātaka Tattva (`dli.ernet.496259`, 11), Hora Sāra (only the Ṣaṭpañcāśikā, 10), the Sanskrit Laghu Jātaka (the OCR of every edition found is garbled into Latin letters,
+`laghujatkam_202005`, `laghujataka-CGV-PSS-0147-0815`), Siddhānta Śiromaṇi (the editions that have a text layer are in Latin letters or the English introduction; the Sanskrit ones have none),
+the Vaidya Camatkāra Cintāmaṇi of Lolimbarāja (a different book, 4), the Bhṛgu Saṁhitā of `bhrigu-samhita` (the server gave an error). The Vedāṅga Jyotiṣa in English
+only (`VedangaJyotisha`, Holay) and the English Hora Sāra are English books. Nothing of this is read yet.
 
 **Read** means that a rule of the app was set beside the verse and compared. Of this corpus nothing is read yet: it is on the disk of the
 session, not in the repository. The first uses are the yoga definitions (Sārāvalī, Bṛhat Jātaka, Sarvārtha Cintāmaṇi, Uttara Kālāmṛta against
