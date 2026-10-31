@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v3.64',
+    date: '2026-10-31',
+    title: 'Muhurta Finder: why so few?',
+    changes: [
+      'When a search finds three stretches or fewer, a button "why so few?" appears by the count. It runs the search again without one choice at a time (a group of the panchāṅga, the signs of a graha, a placement rule, the Chandrabala or the Tarabala, a Mahādoṣa) and lists what each would give back, in stretches and days, the one that gives back the most first. "let it go" next to a choice chooses everything in it again. If no single choice gives anything back, it says that two or more of them together are the cause. The advice takes at most eight seconds; what it did not reach is said.',
+      'Updated the application version to v3.64.',
+    ],
+  },
+  {
     version: 'v3.63',
     date: '2026-10-31',
     title: 'Muhurta Finder: the forbidden muhūrtas of the weekday',

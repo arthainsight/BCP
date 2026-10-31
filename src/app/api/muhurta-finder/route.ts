@@ -4,9 +4,12 @@ import { PREFER_KEYS, SANKRANTI_ARC_MINUTES, SANKRANTI_SOLSTICE_DEGREES, FINDER_
 import { DOSHA_IDS, isDoshaId } from '@/lib/mahadosha';
 import { REGION_IDS, isPariharaMode, isRegionId, isStrengthLevel, type RegionId } from '@/lib/mahadoshaParihara';
 import { D1_KEYS, isD1Key } from '@/lib/muhurtaD1';
+import { adviseFinder } from '@/lib/muhurtaFinderAdvice';
 import { MAX_FINDER_DAYS, MAX_FINDER_STEPS, finderStepCount, finderStepMinutes, runMuhurtaFinder } from '@/lib/muhurtaFinderRun';
 
 const MAX_RULES = 12;
+/** The time the advice may take, in milliseconds: what is not looked at in it is left out and the answer says so. */
+const ADVICE_BUDGET_MS = 8000;
 
 // The stretches of time, from a start date for a number of days at a place, in which every condition the query names
 // holds at once: weekday (vara), tithi, nakshatra, yoga, karana, the signs the Ascendant and the grahas may be in, and
@@ -14,7 +17,7 @@ const MAX_RULES = 12;
 // the groups that are wishes with weights, not conditions (`prefer=chandra,tara`, with `minScore` the lowest score to list), the wishes about
 // the Rāśi chart, a point each (`d1=lagnaBenefic,moonUpachaya`),
 // the Mahādoṣas to keep clear of (`avoid=panchanga,udayasta,...`, with `natal=<Ascendant sign>:<Moon sign>` for the Aṣṭama Lagna and
-// `sankrantiArc` and `sankrantiSolstice` for the time around a Saṅkrānti, `gandanta=pada|four|two`, `vyatipata=days|short`, the neutralisations `parihara=off|named|broad|all`, `strength=basic|extended` for the strong grahas they need, and the countries of the place `regions=madhyadesha,...`), and the Chandrabala (`chandra=1:1,3,6,7,10,11`: the sign of the Moon at birth, 0 Aries to 11 Pisces, then the houses from it the Moon may be in).
+// `sankrantiArc` and `sankrantiSolstice` for the time around a Saṅkrānti, `gandanta=pada|four|two`, `vyatipata=days|short`, the neutralisations `parihara=off|named|broad|all`, `strength=basic|extended` for the strong grahas they need, and the countries of the place `regions=madhyadesha,...`), and, with `advise=1`, what each choice costs instead of the stretches, and the Chandrabala (`chandra=1:1,3,6,7,10,11`: the sign of the Moon at birth, 0 Aries to 11 Pisces, then the houses from it the Moon may be in).
 // A condition that is left out is not a condition; one given as an empty list can never be met.
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -154,7 +157,9 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await runMuhurtaFinder({
+    // `advise=1`: instead of the stretches, what each choice costs (the search run again without one choice at a time).
+    const run = searchParams.get('advise') === '1' ? (value: Parameters<typeof runMuhurtaFinder>[0]) => adviseFinder(value, ADVICE_BUDGET_MS) : runMuhurtaFinder;
+    const result = await run({
       start: match[0],
       days,
       lat: place.values.lat,
