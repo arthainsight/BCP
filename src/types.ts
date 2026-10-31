@@ -283,6 +283,9 @@ export interface DashaSettings {
     narayana?: boolean;
     moola?: boolean;
     sthira?: boolean;
+    /** The daśās of the length of life, BPHS 46.201–202: each graha's daśā is as long as the Piṇḍāyu (Paiṇḍī) or the Aṃśāyu (Aṃśī) it gives. */
+    paindi?: boolean;
+    amshi?: boolean;
     /** The other rāśi daśās of the Jaimini Sūtras and BPHS 46: Yogārdha, Dṛg, Trikoṇa and Śūla (for the time of death). */
     yogardha?: boolean;
     drig?: boolean;
@@ -319,6 +322,8 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     narayana: true,
     moola: true,
     sthira: true,
+    paindi: false,
+    amshi: false,
     yogardha: false,
     drig: false,
     trikona: false,

@@ -12,6 +12,7 @@ import AshtottariPanel from '@/components/AshtottariPanel';
 import NaisargikaPanel from '@/components/NaisargikaPanel';
 import RasiDashaPanel from '@/components/RasiDashaPanel';
 import NakshatraSystemPanel from '@/components/NakshatraSystemPanel';
+import AyurdayaPanel from '@/components/AyurdayaPanel';
 import { NAKSHATRA_SYSTEM_KEYS, type NakshatraSystemKey } from './nakshatraSystems';
 
 export type DashaRendererContext = {
@@ -46,6 +47,8 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
     <AshtottariPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
   ),
   naisargika: ({ planets, ascendant, birthDatetime }) => <NaisargikaPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
+  paindi: ({ planets, ascendant, birthDatetime }) => <AyurdayaPanel kind="paindi" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
+  amshi: ({ planets, ascendant, birthDatetime }) => <AyurdayaPanel kind="amshi" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
   narayana: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="narayana" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
   moola: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="moola" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
   sthira: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="sthira" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,

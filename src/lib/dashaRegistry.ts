@@ -3,7 +3,7 @@ import { NAKSHATRA_SYSTEMS, type NakshatraSystemKey } from './nakshatraSystems';
 
 export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta';
-export type DashaRendererKey = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | 'yogardha' | 'drig' | 'trikona' | 'shula' | NakshatraSystemKey;
+export type DashaRendererKey = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | 'paindi' | 'amshi' | 'yogardha' | 'drig' | 'trikona' | 'shula' | NakshatraSystemKey;
 
 /**
  * How the Dasas tab sorts the daśās: those that run by the Moon's nakṣatra (Vimśottarī and its kin, Yoginī, Aṣṭottarī), those
@@ -39,6 +39,9 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   ...NAKSHATRA_SYSTEMS.map((system): DashaRegistryItem => ({ key: system.key, label: `${system.name} Daśā`, group: 'Core', status: 'implemented', family: 'nakshatra', renderer: system.key, kind: 'nakshatra', conditional: true })),
   { key: 'kalaChakra', label: 'Kālachakra Daśā', group: 'Core', status: 'implemented', family: 'rasi', renderer: 'kalachakra' },
   { key: 'naisargika', label: 'Naisargika Daśā', group: 'Core', status: 'implemented', family: 'other', renderer: 'naisargika', kind: 'graha' },
+  // The daśās of the length of life (BPHS 46.201–202); off to begin with.
+  { key: 'paindi', label: 'Paiṇḍī Daśā', group: 'Core', status: 'beta', family: 'other', renderer: 'paindi', kind: 'graha' },
+  { key: 'amshi', label: 'Aṃśī Daśā', group: 'Core', status: 'beta', family: 'other', renderer: 'amshi', kind: 'graha' },
   { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'narayana', kind: 'rasi' },
   { key: 'moola', label: 'Mūla Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'moola', kind: 'rasi' },
   { key: 'sthira', label: 'Sthira Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'sthira', kind: 'rasi' },
