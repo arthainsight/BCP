@@ -292,6 +292,7 @@ test('split view on a phone: the workspaces stacked and shown in full', async ({
 
   // Every workspace is a switch here too; the rows choice is for wide screens only.
   await nav('timing').click();
+  await expect(panes).toHaveCount(3); // the second workspace is in before the third is asked for
   await nav('palm').click();
   await expect(panes).toHaveCount(4);
   await expect(page.locator('[data-split-rows]').locator('visible=true')).toHaveCount(0);

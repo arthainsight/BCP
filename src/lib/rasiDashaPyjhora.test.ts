@@ -25,7 +25,8 @@ const BOOK = [
 ] as const;
 
 const sequence = (system: RasiDashaSystem, planets: Parameters<typeof calculateRasiDasha>[1], asc: number, count = 12) =>
-  calculateRasiDasha(system, planets, asc, new Date(0)).entries.slice(0, count)
+  // PyJHora runs the Sthira daśā always forward: the choice that matches it.
+  calculateRasiDasha(system, planets, asc, new Date(0), { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'brahma-pvr' }).entries.slice(0, count)
     .map((e) => `${SIGN_ABBR[e.sign]}${e.durationYears}`).join(' ');
 
 // ---------------------------------------------------------------------------

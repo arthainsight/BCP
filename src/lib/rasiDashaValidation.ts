@@ -1,5 +1,6 @@
 import { calculateRasiDasha, type RasiDashaSystem } from './rasiDashas';
 import { withDashaYear } from './time';
+import type { RasiDashaOptions } from '../types';
 
 export type RasiValidationStatus = {
   passed: boolean;
@@ -40,6 +41,8 @@ const ASCENDANTS = [4, 1, 9];
 // house.stronger_rasi_from_planet_positions). Earlier hand-derived values for
 // the second and third variants disagreed with PyJHora and were replaced in
 // v2.21. Ends follow from the durations on the 365.256364-day year.
+/** The choices PyJHora makes, which its output below was worked out with: the Sthira daśā always forward. */
+const PYJHORA: RasiDashaOptions = { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'brahma-pvr' };
 const GOLDEN: Record<RasiDashaSystem, { seed: number; order: string; durations: string; ends: string }[]> = {
   narayana: [
     { seed: 9, order: 'Cp,Sg,Sc,Li,Vi,Le,Cn,Ge,Ta,Ar,Pi,Aq', durations: '2,4,10,12,11,11,1,4,5,5,11,3', ends: '2001-12-31T22:18:19.699Z,2005-12-31T22:54:59.097Z,2016-01-01T12:26:37.593Z' },
@@ -64,7 +67,7 @@ export function validateRasiDashaRegression(system: RasiDashaSystem): RasiValida
 }
 
 function validate(system: RasiDashaSystem): RasiValidationStatus {
-  const result = calculateRasiDasha(system, FIXTURE_PLANETS, 4, new Date('2000-01-01T10:00:00.000Z'));
+  const result = calculateRasiDasha(system, FIXTURE_PLANETS, 4, new Date('2000-01-01T10:00:00.000Z'), PYJHORA);
   const expected = EXPECTED[system];
   const firstCycle = result.entries.slice(0, 12);
   const checks = [
@@ -75,7 +78,7 @@ function validate(system: RasiDashaSystem): RasiValidationStatus {
     expected.durations == null || firstCycle.map(entry => entry.durationYears).join(',') === expected.durations,
   ];
   for (let index = 0; index < VARIANT_PLANETS.length; index++) {
-    const goldenResult = calculateRasiDasha(system, VARIANT_PLANETS[index], ASCENDANTS[index], new Date('2000-01-01T10:00:00.000Z'));
+    const goldenResult = calculateRasiDasha(system, VARIANT_PLANETS[index], ASCENDANTS[index], new Date('2000-01-01T10:00:00.000Z'), PYJHORA);
     const golden = GOLDEN[system][index]; const cycle = goldenResult.entries.slice(0, 12);
     checks.push(goldenResult.seedSign === golden.seed, cycle.map(entry => entry.abbr).join(',') === golden.order, cycle.map(entry => entry.durationYears).join(',') === golden.durations, cycle.slice(0, 3).map(entry => entry.endDate.toISOString()).join(',') === golden.ends);
   }
