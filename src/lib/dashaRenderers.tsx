@@ -46,9 +46,13 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
     <AshtottariPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
   ),
   naisargika: ({ planets, ascendant, birthDatetime }) => <NaisargikaPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />,
-  narayana: ({ planets, ascendant, birthDatetime, rasiOptions }) => <RasiDashaPanel system="narayana" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} />,
-  moola: ({ planets, ascendant, birthDatetime, rasiOptions }) => <RasiDashaPanel system="moola" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} />,
-  sthira: ({ planets, ascendant, birthDatetime, rasiOptions }) => <RasiDashaPanel system="sthira" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} />,
+  narayana: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="narayana" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
+  moola: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="moola" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
+  sthira: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="sthira" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
+  yogardha: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="yogardha" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
+  drig: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="drig" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
+  trikona: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="trikona" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
+  shula: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="shula" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
   ...(Object.fromEntries(NAKSHATRA_SYSTEM_KEYS.map(system => [system, ({ planets, ascendant, birthDatetime }: DashaRendererContext) => (
     <NakshatraSystemPanel system={system} planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
   )])) as Record<NakshatraSystemKey, (ctx: DashaRendererContext) => ReactNode>),

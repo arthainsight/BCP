@@ -95,10 +95,12 @@ assert.equal(met('shattrimshatsama', chart(20, { Sun: 100, Moon: 10 })), true, '
 assert.equal(met('dvadashottari', chart(5, {})), true);
 assert.equal(met('dvadashottari', chart(21, {})), true);
 assert.equal(met('dvadashottari', chart(12, {})), false);
-// Pañcottarī (46.29): the Lagna Cancer in the navāṁśa of Leo (the 2nd of Cancer, 3°20′–6°40′).
-assert.equal(met('panchottari', chart(95, {})), true);
-assert.equal(met('panchottari', chart(100, {})), false, 'Cancer in another navāṁśa');
-assert.equal(met('panchottari', chart(35, {})), false, 'not Cancer');
+// Pañcottarī (46.29): the Lagna Cancer, in the navāṁśa that the Sun goes to: the Lagna and the Sun in the same navāṁśa sign.
+// The Lagna at Cancer 5° (95°) is in the navāṁśa of Leo; the Sun at Leo 14° (134°) is in the navāṁśa of Leo too.
+assert.equal(met('panchottari', chart(95, { Sun: 134 })), true, 'the Lagna and the Sun in the navāṁśa of Leo');
+assert.equal(met('panchottari', chart(95, { Sun: 100 })), false, 'the Sun in another navāṁśa');
+assert.equal(met('panchottari', chart(35, { Sun: 35 })), false, 'not Cancer');
+assert.equal(met('panchottari', chart(95, {})), null, 'without the Sun it cannot be read');
 // Śatābdikā (46.32): the Lagna Vargottama.
 assert.equal(met('shatabdika', chart(1, {})), true, 'Aries in the navāṁśa of Aries');
 assert.equal(met('shatabdika', chart(5, {})), false);

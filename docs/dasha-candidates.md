@@ -35,7 +35,8 @@ condition the chart meets.
 What the text does not say, and what the app took (each is shown beside the condition in the panel):
 
 * "Born in a navāṁśa of Venus" (Dvādaśottarī 46.27): of what is not said; the **Lagna's** navāṁśa is taken (Taurus or Libra).
-* "In the Sun's aṃśa" (Pañcottarī 46.29): taken as the navāṁśa of Leo with the Lagna Cancer (the 2nd navāṁśa of Cancer, 3°20′–6°40′).
+* "In the Sun's aṃśa" (Pañcottarī 46.29): taken, as the user read it (31 October 2026), as the navāṁśa sign that the Sun goes to: the Lagna Cancer, and
+  the navāṁśa sign of the Lagna the same as that of the Sun. (v3.68 first took it as the navāṁśa of Leo; corrected in v3.69.)
   "Mitrarkṣa" is read as Anurādhā, the nakṣatra of Mitra.
 * The horā (BPHS 6.6: half a sign, 24 from Aries in two rounds): the Sun's first in odd signs, the Moon's first in even ones, as the practice
   has it; the verse does not say which comes first.
@@ -47,7 +48,7 @@ The Aṣṭottarī has two conditions in the text (46.17 and 46.23); the app has
 that follow from the years; 46.15 prints Mercury 19 in the Viṃśottarī (122 in all) where the 120 of 46.14 needs 17, so a printed figure of
 these lines must be checked against its total.
 
-## B. The Jaimini daśās of rāśi (the Sūtras, adhyāya 2)
+## B. The Jaimini daśās of rāśi (the Sūtras, adhyāya 2) — Yogārdha, Dṛg, Trikoṇa, Śūla and the Kendrādi (Mūla) in the app since v3.69, see `dasha-vs-sources.md`
 
 Years: the Chara count of the sign (`narayanaYears`) unless said. The order and the start are the Sūtra's, with the Hindi commentary.
 

@@ -80,12 +80,21 @@ export const NAKSHATRA_SYSTEMS: readonly NakshatraSystem[] = [
   },
   {
     key: 'panchottari', name: 'Pañcottarī', verses: '46.29–31',
-    condition: 'The Lagna Cancer, in the navāṁśa of the Sun (Leo). Counted from the friendly nakṣatra (Anurādhā, whose god is Mitra), divided by 7.',
-    note: '"Mitrarkṣa" is read as Anurādhā, the nakṣatra of Mitra; "the Sun\'s aṃśa" as the navāṁśa of Leo.',
+    condition: 'The Lagna Cancer, in the navāṁśa that the Sun goes to (the Lagna and the Sun in the same navāṁśa sign). Counted from the friendly nakṣatra (Anurādhā, whose god is Mitra), divided by 7.',
+    note: '"Mitrarkṣa" is read as Anurādhā, the nakṣatra of Mitra; "the Sun\'s aṃśa" as the navāṁśa sign the Sun stands in.',
     lords: lords(['Sun', 'Mercury', 'Saturn', 'Mars', 'Venus', 'Moon', 'Jupiter'], range(12, 7)),
-    evaluate: chart => {
+    evaluate: (chart): ConditionResult => {
       const sign = navamshaSign(chart.ascendant.longitude);
-      return { met: chart.ascendant.sign === 4 && sign === 5, facts: [{ template: 'The Lagna is {sign}', values: { sign: signName(chart.ascendant.sign) } }, { template: 'The navāṁśa of the Lagna is {sign}', values: { sign: signName(sign) } }] };
+      const sun = chart.planets.find(planet => planet.name === 'Sun');
+      const sunSign = sun ? navamshaSign(sun.longitude) : null;
+      return {
+        met: chart.ascendant.sign !== 4 ? false : sunSign == null ? null : sign === sunSign,
+        facts: [
+          { template: 'The Lagna is {sign}', values: { sign: signName(chart.ascendant.sign) } },
+          { template: 'The navāṁśa of the Lagna is {sign}', values: { sign: signName(sign) } },
+          ...(sunSign == null ? [] : [{ template: 'The navāṁśa of the Sun is {sign}', values: { sign: signName(sunSign) } }]),
+        ],
+      };
     },
   },
   {
