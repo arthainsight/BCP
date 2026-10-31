@@ -9,7 +9,7 @@ import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
 import { NAKSHATRA_NAMES } from '@/lib/nakshatras';
 import { YOGA_NAMES } from '@/lib/panchang';
 import {
-  BENEFICS, CHANDRABALA_USUAL, FINDER_GRAHAS, FINDER_WEIGHTS, isPreferKey, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, TARABALA_USUAL, TARA_NAMES, effectiveRules, formatChandra, formatRule, formatTara, isImpossible, isImpossibleRule,
+  BENEFICS, CHANDRABALA_USUAL, FINDER_GRAHAS, POSITIVE_YOGAS, FINDER_WEIGHTS, isPreferKey, FINDER_SIZES, KARANA_NAMES, MALEFICS, RULE_GRAHAS, TARABALA_USUAL, TARA_NAMES, effectiveRules, formatChandra, formatRule, formatTara, isImpossible, isImpossibleRule,
   SANKRANTI_ARC_MINUTES, SANKRANTI_SOLSTICE_DEGREES, isLimited, localParts, nakshatraOf, scoredKeys, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule, type PreferKey,
 } from '@/lib/muhurtaFinder';
 import { DOSHAS, DOSHAS_NOT_WORKED_OUT, DOSHA_IDS, isDoshaId, type DoshaId } from '@/lib/mahadosha';
@@ -17,6 +17,7 @@ import { D1_KEYS, D1_WISHES, isD1Key, type D1Key } from '@/lib/muhurtaD1';
 import { FINDER_PRESETS, FINDER_PRESET_CATEGORIES, NOT_APPLIED, type FinderPreset } from '@/lib/muhurtaFinderPresets';
 import type { FinderResult } from '@/lib/muhurtaFinderRun';
 import MuhurtaStrip from './MuhurtaStrip';
+import { muhurtaChartLink } from '@/lib/muhurtaChartLink';
 import type { StripChoices } from '@/lib/muhurtaStripView';
 import { useT } from '@/lib/i18n';
 
@@ -86,13 +87,22 @@ const allChoices = (): Choices => ({
   vyatipataLength: 'days',
 });
 
-/** The choices at the start: the houses of the Chandrabala and the tārās of the Tarabala that suit, as wishes (they limit nothing and score 100 and 60). */
-const initialChoices = (): Choices => ({ ...allChoices(), chandra: [...CHANDRABALA_USUAL], tara: [...TARABALA_USUAL], prefer: ['chandra', 'tara'] });
+/**
+ * The choices at the start: the houses of the Chandrabala and the tārās of the Tarabala that suit, and the positive yogas, as wishes
+ * (they limit nothing and score 100, 60 and 32).
+ */
+const initialChoices = (): Choices => ({
+  ...allChoices(), chandra: [...CHANDRABALA_USUAL], tara: [...TARABALA_USUAL], yoga: [...POSITIVE_YOGAS], prefer: ['chandra', 'tara', 'yoga'],
+});
 
 /** The choices of a preset: everything, with what the preset names set. */
 function presetChoices(preset: FinderPreset): Choices {
   const choices = initialChoices();
-  for (const key of ['vara', 'tithi', 'nakshatra', 'yoga', 'karana'] as const) choices[key] = preset[key] ?? choices[key];
+  // What a preset names is a condition, not a wish.
+  for (const key of ['vara', 'tithi', 'nakshatra', 'yoga', 'karana'] as const) {
+    if (preset[key]) choices.prefer = choices.prefer.filter(wish => wish !== key);
+    choices[key] = preset[key] ?? choices[key];
+  }
   for (const graha of FINDER_GRAHAS) choices.signs[graha] = preset.signs?.[graha] ?? choices.signs[graha];
   if (preset.chandra) choices.chandra = preset.chandra;
   if (preset.tara) choices.tara = preset.tara;
@@ -274,6 +284,13 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
   }), [choices, natalMoonSign, natalNakshatra, activePreset]);
   const canSearch = typeof lat === 'number' && typeof lng === 'number' && /^\d{4}-\d{2}-\d{2}$/.test(start) && !impossible;
 
+  // A moment as a chart of its own in a new tab: the place of the search, and the clock of the place.
+  const openMuhurtaChart = (ms: number) => {
+    if (typeof lat !== 'number' || typeof lng !== 'number') return;
+    const link = muhurtaChartLink(window.location.href, ms, { name: place?.name ?? '', lat, lng, zone, tz });
+    if (link) window.open(link, '_blank', 'noopener');
+  };
+
   const search = async () => {
     if (!canSearch) return;
     const params = new URLSearchParams({ start, days: String(days), lat: String(lat), lng: String(lng), tz: String(tz), ...(zone ? { zone } : {}), ...calculationParams(calculationSettings) });
@@ -402,7 +419,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
         <section className="min-w-0 space-y-1.5 rounded-lg border border-zinc-200 p-2.5 dark:border-zinc-700" data-finder-group="Strip">
           <h3 className="text-xs font-mono font-semibold text-emerald-700 dark:text-green-400">{t('Month strip')}</h3>
           <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('The colours follow the choices below: a ready-made choice for a purpose shows which times the book calls favourable for it. Click a time for its details.')}</p>
-          <MuhurtaStrip start={start} lat={lat} lng={lng} tz={tz} zone={zone} calculation={calculationParams(calculationSettings)} choices={stripChoices} />
+          <MuhurtaStrip start={start} lat={lat} lng={lng} tz={tz} zone={zone} calculation={calculationParams(calculationSettings)} choices={stripChoices} onOpenChart={openMuhurtaChart} />
         </section>
       )}
 
@@ -467,6 +484,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
         <Group
           title={t('Yoga')} size={27} chosen={choices.yoga} onChange={value => set('yoga', value)}
           weight={FINDER_WEIGHTS.yoga} wish={choices.prefer.includes('yoga')} onWish={on => setWish('yoga', on)}
+          extra={<button type="button" className={smallButton} onClick={() => set('yoga', POSITIVE_YOGAS)}>{t('positive')}</button>}
           items={YOGA_NAMES.map((label, value) => ({ value, label }))}
         />
         <Group
@@ -788,6 +806,15 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
                               {t('use as target')}
                             </button>
                           )}
+                          <button
+                            type="button"
+                            className={`${smallButton} ml-1`}
+                            title={t('Opens this moment as a chart of its own in a new tab; the chart that is open stays as it is.')}
+                            onClick={() => openMuhurtaChart(Math.ceil(window.start / 60000) * 60000)}
+                            data-finder-open-chart
+                          >
+                            {t('open as a chart')} ↗
+                          </button>
                         </td>
                       </tr>
                     );

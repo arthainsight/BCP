@@ -13,6 +13,11 @@ for (const layer of ['showNakshatra', 'showCharaKaraka', 'showOuterPlanets', 'sh
   assert.equal(DEFAULT_CHART_DISPLAY[layer], false, `${layer} is off to begin with`);
 }
 
+// The target date bar above the chart is hidden to begin with, and a stored choice is kept.
+assert.equal(DEFAULT_CHART_DISPLAY.showTargetBar, false);
+assert.equal(migrateChartDisplaySettings({}).showTargetBar, false, 'settings from before the choice hide it');
+assert.equal(migrateChartDisplaySettings({ showTargetBar: true }).showTargetBar, true);
+
 // --- Stored settings ----------------------------------------------------------
 assert.deepEqual(migrateChartDisplaySettings(null), DEFAULT_CHART_DISPLAY);
 assert.deepEqual(migrateChartDisplaySettings('nonsense'), DEFAULT_CHART_DISPLAY);

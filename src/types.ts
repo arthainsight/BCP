@@ -132,6 +132,8 @@ export interface ChartDisplaySettings {
   showCharaKaraka: boolean;
   showOuterPlanets: boolean;
   showSpecialLagnas: boolean;
+  /** The target date and time bar above the chart (the transits are calculated for it). */
+  showTargetBar: boolean;
   showBnnMajorHighlight: boolean;
   showBnnMinorHighlight: boolean;
   showTransitOverlay: boolean;
@@ -167,6 +169,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showCharaKaraka: false,
   showOuterPlanets: false,
   showSpecialLagnas: false,
+  showTargetBar: false,
   showBnnMajorHighlight: false,
   showBnnMinorHighlight: false,
   showTransitOverlay: false,

@@ -3,12 +3,14 @@
 // panchāṅga of the app at the middle of what it finds.
 import assert from 'node:assert/strict';
 import {
-  BENEFICS, CHANDRABALA_USUAL, FINDER_SIZES, FINDER_WEIGHTS, PREFER_KEYS, TARABALA_USUAL, TARA_NAMES, findStretches, momentScore, scoredKeys, KARANA_NAMES, MALEFICS, effectiveRules, findWindows, formatChandra, formatRule, houseFrom, isImpossible, isLimited, karanaOf, localParts,
+  BENEFICS, CHANDRABALA_USUAL, POSITIVE_YOGAS, FINDER_SIZES, FINDER_WEIGHTS, PREFER_KEYS, TARABALA_USUAL, TARA_NAMES, findStretches, momentScore, scoredKeys, KARANA_NAMES, MALEFICS, effectiveRules, findWindows, formatChandra, formatRule, houseFrom, isImpossible, isLimited, karanaOf, localParts,
   matchesVara, momentMatches, nakshatraOf, neededBodies, parseChandra, parseRule, parseTara, formatTara, taraOf, ruleMatches, signOf, tithiLabel, tithiOf, yogaOf,
   type FinderCriteria, type FinderMoment, type FinderRule,
 } from './muhurtaFinder';
 import { FINDER_PRESETS, FINDER_PRESET_CATEGORIES, NOT_APPLIED } from './muhurtaFinderPresets';
 import { FI } from './i18n';
+import { INAUSPICIOUS_YOGAS } from './mahadosha';
+import { YOGA_NAMES } from './panchang';
 import { MAX_FINDER_STEPS, finderStepCount, finderStepMinutes, jdToMs, runMuhurtaFinder } from './muhurtaFinderRun';
 import { calculateChart } from './ephemeris';
 import { calculatePanchang } from './panchang';
@@ -253,6 +255,14 @@ assert.equal(houseFrom(11, 0), 2, 'Pisces rising: Aries is the 2nd');
       assert.ok((list ?? []).every(value => !(ticked ?? []).includes(value)), `${entry.id}: what is middling is not ticked (${key})`);
     }
   }
+}
+
+// The positive yogas: the eighteen that are not the nine inauspicious ones, by the list of the user.
+{
+  assert.deepEqual(POSITIVE_YOGAS.map(index => YOGA_NAMES[index]), [
+    'Priti', 'Ayushman', 'Saubhagya', 'Shobhana', 'Sukarma', 'Dhriti', 'Vriddhi', 'Dhruva', 'Harshana', 'Siddhi', 'Variyan', 'Shiva', 'Siddha', 'Sadhya', 'Shubha', 'Shukla', 'Brahma', 'Indra',
+  ]);
+  assert.deepEqual(all(27).filter(index => !POSITIVE_YOGAS.includes(index)), INAUSPICIOUS_YOGAS, 'the nine that are left are the inauspicious yogas');
 }
 
 // ---------------------------------------------------------------------------
