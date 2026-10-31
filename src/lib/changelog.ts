@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.66',
+    date: '2026-10-31',
+    title: 'The year of a daśā is a choice',
+    changes: [
+      'Settings → dasha methods: "Year of a dasha". The texts give the years of a daśā and not the length of a year, so the length is a choice: the Julian year (365.25 days, the start), the sidereal year (365.256364, the one PyJHora counts), the tropical year (365.2422) or the sāvana year of 360 days. Every daśā system, its sub-periods, the running lords marked on the charts and the Kālachakra\'s balance count in the chosen year; over a Vimśottarī of 120 years the dates differ by up to 1.8 years between 360 and 365.25 days.',
+      'The rāśi daśās (Nārāyaṇa, Mūla, Sthira) counted the sidereal year of 365.256364 days on their own before; they now count the chosen year like the others (their check against PyJHora still uses the sidereal year). With the start choice their dates move by less than a day over their cycle.',
+      'Updated the application version to v3.66.',
+    ],
+  },
+  {
     version: 'v3.65',
     date: '2026-10-31',
     title: 'Kālachakra Daśā: Revatī corrected after the Sanskrit text',

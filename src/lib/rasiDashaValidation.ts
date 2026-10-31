@@ -1,4 +1,5 @@
 import { calculateRasiDasha, type RasiDashaSystem } from './rasiDashas';
+import { withDashaYear } from './time';
 
 export type RasiValidationStatus = {
   passed: boolean;
@@ -57,7 +58,12 @@ const GOLDEN: Record<RasiDashaSystem, { seed: number; order: string; durations: 
   ],
 };
 
+/** The check against PyJHora's output, which counts the sidereal year of 365.256364 days whatever year the user has chosen. */
 export function validateRasiDashaRegression(system: RasiDashaSystem): RasiValidationStatus {
+  return withDashaYear('sidereal', () => validate(system));
+}
+
+function validate(system: RasiDashaSystem): RasiValidationStatus {
   const result = calculateRasiDasha(system, FIXTURE_PLANETS, 4, new Date('2000-01-01T10:00:00.000Z'));
   const expected = EXPECTED[system];
   const firstCycle = result.entries.slice(0, 12);

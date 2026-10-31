@@ -194,7 +194,7 @@ export default function Home() {
     !!birthDatetime && showCoords && !!manualLat && !!manualLng && effectiveTzOffset !== null;
 
   const { karakaByPlanet, nakshatraAdjust, effectiveBnnHouses, effectiveNadiParayaHouses, dashaLords } =
-    useChartDerived(chartData, birthDatetime, targetDate, calculationSettings, chartDisplaySettings.dashaMarkSystem, dashaSettings.variantChoice);
+    useChartDerived(chartData, birthDatetime, targetDate, calculationSettings, chartDisplaySettings.dashaMarkSystem, dashaSettings.variantChoice, dashaSettings.yearLength);
 
 
   // Recompute BCP when the target or birth date changes, but only if a chart
@@ -675,12 +675,13 @@ export default function Home() {
   // Keep the document language in step with the interface for screen readers.
   useEffect(() => { document.documentElement.lang = language; }, [language]);
 
+  // The key on the page below starts every panel afresh when the year of the daśās changes, since their dates are worked out with it.
   return (
     <LanguageContext.Provider value={language}>
     <GrahaNamesContext.Provider value={chartDisplaySettings.grahaNames ?? 'english'}>
     <ChartFontContext.Provider value={clampFontScale(chartDisplaySettings.chartFontScale)}>
     <GrahaMarksContext.Provider value={grahaRoles}>
-    <div className="min-h-screen overflow-x-clip bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
+    <div key={dashaSettings.yearLength ?? 'julian'} className="min-h-screen overflow-x-clip bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200">
       <AppHeader
         activeChartName={activeChartName}
         displayChartName={displayChartName}

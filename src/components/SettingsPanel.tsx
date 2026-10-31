@@ -11,11 +11,19 @@ import ParayaChips from './ParayaChips';
 import { ChartFontScaleField, DashaMarkSelect, DegreePrecisionPicker } from './ChartDisplayControls';
 import { VARGA_DIVISIONS, VARGA_NAMES } from '@/lib/vargaChart';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
+import { DASHA_YEAR_KEYS, DASHA_YEAR_LENGTHS, type DashaYearLength } from '@/lib/time';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
 import UpdatesPanel from './UpdatesPanel';
 import BackupPanel from './BackupPanel';
 import { CHART_LAYER_LABELS, CHART_LAYER_SETTINGS, type ChartLayerKey } from './chartLayers';
 import { LANGUAGES, useT, type Language } from '@/lib/i18n';
+
+const YEAR_LABELS: Record<DashaYearLength, string> = {
+  julian: 'Julian year',
+  sidereal: 'sidereal year (PyJHora)',
+  tropical: 'tropical year',
+  savana: 'savana year',
+};
 
 interface Props {
   chartDisplaySettings: ChartDisplaySettings;
@@ -113,6 +121,10 @@ export default function SettingsPanel(props: Props) {
 
   const updateCharaOption = <K extends keyof CharaOptions,>(key: K, value: CharaOptions[K]) => {
     saveDashaSettings({ ...dashaSettings, dashas: normalizedDashas, charaOptions: { ...charaOptions, [key]: value }, rasiOptions });
+  };
+
+  const updateYearLength = (yearLength: DashaYearLength) => {
+    saveDashaSettings({ ...dashaSettings, dashas: normalizedDashas, charaOptions, rasiOptions, yearLength });
   };
 
   const updateVariantChoice = (variantChoice: VimshottariVariantChoice) => {
@@ -441,6 +453,18 @@ export default function SettingsPanel(props: Props) {
       <Section label="dasha methods" open={methodsOpen} onToggle={() => setMethodsOpen(v => !v)}>
         <div className="space-y-4">
           <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">{t('Method choices update Dasha panels, the shared timeline and Event List together.')}</p>
+          <div className="space-y-2" data-setting="dasha-year">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{t('Year of a dasha')}</div>
+            <label className="block text-xs font-mono text-zinc-500">
+              {t('a year counts as')}
+              <select className={`${SELECT} mt-1`} value={dashaSettings.yearLength ?? 'julian'} onChange={e => updateYearLength(e.target.value as DashaYearLength)} aria-label={t('Year of a dasha')}>
+                {DASHA_YEAR_KEYS.map(key => <option key={key} value={key}>{t(YEAR_LABELS[key])} ({DASHA_YEAR_LENGTHS[key]} {t('days')})</option>)}
+              </select>
+              <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">
+                {t('The texts give the years of a dasha and not the length of a year. The Julian year is the start; the sidereal year is the one of PyJHora; the savana year of 360 days is the old reckoning. Over a Vimsottari of 120 years the dates differ by up to 1.8 years between 360 and 365.25 days.')}
+              </span>
+            </label>
+          </div>
           <div className="space-y-2">
             <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">{t('Vimsottari Utpanna / Kshema / Adhana')}</div>
             <label className="block text-xs font-mono text-zinc-500">

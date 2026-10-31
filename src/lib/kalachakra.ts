@@ -1,7 +1,7 @@
 import { normalizeDegrees } from './angles';
 import { SIGN_NAMES } from './signs';
 import { NAKSHATRA_NAMES } from './nakshatras';
-import { JULIAN_YEAR_MS, addDashaYears } from './time';
+import { addDashaYears, dashaYearMs } from './time';
 const SIGN_YEARS = [7, 16, 9, 21, 5, 9, 16, 7, 10, 4, 4, 10] as const;
 // The four groups of nakṣatras (BPHS 46.56–58, 65, 71–72, 77): the ten stars of the first savya group (Aśvinī, Kṛttikā, Punarvasu,
 // Āśleṣā, Hasta, Svātī, Mūla, Uttara Āṣāḍhā, Pūrva Bhādrapadā and Revatī: "vahnivātādiviśvarkṣarevatyaḥ savyatārakāḥ"), the five of
@@ -124,7 +124,7 @@ export function calculateKalachakraSubDashas(parent: KalachakraEntry, cycle: num
     .filter((item) => item.endDate > parent.startDate)
     .map((item) => {
       if (item.startDate >= parent.startDate) return item;
-      const durationYears = (item.endDate.getTime() - parent.startDate.getTime()) / JULIAN_YEAR_MS;
+      const durationYears = (item.endDate.getTime() - parent.startDate.getTime()) / dashaYearMs();
       return entry(item.sign - 1, parent.startDate, durationYears, item.cycleIndex, item.fullDurationYears, item.fullDurationYears - durationYears);
     });
 }

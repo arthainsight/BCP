@@ -1,5 +1,6 @@
 import { DEFAULT_DASHA_SETTINGS, type DashaSettings } from '@/types';
 import { isVariantChoice } from '@/lib/vimshottariVariants';
+import { isDashaYearLength } from '@/lib/time';
 
 // Handles both the new { dashas: {...} } format and the old
 // { showBcp, showVimshottari, dashaSystem } format from localStorage / saved charts.
@@ -31,6 +32,7 @@ export function migrateDashaSettings(raw: unknown): DashaSettings {
         ? { ...DEFAULT_DASHA_SETTINGS.rasiOptions, ...(obj.rasiOptions as DashaSettings['rasiOptions']) }
         : DEFAULT_DASHA_SETTINGS.rasiOptions,
       variantChoice: isVariantChoice(obj.variantChoice) ? obj.variantChoice : DEFAULT_DASHA_SETTINGS.variantChoice,
+      yearLength: isDashaYearLength(obj.yearLength) ? obj.yearLength : DEFAULT_DASHA_SETTINGS.yearLength,
     };
   }
 

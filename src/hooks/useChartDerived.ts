@@ -9,7 +9,7 @@ import { calculateCharaKarakas, type CharaKaraka } from '@/lib/karakas';
 import { nakshatraAdjustFor } from '@/lib/nakshatraZodiac';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { GRAHA_DASHA_SYSTEMS, runningGrahaDashaLords, type GrahaDashaSystem } from '@/lib/dashaEvents';
-import { JULIAN_YEAR_MS } from '@/lib/time';
+import { JULIAN_YEAR_MS, type DashaYearLength } from '@/lib/time';
 
 /** Values worked out from the calculated chart and the target date. */
 export function useChartDerived(
@@ -19,6 +19,8 @@ export function useChartDerived(
   calculationSettings: CalculationSettings,
   dashaMarkSystem: GrahaDashaSystem = 'vimshottari',
   variantChoice: VimshottariVariantChoice = 'auto',
+  /** The year the daśās count in; the lords running at a moment change with it, so it is a dependency below. */
+  yearLength: DashaYearLength = 'julian',
 ) {
   const charaKarakas: CharaKaraka[] = useMemo(
     () => (chartData ? calculateCharaKarakas(chartData.planets, calculationSettings.charaKarakaRankMode, calculationSettings.charaKarakaCount) : []),
@@ -68,7 +70,8 @@ export function useChartDerived(
     const system = GRAHA_DASHA_SYSTEMS.find(s => s.key === dashaMarkSystem) ?? GRAHA_DASHA_SYSTEMS[0];
     const lords = runningGrahaDashaLords(system.key, { eventDate: target, birthDate: birth, planets: chartData.planets, ascendant: chartData.ascendant, variantChoice });
     return lords ? { ...lords, label: system.short } : null;
-  }, [chartData, birthDatetime, targetDate, dashaMarkSystem, variantChoice]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chartData, birthDatetime, targetDate, dashaMarkSystem, variantChoice, yearLength]);
 
   return { karakaByPlanet, nakshatraAdjust, effectiveBnnHouses, effectiveNadiParayaHouses, dashaLords };
 }
