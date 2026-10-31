@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.71',
+    date: '2026-10-31',
+    title: 'Śūla corrected after the commentary, and the Maṇḍūka daśā',
+    changes: [
+      'Śūla daśā (v3.69) corrected after the commentary of the Jaimini Sūtras (2.4.15–16): the sub-periods are the Maṇḍūka antardaśā, from the stronger of the sign and its 7th, direct from an odd sign and reverse from an even one, the angles first (every third sign), then the 2nd, 5th, 8th and 11th, then the rest. The commentary works two examples (Taurus in reverse, Gemini from Sagittarius), both in the tests. v3.69 had given the sub-periods of the Sthira daśā.',
+      'The years of the Śūla daśā are now the Chara years, as the commentary of the Sūtras has them where nothing else is said; BPHS 46.182 has the Sthira years, and they are a choice in Settings (Sula daśā years).',
+      'New daśā, off to begin with: the Maṇḍūka (Trikūṭa) daśā of BPHS 46.179–180 and Jaimini 2.4.15: from the stronger of the Lagna and the 7th, the Maṇḍūka order, the Sthira years.',
+      'Updated the application version to v3.71.',
+    ],
+  },
+  {
     version: 'v3.70',
     date: '2026-10-31',
     title: 'The Paiṇḍī and Aṃśī daśās (the length of life)',

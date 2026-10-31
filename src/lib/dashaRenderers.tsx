@@ -56,6 +56,7 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
   drig: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="drig" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
   trikona: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="trikona" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
   shula: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="shula" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
+  mandooka: ({ planets, ascendant, birthDatetime, rasiOptions, charaOptions }) => <RasiDashaPanel system="mandooka" planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} options={rasiOptions} karaka={charaOptions.karaka} />,
   ...(Object.fromEntries(NAKSHATRA_SYSTEM_KEYS.map(system => [system, ({ planets, ascendant, birthDatetime }: DashaRendererContext) => (
     <NakshatraSystemPanel system={system} planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} />
   )])) as Record<NakshatraSystemKey, (ctx: DashaRendererContext) => ReactNode>),

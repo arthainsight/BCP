@@ -95,6 +95,18 @@ ten signs are named; the text gives no continuation and none is made up.
 start (direct from an odd sign, reverse from an even one); the years as in the Chara. The sub-periods by the verse quoted with the sūtra: an odd sign from itself in
 order, an even one from its 7th in reverse.
 
-**Śūla (2.3.18–25, 46.181–182).** For the time of death: from the stronger of the 8th from the Lagna and the 8th from the 7th, direct from an odd sign and reverse from
-an even one; the years as in the Sthira. For others the 9th (father), 4th (mother), 3rd (younger brother), 5th (sister, child) and 11th (elder brother), a choice in
-Settings. Not done: the māraka signs and the antardaśā of death (2.3.26 on).
+**Śūla (2.3.18–25, 2.4.15–16, 46.181–182).** For the time of death: from the stronger of the 8th from the Lagna and the 8th from the 7th, direct from an odd sign and reverse from
+an even one. For others the 9th (father), 4th (mother), 3rd (younger brother), 5th (sister, child) and 11th (elder brother), a choice in Settings. **Corrected in v3.71:** (1) the
+sub-periods are the **Maṇḍūka antardaśā** of 2.4.15–16 ("the frog's jumps": from the stronger of the sign and its 7th, direct from an odd sign and reverse from an even one, the 1st, 4th, 7th
+and 10th, then the 2nd, 5th, 8th and 11th, then the 3rd, 6th, 9th and 12th), which the commentary works through for the Taurus daśā (Taurus, Aquarius, Scorpio, Leo, Aries,
+Capricorn, Libra, Cancer, Pisces, Sagittarius, Virgo, Gemini) and for the Gemini daśā (from Sagittarius); v3.69 had given the Sthira order. (2) The years: the commentary says that where nothing
+else is said the years are the Chara's, BPHS 46.182 says "sthiravat": the two texts differ, the Jaimini Sūtras are the source and BPHS reports the daśā as "some" teach it, so the
+Chara years are the default and the Sthira years a choice in Settings ("Sula daśā years"). Not done: the māraka signs and the death-time sūtras (2.3.26 on).
+
+**Maṇḍūka, also called Trikūṭa (BPHS 46.179–180, Jaimini 2.4.15; v3.71).** From the stronger of the Lagna and the 7th, direct from an odd sign and reverse from an even one, in the
+order of the Maṇḍūka jumps above; the years as in the Sthira daśā (46.180). *Read so:* BPHS gives the name and the years of the daśā; the order of the signs is that of the Maṇḍūka
+antardaśā, which the Sūtras give; the sub-periods of each sign follow the same order.
+
+**Named, not worked out:** the Kāraka (graha) Kendrādi daśā of 2.4.11–12 (the commentary's example gives the years of a graha as the count to its own signs, the larger taken: Venus in Sagittarius
+10, Mars 11; but the order within a group of grahas, and the years of Rāhu and Ketu, are not clear from the OCR) and the Kāraka daśā of BPHS 46.178 (from the Ātmakāraka, the years the number of signs
+from the Lagna to the kāraka; whether the count includes the Lagna is not said).

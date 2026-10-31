@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { drigAspected, drigOrder, kendradiOrder, kendradiStart, shulaOrder, SHULA_HOUSES, trikonaOrder, yogardhaOrder, yogardhaYears, charaYears, sthiraYears } from './jaiminiRasiDashas';
+import { drigAspected, drigOrder, kendradiOrder, kendradiStart, mandookaOrder, mandookaStart, shulaOrder, SHULA_HOUSES, trikonaOrder, yogardhaOrder, yogardhaYears, charaYears, sthiraYears } from './jaiminiRasiDashas';
 import { toJaiminiChart } from './jaiminiStrength';
 import { SIGN_ABBR } from './signs';
 
@@ -65,4 +65,14 @@ assert.equal(names(shula.order), 'Ta,Ar,Pi,Aq,Cp,Sg,Sc,Li,Vi,Le,Cn,Ge');
 // For the father the 9th (from the Lagna and from the 7th): Sagittarius or Gemini.
 assert.equal(SHULA_HOUSES.father, 9);
 assert.deepEqual(Object.values(SHULA_HOUSES), [8, 9, 4, 3, 5, 11]);
+
+// --- Maṇḍūka (Jaimini Sūtras 2.4.15–16): the two examples of the commentary ------------------------------------------------------------------
+// The Taurus daśā (Taurus stronger than Scorpio, an even sign, so reverse): Taurus, Aquarius, Scorpio, Leo; Aries, Capricorn, Libra, Cancer; Pisces, Sagittarius, Virgo, Gemini.
+assert.equal(names(mandookaOrder(1)), 'Ta,Aq,Sc,Le,Ar,Cp,Li,Cn,Pi,Sg,Vi,Ge');
+// The Gemini daśā (Sagittarius stronger than Gemini, an odd sign, so direct): Sagittarius, Pisces, Gemini, Virgo; Capricorn, Aries, Cancer, Libra; Aquarius, Taurus, Leo, Scorpio.
+assert.equal(names(mandookaOrder(8)), 'Sg,Pi,Ge,Vi,Cp,Ar,Cn,Li,Aq,Ta,Le,Sc');
+assert.equal(new Set(mandookaOrder(5)).size, 12);
+// The start is the stronger of the sign and its 7th: two grahas in Scorpio make it the stronger of Taurus and Scorpio.
+assert.equal(SIGN_ABBR[mandookaStart(chartOf(1, { Sun: 8, Moon: 8 }), 1)], 'Sc');
+assert.equal(SIGN_ABBR[mandookaStart(chartOf(1, { Sun: 2, Moon: 2 }), 1)], 'Ta');
 console.log('Jaimini rāśi daśā tests passed');

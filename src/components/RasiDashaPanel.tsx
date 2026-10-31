@@ -10,7 +10,7 @@ import { formatDate } from '@/lib/dateFormat';
 
 import { useT } from '@/lib/i18n';
 const LEVELS = ['MD', 'AD', 'PD', 'SD', 'PR', 'DE'] as const;
-const TITLES: Record<RasiDashaSystem, string> = { narayana: 'nārāyaṇa daśā', moola: 'mūla daśā', sthira: 'sthira daśā', yogardha: 'yogārdha daśā', drig: 'dṛg daśā', trikona: 'trikoṇa daśā', shula: 'śūla daśā' };
+const TITLES: Record<RasiDashaSystem, string> = { narayana: 'nārāyaṇa daśā', moola: 'mūla daśā', sthira: 'sthira daśā', yogardha: 'yogārdha daśā', drig: 'dṛg daśā', trikona: 'trikoṇa daśā', shula: 'śūla daśā', mandooka: 'maṇḍūka daśā' };
 const NOTES: Record<RasiDashaSystem, string> = {
   narayana: 'Rāśi daśā · stronger Lagna/7th seed · 144-year two-cycle method with Saturn/Ketu exceptions.',
   moola: 'Lagna Kendrādi Rāśi (Mūla) variant · kendra, pāṇaphara and apoklima progression.',
@@ -18,7 +18,8 @@ const NOTES: Record<RasiDashaSystem, string> = {
   yogardha: 'Jaimini rāśi daśā · from the stronger of Lagna and 7th · half the sum of the Chara and the Sthira years.',
   drig: 'Jaimini rāśi daśā · the 9th, 10th and 11th with the signs they glance at · Sthira years.',
   trikona: 'Jaimini rāśi daśā · from the strongest of Lagna, 5th and 9th, each with its trines · Chara years.',
-  shula: 'Jaimini rāśi daśā · for the time of death · from the stronger of the 8th from the Lagna and from the 7th · Sthira years.',
+  shula: 'Jaimini rāśi daśā · for the time of death · from the stronger of the 8th from the Lagna and from the 7th · Chara years (a choice in Settings) · Maṇḍūka sub-periods.',
+  mandooka: 'Maṇḍūka (Trikūṭa) daśā · from the stronger of Lagna and 7th, the angles first, then the 2nd/5th/8th/11th and the rest · Sthira years.',
 };
 
 export default function RasiDashaPanel({ system, planets, ascendant, birthDatetime, options, karaka }: { system: RasiDashaSystem; planets: PlanetData[]; ascendant: { sign: number; longitude?: number }; birthDatetime: string; options: RasiDashaOptions; karaka?: { rankMode?: 'degree' | 'minute'; count?: 7 | 8 } }) {

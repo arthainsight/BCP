@@ -103,6 +103,20 @@ export function trikonaOrder(chart: JaiminiChart, ascendant: number): { start: n
   return { start, order };
 }
 
+/**
+ * The Maṇḍūka ("frog") order (Jaimini Sūtras 2.4.15–16, "sthūlādarśavaiṣamyāśrayo maṇḍūkas trikūṭaḥ", with the verse quoted by the commentary): from the stronger of a sign and
+ * its 7th, direct from an odd sign and reverse from an even one, the sign itself and then every third sign (the angles), then the signs after it in the same jumps, so that the
+ * 1st, 4th, 7th, 10th, 2nd, 5th, 8th, 11th, 3rd, 6th, 9th and 12th are taken in turn. The commentary's two examples (Taurus in reverse, Sagittarius direct) are in the tests.
+ */
+export function mandookaOrder(start: number): number[] {
+  const direction = isOddSign(start) ? 1 : -1;
+  return [0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11].map(step => norm(start + direction * step));
+}
+/** The sign the Maṇḍūka order of a sign begins from: the stronger of the sign and its 7th. */
+export function mandookaStart(chart: JaiminiChart, sign: number): number {
+  return strongerOf(chart, sign, norm(sign + 6));
+}
+
 /** The house the Śūla daśā is read from, by the person it is read for (2.3.18–25). */
 export const SHULA_HOUSES = { self: 8, father: 9, mother: 4, 'younger-brother': 3, 'sister-or-child': 5, 'elder-brother': 11 } as const;
 

@@ -261,6 +261,8 @@ export interface RasiDashaOptions {
   /** `jaimini`: the Kendrādi rāśi daśā of the Jaimini Sūtras 2.4.11–14 (from the stronger of the Ātmakāraka's sign and its 7th; the angles, then the 2nd/5th/8th/11th, then the rest, each group by strength). `pyjhora`: the Mūla of PyJHora (from the Lagna, by position). Default `jaimini`. */
   moolaMethod?: 'jaimini' | 'pyjhora';
   /** Whose death the Śūla daśā is read for: the native's own (the 8th), the father's (9th), mother's (4th), younger brother's (3rd), a sister's or child's (5th) or an elder brother's (11th), Jaimini Sūtras 2.3.18–25. */
+  /** The years of the Śūla daśā: `chara` (the Chara years, where the commentary of the Jaimini Sūtras says the years are those of the Chara when nothing else is said) or `sthira` (BPHS 46.182, "sthiravat"). Default `chara`. */
+  shulaYears?: 'chara' | 'sthira';
   shulaFor?: 'self' | 'father' | 'mother' | 'younger-brother' | 'sister-or-child' | 'elder-brother';
 }
 
@@ -291,6 +293,8 @@ export interface DashaSettings {
     drig?: boolean;
     trikona?: boolean;
     shula?: boolean;
+    /** The Maṇḍūka (Trikūṭa) daśā of BPHS 46.179–180 and Jaimini 2.4.15. */
+    mandooka?: boolean;
     /** The conditional nakṣatra daśās of BPHS 46.24–43: each is read only for a birth that meets the condition the text gives it. */
     shodashottari?: boolean;
     dvadashottari?: boolean;
@@ -328,6 +332,7 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     drig: false,
     trikona: false,
     shula: false,
+    mandooka: false,
     // Off to begin with: each is for a birth that meets its own condition, which most charts do not (the panel says whether this one does).
     shodashottari: false,
     dvadashottari: false,
@@ -357,6 +362,7 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     brahmaMethod: 'jaimini',
     moolaMethod: 'jaimini',
     shulaFor: 'self',
+    shulaYears: 'chara',
   },
   variantChoice: 'auto',
   yearLength: 'julian',
