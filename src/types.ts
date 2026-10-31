@@ -232,6 +232,12 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
 };
 
 export interface CharaOptions {
+  /**
+   * `jaimini`: the rules of the Jaimini Sūtras (2.3, 2.4) and BPHS 46.155–165: the order of the signs by the pada of the 9th from the start, the
+   * years by the count to the lord (less one, in the direction of the pada of the sign), the lord of Scorpio and Aquarius chosen between the two,
+   * the sub-periods by the kind of the sign. `custom`: the choices below.
+   */
+  method: 'jaimini' | 'custom';
   start: 'lagna' | 'ak';
   mahadashaDirection: 'rashi-type' | 'odd-even';
   antardashaStart: 'next-dasha-rasi' | 'same-dasha-rasi';
@@ -248,7 +254,8 @@ export interface CharaOptions {
 export interface RasiDashaOptions {
   narayanaSeed: 'stronger-lagna-seventh' | 'lagna';
   moolaSeed: 'stronger-lagna-seventh' | 'lagna';
-  sthiraMethod: 'brahma-pvr';
+  /** `jaimini`: the Sthira daśā of the Jaimini Sūtras 2.3.1–4 (the signs run direct from an odd Brahma sign, reverse from an even one; the sub-periods from the sign itself or, for an even sign, from its 7th in reverse). `brahma-pvr`: always forward, as PyJHora does. */
+  sthiraMethod: 'jaimini' | 'brahma-pvr';
 }
 
 // v2.15 removed the 20+ never-implemented placeholder keys (tara, brahma,
@@ -294,6 +301,7 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     sthira: true,
   },
   charaOptions: {
+    method: 'jaimini',
     start: 'lagna',
     mahadashaDirection: 'rashi-type',
     antardashaStart: 'next-dasha-rasi',
@@ -307,7 +315,7 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
   rasiOptions: {
     narayanaSeed: 'stronger-lagna-seventh',
     moolaSeed: 'stronger-lagna-seventh',
-    sthiraMethod: 'brahma-pvr',
+    sthiraMethod: 'jaimini',
   },
   variantChoice: 'auto',
   yearLength: 'julian',

@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.67',
+    date: '2026-10-31',
+    title: 'Chara and Sthira daśā by the Jaimini Sūtras',
+    changes: [
+      'The Jaimini Sūtras (adhyāya 2, with the commentary of Sītārāma Jhā) were read for the Chara and Sthira daśās; page docs/dasha-vs-sources.md. The Chara daśā of the app used conventions that the text does not have, and now follows the text by default (Settings → dasha methods → Chara method; your own choices are kept under "my own choices").',
+      'Chara: the signs run direct if the 9th from the start is in an odd pada (so for Aries, Leo, Virgo, Libra, Aquarius and Pisces rising), reverse if in an even one. The years are the count from the sign to its lord less one, in the direction of the pada of the sign; before, the sign itself was counted too, which made every daśā a year too long. A sign with two lords (Scorpio, Aquarius) takes the lord by the rule of the Vṛddhakārikā. The sub-periods follow the kind of the sign: a movable sign the twelve in order, a fixed sign every sixth sign, a dual sign the angles, then the 5th, 8th, 11th and 2nd, then the rest, from the stronger of the sign and its 7th.',
+      'Sthira: from the sign of Brahma, direct from an odd sign and reverse from an even one; the sub-periods of an even sign from its 7th in reverse. The PyJHora way (always forward) is the other choice in Settings.',
+      'Not changed: the Brahma graha is found by the app\'s scoring, not by all the sūtras; the Mūla daśā begins at the Lagna as PyJHora\'s does, where the text begins at the Ātmakāraka; the Nārāyaṇa daśā is not in the edition read.',
+      'Updated the application version to v3.67.',
+    ],
+  },
+  {
     version: 'v3.66',
     date: '2026-10-31',
     title: 'The year of a daśā is a choice',

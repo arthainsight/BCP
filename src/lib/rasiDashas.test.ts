@@ -31,6 +31,22 @@ const lagnaSeed = calculateRasiDasha('narayana', planets, 4, birth, { narayanaSe
 assert.equal(lagnaSeed.seedSign, 3);
 assert.match(lagnaSeed.method, /research variant/);
 assert.match(lagnaSeed.basis, /^Lagna:/);
+// Sthira by the Jaimini Sūtras (2.3.1–4): from the sign of Brahma, direct if the sign is odd, reverse if even; the sub-periods of an odd sign from the
+// sign itself, of an even sign from its 7th in reverse.
+const jaiminiSthira = calculateRasiDasha('sthira', planets, 4, birth);
+const pvrSthira = calculateRasiDasha('sthira', planets, 4, birth, { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'brahma-pvr' });
+assert.equal(jaiminiSthira.seedSign, pvrSthira.seedSign, 'both start from the sign of Brahma');
+const seedSign = jaiminiSthira.seedSign;
+const direction = seedSign % 2 === 1 ? -1 : 1;
+assert.deepEqual(jaiminiSthira.entries.map(entry => entry.sign), Array.from({ length: 12 }, (_, index) => (((seedSign + direction * index) % 12) + 12) % 12));
+assert.deepEqual(pvrSthira.entries.map(entry => entry.sign), Array.from({ length: 12 }, (_, index) => (seedSign + index) % 12), 'the other convention always runs forward');
+for (const entry of jaiminiSthira.entries.slice(0, 3)) {
+  const children = calculateRasiSubDashas(entry, planets, 'sthira').map(child => child.sign);
+  const expected = entry.sign % 2 === 1
+    ? Array.from({ length: 12 }, (_, index) => (((entry.sign + 6 - index) % 12) + 12) % 12)
+    : Array.from({ length: 12 }, (_, index) => (entry.sign + index) % 12);
+  assert.deepEqual(children, expected, `sub-periods of ${entry.signName}`);
+}
 for (const system of ['narayana', 'moola', 'sthira'] as const) assert.equal(validateRasiDashaRegression(system).passed, true);
 assert.ok(validateRasiDashaRegression('moola').checks >= 18);
 console.log('Rasi Dasha tests passed');
