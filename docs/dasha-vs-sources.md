@@ -4,6 +4,8 @@ The classics decide. This page sets the daśā systems of the app beside the **B
 Sanskrit with IAST (the text of enjoylearningsanskrit.com, read with its transliteration; the English of that site is a help, not the
 authority). The Jaimini systems are read in the **Jaimini Sūtras** (adhyāya 2) in the edition *Jaimini Sūtram with the Tattvādarśa of Sītārāma Jhā* (Chowkhamba, Sanskrit with Hindi; archive.org `VTRy_jaimini-sutram-by-jaimini-chowkhamba-vidya-bhavan-varanasi`); the Nārāyaṇa daśā is not in that edition.
 
+**The rule of the project (said by the user, 31 October 2026):** where the original text says something other than PyJHora, the text is the default of the app and the PyJHora way is a choice in the Settings.
+
 Verses are cited as 46.n (chapter, verse). "Matches" means the code does what the verse says; every figure below was compared with the code.
 
 ## What matches
