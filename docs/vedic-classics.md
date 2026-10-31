@@ -24,7 +24,7 @@ Dates and authors are the traditional ones; most are disputed. "Found" is an edi
 | Jātaka Tattva | Mahādeva | `dli.ernet.496259` (san) | downloaded |
 | Jātakābharaṇa | Dhuṇḍhirāja | `jatakabharana-pt-shyam-lal` (san) | downloaded |
 | Camatkāra Cintāmaṇi | Bhaṭṭa Nārāyaṇa | `chamatkarachintamanigangadhargovindsapkargopaljoshidiksitasatawelkar1865_202003_139_` (san) | downloaded |
-| Horāratna | Balabhadra, 1600s | `in.ernet.dli.2015.487062` (san) | the download was cut off |
+| Horāratna | Balabhadra, 1600s | `in.ernet.dli.2015.487062` (san) | downloaded on the second try: the OCR is too poor to quote (28 words per 10 kB), no other edition with text found |
 | Hora Sāra | Pṛthuyaśas, c. 500 | English editions only | no |
 | Jātakadeśamārga | | `120938845-jataka-marga` (san) | downloaded |
 | Mānasāgarī | Mānasāgara | `manasagari-paddhati-with-hindi-tika-vanshidhar` (san, Hindi) | downloaded |
@@ -35,7 +35,7 @@ Dates and authors are the traditional ones; most are disputed. "Found" is an edi
 
 | Text | Found | In the app |
 |---|---|---|
-| Jaimini Sūtras (Upadeśa) | `VTRy_jaimini-sutram-by-jaimini-chowkhamba-vidya-bhavan-varanasi` (Sanskrit with the Hindi of Sītārāma Jhā), `xyly-jaimini-sutram-sanskrit-hindi-tika-sahitam-tattvad…` | adhyāya 2 read for the Chara and the Sthira daśā (`dasha-vs-sources.md`) |
+| Jaimini Sūtras (Upadeśa) — found and read in adhyāya 2; the other adhyāyas are not read | `VTRy_jaimini-sutram-by-jaimini-chowkhamba-vidya-bhavan-varanasi` (Sanskrit with the Hindi of Sītārāma Jhā), `xyly-jaimini-sutram-sanskrit-hindi-tika-sahitam-tattvad…` | adhyāya 2 read for the Chara and the Sthira daśā (`dasha-vs-sources.md`) |
 
 ## Muhūrta
 
@@ -95,9 +95,11 @@ and how many verse marks (॥). Below about 40 the OCR is too poor to quote from
 | Jātakapārijāta | `in.ernet.dli.2015.312156` | 849 | 9 | 2710 | no: the Hindi edition `XpDV_jataka-parijata-…` |
 | Jātaka Tattva | `dli.ernet.496259` | 263 | 7 | 798 | no |
 
-Not downloaded: Horāratna (the connection was cut), Grahalāghava (the edition has no text layer).
+Not usable: Horāratna (downloaded, the OCR is bad), Grahalāghava (the edition has no text layer).
 
 **Read** means that a rule of the app was set beside the verse and compared. Of this corpus nothing is read yet: it is on the disk of the
 session, not in the repository. The first uses are the yoga definitions (Sārāvalī, Bṛhat Jātaka, Sarvārtha Cintāmaṇi, Uttara Kālāmṛta against
 `yogasClassical.ts`), the dignities (Bṛhat Jātaka, Sārāvalī), the Tājika yogas and the Muntha of the annual chart (Tājika Nīlakaṇṭhī against
 `annualDasha.ts`), and the Praśna rules (Praśna Mārga).
+
+The daśās that the classics have and the app has not are in `dasha-candidates.md`.
