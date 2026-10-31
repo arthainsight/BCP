@@ -8,6 +8,7 @@ import {
 import { migrateChartDisplaySettings } from '@/lib/chartDisplaySettings';
 import { readNakshatraMode } from '@/lib/nakshatraZodiac';
 import { migrateDashaSettings } from '@/lib/dashaSettings';
+import { setDashaYearLength } from '@/lib/time';
 
 /**
  * Display, calculation and dasha settings, restored from localStorage after
@@ -36,7 +37,11 @@ export function useStoredSettings() {
         setCalculationSettings({ ...DEFAULT_CALCULATION_SETTINGS, ...stored, nakshatraMode: readNakshatraMode(stored?.nakshatraMode) });
       }
       const dash = localStorage.getItem('dashaSettings');
-      if (dash) setDashaSettings(migrateDashaSettings(JSON.parse(dash)));
+      if (dash) {
+        const restored = migrateDashaSettings(JSON.parse(dash));
+        setDashaYearLength(restored.yearLength ?? 'julian');
+        setDashaSettings(restored);
+      }
       // The simple / research / debug switcher (v2.25) and the workspace (v2.28) were removed.
       localStorage.removeItem('uiMode');
       localStorage.removeItem('workspace_panels');
@@ -70,6 +75,8 @@ export function useStoredSettings() {
   }, []);
 
   const updateDashaSettings = useCallback((update: Partial<DashaSettings>) => {
+    // The year the daśās count in is set here, with the setting, before any panel draws with the new one.
+    if (update.yearLength) setDashaYearLength(update.yearLength);
     setDashaSettings((prev) => {
       const next = { ...prev, ...update };
       try { localStorage.setItem('dashaSettings', JSON.stringify(next)); } catch {}

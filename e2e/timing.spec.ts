@@ -415,6 +415,18 @@ test('Vimsottari Utpanna / Kshema / Adhana starts from the Moon house rule, or t
   await expect(visible(page, page.getByText(/chosen in Settings: Kshema/))).toBeVisible();
   await expect(visible(page, page.locator('tr[data-variant="kshema"]'))).toContainText('●');
 
+  // The year of a daśā is a choice that is kept; the Julian year is the start, and the panels start afresh with the new one.
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /dasha methods/ })).click();
+  await expect(visible(page, page.getByLabel('Year of a dasha'))).toHaveValue('julian');
+  await visible(page, page.getByLabel('Year of a dasha')).selectOption('savana');
+  await expect.poll(() => page.evaluate(() => JSON.parse(window.localStorage.getItem('dashaSettings') ?? '{}').yearLength)).toBe('savana');
+  await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /dasha methods/ })).click();
+  await expect(visible(page, page.getByLabel('Year of a dasha'))).toHaveValue('savana');
+  await visible(page, page.getByLabel('Year of a dasha')).selectOption('julian');
+  await expect.poll(() => page.evaluate(() => JSON.parse(window.localStorage.getItem('dashaSettings') ?? '{}').yearLength)).toBe('julian');
+
   // The VDS daśā carries the name of U K Jha.
   await selectWorkspace(page, '⚙');
   await visible(page, page.getByRole('button', { name: /dasha systems/ })).click();

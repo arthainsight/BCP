@@ -1,11 +1,10 @@
 import type { RasiDashaOptions } from '../types';
 import { brahma, narayanaYears, signLord, strongerSign as strongerSignOf, toJaiminiChart, dignity, type JaiminiChart } from './jaiminiStrength';
 import { SIGN_ABBR, SIGN_NAMES } from './signs';
+import { addDashaYears } from './time';
 type PlanetData = { name: string; sign: number; degree: number; longitude: number; house?: number };
 
-// JHora/PyJHora sidereal-year basis. Keeping this centralized prevents period dates drifting by days over long cycles.
-export const RASI_DASHA_YEAR_DAYS = 365.256364;
-const YEAR_MS = RASI_DASHA_YEAR_DAYS * 24 * 60 * 60 * 1000;
+// The year is the one the user chose (time.ts); PyJHora's own is the sidereal one, 365.256364 days.
 const MOVABLE = new Set([0, 3, 6, 9]);
 const FIXED = new Set([1, 4, 7, 10]);
 
@@ -36,7 +35,7 @@ export interface RasiDashaEntry {
 export interface RasiDashaResult { system: RasiDashaSystem; seedSign: number; basis: string; method: string; audit: string[]; entries: RasiDashaEntry[]; }
 
 const norm = (n: number) => ((n % 12) + 12) % 12;
-const addYears = (date: Date, years: number) => new Date(date.getTime() + years * YEAR_MS);
+const addYears = addDashaYears;
 const signOf = (planets: PlanetData[], name: string) => planets.find(p => p.name === name)?.sign != null ? planets.find(p => p.name === name)!.sign - 1 : null;
 
 function narayanaDuration(chart: JaiminiChart, sign: number): { years: number; explanation: string } {

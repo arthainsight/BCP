@@ -3,6 +3,7 @@ import type { PlanetMarks } from '@/lib/planetMarks';
 import type { NakshatraMode } from '@/lib/nakshatraZodiac';
 import type { SaturnPortionLagnas } from '@/lib/upagrahas';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
+import type { DashaYearLength } from '@/lib/time';
 import type { ParayaBody } from '@/lib/bnn/nadiParaya';
 import type { SpecialSphuta } from '@/lib/specialSphutas';
 export type { DegreePrecision };
@@ -274,6 +275,8 @@ export interface DashaSettings {
   rasiOptions?: RasiDashaOptions;
   /** Which of Utpanna, Kṣema and Ādhāna the variant Vimśottarī starts from; auto follows the house of the Moon. */
   variantChoice?: VimshottariVariantChoice;
+  /** The year the daśās count in: Julian (365.25 days), sidereal (365.256364), tropical (365.2422) or sāvana (360). */
+  yearLength?: DashaYearLength;
 }
 
 export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
@@ -307,4 +310,5 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     sthiraMethod: 'brahma-pvr',
   },
   variantChoice: 'auto',
+  yearLength: 'julian',
 };
