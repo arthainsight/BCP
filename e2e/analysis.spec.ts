@@ -1781,6 +1781,13 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(strip.locator('[data-finder-strip-row="vtn"] [data-finder-strip-tone]').first()).toBeVisible();
   await strip.locator('[data-finder-strip-row="vtn"] > div').first().click({ position: { x: 200, y: 8 } });
   await expect(strip.locator('[data-finder-strip-detail]')).toBeVisible();
+  // A moment found in the strip can be opened as a chart of its own in a new tab, by the clock of the place of the search.
+  const detail = strip.locator('[data-finder-strip-detail]');
+  const stamp = ((await detail.locator('span.font-semibold').first().textContent()) ?? '').trim();
+  const [, day, month, hour, minute] = /(\d{2})\.(\d{2})\. (\d{2}):(\d{2})/.exec(stamp)!;
+  const [popup] = await Promise.all([page.waitForEvent('popup'), detail.locator('[data-finder-strip-open-chart]').click()]);
+  await expect(visible(popup, popup.getByPlaceholder('15.08.1947 09.15.00'))).toHaveValue(new RegExp(`^${day}\\.${month}\\.\\d{4} ${hour}\\.${minute}\\.00$`), { timeout: 30_000 });
+  await popup.close();
   // Rows made green by choice: only the times when all the ticked rows are green are shown, the rest of the strip is covered.
   await expect(strip.locator('[data-finder-strip-windows]')).toHaveCount(0);
   await strip.locator('[data-finder-strip-require="tara"]').check();
@@ -1813,19 +1820,31 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   // The wishes: back to the start choices, search a week, and the stretches have a score (the weights of the wishes they hold) and can be put best first.
   await finder.getByRole('button', { name: 'back to the start choices', exact: true }).click();
   await expect(finder.getByLabel('Lowest score listed')).toHaveValue('0');
+  // The positive yogas are a wish from the start: the nine inauspicious ones are not chosen, and the button chooses the eighteen again.
+  const yogas = finder.locator('[data-finder-group="Yoga"]');
+  await expect(yogas.getByRole('button', { name: 'Yoga: wish' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(yogas.getByRole('button', { name: 'Priti', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(yogas.getByRole('button', { name: 'Vajra', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await yogas.getByRole('button', { name: 'all', exact: true }).click();
+  await expect(yogas.getByRole('button', { name: 'Vajra', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await yogas.getByRole('button', { name: 'positive', exact: true }).click();
+  await expect(yogas.getByRole('button', { name: 'Vajra', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect(yogas.getByRole('button', { name: 'Indra', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(yogas).toContainText('18 / 27');
   await finder.getByRole('button', { name: 'search', exact: true }).click();
   await expect(visible(page, page.getByTestId('muhurta-finder-results'))).toContainText('Score', { timeout: 30_000 });
   const scores = visible(page, page.getByTestId('muhurta-finder-results')).locator('[data-finder-score]');
   expect(await scores.count()).toBeGreaterThanOrEqual(3);
   const allScores = await scores.evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-finder-score'))));
-  expect(allScores.every(score => [0, 60, 100, 160].includes(score))).toBe(true);
+  // The wishes are the Chandrabala (100), the Tarabala (60) and the positive yogas (32), so a score is a sum of some of the three.
+  expect(allScores.every(score => [0, 32, 60, 92, 100, 132, 160, 192].includes(score))).toBe(true);
   await visible(page, page.getByTestId('muhurta-finder-results')).getByRole('button', { name: 'best first', exact: true }).click();
   const sorted = await visible(page, page.getByTestId('muhurta-finder-results')).locator('[data-finder-score]').evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-finder-score'))));
   expect(sorted).toEqual([...sorted].sort((a, b) => b - a));
-  // The lowest score: only the stretches that hold both wishes.
+  // The lowest score: only the stretches that hold the Chandrabala and the Tarabala, with or without the yoga.
   await finder.getByLabel('Lowest score listed').fill('160');
   await finder.getByRole('button', { name: 'search', exact: true }).click();
-  await expect.poll(async () => (await visible(page, page.getByTestId('muhurta-finder-results')).locator('[data-finder-score]').evaluateAll(cells => cells.map(cell => cell.getAttribute('data-finder-score')))).every(score => score === '160')).toBe(true);
+  await expect.poll(async () => (await visible(page, page.getByTestId('muhurta-finder-results')).locator('[data-finder-score]').evaluateAll(cells => cells.map(cell => cell.getAttribute('data-finder-score')))).every(score => Number(score) >= 160)).toBe(true);
 
   // The choices are kept in the browser.
   await page.reload();

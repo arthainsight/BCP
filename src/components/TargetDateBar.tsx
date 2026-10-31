@@ -39,7 +39,7 @@ export default function TargetDateBar({ targetDate, onTargetDateChange, targetTi
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('Target date')}>
+    <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('Target date')} data-target-bar>
       <span className="mr-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('target')}</span>
       {DATE_STEPS.map(([step, label]) => (
         <button key={`back-${step}`} type="button" className={BUTTON} aria-label={`Back one ${step}`} onClick={() => stepDate(step, -1)}>‹{label}</button>

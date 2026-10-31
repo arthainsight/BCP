@@ -581,3 +581,25 @@ test('the panchang is in the chart view, and a graha moved to the next or the pr
 
   expect(errors).toEqual([]);
 });
+
+test('the target date bar above the chart is hidden to begin with, and the ··· menu shows it', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'CHART');
+  await expect(page.locator('[data-target-bar]')).toHaveCount(0);
+
+  await visible(page, page.getByTitle('chart display', { exact: true })).click();
+  const toggle = visible(page, page.getByRole('button', { name: 'target date bar', exact: true }));
+  await toggle.click();
+  await expect(visible(page, page.locator('[data-target-bar]'))).toBeVisible();
+  await expect(visible(page, page.locator('[data-target-bar]')).getByRole('button', { name: 'now', exact: true })).toBeVisible();
+  // Taken off again, and the choice is kept in the browser.
+  await toggle.click();
+  await expect(page.locator('[data-target-bar]')).toHaveCount(0);
+  await toggle.click();
+  await expect.poll(() => page.evaluate(() => JSON.parse(localStorage.getItem('chartDisplaySettings') ?? '{}').showTargetBar)).toBe(true);
+
+  expect(errors).toEqual([]);
+});

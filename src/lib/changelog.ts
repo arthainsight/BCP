@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.60',
+    date: '2026-10-31',
+    title: 'Positive yogas, a moment as a chart, and no target bar',
+    changes: [
+      'Muhurta Finder: the Yoga group has a button "positive" that chooses the eighteen yogas that are not among the nine inauspicious ones (Prīti, Āyuṣmān, Saubhāgya, Śobhana, Sukarma, Dhṛti, Vṛddhi, Dhruva, Harṣaṇa, Siddhi, Vāriyān, Śiva, Siddha, Sādhya, Śubha, Śukla, Brahma, Indra). At the start the positive yogas are a wish (×32) beside the Chandrabala (×100) and the Tarabala (×60): they limit nothing, and a stretch in a positive yoga scores 32 more. A ready-made choice that names yogas makes them a condition.',
+      'The month strip: a time that is clicked has the button "open as a new muhurta chart", which opens that moment as a chart of its own in a new tab, at the place of the search and by its clock; the chart that is open stays as it is. The list of stretches has "open as a chart" for the start of each. It is the share link of the app with the moment as the birth moment.',
+      'The target date bar above the chart is hidden to begin with. It is switched on in the ··· menu of the chart (target date bar) or in Settings; the target moment itself still drives the transits, the dasha lords and the rest.',
+      'Updated the application version to v3.60.',
+    ],
+  },
+  {
     version: 'v3.59',
     date: '2026-10-31',
     title: 'The panchang in the chart view, editing the chart, and PALM',

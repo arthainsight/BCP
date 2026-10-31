@@ -20,6 +20,8 @@ type Props = {
   /** The ayanamsa and the others of the calculation choices, as parameters of the address. */
   calculation: Record<string, string>;
   choices: StripChoices;
+  /** Opens a moment as a chart of its own (in a new tab), where that is possible. */
+  onOpenChart?: (ms: number) => void;
 };
 
 const TONE_CLASS: Record<StripTone, string> = {
@@ -53,7 +55,7 @@ const daysIn = (month: string) => {
 };
 
 /** The month strip: when the vāra, nakṣatra, tithi, karaṇa and yoga (and the Tarabala and Chandrabala) are what the book wants for the event, and what the combinations of vāra, tithi and nakṣatra say. */
-export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, choices }: Props) {
+export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, choices, onOpenChart }: Props) {
   const t = useT();
   // The strip follows the month of `start` until a month is picked with the arrows.
   const [picked, setPicked] = useState<string | null>(null);
@@ -187,7 +189,20 @@ export default function MuhurtaStrip({ start, lat, lng, tz, zone, calculation, c
       )}
       {atState && (
         <div className="rounded-md border border-zinc-200 p-2 text-[10px] font-mono text-zinc-600 dark:border-zinc-700 dark:text-zinc-300" data-finder-strip-detail>
-          <div className="font-semibold">{clock(at!)}</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold">{clock(at!)}</span>
+            {onOpenChart && (
+              <button
+                type="button"
+                onClick={() => onOpenChart(at!)}
+                title={t('Opens this moment as a chart of its own in a new tab; the chart that is open stays as it is.')}
+                className="rounded border border-emerald-500 px-1.5 py-0.5 text-emerald-700 dark:border-green-600 dark:text-green-400"
+                data-finder-strip-open-chart
+              >
+                {t('open as a new muhurta chart')} ↗
+              </button>
+            )}
+          </div>
           <div>
             {t(['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][atState.vara])} · {tithiLabel(atState.tithi)} · {NAKSHATRA_NAMES[atState.nakshatra]} · {KARANA_NAMES[atState.karana]} · {YOGA_NAMES[atState.yoga]}
           </div>

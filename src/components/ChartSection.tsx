@@ -281,7 +281,7 @@ export default function ChartSection({
       aria-label={fullscreen ? t('Charts in full screen') : undefined}
     >
       <div className="flex flex-wrap items-center gap-2 min-w-0">
-        {targetDate && onTargetDateChange && (
+        {chartDisplaySettings.showTargetBar && targetDate && onTargetDateChange && (
           <TargetDateBar
             targetDate={targetDate}
             onTargetDateChange={onTargetDateChange}
@@ -368,6 +368,7 @@ export default function ChartSection({
                   <ChartDisplayToggle label={t('karaka')} value={chartDisplaySettings.showCharaKaraka} onToggle={() => onToggleChartDisplay?.('showCharaKaraka')} />
                   <ChartDisplayToggle label={t('outer planets')} value={chartDisplaySettings.showOuterPlanets} onToggle={() => onToggleChartDisplay?.('showOuterPlanets')} />
                   <ChartDisplayToggle label={t('special lagnas')} value={chartDisplaySettings.showSpecialLagnas} onToggle={() => onToggleChartDisplay?.('showSpecialLagnas')} />
+                  <ChartDisplayToggle label={t('target date bar')} value={chartDisplaySettings.showTargetBar} onToggle={() => onToggleChartDisplay?.('showTargetBar')} />
                   <DegreePrecisionPicker compact value={chartDisplaySettings.degreePrecision} onChange={degreePrecision => onUpdateChartDisplay?.({ degreePrecision })} />
                   {onUpdateChartDisplay && (
                     <ChartFontScaleField label={t('text size')} value={chartDisplaySettings.chartFontScale} onChange={chartFontScale => onUpdateChartDisplay({ chartFontScale })} />

@@ -153,6 +153,13 @@ export const TARA_NAMES = ['Janma', 'Sampat', 'Vipat', 'Kshema', 'Pratyak', 'Sad
 /** The tārās usually taken to suit: Sampat, Kṣema, Sādhana, Mitra and Parama Mitra. Janma, Vipat, Pratyak and Naidhana are the ones to avoid. */
 export const TARABALA_USUAL = [2, 4, 6, 8, 9];
 
+/**
+ * The eighteen yogas that are not among the nine inauspicious ones (Viṣkambha, Atigaṇḍa, Śūla, Gaṇḍa, Vyāghāta, Vajra, Vyatīpāta, Parigha,
+ * Vaidhṛti): Prīti, Āyuṣmān, Saubhāgya, Śobhana, Sukarma, Dhṛti, Vṛddhi, Dhruva, Harṣaṇa, Siddhi, Vāriyān, Śiva, Siddha, Sādhya, Śubha,
+ * Śukla, Brahma and Indra. The numbers are of the yogas from 0 (Viṣkambha).
+ */
+export const POSITIVE_YOGAS = [1, 2, 3, 4, 6, 7, 10, 11, 13, 15, 17, 19, 20, 21, 22, 23, 24, 25];
+
 /** The tārā, 1 to 9, of a nakṣatra (0 to 26) counted from the birth nakṣatra: the 1st, 10th and 19th are Janma, the 2nd, 11th and 20th Sampat, and so on. */
 export const taraOf = (birthNakshatra: number, nakshatra: number) => ((((nakshatra - birthNakshatra + 27) % 27)) % 9) + 1;
 
