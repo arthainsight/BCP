@@ -1723,16 +1723,16 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await d1.getByRole('button', { name: 'none', exact: true }).click();
   await expect(d1.locator('input:checked')).toHaveCount(0);
 
-  // The Mahādoṣas to keep clear of: the 24 of the list that are worked out (the six Daśa Doṣas among them) and the 5 blemishes outside it, each with what it avoids, and the 3 that are not worked out listed with their reason.
+  // The Mahādoṣas to keep clear of: the 24 of the list that are worked out (the six Daśa Doṣas among them) and the 6 blemishes outside it, each with what it avoids, and the 3 that are not worked out listed with their reason.
   const doshas = finder.locator('[data-finder-group="Mahadoshas"]');
-  await expect(doshas.locator('[data-finder-dosha]')).toHaveCount(29);
+  await expect(doshas.locator('[data-finder-dosha]')).toHaveCount(30);
   await expect(doshas).toContainText('Pañcāṅga Doṣa');
   await expect(doshas).toContainText('Not worked out (3)');
   await doshas.getByRole('checkbox', { name: '3. Saṅkrānti' }).check();
   await expect(doshas.getByLabel('Minutes of arc of the Sun on each side of its entry into a sign')).toHaveValue('16');
   await expect(doshas.getByLabel('Degrees at Cancer and Capricorn')).toHaveValue('3');
   await doshas.getByRole('checkbox', { name: '1. Pañcāṅga Doṣa' }).check();
-  await expect(doshas).toContainText('2 / 29');
+  await expect(doshas).toContainText('2 / 30');
   // The choices of the doṣas that have them appear with the doṣa: the part of the nakṣatra that is Gaṇḍānta, and the time at Vyatipāta and Vaidhṛti.
   await doshas.getByRole('checkbox', { name: '7. Gaṇḍānta' }).check();
   await expect(doshas.getByLabel('Gaṇḍānta of the nakṣatra')).toHaveValue('pada');
@@ -1745,7 +1745,7 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(doshas).toContainText('Other blemishes the book names, outside the list of 21');
   await expect(doshas.locator('[data-finder-dosha="mrityubhaga"]')).toContainText('Mṛtyubhāga (fatal degrees)');
   await doshas.getByRole('checkbox', { name: 'Śūnya Rāśi' }).check();
-  await expect(doshas).toContainText('5 / 29');
+  await expect(doshas).toContainText('5 / 30');
   // The neutralisations of the Muhūrtacintāmaṇi: the exception named with each fault at the start, and the countries of the place named by choice.
   await expect(doshas.locator('[data-finder-dosha="dagdha"]')).toContainText('Dagdha tithi');
   await expect(doshas.locator('[data-finder-dosha="jupiterVenus"]')).toContainText('Guru and Śukra');
@@ -1801,8 +1801,19 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   const detail = strip.locator('[data-finder-strip-detail]');
   const stamp = ((await detail.locator('span.font-semibold').first().textContent()) ?? '').trim();
   const [, day, month, hour, minute] = /(\d{2})\.(\d{2})\. (\d{2}):(\d{2})/.exec(stamp)!;
+  // The new tab calculates the chart of that moment by the clock of the place: its request carries the date and the time. (The birth form
+  // that held them folds away as soon as the chart is there, so the form is not a thing to wait for.)
+  const chartRequest = page.context().waitForEvent('request', {
+    predicate: request => {
+      const url = new URL(request.url());
+      const get = (name: string) => url.searchParams.get(name);
+      return url.pathname === '/api/chart' && get('day') === day && get('month') === month && get('hour') === hour && get('minute') === minute && get('second') === '00';
+    },
+    timeout: 30_000,
+  });
   const [popup] = await Promise.all([page.waitForEvent('popup'), detail.locator('[data-finder-strip-open-chart]').click()]);
-  await expect(visible(popup, popup.getByPlaceholder('15.08.1947 09.15.00'))).toHaveValue(new RegExp(`^${day}\\.${month}\\.\\d{4} ${hour}\\.${minute}\\.00$`), { timeout: 30_000 });
+  await chartRequest;
+  await expect(popup.getByRole('img', { name: 'North Indian Jyotish chart' }).first()).toBeAttached({ timeout: 30_000 });
   await popup.close();
   // Rows made green by choice: only the times when all the ticked rows are green are shown, the rest of the strip is covered.
   await expect(strip.locator('[data-finder-strip-windows]')).toHaveCount(0);
@@ -1820,12 +1831,12 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(finder.locator('[data-finder-group="Nakṣatra"]').getByRole('button', { name: 'Magha', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(finder.locator('[data-finder-group="Nakṣatra"]').getByRole('button', { name: 'Bharani', exact: true })).toHaveAttribute('aria-pressed', 'false');
   await expect(finder.locator('[data-finder-group="Vāra"]').getByRole('button', { name: 'sat', exact: true })).toHaveAttribute('aria-pressed', 'false');
-  await expect(finder.locator('[data-finder-group="Mahadoshas"]')).toContainText('11 / 29');
+  await expect(finder.locator('[data-finder-group="Mahadoshas"]')).toContainText('11 / 30');
   await expect(placements.locator('[data-finder-rule]')).toHaveCount(6);
   await expect(presets.locator('[data-finder-preset-middling]')).toContainText('Taurus, Cancer, Leo, Sagittarius, Aquarius');
   await expect(presets.locator('[data-finder-preset-not-applied]')).toContainText('the lunar month (Masa)');
   await presets.getByRole('button', { name: 'Commencing a journey', exact: true }).click();
-  await expect(finder.locator('[data-finder-group="Mahadoshas"]')).toContainText('1 / 29');
+  await expect(finder.locator('[data-finder-group="Mahadoshas"]')).toContainText('1 / 30');
   await expect(presets.locator('[data-finder-preset-not-applied]')).toContainText('the direction of the journey');
   await finder.getByRole('button', { name: 'choose everything again', exact: true }).click();
   await doshas.getByRole('button', { name: 'none', exact: true }).click();

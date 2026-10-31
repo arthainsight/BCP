@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.63',
+    date: '2026-10-31',
+    title: 'Muhurta Finder: the forbidden muhūrtas of the weekday',
+    changes: [
+      'A new blemish under the Mahādoṣas: the forbidden muhūrta of the weekday, from the Muhūrtacintāmaṇi (v. 52 to 54). The day from sunrise to sunset is 15 muhūrtas, and each weekday forbids some of them: Sunday the 14th (Aryaman), Monday the 9th and 12th (Brahmā, Rākṣasa), Tuesday the 4th (Pitṛ), Wednesday the 8th (Abhijit), Thursday the 6th and 12th (Jala, Rākṣasa), Friday the 9th and 4th (Brahmā, Pitṛ), Saturday the 1st and 2nd (Īśa, Sarpa). This is the text\'s own Dūrmuhūrta; the Dūrmuhūrta that was there (a thirtieth of the tithi) is from Wilhelm\'s book and stays as it was.',
+      'Tuesday\'s Agni is left out: the day\'s list of 15 has no plain Agni, only Indrāgnī, and the text does not say which is meant. Web pages that give the Dūrmuhūrta of the weekday by number disagree with this table (and with each other), so it is the Sanskrit text alone that is followed here.',
+      'Updated the application version to v3.63.',
+    ],
+  },
+  {
     version: 'v3.62',
     date: '2026-10-31',
     title: 'Muhurta Finder: how a strong Sun, Moon or Jupiter is judged',
