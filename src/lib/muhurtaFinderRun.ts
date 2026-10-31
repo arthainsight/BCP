@@ -14,7 +14,7 @@ import {
 import {
   DOSHA_IDS, EVENT_DOSHAS, doshaNeeds, doshaUsesAscendant, hasDosha, isDoshaId, type DoshaId, type DoshaOptions, type DoshaSky,
 } from './mahadosha';
-import { isPariharaMode, isRegionId } from './mahadoshaParihara';
+import { isPariharaMode, isRegionId, isStrengthLevel } from './mahadoshaParihara';
 import {
   VYATIPATA_SHORT_HOURS, aroundEvent, ardhayama, calendarDays, declinationEqualities, eclipseMoments, insideWindows, mergeWindows, sankrantiWindows,
   varaVishanadi, type JdWindow,
@@ -238,6 +238,7 @@ export async function runMuhurtaFinder(request: FinderRequest): Promise<FinderRe
     gandantaNakshatra: criteria.gandantaNakshatra,
     parihara: criteria.parihara && isPariharaMode(criteria.parihara) ? criteria.parihara : undefined,
     regions: criteria.regions?.filter(isRegionId),
+    strength: criteria.strength && isStrengthLevel(criteria.strength) ? criteria.strength : undefined,
   };
   // The daytime of each date (sunrise to sunset), for the blind and deaf signs.
   const dayWindows = avoid.has('blindDeafLame')

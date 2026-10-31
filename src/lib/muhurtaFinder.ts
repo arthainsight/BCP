@@ -106,6 +106,8 @@ export interface FinderCriteria {
   vyatipataLength?: 'days' | 'short';
   /** How much of the neutralisations (pariharas) of the Muhūrtacintāmaṇi is applied to the Mahādoṣas (none if not given). */
   parihara?: 'off' | 'named' | 'broad' | 'all';
+  /** How "strong" is judged for the pariharas: the sign alone (basic) or with the Dig Bala and the Navāṁśa (extended). */
+  strength?: 'basic' | 'extended';
   /** The countries of the Muhūrtacintāmaṇi the place is in, for the faults it binds to a country (every fault counts if not given). */
   regions?: string[];
 }

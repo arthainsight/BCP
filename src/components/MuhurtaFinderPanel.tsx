@@ -13,7 +13,7 @@ import {
   SANKRANTI_ARC_MINUTES, SANKRANTI_SOLSTICE_DEGREES, isLimited, localParts, nakshatraOf, scoredKeys, tithiLabel, type FinderCriteria, type FinderGraha, type FinderRule, type PreferKey,
 } from '@/lib/muhurtaFinder';
 import { DOSHAS, DOSHAS_NOT_WORKED_OUT, DOSHA_IDS, isDoshaId, type DoshaId } from '@/lib/mahadosha';
-import { PARIHARA_MODES, REGION_IDS, REGION_NAMES, isPariharaMode, isRegionId, type PariharaMode, type RegionId } from '@/lib/mahadoshaParihara';
+import { PARIHARA_MODES, REGION_IDS, REGION_NAMES, STRENGTH_LEVELS, isPariharaMode, isRegionId, isStrengthLevel, type PariharaMode, type RegionId, type StrengthLevel } from '@/lib/mahadoshaParihara';
 import { D1_KEYS, D1_WISHES, isD1Key, type D1Key } from '@/lib/muhurtaD1';
 import { FINDER_PRESETS, FINDER_PRESET_CATEGORIES, NOT_APPLIED, type FinderPreset } from '@/lib/muhurtaFinderPresets';
 import type { FinderResult } from '@/lib/muhurtaFinderRun';
@@ -71,7 +71,14 @@ type Choices = {
   vyatipataLength: 'days' | 'short';
   /** How much of the neutralisations of the Muhūrtacintāmaṇi is applied, and the countries of the place (null: not named, every fault counts). */
   parihara: PariharaMode;
+  /** How "strong" is judged for the pariharas that need a strong graha. */
+  strength: StrengthLevel;
   regions: RegionId[] | null;
+};
+
+const STRENGTH_LABELS: Record<StrengthLevel, string> = {
+  basic: 'the sign alone (own, exalted or a friend\'s; not combust)',
+  extended: 'the sign, the Dig Bala and the Navāṁśa (2 points; the Moon in the bright half)',
 };
 
 const PARIHARA_LABELS: Record<PariharaMode, string> = {
@@ -97,6 +104,7 @@ const allChoices = (): Choices => ({
   gandantaNakshatra: 'pada',
   vyatipataLength: 'days',
   parihara: 'named',
+  strength: 'extended',
   regions: null,
 });
 
@@ -149,6 +157,7 @@ function readChoices(): Choices {
     if (saved.gandantaNakshatra === 'pada' || saved.gandantaNakshatra === 'four' || saved.gandantaNakshatra === 'two') choices.gandantaNakshatra = saved.gandantaNakshatra;
     if (saved.vyatipataLength === 'days' || saved.vyatipataLength === 'short') choices.vyatipataLength = saved.vyatipataLength;
     if (typeof saved.parihara === 'string' && isPariharaMode(saved.parihara)) choices.parihara = saved.parihara;
+    if (typeof saved.strength === 'string' && isStrengthLevel(saved.strength)) choices.strength = saved.strength;
     if (saved.regions === null) choices.regions = null;
     else if (Array.isArray(saved.regions)) choices.regions = [...new Set((saved.regions as unknown[]).filter((item): item is RegionId => typeof item === 'string' && isRegionId(item)))];
     const signs = saved.signs as Partial<Record<string, unknown>> | undefined;
@@ -278,7 +287,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
     const chandra = natalMoonSign !== undefined && isLimited(choices.chandra, 12) ? { moonSign: natalMoonSign, houses: choices.chandra } : undefined;
     const tara = natalNakshatra !== undefined && isLimited(choices.tara, 9) ? { nakshatra: natalNakshatra, taras: choices.tara } : undefined;
     const natal = natalMoonSign !== undefined && natalAscSign !== undefined ? { ascSign: natalAscSign, moonSign: natalMoonSign } : undefined;
-    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, tara, prefer: choices.prefer, d1: choices.d1, minScore: choices.minScore, avoid: choices.avoid, natal, sankrantiArc: choices.sankrantiArc, sankrantiSolstice: choices.sankrantiSolstice, gandantaNakshatra: choices.gandantaNakshatra, vyatipataLength: choices.vyatipataLength, parihara: choices.parihara, regions: choices.regions ?? undefined };
+    return { vara: choices.vara, tithi: choices.tithi, nakshatra: choices.nakshatra, yoga: choices.yoga, karana: choices.karana, signs, rules: choices.rules, chandra, tara, prefer: choices.prefer, d1: choices.d1, minScore: choices.minScore, avoid: choices.avoid, natal, sankrantiArc: choices.sankrantiArc, sankrantiSolstice: choices.sankrantiSolstice, gandantaNakshatra: choices.gandantaNakshatra, vyatipataLength: choices.vyatipataLength, parihara: choices.parihara, strength: choices.strength, regions: choices.regions ?? undefined };
   }, [choices, natalMoonSign, natalAscSign, natalNakshatra]);
   const impossible = isImpossible(criteria);
   // The wishes that limit something, and the most a stretch can score.
@@ -333,6 +342,7 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
       if (choices.avoid.includes('gandanta')) params.set('gandanta', choices.gandantaNakshatra);
       if (choices.avoid.includes('vyatipata') || choices.avoid.includes('vaidhriti')) params.set('vyatipata', choices.vyatipataLength);
       params.set('parihara', choices.parihara);
+      params.set('strength', choices.strength);
       if (choices.regions) params.set('regions', choices.regions.join(','));
     }
     const id = ++request.current;
@@ -759,6 +769,20 @@ export default function MuhurtaFinderPanel({ chart, targetDate, ianaTimezone, ca
           <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
             {t('A fault is not always a fault: the Muhūrtacintāmaṇi (Rāma Daivajña, 1600) lists what destroys each. The exception the text gives with a fault is on at the start; the verses that name a whole list of faults and what destroys them all make the search much looser.')}
           </p>
+          {choices.parihara !== 'off' && (
+            <label className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+              <span>{t('A strong graha is judged by')}</span>
+              <select
+                value={choices.strength}
+                onChange={event => set('strength', event.target.value as StrengthLevel)}
+                className="rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                aria-label={t('A strong graha is judged by')}
+              >
+                {STRENGTH_LEVELS.map(level => <option key={level} value={level}>{t(STRENGTH_LABELS[level])}</option>)}
+              </select>
+              <span className="text-[9px] text-zinc-400 dark:text-zinc-600">{t('The exact Shadbala of a stretch is in the chart opened from it (ANALYSIS).')}</span>
+            </label>
+          )}
           <label className="flex cursor-pointer items-center gap-1.5 text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
             <input
               type="checkbox"

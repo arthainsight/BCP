@@ -1750,8 +1750,11 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   await expect(doshas.locator('[data-finder-dosha="dagdha"]')).toContainText('Dagdha tithi');
   await expect(doshas.locator('[data-finder-dosha="jupiterVenus"]')).toContainText('Guru and Śukra');
   await expect(doshas.getByLabel('Neutralisations (pariharas)')).toHaveValue('named');
+  await expect(doshas.getByLabel('A strong graha is judged by')).toHaveValue('extended');
+  await doshas.getByLabel('A strong graha is judged by').selectOption('basic');
   await doshas.getByLabel('Neutralisations (pariharas)').selectOption('off');
   await expect(doshas.getByLabel('Neutralisations (pariharas)')).toHaveValue('off');
+  await expect(doshas.getByLabel('A strong graha is judged by')).toHaveCount(0);
   await doshas.getByLabel('Neutralisations (pariharas)').selectOption('named');
   await expect(doshas.locator('[data-finder-region]')).toHaveCount(0);
   await doshas.getByRole('checkbox', { name: 'Name the countries of the place', exact: true }).check();
