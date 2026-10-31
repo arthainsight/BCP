@@ -16,7 +16,7 @@ Dates and authors are the traditional ones; most are disputed. "Found" is an edi
 | Bṛhat Jātaka | Varāhamihira, c. 500 | `jyotisha` (san, Devanagari) | downloaded |
 | Laghu Jātaka | Varāhamihira | not searched separately | no |
 | Sārāvalī | Kalyāṇavarman, c. 800 | `saravali00kalyuoft` (san) | downloaded |
-| Phaladīpikā | Mantreśvara, c. 1300–1400 | `in.ernet.dli.2015.406048` (san), `in.ernet.dli.2015.292174` (Hindi) | downloaded |
+| Phaladīpikā | Mantreśvara, c. 1300–1400 | **found with a good text layer (31 October 2026):** `phaldipika_202310` (Sanskrit verses with a Hindi commentary, 28 adhyāyas, 187 words / 10 kB), `phala-dipika-of-shri-mantreshwar-hindi-commentary-by-dr.-hari-shankar-patak-chau` (Hari Shankar Pathak, 183), `rhag-phala-deepika-bhavartha-bodhini-commentary-by-gope` and `in.ernet.dli.2015.292174` (Gopesh Kumar Ojha's Bhāvārtha Bodhinī, 152 and 144); the English of V. Subrahmanya Sastri `in.ernet.dli.2015.92117` (1937) and `Phaladeepika2ndEd.1950ByVSubrahmanyaSastri` (77 and 74 English craft words / 10 kB). The Sanskrit-only scans `in.ernet.dli.2015.406048` and the Subrahmanya Sastri Sanskrit scans (`…_202003_…`) are poor (10 to 19) | downloaded, not read |
 | Jātakapārijāta | Vaidyanātha Dīkṣita, c. 1400 | `in.ernet.dli.2015.312156` (san), `XpDV_jataka-parijata-…-vimala-hindi-tika` (Hindi) | downloaded |
 | Uttara Kālāmṛta | Kālidāsa (by name) | `p.-s.-sastri-uttarakaalaamruta-of-kaalidaasa-hindi` (san, Hindi) | downloaded |
 | Laghu Pārāśarī | Udayadivākara | `in.ernet.dli.2015.326279` (san) | downloaded |
@@ -91,7 +91,11 @@ and how many verse marks (॥). Below about 40 the OCR is too poor to quote from
 | Bṛhat Saṁhitā | `brihat-samhita-` | 1176 | 41 | 4665 | partly |
 | Praśna Mārga | `prasnamarga-035823mbp-1` | 443 | 36 | 4583 | partly |
 | Camatkāra Cintāmaṇi | (Sapkar 1865) | 52 | 20 | 352 | no |
-| Phaladīpikā | `in.ernet.dli.2015.406048` | 649 | 10 | 2429 | no: another edition (`in.ernet.dli.2015.292174`, Hindi) |
+| Phaladīpikā (Sanskrit with Hindi) | `phaldipika_202310` | 692 | 187 | 4310 | yes: 28 adhyāyas, the verses with the commentary of the editor (which quotes the Sārāvalī) |
+| Phaladīpikā (Hindi, Pathak) | `phala-dipika-of-shri-mantreshwar-hindi-commentary-by-dr.-hari-shankar-patak-chau` | 719 | 183 | 4501 | yes |
+| Phaladīpikā (Ojha) | `in.ernet.dli.2015.292174` | 812 | 144 | 3453 | yes |
+| Phaladīpikā (English, Subrahmanya Sastri) | `in.ernet.dli.2015.92117` | 671 | 77 (English words) | 0 | yes, to read beside the Sanskrit |
+| Phaladīpikā (Sanskrit scan) | `in.ernet.dli.2015.406048` | 649 | 10 | 2429 | no |
 | Jātakapārijāta | `in.ernet.dli.2015.312156` | 849 | 9 | 2710 | no: the Hindi edition `XpDV_jataka-parijata-…` |
 | Jātaka Tattva | `dli.ernet.496259` | 263 | 7 | 798 | no |
 
