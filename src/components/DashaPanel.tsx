@@ -1,5 +1,6 @@
 import { PlanetData, DashaSettings, DEFAULT_DASHA_SETTINGS } from '@/types';
 import { useMemo } from 'react';
+import { isNakshatraSystemKey, nakshatraSystem } from '@/lib/nakshatraSystems';
 import { DASHA_FAMILIES, RENDERABLE_DASHAS, type DashaFamily, type DashaKey } from '@/lib/dashaRegistry';
 import { calculateDashaEventSnapshots, type DashaEventSnapshot } from '@/lib/dashaEvents';
 import { parseDateTime } from '@/lib/bcp';
@@ -67,7 +68,7 @@ export default function DashaPanel({ planets, ascendant, birthDatetime, dashaSet
   });
 
   const [pickerOpen, setPickerOpen] = useState(false);
-  const pickerGroups: PickerGroup[] = groups.map(group => ({ family: group.family, label: group.label, items: group.members.map(d => ({ key: d.key, label: d.label, status: d.status, active: Boolean(normalizedDashas[d.key]) })) }));
+  const pickerGroups: PickerGroup[] = groups.map(group => ({ family: group.family, label: group.label, items: group.members.map(d => ({ key: d.key, label: d.label, status: d.status, active: Boolean(normalizedDashas[d.key]), hint: isNakshatraSystemKey(d.key) ? t(nakshatraSystem(d.key).condition) : undefined })) }));
   const setActive = (keys: string[], value: boolean) => {
     const dashas = { ...normalizedDashas };
     for (const key of keys) dashas[key as DashaKey] = value;
@@ -146,7 +147,7 @@ export default function DashaPanel({ planets, ascendant, birthDatetime, dashaSet
                   key={d.key}
                   id={`dasha-${d.key}`}
                   title={d.key === 'vimshottariVariant' ? summaries[d.key]?.label ?? d.label : d.label}
-                  summary={translate(runningPeriod(summaries[d.key], t) ?? '') || undefined}
+                  summary={translate(runningPeriod(summaries[d.key], t) ?? (isNakshatraSystemKey(d.key) ? t('Condition not met') : '')) || undefined}
                   flag={mdChangeFlag(summaries[d.key], today, t('MD changes'))}
                   note={notes[d.key] ?? ''}
                   onNoteChange={note => setNote(d.key, note)}

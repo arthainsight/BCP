@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import type { PlanetData } from '@/types';
 import { GRAHA_DASHA_SYSTEMS, grahaDashaTable, runningGrahaDashaLords } from './dashaEvents';
 import { dashaLordsDuring, hasLord } from './dashaDuring';
+import { evaluateAshtottariEligibility } from './ashtottari';
 
 const planet = (name: string, longitude: number): PlanetData =>
   ({ name, longitude, sign: Math.floor(longitude / 30) + 1, degree: longitude % 30, house: 0 });
@@ -18,8 +19,6 @@ const from = new Date(2026, 9, 19, 12).getTime();
 const to = new Date(2029, 9, 19, 12).getTime();
 for (const { key } of GRAHA_DASHA_SYSTEMS) {
   const table = grahaDashaTable(key, input);
-  // Aṣṭottarī runs only for charts that meet its condition, which this one does not.
-  if (key === 'ashtottari') { assert.equal(table, null); continue; }
   assert.ok(table, `${key} has a table for this chart`);
   const stretches = dashaLordsDuring(table, from, to);
   assert.ok(stretches.length >= 1, `${key}: at least one antardaśā in three years`);
@@ -32,6 +31,12 @@ for (const { key } of GRAHA_DASHA_SYSTEMS) {
     assert.deepEqual({ md: stretch.md, ad: stretch.ad }, runningGrahaDashaLords(key, { ...input, eventDate: middle }), `${key} at ${middle.toISOString()}`);
   });
 }
+
+// Aṣṭottarī runs only for charts that meet a condition of the text. This one misses the Rāhu rule of 46.17 but is born by day in the
+// dark half (46.23), and a chart that meets neither has no table.
+assert.equal(evaluateAshtottariEligibility(planets, ascendant.sign, ascendant.longitude).rahuRule, false);
+assert.equal(evaluateAshtottariEligibility(planets, ascendant.sign, ascendant.longitude).birthRule, true);
+assert.equal(grahaDashaTable('ashtottari', { ...input, planets: planets.map(p => p.name === 'Moon' ? { ...p, longitude: 150, sign: 6 } : p) }), null, 'by day in the bright half');
 
 // --- Outside the cycle, or before birth, there is nothing ---------------------------------------------------------------------------
 const vimshottari = grahaDashaTable('vimshottari', input)!;

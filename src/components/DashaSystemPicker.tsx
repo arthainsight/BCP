@@ -7,7 +7,7 @@ import type { DashaFamily, DashaStatus } from '@/lib/dashaRegistry';
 export interface PickerGroup {
   family: DashaFamily;
   label: string;
-  items: { key: string; label: string; status: DashaStatus; active: boolean }[];
+  items: { key: string; label: string; status: DashaStatus; active: boolean; hint?: string }[];
 }
 
 /** The id of the list, so that the button can point at it. */
@@ -72,7 +72,7 @@ export function DashaSystemPickerList({ groups, onToggle, onSetGroup }: {
               </span>
             </div>
             {group.items.map(item => (
-              <label key={item.key} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-zinc-100 bg-white px-2 py-1.5 text-xs font-mono text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 sm:min-h-0">
+              <label key={item.key} title={item.hint} className="flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-zinc-100 bg-white px-2 py-1.5 text-xs font-mono text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 sm:min-h-0">
                 <input type="checkbox" checked={item.active} onChange={() => onToggle(item.key)} className="h-4 w-4 shrink-0 accent-emerald-600" />
                 <span className="min-w-0 truncate">{item.label}</span>
                 {item.status === 'beta' && <span className="shrink-0 rounded bg-amber-100 px-1 text-[9px] uppercase text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">beta</span>}

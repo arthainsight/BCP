@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.68',
+    date: '2026-10-31',
+    title: 'Eight conditional nakṣatra daśās of BPHS 46, each with its condition',
+    changes: [
+      'New daśās from BPHS 46.24–43: Ṣoḍaśottarī, Dvādaśottarī, Pañcottarī, Śatābdikā, Caturaśītisamā, Dvisaptatisamā, Ṣaṣṭihāyanī and Ṣaṭtriṃśatsamā. Each is for a birth that meets a condition of its own, and its panel says first when the daśā applies (the condition of the text, with the verses), whether this chart meets it and what was found in the chart (the hora of the Lagna, the navāṁśa, Vargottama, the lords of the 10th, the 7th and the Lagna, the Sun in the Lagna). A chart that does not meet it is not given the daśā unless you ask ("Calculate anyway").',
+      'They are off to begin with, as most charts meet few of them; choose them with the … button of the Dasas tab (the condition shows on hover) or in Settings → dasha systems. The event list, the date finder and the overlap read only those whose condition the chart meets.',
+      'The count runs from the nakṣatra the text names to the birth nakṣatra, both ends counted as in the Viṃśottarī of 46.13; the balance and the sub-periods are worked out as for the other nakṣatra daśās. What the text leaves open (whose navāṁśa is Venus\'s, the Sun\'s aṃśa of the Pañcottarī, Abhijit in the Ṣaṣṭihāyanī) and what was taken is written beside the condition and in docs/dasha-candidates.md.',
+      'Aṣṭottarī: the second condition of the text (46.23, a birth by day in the dark half of the month or by night in the bright half) is now read as well as the Rāhu rule of 46.17; either is enough, so a chart that met only the second now has the daśā (the panel states both conditions). Before only the Rāhu rule was read.',
+      'Updated the application version to v3.68.',
+    ],
+  },
+  {
     version: 'v3.67',
     date: '2026-10-31',
     title: 'Chara and Sthira daśā by the Jaimini Sūtras',

@@ -9,11 +9,12 @@ import { parseDateTime } from '@/lib/bcp';
 import { csvText, saveFile } from '@/lib/download';
 import { formatDate } from '@/lib/dateFormat';
 import { DAY_MS } from '@/lib/time';
+import { NAKSHATRA_SYSTEMS, NAKSHATRA_SYSTEM_KEYS, type NakshatraSystemKey } from '@/lib/nakshatraSystems';
 
 import { useT } from '@/lib/i18n';
 type Key = DashaEventSnapshot['key'];
-const KEYS: { key: Key | 'all'; label: string }[] = [{ key: 'all', label: 'All enabled systems' }, { key: 'vimshottari', label: 'Vimsottari' }, { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana' }, { key: 'vds', label: 'Vimsottari Original (U K Jha)' }, { key: 'chara', label: 'Chara' }, { key: 'yogini', label: 'Yogini' }, { key: 'ashtottari', label: 'Ashtottari' }, { key: 'kalaChakra', label: 'Kalachakra' }, { key: 'naisargika', label: 'Naisargika' }, { key: 'narayana', label: 'Narayana' }, { key: 'moola', label: 'Mula' }, { key: 'sthira', label: 'Sthira' }];
-const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', naisargika: 'naisargika', narayana: 'narayana', moola: 'moola', sthira: 'sthira' };
+const KEYS: { key: Key | 'all'; label: string }[] = [{ key: 'all', label: 'All enabled systems' }, { key: 'vimshottari', label: 'Vimsottari' }, { key: 'vimshottariVariant', label: 'Vimsottari Utpanna / Kshema / Adhana' }, { key: 'vds', label: 'Vimsottari Original (U K Jha)' }, { key: 'chara', label: 'Chara' }, { key: 'yogini', label: 'Yogini' }, { key: 'ashtottari', label: 'Ashtottari' }, { key: 'kalaChakra', label: 'Kalachakra' }, { key: 'naisargika', label: 'Naisargika' }, { key: 'narayana', label: 'Narayana' }, { key: 'moola', label: 'Mula' }, { key: 'sthira', label: 'Sthira' }, ...NAKSHATRA_SYSTEMS.map(system => ({ key: system.key, label: system.name }))];
+const SETTING: Record<Key, keyof DashaSettings['dashas']> = { vimshottari: 'vimshottari', vimshottariVariant: 'vimshottariVariant', vds: 'vds', chara: 'chara', yogini: 'yogini', ashtottari: 'ashtottari', kalaChakra: 'kalaChakra', naisargika: 'naisargika', narayana: 'narayana', moola: 'moola', sthira: 'sthira', ...(Object.fromEntries(NAKSHATRA_SYSTEM_KEYS.map(key => [key, key])) as Record<NakshatraSystemKey, NakshatraSystemKey>) };
 const value = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 interface Props { planets: PlanetData[]; ascendant: { longitude: number; sign: number; degree: number }; birthDatetime: string; dashas: DashaSettings['dashas']; charaOptions: CharaOptions; rasiOptions: RasiDashaOptions; variantChoice?: VimshottariVariantChoice; }

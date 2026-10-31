@@ -51,12 +51,12 @@ The app now follows the text by default (Settings → dasha methods → Chara me
 
 | Subject | The text | The app |
 |---|---|---|
-| Aṣṭottarī, the other condition | 46.23: Aṣṭottarī is to be taken for a birth by day in the dark half or by night in the bright half | only the Rāhu condition of 46.17 is shown |
+| Aṣṭottarī, the other condition | 46.23: Aṣṭottarī is to be taken for a birth by day in the dark half or by night in the bright half | **done (v3.68)**: either condition makes the daśā apply; the panel states both and what the chart has. "Day" is the Sun above the horizon (from the 7th house to the 12th, by degrees from the Lagna), "the dark half" the Moon 180°–360° ahead of the Sun |
 | Sthira, the Brahma graha | 46.171–173: the strong lord of the 6th, 8th or 12th in an odd sign; among several, the one in the highest degree, then the stronger | the lords are scored (a friendly sign, an odd sign, in the first seven signs), then the stronger of the best two; the degree is not used |
 | The year | the text does not say what a year of a daśā is | a Julian year (365.25 days), with no choice |
 | Nārāyaṇa, Mūla | not in BPHS | the tables follow PVR / JHora; not compared with the Jaimini Sūtras |
 | Kālachakra, the sub-periods | not read | proportional to the years of the signs, from the parent's sign in the cycle; not compared |
-| Other daśās of 46.3–11 | Ṣoḍaśottarī, Dvādaśottarī, Pañcottarī, Śatābdikā, Caturaśītisamā, Dvisaptati, Ṣaṣṭi, Ṣaṭtriṁśat, Kāla, Cakra, Pañcasvara, Paiṇḍī, Aṁśī, Aṣṭavarga, Sandhyā, Pācaka, Tārā | not in the app |
+| Other daśās of 46.3–11 | Ṣoḍaśottarī, Dvādaśottarī, Pañcottarī, Śatābdikā, Caturaśītisamā, Dvisaptati, Ṣaṣṭi, Ṣaṭtriṁśat: **done (v3.68)**, see `dasha-candidates.md` section A. Kāla, Cakra, Pañcasvara, Paiṇḍī, Aṁśī, Aṣṭavarga, Sandhyā, Pācaka, Tārā | the first eight are in the app, off to begin with; the rest are not |
 | Brahma graha | Jaimini 2.1.49–54: the strong lord of the 6th, 8th or 12th from the stronger of the Lagna and the 7th, in an odd sign, behind it; for Saturn, Rāhu or Ketu the planet in the 6th from it or its lord; among several the one with more degrees, with Rāhu the one with fewest; also the 8th lord from the Ātmakāraka and the planet in the 8th; in a dispute the stronger | `brahma()` scores the lords (a friendly sign, an odd sign, in the first seven signs); the rest of the sūtras is not applied |
 | Kendrādi (Mūla) | 2.4 (commentary on "kendrādi rāśi daśā"): from the sign of the **Ātmakāraka**; within the angles, the 2nd/5th/8th/11th and the rest, the signs in order of strength; the years as in the Chara | the Mūla daśā of the app begins at the Lagna (or the stronger of the Lagna and the 7th) and takes the signs by position, not by strength: a convention of PyJHora, not of the text |
 | Nārāyaṇa | not in the edition read | the tables are PyJHora's |

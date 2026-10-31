@@ -8,7 +8,7 @@ Naisargika, Kālachakra, Chara, Sthira, Nārāyaṇa and Mūla.
 The rules are as the text gives them; the numbers of the verses are those of BPHS chapter 46 unless the line says otherwise. Whether a count
 from a nakṣatra includes the nakṣatra itself is not said in the verses and is to be settled with the commentaries before the code is written.
 
-## A. The nakṣatra daśās of BPHS 46.17–43 (fixed years, a condition of the birth chart for each)
+## A. The nakṣatra daśās of BPHS 46.24–43 (fixed years, a condition of the birth chart for each) — in the app since v3.68
 
 All are worked out like the Viṃśottarī: the nakṣatra of the Moon gives the first lord by a count and a division, the balance is the part of the
 nakṣatra still to pass, the sub-periods are the years of the lord times the daśā years over the total (51.1). The app has the machinery
@@ -25,7 +25,25 @@ nakṣatra still to pass, the sub-periods are the years of the lord times the da
 | Ṣaṣṭihāyanī (46.40–42) | the Sun in the Lagna | from Aśvinī, 3, 4, 3… | Jupiter, Sun, Mars, Moon, Mercury, Venus, Saturn, Rāhu | 10, 10, 10, 6, 6, 6, 6, 6 | 60 |
 | Ṣaṭtriṃśatsamā (46.42–43) | the Lagna in the Sun's hora by day, or the Moon's by night | from Śravaṇa, divided by 8 | Moon, Sun, Jupiter, Mars, Mercury, Saturn, Venus, Rāhu | 1 to 8 | 36 |
 
-The Aṣṭottarī has two conditions in the text (46.17 and 46.23); the app shows the first. Note on the sums: the totals above are the ones
+**How the app reads them (v3.68, `nakshatraSystems.ts`, `birthConditions.ts`).** The count includes both ends, as the Viṃśottarī of 46.13 does
+(Kṛttikā itself is 1 and gives the Sun); a remainder of 0 is the last lord. The balance is the part of the nakṣatra still to pass times the
+years of the first lord; the sub-periods are the years of the daśā times the years of the lord over the total (51.1). Each daśā is **off to
+begin with** (most charts meet none of the conditions or one or two) and the panel of each says when it applies, whether the chart meets it and
+what it found; a chart that does not is not given the daśā unless asked. The event list, the finder and the overlap read only those whose
+condition the chart meets.
+
+What the text does not say, and what the app took (each is shown beside the condition in the panel):
+
+* "Born in a navāṁśa of Venus" (Dvādaśottarī 46.27): of what is not said; the **Lagna's** navāṁśa is taken (Taurus or Libra).
+* "In the Sun's aṃśa" (Pañcottarī 46.29): taken as the navāṁśa of Leo with the Lagna Cancer (the 2nd navāṁśa of Cancer, 3°20′–6°40′).
+  "Mitrarkṣa" is read as Anurādhā, the nakṣatra of Mitra.
+* The horā (BPHS 6.6: half a sign, 24 from Aries in two rounds): the Sun's first in odd signs, the Moon's first in even ones, as the practice
+  has it; the verse does not say which comes first.
+* Ṣaṣṭihāyanī counts "3, 4, 3, 4…" from Aśvinī: the 28 divisions of the Aṣṭottarī (with Abhijit) are used, as eight such groups come to 28.
+* Śatābdikā's last figure (46.34 "kharāma") is 30, as the total of 100 needs; the English of the site says 33.
+* "Day" is the Sun above the horizon (the 7th house to the 12th by degrees from the Lagna).
+
+The Aṣṭottarī has two conditions in the text (46.17 and 46.23); the app has both since v3.68 (either is enough). Note on the sums: the totals above are the ones
 that follow from the years; 46.15 prints Mercury 19 in the Viṃśottarī (122 in all) where the 120 of 46.14 needs 17, so a printed figure of
 these lines must be checked against its total.
 
@@ -62,9 +80,7 @@ which the daśās of this table stand; it is a chapter by itself (BPHS 43–44, 
 
 ## D. What to take first
 
-1. **The eight nakṣatra daśās of A** (and the second condition of the Aṣṭottarī): fixed tables, the machinery is there, the conditions are
-   read from the chart (the Lagna's hora and Navāṁśa, Vargottama, the lords of the 10th, 7th and Lagna). One page of settings: show those
-   whose condition holds, like the Aṣṭottarī.
+1. ~~The eight nakṣatra daśās of A (and the second condition of the Aṣṭottarī)~~ — done in v3.68.
 2. **Jaimini's Dṛg, Yogārdha and Trikoṇa** (B): the same family as the Chara and the Sthira, which the app has now by the text.
 3. **The Āyurdāya** and the daśās of C, which depend on it.
 4. **The Kendrādi daśās as the Sūtras give them**, which would also make the Mūla of the app a choice between the text and PyJHora.
