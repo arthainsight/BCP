@@ -1801,8 +1801,19 @@ test('TIMING Muhurta Finder lists the stretches in which every choice holds, and
   const detail = strip.locator('[data-finder-strip-detail]');
   const stamp = ((await detail.locator('span.font-semibold').first().textContent()) ?? '').trim();
   const [, day, month, hour, minute] = /(\d{2})\.(\d{2})\. (\d{2}):(\d{2})/.exec(stamp)!;
+  // The new tab calculates the chart of that moment by the clock of the place: its request carries the date and the time. (The birth form
+  // that held them folds away as soon as the chart is there, so the form is not a thing to wait for.)
+  const chartRequest = page.context().waitForEvent('request', {
+    predicate: request => {
+      const url = new URL(request.url());
+      const get = (name: string) => url.searchParams.get(name);
+      return url.pathname === '/api/chart' && get('day') === day && get('month') === month && get('hour') === hour && get('minute') === minute && get('second') === '00';
+    },
+    timeout: 30_000,
+  });
   const [popup] = await Promise.all([page.waitForEvent('popup'), detail.locator('[data-finder-strip-open-chart]').click()]);
-  await expect(visible(popup, popup.getByPlaceholder('15.08.1947 09.15.00'))).toHaveValue(new RegExp(`^${day}\\.${month}\\.\\d{4} ${hour}\\.${minute}\\.00$`), { timeout: 30_000 });
+  await chartRequest;
+  await expect(popup.getByRole('img', { name: 'North Indian Jyotish chart' }).first()).toBeAttached({ timeout: 30_000 });
   await popup.close();
   // Rows made green by choice: only the times when all the ticked rows are green are shown, the rest of the strip is covered.
   await expect(strip.locator('[data-finder-strip-windows]')).toHaveCount(0);
