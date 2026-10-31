@@ -263,6 +263,8 @@ export interface RasiDashaOptions {
   /** Whose death the Śūla daśā is read for: the native's own (the 8th), the father's (9th), mother's (4th), younger brother's (3rd), a sister's or child's (5th) or an elder brother's (11th), Jaimini Sūtras 2.3.18–25. */
   /** The years of the Śūla daśā: `chara` (the Chara years, where the commentary of the Jaimini Sūtras says the years are those of the Chara when nothing else is said) or `sthira` (BPHS 46.182, "sthiravat"). Default `chara`. */
   shulaYears?: 'chara' | 'sthira';
+  /** When the Kālachakra daśā is shown: `text` (Phaladīpikā 22.30: when the lord of the Moon's navāṁśa is strong; otherwise only on request) or `always` (PyJHora). Default `text`. */
+  kalachakraRule?: 'text' | 'always';
   shulaFor?: 'self' | 'father' | 'mother' | 'younger-brother' | 'sister-or-child' | 'elder-brother';
 }
 
@@ -363,6 +365,7 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     moolaMethod: 'jaimini',
     shulaFor: 'self',
     shulaYears: 'chara',
+    kalachakraRule: 'text',
   },
   variantChoice: 'auto',
   yearLength: 'julian',

@@ -31,7 +31,16 @@ assert.equal(snapshots[0].levels.length, 3);
 assert.equal(snapshots[1].levels.length, 3);
 assert.equal(snapshots[3].levels.length, 3);
 assert.equal(snapshots[4].levels.length, 3);
-assert.equal(snapshots.find(snapshot => snapshot.key === 'kalaChakra')!.levels.length, 2);
+// The Kālachakra is taken when the lord of the Moon's navāṁśa is strong (Phaladīpikā 22.30). The Moon at Gemini 6° is in the navāṁśa of Scorpio, whose lord Mars stands in Virgo
+// 10° from the Sun, combust: not strong, so the daśā is not read unless the PyJHora way (always) is chosen.
+const kalachakra = snapshots.find(snapshot => snapshot.key === 'kalaChakra')!;
+assert.equal(kalachakra.levels.length, 0);
+assert.match(kalachakra.note ?? '', /not applicable/);
+const always = calculateDashaEventSnapshots({
+  birthDate: new Date(2000, 0, 1, 10), eventDate: new Date(2001, 0, 1, 12), planets, ascendant: { longitude: 90, sign: 4, degree: 0 },
+  charaOptions: DEFAULT_DASHA_SETTINGS.charaOptions, rasiOptions: { ...DEFAULT_DASHA_SETTINGS.rasiOptions, kalachakraRule: 'always' },
+});
+assert.equal(always.find(snapshot => snapshot.key === 'kalaChakra')!.levels.length, 2);
 for (const key of ['shodashottari', 'panchottari', 'shatabdika', 'shattrimshatsama'] as const) assert.equal(snapshots.find(snapshot => snapshot.key === key)!.levels.length, 3, key);
 // Naisargika: the Moon's year ends 20 hours before the event, so the Mars period has run 20 hours. The grahas in the signs counted from
 // Mars's (Virgo, sign 6) in the order of the houses 1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12: the Sun (sign 6), the Moon (sign 3, the

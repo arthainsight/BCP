@@ -37,8 +37,8 @@ const RENDERERS: Record<DashaRendererKey, (ctx: DashaRendererContext) => ReactNo
   chara: ({ planets, ascendant, birthDatetime, charaOptions }) => (
     <CharaCleanPanel planets={planets} ascendant={ascendant} birthDatetime={birthDatetime} settings={charaOptions} />
   ),
-  kalachakra: ({ planets, birthDatetime }) => (
-    <KalachakraPanel planets={planets} birthDatetime={birthDatetime} />
+  kalachakra: ({ planets, birthDatetime, rasiOptions }) => (
+    <KalachakraPanel planets={planets} birthDatetime={birthDatetime} rule={rasiOptions.kalachakraRule ?? 'text'} />
   ),
   yogini: ({ planets, birthDatetime }) => (
     <YoginiPanel planets={planets} birthDatetime={birthDatetime} />
