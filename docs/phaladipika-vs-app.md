@@ -19,7 +19,7 @@ fractions below), so the book gives no numbers to compare the app's tables with.
 | Year, month, day, hora (4.1) | each graha in its own, "aṅghrivṛddhyā": by quarters | the same: 15, 30, 45, 60 virūpa |
 | Ceṣṭā (4.2) | the full Moon, the Sun in the northern course, a retrograde graha, the winner in a planetary war, a graha with its full rays | the idea of BPHS 27, with no table |
 | Ucca (4.2) | in its own exaltation | a part of the Sthāna in BPHS and the app |
-| Ayana (4.2) | Mercury, Saturn and the Moon in the southern course; the others in the northern (the Hindi gloss has Mercury in both lists) | Sun, Mars, Jupiter and Venus in the north, Moon and Saturn in the south, Mercury either way |
+| Ayana (4.2) | Mercury, Saturn and the Moon in the southern course; the others in the northern (the Hindi gloss has Mercury in both lists) | the table or the declination of the app (`shadbala-sources.md`) |
 | Sthāna (4.3) | exaltation, own sign, a friend's sign, the six vargas; the angles full, the succedent houses a half, the cadent a quarter; males strong at the start of a sign, neuters in the middle, females at the end | the Sapta-vargaja, Kendrādi and Drekkāṇa Bala of BPHS: the same 1 : ½ : ¼ (60, 30, 15) and the same drekkāṇa idea |
 | Naisargika (4.3) | Saturn, Mars, Mercury, Jupiter, Venus, Moon, Sun in rising order | the same (8.57 to 60) |
 | Lagna Bala (4.6) | a male (odd) sign strong, Scorpio a quarter, the others a half; the lord in an upacaya house; a night-strong sign by night, a day-strong sign by day | not in the app |
@@ -42,9 +42,9 @@ shares (of 13°20′ over 60, 12 and 36), each with a result of its own (three t
   so). The two sets of stars are the same as the four groups of BPHS in the app put together in pairs (10 + 5 = 15 and 4 + 8 = 12 stars), and **Revatī stands with Kṛttikā, Āśleṣā, Svāti and
   Uttara Āṣāḍhā**, as the fix of v3.65 has it, from a text that is not BPHS.
 * **The sixteen sequences of nine signs (22, the vākyas):** the first eight sentences were decoded with the kaṭapayādi rule (ka, ṭa, pa, ya = 1; ṅa, ṇa, ma, śa = 5; na and ña = 0, and in these
-  sentences na = 10, kṣa = 11 and tra = 12) and give exactly the eight sequences of the first savya and second savya groups of the app (`kalachakra.test.ts`); the ninth, "gośivatīrthe
-  dātrīkṣanno", gives 3, 5, 4, 6, 7, 8, 12, 11, 10, the third pada of the second apasavya group of the app. The editor's own decoded lists of all sixteen agree with the app in 15 cases and
-  in the sixteenth have the end 12, 1, 2 where the sentence and the app have 12, 11, 10: a slip of the editor's table (it is the end of the line above it).
+  sentences na = 10, kṣa = 11 and tra = 12) and seven of the eight give, as printed, the sequences of the first savya and second savya groups of the app (`kalachakra.test.ts`); the third ("rūpotarakṣurnidhāyaraṅgam") is spoilt by an OCR slip ("tara" for "tra") and gives the app's sequence 2, 1, 12, 11, 10, 9, 1, 2, 3 once that is mended; the ninth, "gośivatīrthe
+  dātrīkṣanno", gives 3, 5, 4, 6, 7, 8, 12, 11, 10, the third pada of the second apasavya group of the app. The editor's own decoded lists of all sixteen sequences agree with the app in every readable part in 15 cases (three lists lose a sign or two to the OCR) and
+  in the sixteenth have the end 12, 1, 2 where the sentence and the app have 12, 11, 10: a slip of the editor's table (12, 1, 2 is the end of the line above it).
 * **Naisargika and Piṇḍāyu (Jātakapārijāta, chapter 5):** the natural years Sun 20, Moon 1, Mars 2, Mercury 9, Jupiter 18, Venus 20, Saturn 50 and the Piṇḍāyu years 19, 25, 15, 12, 15, 21, 20, as in
   BPHS 43 (the commentary quotes the Sārāvalī for them). The commentary also gives the rule of BPHS 43.8 in words and with a worked example: subtract the exaltation point from the graha;
   if the rest is under six signs, take it from twelve signs; in minutes, times the years, over 21 600. That is the line from the half at the fall to the whole at the exaltation, the reading
@@ -57,8 +57,8 @@ sum, when two are equal half of the sum of those two, and when none is strong th
 **A condition for the Kālachakra (22.30):** "the Kālachakra is to be taken when the lord of the Moon's navāṁśa is strong; the daśā that rests on the nakṣatras (Viṃśottarī) is always strong". The app
 shows the Kālachakra with no condition. (The editor reads the verse so; the Sanskrit "candrāṁśeśe balānvite" is short.)
 
-**Named, not given:** chapter 13.25 names the daśās for the length of life: that "told by Śrīpati", the **Aṣṭakavarga daśā**, the Kālachakra and the Uḍu daśā (Viṃśottarī). Chapter 22.2 of the
-editor's note says that many daśās by graha, sign and nakṣatra are in the jātaka books and that the Phaladīpikā has only a few (his Daśāphaladarpaṇa has the rest). The Jātakapārijāta (chapter 5) names eight kinds of
+**Named, not given:** chapter 13.25 names the daśās for the length of life: that "told by Śrīpati", the **Aṣṭakavarga daśā**, the Kālachakra and the Uḍu daśā (Viṃśottarī). The editor's note
+under 22.1 says that many daśās by graha, sign and nakṣatra are in the jātaka books and that the Phaladīpikā has only a few (his Daśāphaladarpaṇa has the rest). The Jātakapārijāta (chapter 5) names eight kinds of
 span: Nisargāyu, Piṇḍāyu, Lagnāyu, Aṃśakāyu, Raśmijāyu, Cakrāyu, Nakṣatrāyu and Aṣṭavargajāyu, of which the app has the first, the second and (as Aṃśī) the fourth; the others are not worked out here.
 
 ## The dating of Mantreśvara
