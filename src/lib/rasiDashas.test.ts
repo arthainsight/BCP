@@ -47,6 +47,47 @@ for (const entry of jaiminiSthira.entries.slice(0, 3)) {
     : Array.from({ length: 12 }, (_, index) => (entry.sign + index) % 12);
   assert.deepEqual(children, expected, `sub-periods of ${entry.signName}`);
 }
-for (const system of ['narayana', 'moola', 'sthira'] as const) assert.equal(validateRasiDashaRegression(system).passed, true);
-assert.ok(validateRasiDashaRegression('moola').checks >= 18);
+for (const system of ['narayana', 'moola', 'sthira'] as const) assert.equal(validateRasiDashaRegression(system)?.passed, true);
+assert.ok((validateRasiDashaRegression('moola')?.checks ?? 0) >= 18);
+for (const system of ['yogardha', 'drig', 'trikona', 'shula'] as const) assert.equal(validateRasiDashaRegression(system), null, `${system} is the text's only: nothing of PyJHora to compare`);
 console.log('Rasi Dasha tests passed');
+
+// --- The Mūla by the Kendrādi rāśi daśā of the Jaimini Sūtras (2.4.11–14), the default; the PyJHora way is the other choice ---------------------
+{
+  const text = calculateRasiDasha('moola', planets, 4, birth);
+  assert.match(text.method, /Jaimini Sūtras 2\.4\.11–14/);
+  assert.equal(text.entries.length, 12, 'one round of twelve signs');
+  assert.equal(new Set(text.entries.map(entry => entry.sign)).size, 12);
+  assert.ok(text.basis.startsWith('Ātmakāraka'), 'from the Ātmakāraka');
+  assert.equal(text.entries[0].sign, text.seedSign);
+  assert.ok(text.entries.every(entry => Number.isInteger(entry.durationYears) && entry.durationYears >= 1 && entry.durationYears <= 13), 'the Chara years');
+  // The sub-periods begin with the sign itself and take the angles next.
+  const children = calculateRasiSubDashas(text.entries[0], planets, 'moola').map(child => child.sign);
+  assert.equal(children[0], text.entries[0].sign);
+  assert.deepEqual([...children.slice(1, 4)].sort((a, b) => a - b), [3, 6, 9].map(step => (text.entries[0].sign + (text.entries[0].sign % 2 === 0 ? step : 12 - step)) % 12).sort((a, b) => a - b));
+  const pyjhora = calculateRasiDasha('moola', planets, 4, birth, { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'jaimini', moolaMethod: 'pyjhora' });
+  assert.match(pyjhora.method, /PVR\/JHora/);
+  assert.ok(pyjhora.entries.length > 12, 'the two rounds of PVR');
+}
+
+// --- The other Jaimini rāśi daśās (2.4.19–25, 2.3.18–25) -------------------------------------------------------------------------------------------
+for (const system of ['yogardha', 'drig', 'trikona', 'shula'] as const) {
+  const result = calculateRasiDasha(system, planets, 4, birth);
+  assert.ok(result.entries.length >= 10 && result.entries.length <= 12, system);
+  assert.equal(result.entries[0].startDate.getTime(), birth.getTime());
+  for (let i = 1; i < result.entries.length; i++) assert.equal(result.entries[i - 1].endDate.getTime(), result.entries[i].startDate.getTime());
+  const children = calculateRasiSubDashas(result.entries[0], planets, system);
+  assert.equal(children.length, 12, system);
+  assert.equal(children[0].startDate.getTime(), result.entries[0].startDate.getTime());
+  assert.ok(Math.abs(children.reduce((sum, child) => sum + child.durationYears, 0) - result.entries[0].durationYears) < 1e-9, system);
+}
+{
+  const yogardha = calculateRasiDasha('yogardha', planets, 4, birth);
+  assert.ok(yogardha.entries.every(entry => entry.durationYears * 2 === Math.round(entry.durationYears * 2)), 'half years');
+  const drig = calculateRasiDasha('drig', planets, 4, birth);
+  assert.ok(drig.entries.every(entry => [7, 8, 9].includes(entry.durationYears)), 'Sthira years');
+  assert.equal(drig.entries[0].sign, 11, 'Cancer rising: the 9th is Pisces');
+  const shula = calculateRasiDasha('shula', planets, 4, birth, { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'jaimini', shulaFor: 'father' });
+  assert.match(shula.method, /father/);
+  assert.ok(shula.audit.some(line => line.startsWith('Read for: father (the 9th)')));
+}

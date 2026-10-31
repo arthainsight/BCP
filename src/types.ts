@@ -256,6 +256,12 @@ export interface RasiDashaOptions {
   moolaSeed: 'stronger-lagna-seventh' | 'lagna';
   /** `jaimini`: the Sthira daśā of the Jaimini Sūtras 2.3.1–4 (the signs run direct from an odd Brahma sign, reverse from an even one; the sub-periods from the sign itself or, for an even sign, from its 7th in reverse). `brahma-pvr`: always forward, as PyJHora does. */
   sthiraMethod: 'jaimini' | 'brahma-pvr';
+  /** `jaimini`: the Brahma graha by the Jaimini Sūtras 2.1.49–54 (lords of the 6th, 8th, 12th in an odd sign behind the stronger of Lagna and 7th, the 8th from the Ātmakāraka, the degrees). `pyjhora`: the scoring of PyJHora. Default `jaimini`. */
+  brahmaMethod?: 'jaimini' | 'pyjhora';
+  /** `jaimini`: the Kendrādi rāśi daśā of the Jaimini Sūtras 2.4.11–14 (from the stronger of the Ātmakāraka's sign and its 7th; the angles, then the 2nd/5th/8th/11th, then the rest, each group by strength). `pyjhora`: the Mūla of PyJHora (from the Lagna, by position). Default `jaimini`. */
+  moolaMethod?: 'jaimini' | 'pyjhora';
+  /** Whose death the Śūla daśā is read for: the native's own (the 8th), the father's (9th), mother's (4th), younger brother's (3rd), a sister's or child's (5th) or an elder brother's (11th), Jaimini Sūtras 2.3.18–25. */
+  shulaFor?: 'self' | 'father' | 'mother' | 'younger-brother' | 'sister-or-child' | 'elder-brother';
 }
 
 // v2.15 removed the 20+ never-implemented placeholder keys (tara, brahma,
@@ -277,6 +283,11 @@ export interface DashaSettings {
     narayana?: boolean;
     moola?: boolean;
     sthira?: boolean;
+    /** The other rāśi daśās of the Jaimini Sūtras and BPHS 46: Yogārdha, Dṛg, Trikoṇa and Śūla (for the time of death). */
+    yogardha?: boolean;
+    drig?: boolean;
+    trikona?: boolean;
+    shula?: boolean;
     /** The conditional nakṣatra daśās of BPHS 46.24–43: each is read only for a birth that meets the condition the text gives it. */
     shodashottari?: boolean;
     dvadashottari?: boolean;
@@ -308,6 +319,10 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     narayana: true,
     moola: true,
     sthira: true,
+    yogardha: false,
+    drig: false,
+    trikona: false,
+    shula: false,
     // Off to begin with: each is for a birth that meets its own condition, which most charts do not (the panel says whether this one does).
     shodashottari: false,
     dvadashottari: false,
@@ -334,6 +349,9 @@ export const DEFAULT_DASHA_SETTINGS: Required<DashaSettings> = {
     narayanaSeed: 'stronger-lagna-seventh',
     moolaSeed: 'stronger-lagna-seventh',
     sthiraMethod: 'jaimini',
+    brahmaMethod: 'jaimini',
+    moolaMethod: 'jaimini',
+    shulaFor: 'self',
   },
   variantChoice: 'auto',
   yearLength: 'julian',

@@ -13,7 +13,7 @@ import { calculateRasiDasha, calculateRasiSubDashas, type RasiDashaEntry, type R
 
 export interface DashaEventLevel { level: string; value: string; }
 export interface DashaEventSnapshot {
-  key: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | NakshatraSystemKey;
+  key: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'yogini' | 'ashtottari' | 'kalaChakra' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | 'yogardha' | 'drig' | 'trikona' | 'shula' | NakshatraSystemKey;
   label: string;
   levels: DashaEventLevel[];
   mdRange?: { startDate: Date; endDate: Date };
@@ -21,7 +21,7 @@ export interface DashaEventSnapshot {
 }
 
 /** The daśā systems an event is read in, in the order they are shown. Each is also the name of its switch in `DashaSettings.dashas`. */
-export const DASHA_SNAPSHOT_KEYS: readonly DashaEventSnapshot['key'][] = ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', ...NAKSHATRA_SYSTEMS.map(system => system.key), 'kalaChakra', 'naisargika', 'narayana', 'moola', 'sthira'];
+export const DASHA_SNAPSHOT_KEYS: readonly DashaEventSnapshot['key'][] = ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', ...NAKSHATRA_SYSTEMS.map(system => system.key), 'kalaChakra', 'naisargika', 'narayana', 'moola', 'sthira', 'yogardha', 'drig', 'trikona', 'shula'];
 interface SnapshotInput {
   eventDate: Date;
   birthDate: Date;
@@ -89,6 +89,10 @@ export const DASHA_SYSTEM_LABELS = {
   narayana: 'Narayana Dasha',
   moola: 'Mula Dasha',
   sthira: 'Sthira Dasha',
+  yogardha: 'Yogardha Dasha',
+  drig: 'Drig Dasha',
+  trikona: 'Trikona Dasha',
+  shula: 'Shula Dasha',
   ...(Object.fromEntries(NAKSHATRA_SYSTEMS.map(system => [system.key, `${system.name} Dasha`])) as Record<NakshatraSystemKey, string>),
 } as const;
 
@@ -106,6 +110,7 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
     { key: 'narayana', label: DASHA_SYSTEM_LABELS.narayana, levels: [], note: 'Date is before birth' },
     { key: 'moola', label: DASHA_SYSTEM_LABELS.moola, levels: [], note: 'Date is before birth' },
     { key: 'sthira', label: DASHA_SYSTEM_LABELS.sthira, levels: [], note: 'Date is before birth' },
+    ...(['yogardha', 'drig', 'trikona', 'shula'] as const).map((key) => ({ key, label: DASHA_SYSTEM_LABELS[key], levels: [], note: 'Date is before birth' })),
   ];
 
   const moon = planets.find((planet) => planet.name === 'Moon');
@@ -164,8 +169,12 @@ export function calculateDashaEventSnapshots(input: SnapshotInput): DashaEventSn
     ['narayana', 'narayana', 'Nārāyaṇa Dasha'],
     ['moola', 'moola', 'Mūla Dasha'],
     ['sthira', 'sthira', 'Sthira Dasha'],
+    ['yogardha', 'yogardha', 'Yogārdha Dasha'],
+    ['drig', 'drig', 'Dṛg Dasha'],
+    ['trikona', 'trikona', 'Trikoṇa Dasha'],
+    ['shula', 'shula', 'Śūla Dasha'],
   ] as const) {
-    const result = calculateRasiDasha(system, planets, ascendant.sign, birthDate, rasiOptions);
+    const result = calculateRasiDasha(system, planets, ascendant.sign, birthDate, rasiOptions, { ascendantLongitude: ascendant.longitude, karaka: charaOptions.karaka });
     snapshots.push({ key, label, levels: rasiLevels(result.entries, eventDate, planets, system), mdRange: activeRange(result.entries, eventDate) });
   }
 

@@ -3,7 +3,7 @@ import { NAKSHATRA_SYSTEMS, type NakshatraSystemKey } from './nakshatraSystems';
 
 export type DashaKey = keyof DashaSettings['dashas'];
 export type DashaStatus = 'implemented' | 'beta';
-export type DashaRendererKey = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | NakshatraSystemKey;
+export type DashaRendererKey = 'vimshottari' | 'vimshottariVariant' | 'vds' | 'chara' | 'kalachakra' | 'yogini' | 'ashtottari' | 'naisargika' | 'narayana' | 'moola' | 'sthira' | 'yogardha' | 'drig' | 'trikona' | 'shula' | NakshatraSystemKey;
 
 /**
  * How the Dasas tab sorts the daśās: those that run by the Moon's nakṣatra (Vimśottarī and its kin, Yoginī, Aṣṭottarī), those
@@ -42,6 +42,11 @@ export const DASHA_REGISTRY: DashaRegistryItem[] = [
   { key: 'narayana', label: 'Nārāyaṇa Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'narayana', kind: 'rasi' },
   { key: 'moola', label: 'Mūla Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'moola', kind: 'rasi' },
   { key: 'sthira', label: 'Sthira Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'sthira', kind: 'rasi' },
+  // The other rāśi daśās of the Jaimini Sūtras (adhyāya 2) and BPHS 46; off to begin with.
+  { key: 'yogardha', label: 'Yogārdha Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'yogardha', kind: 'rasi' },
+  { key: 'drig', label: 'Dṛg Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'drig', kind: 'rasi' },
+  { key: 'trikona', label: 'Trikoṇa Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'trikona', kind: 'rasi' },
+  { key: 'shula', label: 'Śūla Daśā', group: 'Core', status: 'beta', family: 'rasi', renderer: 'shula', kind: 'rasi' },
 ];
 // v2.15: dropped the 22 "Other systems" placeholder rows (Tara, Brahma, Drig,
 // Shodashottari, …). They had no renderer, rendered nowhere (SettingsPanel

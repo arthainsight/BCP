@@ -1,4 +1,7 @@
-import { calculateRasiDasha, type RasiDashaSystem } from './rasiDashas';
+import { calculateRasiDasha, PYJHORA_RASI_OPTIONS, type RasiDashaSystem } from './rasiDashas';
+
+/** The systems PyJHora has and the app compares with it. The others are the text's only. */
+type PyjhoraSystem = 'narayana' | 'moola' | 'sthira';
 import { withDashaYear } from './time';
 import type { RasiDashaOptions } from '../types';
 
@@ -24,7 +27,7 @@ const FIXTURE_PLANETS = [
   { name: 'Ketu', sign: 6, house: 3, degree: 8, longitude: 158 },
 ];
 
-const EXPECTED: Record<RasiDashaSystem, { seed: number; order: string; durations?: string }> = {
+const EXPECTED: Record<PyjhoraSystem, { seed: number; order: string; durations?: string }> = {
   narayana: { seed: 9, order: 'Cp,Sg,Sc,Li,Vi,Le,Cn,Ge,Ta,Ar,Pi,Aq' },
   moola: { seed: 9, order: 'Cp,Li,Cn,Ar,Sg,Vi,Ge,Pi,Sc,Le,Ta,Aq' },
   sthira: { seed: 6, order: 'Li,Sc,Sg,Cp,Aq,Pi,Ar,Ta,Ge,Cn,Le,Vi', durations: '7,8,9,7,8,9,7,8,9,7,8,9' },
@@ -42,8 +45,8 @@ const ASCENDANTS = [4, 1, 9];
 // the second and third variants disagreed with PyJHora and were replaced in
 // v2.21. Ends follow from the durations on the 365.256364-day year.
 /** The choices PyJHora makes, which its output below was worked out with: the Sthira daśā always forward. */
-const PYJHORA: RasiDashaOptions = { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'brahma-pvr' };
-const GOLDEN: Record<RasiDashaSystem, { seed: number; order: string; durations: string; ends: string }[]> = {
+const PYJHORA: RasiDashaOptions = PYJHORA_RASI_OPTIONS;
+const GOLDEN: Record<PyjhoraSystem, { seed: number; order: string; durations: string; ends: string }[]> = {
   narayana: [
     { seed: 9, order: 'Cp,Sg,Sc,Li,Vi,Le,Cn,Ge,Ta,Ar,Pi,Aq', durations: '2,4,10,12,11,11,1,4,5,5,11,3', ends: '2001-12-31T22:18:19.699Z,2005-12-31T22:54:59.097Z,2016-01-01T12:26:37.593Z' },
     { seed: 0, order: 'Ar,Ta,Ge,Cn,Le,Vi,Li,Sc,Sg,Cp,Aq,Pi', durations: '10,3,10,11,11,5,10,3,12,2,3,3', ends: '2009-12-31T23:31:38.496Z,2012-12-31T17:59:08.044Z,2023-01-01T07:30:46.540Z' },
@@ -62,11 +65,12 @@ const GOLDEN: Record<RasiDashaSystem, { seed: number; order: string; durations: 
 };
 
 /** The check against PyJHora's output, which counts the sidereal year of 365.256364 days whatever year the user has chosen. */
-export function validateRasiDashaRegression(system: RasiDashaSystem): RasiValidationStatus {
+export function validateRasiDashaRegression(system: RasiDashaSystem): RasiValidationStatus | null {
+  if (system !== 'narayana' && system !== 'moola' && system !== 'sthira') return null;
   return withDashaYear('sidereal', () => validate(system));
 }
 
-function validate(system: RasiDashaSystem): RasiValidationStatus {
+function validate(system: PyjhoraSystem): RasiValidationStatus {
   const result = calculateRasiDasha(system, FIXTURE_PLANETS, 4, new Date('2000-01-01T10:00:00.000Z'), PYJHORA);
   const expected = EXPECTED[system];
   const firstCycle = result.entries.slice(0, 12);
@@ -84,7 +88,7 @@ function validate(system: RasiDashaSystem): RasiValidationStatus {
   }
   if (system === 'moola') {
     const ketuSeedPlanets = FIXTURE_PLANETS.map(planet => planet.name === 'Ketu' ? { ...planet, sign: 6, longitude: 150 } : planet);
-    const ketuResult = calculateRasiDasha('moola', ketuSeedPlanets, 6, new Date('2000-01-01T10:00:00.000Z'), { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'lagna', sthiraMethod: 'brahma-pvr' });
+    const ketuResult = calculateRasiDasha('moola', ketuSeedPlanets, 6, new Date('2000-01-01T10:00:00.000Z'), { ...PYJHORA_RASI_OPTIONS, moolaSeed: 'lagna' });
     checks.push(ketuResult.entries.slice(0, 12).map(entry => entry.abbr).join(',') === 'Vi,Ge,Pi,Sg,Le,Ta,Aq,Sc,Cn,Ar,Cp,Li');
   }
   return { passed: checks.every(Boolean), checks: checks.length, fixture: 'PJH-GOLDEN-001…003', scope: 'pyjhora-rule-reference', reference: 'PyJHora 4.8.7 output · sidereal year 365.256364 d', goldenCharts: 3, dateParity: checks.every(Boolean) };

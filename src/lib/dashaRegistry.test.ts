@@ -10,7 +10,7 @@ for (const item of DASHA_REGISTRY) assert.ok(families.has(item.family), `${item.
 
 const keys = (family: string) => RENDERABLE_DASHAS.filter(item => item.family === family).map(item => item.key);
 assert.deepEqual(keys('nakshatra'), ['vimshottari', 'vimshottariVariant', 'vds', 'yogini', 'ashtottari', ...NAKSHATRA_SYSTEMS.map(system => system.key)], 'the daśās that run by the Moon\'s nakṣatra');
-assert.deepEqual(keys('rasi'), ['chara', 'kalaChakra', 'narayana', 'moola', 'sthira'], 'the daśās that run by signs');
+assert.deepEqual(keys('rasi'), ['chara', 'kalaChakra', 'narayana', 'moola', 'sthira', 'yogardha', 'drig', 'trikona', 'shula'], 'the daśās that run by signs');
 assert.deepEqual(keys('other'), ['naisargika'], 'the graha daśās that run by neither: the natural one');
 assert.equal(keys('nakshatra').length + keys('rasi').length + keys('other').length, RENDERABLE_DASHAS.length);
 

@@ -52,12 +52,49 @@ The app now follows the text by default (Settings → dasha methods → Chara me
 | Subject | The text | The app |
 |---|---|---|
 | Aṣṭottarī, the other condition | 46.23: Aṣṭottarī is to be taken for a birth by day in the dark half or by night in the bright half | **done (v3.68)**: either condition makes the daśā apply; the panel states both and what the chart has. "Day" is the Sun above the horizon (from the 7th house to the 12th, by degrees from the Lagna), "the dark half" the Moon 180°–360° ahead of the Sun |
-| Sthira, the Brahma graha | 46.171–173: the strong lord of the 6th, 8th or 12th in an odd sign; among several, the one in the highest degree, then the stronger | the lords are scored (a friendly sign, an odd sign, in the first seven signs), then the stronger of the best two; the degree is not used |
+| Sthira, the Brahma graha | 46.171–173: the strong lord of the 6th, 8th or 12th in an odd sign; among several, the one in the highest degree, then the stronger | **done (v3.69)**, see "Brahma graha, Mūla and the other Jaimini daśās" below |
 | The year | the text does not say what a year of a daśā is | a Julian year (365.25 days), with no choice |
 | Nārāyaṇa, Mūla | not in BPHS | the tables follow PVR / JHora; not compared with the Jaimini Sūtras |
 | Kālachakra, the sub-periods | not read | proportional to the years of the signs, from the parent's sign in the cycle; not compared |
 | Other daśās of 46.3–11 | Ṣoḍaśottarī, Dvādaśottarī, Pañcottarī, Śatābdikā, Caturaśītisamā, Dvisaptati, Ṣaṣṭi, Ṣaṭtriṁśat: **done (v3.68)**, see `dasha-candidates.md` section A. Kāla, Cakra, Pañcasvara, Paiṇḍī, Aṁśī, Aṣṭavarga, Sandhyā, Pācaka, Tārā | the first eight are in the app, off to begin with; the rest are not |
-| Brahma graha | Jaimini 2.1.49–54: the strong lord of the 6th, 8th or 12th from the stronger of the Lagna and the 7th, in an odd sign, behind it; for Saturn, Rāhu or Ketu the planet in the 6th from it or its lord; among several the one with more degrees, with Rāhu the one with fewest; also the 8th lord from the Ātmakāraka and the planet in the 8th; in a dispute the stronger | `brahma()` scores the lords (a friendly sign, an odd sign, in the first seven signs); the rest of the sūtras is not applied |
-| Kendrādi (Mūla) | 2.4 (commentary on "kendrādi rāśi daśā"): from the sign of the **Ātmakāraka**; within the angles, the 2nd/5th/8th/11th and the rest, the signs in order of strength; the years as in the Chara | the Mūla daśā of the app begins at the Lagna (or the stronger of the Lagna and the 7th) and takes the signs by position, not by strength: a convention of PyJHora, not of the text |
+| Brahma graha | Jaimini 2.1.49–54 | **done (v3.69)**; the scoring of PyJHora is the other choice (Settings → dasha methods → Brahma graha) |
+| Kendrādi (Mūla) | 2.4.11–14 | **done (v3.69)** as the default of the Mūla; the Mūla of PyJHora (from the Lagna, by position, two rounds) is the other choice |
 | Nārāyaṇa | not in the edition read | the tables are PyJHora's |
-| The other daśās of the Jaimini Sūtras | Trikoṇa, Yogārdha, Dṛg, Nakṣatra, Śūla, the Kārakas' Kendrādi | not in the app |
+| The other daśās of the Jaimini Sūtras | Trikoṇa, Yogārdha, Dṛg, Śūla: **done (v3.69)**. Nakṣatra, the Kārakas' Kendrādi (of grahas), Maṇḍūkī: not | the four are in the app, off to begin with |
+
+## Brahma graha, Mūla and the other Jaimini daśās (v3.69)
+
+All from the Jaimini Sūtras (Chowkhamba edition with the Hindi of Sītārāma Jhā) beside BPHS 46. Each is the default of the app; the other way (PyJHora, or the app's old scoring) is a choice in Settings.
+
+**Brahma graha (2.1.49–54, BPHS 46.170–173).** Of the lords of the 6th, 8th and 12th from the stronger of the Lagna and the 7th, the one in an odd sign and "behind"
+that stronger sign. The commentary defines "behind" (pṛṣṭha): for the Lagna the arc from the 7th point round to the Lagna point (the Lagna degree is needed, and
+the page now gives it), for the 7th the arc from the Lagna point to the 7th point. Also the lord of the 8th from the Ātmakāraka and a graha in it (2.1.53, 46.172).
+If the graha is Saturn, Rāhu or Ketu, the graha in the 6th from it or the lord of that sign (2.1.50). Of several, the one with the most degrees, Rāhu's counted
+from the end of the sign (2.1.51–52, 46.173); equal: the stronger (2.1.54). *Not defined by the text and taken so:* "the strong" among the lords of the 6th/8th/12th
+(every lord in an odd sign and behind is a candidate and the degrees choose); the marks of 2.1.49 and 2.1.53 as alternatives (all that meet either are
+candidates); the replacement of 2.1.50 when the 6th sign holds no graha is its lord (which may be the same graha). When no graha meets a mark, which cannot
+happen with an Ātmakāraka, the old scoring is used.
+
+**Kendrādi rāśi daśā, the Mūla (2.4.11–14, the commentary).** From the stronger of the Ātmakāraka's sign and its 7th (the commentary: "the stronger of the
+Ātmakāraka and its 7th"; its example starts from the Ātmakāraka's sign, an odd one); then the angles, the 2nd/5th/8th/11th, and the 3rd/6th/9th/12th, each group
+by the strength of the sign, equal strength to the sign with more years ("rāśibalasamānatve bahuvarṣo balī bhavet"). The houses are counted in order from an odd
+sign and from the 7th in reverse for an even one. The years as in the Chara, one round of twelve signs; the sub-periods the same order from the sign itself.
+*Open:* whether the start is always the Ātmakāraka's sign when it is odd and the stronger of it and its 7th otherwise (the commentary's Sanskrit says "the stronger
+of the two", its example gives the Ātmakāraka's sign): the app takes the stronger of the two.
+
+**Yogārdha (2.4.19–20, 46.174).** From the stronger of the Lagna and the 7th; the years half the sum of the Chara and Sthira years (the commentary: Libra 2 and 7 give
+4½); the sub-periods as in the Chara. The direction is not given: the signs run in order, as the commentary's example does.
+
+**Dṛg (2.4.21–23, 46.185–187).** The 9th from the Lagna, the signs it glances at, then the 10th with its, then the 11th with its; the years as in the Sthira; the
+sub-periods as in the Sthira. The glanced signs are the nearer ones first: for a movable sign backwards the 3rd, 6th and 9th, for a fixed one forwards, for a dual
+one the 4th, 7th and 10th (forwards from Gemini and Sagittarius, backwards from Virgo and Pisces). The commentary's example (Libra rising) is in the tests. When the 9th is
+a fixed sign (Virgo, Sagittarius, Pisces or Gemini rising) the 11th sign is one that the 9th glances at, and a sign already placed is not placed twice, so that only
+ten signs are named; the text gives no continuation and none is made up.
+
+**Trikoṇa (2.4.24–25, 46.183–184).** From the strongest of the Lagna, the 5th and the 9th, each sign with its 5th and 9th, four such groups in the order of the
+start (direct from an odd sign, reverse from an even one); the years as in the Chara. The sub-periods by the verse quoted with the sūtra: an odd sign from itself in
+order, an even one from its 7th in reverse.
+
+**Śūla (2.3.18–25, 46.181–182).** For the time of death: from the stronger of the 8th from the Lagna and the 8th from the 7th, direct from an odd sign and reverse from
+an even one; the years as in the Sthira. For others the 9th (father), 4th (mother), 3rd (younger brother), 5th (sister, child) and 11th (elder brother), a choice in
+Settings. Not done: the māraka signs and the antardaśā of death (2.3.26 on).

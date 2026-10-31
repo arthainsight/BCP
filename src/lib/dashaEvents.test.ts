@@ -25,14 +25,14 @@ const snapshots = calculateDashaEventSnapshots({
 
 // The conditional daśās of BPHS 46.24–43 are listed only when the chart meets the condition of the text. This chart (Lagna at Cancer 0°):
 // Cancer 0° is in the Moon's hora and the Moon is 104° behind the Sun, in the dark half (Ṣoḍaśottarī); its navāṁśa is Cancer, the
-// sign of the Lagna (Śatābdikā); and the Sun is 80° from the Lagna, below the horizon, in the Moon's hora (Ṣaṭtriṃśatsamā).
-assert.deepEqual(snapshots.map((snapshot) => snapshot.key), ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', 'shodashottari', 'shatabdika', 'shattrimshatsama', 'kalaChakra', 'naisargika', 'narayana', 'moola', 'sthira']);
+// sign of the Lagna (Śatābdikā), and the Sun at Virgo 20° is in the navāṁśa of Cancer too (Pañcottarī: the Lagna Cancer and the Sun in its navāṁśa); and the Sun is 80° from the Lagna, below the horizon, in the Moon's hora (Ṣaṭtriṃśatsamā).
+assert.deepEqual(snapshots.map((snapshot) => snapshot.key), ['vimshottari', 'vimshottariVariant', 'vds', 'chara', 'yogini', 'ashtottari', 'shodashottari', 'panchottari', 'shatabdika', 'shattrimshatsama', 'kalaChakra', 'naisargika', 'narayana', 'moola', 'sthira', 'yogardha', 'drig', 'trikona', 'shula']);
 assert.equal(snapshots[0].levels.length, 3);
 assert.equal(snapshots[1].levels.length, 3);
 assert.equal(snapshots[3].levels.length, 3);
 assert.equal(snapshots[4].levels.length, 3);
 assert.equal(snapshots.find(snapshot => snapshot.key === 'kalaChakra')!.levels.length, 2);
-for (const key of ['shodashottari', 'shatabdika', 'shattrimshatsama'] as const) assert.equal(snapshots.find(snapshot => snapshot.key === key)!.levels.length, 3, key);
+for (const key of ['shodashottari', 'panchottari', 'shatabdika', 'shattrimshatsama'] as const) assert.equal(snapshots.find(snapshot => snapshot.key === key)!.levels.length, 3, key);
 // Naisargika: the Moon's year ends 20 hours before the event, so the Mars period has run 20 hours. The grahas in the signs counted from
 // Mars's (Virgo, sign 6) in the order of the houses 1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12: the Sun (sign 6), the Moon (sign 3, the
 // 10th), Mercury and Venus (sign 7, the 2nd), Jupiter (sign 1, the 8th) and Saturn (sign 8, the 3rd); Mars itself and the nodes

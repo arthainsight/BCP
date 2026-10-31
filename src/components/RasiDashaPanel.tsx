@@ -10,22 +10,26 @@ import { formatDate } from '@/lib/dateFormat';
 
 import { useT } from '@/lib/i18n';
 const LEVELS = ['MD', 'AD', 'PD', 'SD', 'PR', 'DE'] as const;
-const TITLES: Record<RasiDashaSystem, string> = { narayana: 'nārāyaṇa daśā', moola: 'mūla daśā', sthira: 'sthira daśā' };
+const TITLES: Record<RasiDashaSystem, string> = { narayana: 'nārāyaṇa daśā', moola: 'mūla daśā', sthira: 'sthira daśā', yogardha: 'yogārdha daśā', drig: 'dṛg daśā', trikona: 'trikoṇa daśā', shula: 'śūla daśā' };
 const NOTES: Record<RasiDashaSystem, string> = {
   narayana: 'Rāśi daśā · stronger Lagna/7th seed · 144-year two-cycle method with Saturn/Ketu exceptions.',
   moola: 'Lagna Kendrādi Rāśi (Mūla) variant · kendra, pāṇaphara and apoklima progression.',
   sthira: 'Rāśi daśā · Brahma seed · movable 7 y, fixed 8 y and dual 9 y.',
+  yogardha: 'Jaimini rāśi daśā · from the stronger of Lagna and 7th · half the sum of the Chara and the Sthira years.',
+  drig: 'Jaimini rāśi daśā · the 9th, 10th and 11th with the signs they glance at · Sthira years.',
+  trikona: 'Jaimini rāśi daśā · from the strongest of Lagna, 5th and 9th, each with its trines · Chara years.',
+  shula: 'Jaimini rāśi daśā · for the time of death · from the stronger of the 8th from the Lagna and from the 7th · Sthira years.',
 };
 
-export default function RasiDashaPanel({ system, planets, ascendant, birthDatetime, options }: { system: RasiDashaSystem; planets: PlanetData[]; ascendant: { sign: number }; birthDatetime: string; options: RasiDashaOptions }) {
+export default function RasiDashaPanel({ system, planets, ascendant, birthDatetime, options, karaka }: { system: RasiDashaSystem; planets: PlanetData[]; ascendant: { sign: number; longitude?: number }; birthDatetime: string; options: RasiDashaOptions; karaka?: { rankMode?: 'degree' | 'minute'; count?: 7 | 8 } }) {
   const t = useT();
   const [level, setLevel] = useState(0);
   const [path, setPath] = useState<RasiDashaEntry[]>([]);
   const now = useMemo(() => new Date(), []);
   const result = useMemo(() => {
     const birth = parseDateTime(birthDatetime);
-    return birth ? calculateRasiDasha(system, planets, ascendant.sign, birth, options) : null;
-  }, [system, planets, ascendant.sign, birthDatetime, options]);
+    return birth ? calculateRasiDasha(system, planets, ascendant.sign, birth, options, { ascendantLongitude: ascendant.longitude, karaka }) : null;
+  }, [system, planets, ascendant.sign, ascendant.longitude, birthDatetime, options, karaka]);
   const validation = useMemo(() => validateRasiDashaRegression(system), [system]);
   if (!result) return <div className="text-xs font-mono text-zinc-400">{t('Valid birth datetime required.')}</div>;
 
@@ -45,8 +49,8 @@ export default function RasiDashaPanel({ system, planets, ascendant, birthDateti
     <div className="flex items-center justify-between gap-2"><div className="min-w-0 break-words font-mono text-xs uppercase tracking-widest text-zinc-500">&gt; {TITLES[system]}</div><button type="button" onClick={openNow} className="min-h-11 rounded border border-cyan-300 px-3 py-2 text-[10px] font-mono text-cyan-700 dark:border-cyan-700 dark:text-cyan-300">{t('NOW')}</button></div>
     <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[10px] font-mono leading-relaxed text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"><div className="break-words">{result.basis}</div>{activePath.length > 0 && <div className="mt-1 break-words text-cyan-700 dark:text-cyan-300">{t('Now:')} {activePath.map((entry, i) => `${entry.abbr} ${LEVELS[i]}`).join(' › ')}</div>}</div>
     <details className="rounded-lg border border-zinc-200 bg-white text-[10px] font-mono dark:border-zinc-700 dark:bg-zinc-900">
-      <summary className="cursor-pointer px-3 py-2 text-zinc-600 dark:text-zinc-300">{t('Calculation details ·')} <span className="text-amber-600 dark:text-amber-400">{t('Beta')}</span> · <span className={validation.passed ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}>{validation.passed ? `${validation.goldenCharts} golden vectors pass` : 'golden parity failed'}</span></summary>
-      <div className="space-y-1 border-t border-zinc-100 px-3 py-2 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400"><div className="font-semibold text-zinc-700 dark:text-zinc-200">{result.method}</div>{result.audit.map(line => <div key={line}>· {line}</div>)}<p className={validation.passed ? 'pt-1 text-emerald-700 dark:text-emerald-300' : 'pt-1 text-red-700 dark:text-red-300'}>{validation.fixture}: {validation.checks} {t('locked seed, order, duration, continuity and date checks')} {validation.passed ? 'pass' : 'failed'}.</p><p className="text-zinc-500">{t('Reference:')} {validation.reference}.</p><p className="text-amber-700 dark:text-amber-400">{t('Checked against PyJHora 4.8.7 output and, for Nārāyaṇa, the book’s worked examples (see the test suite). Beta remains until JHora desktop exports are compared as well.')}</p></div>
+      <summary className="cursor-pointer px-3 py-2 text-zinc-600 dark:text-zinc-300">{t('Calculation details ·')} <span className="text-amber-600 dark:text-amber-400">{t('Beta')}</span>{validation && <> · <span className={validation.passed ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}>{validation.passed ? `${validation.goldenCharts} golden vectors pass` : 'golden parity failed'}</span></>}</summary>
+      <div className="space-y-1 border-t border-zinc-100 px-3 py-2 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400"><div className="font-semibold text-zinc-700 dark:text-zinc-200">{result.method}</div>{result.audit.map(line => <div key={line}>· {line}</div>)}{validation && <><p className={validation.passed ? 'pt-1 text-emerald-700 dark:text-emerald-300' : 'pt-1 text-red-700 dark:text-red-300'}>{validation.fixture}: {validation.checks} {t('locked seed, order, duration, continuity and date checks')} {validation.passed ? 'pass' : 'failed'}.</p><p className="text-zinc-500">{t('Reference:')} {validation.reference}.</p><p className="text-amber-700 dark:text-amber-400">{t('Checked against PyJHora 4.8.7 output and, for Nārāyaṇa, the book’s worked examples (see the test suite). Beta remains until JHora desktop exports are compared as well.')}</p></>}</div>
     </details>
     <div className="flex items-center justify-between gap-2"><button type="button" onClick={back} disabled={!level} className="min-h-11 rounded border border-zinc-300 px-3 py-2 text-[10px] font-mono disabled:opacity-30 dark:border-zinc-700">{t('← back')}</button><div className="text-right text-[10px] font-mono uppercase tracking-widest text-zinc-400">{LEVELS[level]} · {rows.length} {t('periods')}</div></div>
     {path.length > 0 && <div className="break-words text-[10px] font-mono leading-relaxed text-emerald-700 dark:text-emerald-300">{path.map((entry, i) => `${entry.abbr} ${LEVELS[i]}`).join(' › ')} › {LEVELS[level]}</div>}

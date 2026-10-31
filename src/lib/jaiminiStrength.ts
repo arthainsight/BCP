@@ -150,6 +150,15 @@ export function signLord(chart: JaiminiChart, sign: number, duringDasha = false)
  * (6) its lord further advanced in its own sign.
  */
 export function strongerSign(chart: JaiminiChart, r1: number, r2: number): number {
+  const byRules = strongerSignByRules(chart, r1, r2);
+  if (byRules !== null) return byRules;
+  const l1 = signLord(chart, r1);
+  const l2 = signLord(chart, r2);
+  return chart.positions[l1].degree > chart.positions[l2].degree ? r1 : r2;
+}
+
+/** Rules 1–5 for two signs (see `strongerSign`); null when they tie through all five. */
+export function strongerSignByRules(chart: JaiminiChart, r1: number, r2: number): number | null {
   const count = (r: number) => NINE.filter((g) => signOf(chart, g) === r).length;
   if (count(r1) !== count(r2)) return count(r1) > count(r2) ? r1 : r2;
 
@@ -166,10 +175,7 @@ export function strongerSign(chart: JaiminiChart, r1: number, r2: number): numbe
   if (otherParity(r2) && !otherParity(r1)) return r2;
 
   if (modalityRank(r1) !== modalityRank(r2)) return modalityRank(r1) > modalityRank(r2) ? r1 : r2;
-
-  const l1 = signLord(chart, r1);
-  const l2 = signLord(chart, r2);
-  return chart.positions[l1].degree > chart.positions[l2].degree ? r1 : r2;
+  return null;
 }
 
 /**

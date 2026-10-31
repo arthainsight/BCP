@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { calculateChart } from './ephemeris';
-import { calculateRasiDasha, type RasiDashaSystem } from './rasiDashas';
+import { calculateRasiDasha, PYJHORA_RASI_OPTIONS, type RasiDashaSystem } from './rasiDashas';
 import { SIGN_ABBR } from './signs';
 import { brahma, strongerSign, toJaiminiChart } from './jaiminiStrength';
 
@@ -25,8 +25,8 @@ const BOOK = [
 ] as const;
 
 const sequence = (system: RasiDashaSystem, planets: Parameters<typeof calculateRasiDasha>[1], asc: number, count = 12) =>
-  // PyJHora runs the Sthira daśā always forward: the choice that matches it.
-  calculateRasiDasha(system, planets, asc, new Date(0), { narayanaSeed: 'stronger-lagna-seventh', moolaSeed: 'stronger-lagna-seventh', sthiraMethod: 'brahma-pvr' }).entries.slice(0, count)
+  // PyJHora runs the Sthira daśā always forward, finds the Brahma graha by its scoring and the Mūla from the Lagna: the choices that match it.
+  calculateRasiDasha(system, planets, asc, new Date(0), PYJHORA_RASI_OPTIONS).entries.slice(0, count)
     .map((e) => `${SIGN_ABBR[e.sign]}${e.durationYears}`).join(' ');
 
 // ---------------------------------------------------------------------------

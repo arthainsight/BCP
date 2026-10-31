@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v3.69',
+    date: '2026-10-31',
+    title: 'Brahma graha, Mūla and four more Jaimini daśās by the Sūtras',
+    changes: [
+      'The Brahma graha is found by the Jaimini Sūtras 2.1.49–54 (BPHS 46.170–173): of the lords of the 6th, 8th and 12th the one in an odd sign behind the stronger of the Lagna and the 7th (the commentary\'s "behind" needs the degree of the Lagna), the lord of the 8th from the Ātmakāraka and the graha in it, Saturn and the nodes giving way to the 6th from them, and the most degrees deciding. The Sthira daśā starts from it. The scoring of PyJHora is the other choice (Settings → dasha methods → Brahma graha).',
+      'The Mūla daśā is the Kendrādi rāśi daśā of the Sūtras (2.4.11–14): from the stronger of the Ātmakāraka\'s sign and its 7th, then the angles, the 2nd/5th/8th/11th and the rest, each group by the strength of the signs; the years as in the Chara, one round; the sub-periods in the same order. The Mūla of PyJHora (from the Lagna, by position, two rounds) is the other choice (Settings → Mula).',
+      'New daśās of the Jaimini Sūtras and BPHS 46, off to begin with: Yogārdha (half the sum of the Chara and Sthira years), Dṛg (the 9th, 10th and 11th with the signs they glance at), Trikoṇa (the strongest of Lagna, 5th and 9th, each with its trines) and Śūla (for the time of death, from the stronger of the 8th from the Lagna and from the 7th; for the father, mother, brothers, sister or child by a choice in Settings). Where the text names no more than ten signs for the Dṛg, ten are shown.',
+      'Pañcottarī (v3.68) corrected: "in the Sun\'s aṃśa" is the navāṁśa sign that the Sun goes to, so the Lagna Cancer and the Lagna and the Sun in the same navāṁśa sign; it was taken as the navāṁśa of Leo.',
+      'What the text leaves open and what was taken is in docs/dasha-vs-sources.md.',
+      'Updated the application version to v3.69.',
+    ],
+  },
+  {
     version: 'v3.68',
     date: '2026-10-31',
     title: 'Eight conditional nakṣatra daśās of BPHS 46, each with its condition',
