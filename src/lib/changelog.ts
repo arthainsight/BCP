@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.65',
+    date: '2026-10-31',
+    title: 'Kālachakra Daśā: Revatī corrected after the Sanskrit text',
+    changes: [
+      'The daśā systems were set beside the Sanskrit of the Bṛhat Parāśara Horā Śāstra (chapters 46 to 51); the page docs/dasha-vs-sources.md says what matches (the Vimśottarī and its sub-periods, Aṣṭottarī, Yoginī, the Kālachakra with its sixteen sequences and the years of the signs, the Chara\'s counting, the Sthira) and what does not.',
+      'Kālachakra Daśā: Revatī was counted with the second savya group (Bharaṇī, Puṣya, Citrā, Pūrva Āṣāḍhā, Uttara Bhādrapadā); the text (46.58, 46.62) puts it in the first, with Aśvinī: the ten stars of that group are Aśvinī, Kṛttikā, Punarvasu, Āśleṣā, Hasta, Svātī, Mūla, Uttara Āṣāḍhā, Pūrva Bhādrapadā and Revatī. A Moon in Revatī now runs the sequence of the first group (Aries to Sagittarius in the first pada), not that of the second. The daśās of the other nakṣatras are as they were.',
+      'Updated the application version to v3.65.',
+    ],
+  },
+  {
     version: 'v3.64',
     date: '2026-10-31',
     title: 'Muhurta Finder: why so few?',

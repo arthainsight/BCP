@@ -3,9 +3,14 @@ import { SIGN_NAMES } from './signs';
 import { NAKSHATRA_NAMES } from './nakshatras';
 import { JULIAN_YEAR_MS, addDashaYears } from './time';
 const SIGN_YEARS = [7, 16, 9, 21, 5, 9, 16, 7, 10, 4, 4, 10] as const;
+// The four groups of nakṣatras (BPHS 46.56–58, 65, 71–72, 77): the ten stars of the first savya group (Aśvinī, Kṛttikā, Punarvasu,
+// Āśleṣā, Hasta, Svātī, Mūla, Uttara Āṣāḍhā, Pūrva Bhādrapadā and Revatī: "vahnivātādiviśvarkṣarevatyaḥ savyatārakāḥ"), the five of
+// the second (Bharaṇī, Puṣya, Citrā, Pūrva Āṣāḍhā, Uttara Bhādrapadā), the four of the first apasavya group (Rohiṇī, Maghā, Viśākhā,
+// Śravaṇa) and the eight of the second (Mṛgaśīrṣa, Ārdrā, the two Phalgunīs, Anurādhā, Jyeṣṭhā, Dhaniṣṭhā, Śatabhiṣā). Revatī is
+// the 27th star: 1, 3, 7, 9, 13, 15, 19, 21, 25 and 27 are six apart in pairs, as 2, 8, 14, 20 and 26 are six apart.
 const STAR_GROUPS = [
-  [0, 2, 6, 8, 12, 14, 18, 20, 24],
-  [1, 7, 13, 19, 25, 26],
+  [0, 2, 6, 8, 12, 14, 18, 20, 24, 26],
+  [1, 7, 13, 19, 25],
   [3, 9, 15, 21],
   [4, 5, 10, 11, 16, 17, 22, 23],
 ] as const;
