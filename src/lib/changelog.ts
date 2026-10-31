@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.62',
+    date: '2026-10-31',
+    title: 'Muhurta Finder: how a strong Sun, Moon or Jupiter is judged',
+    changes: [
+      'The neutralisations that need a strong graha (the Sun and the Moon strong, v. 68; the Moon strong or Jupiter strong for the Gaṇḍānta; Mercury, Venus and Jupiter strong, v. 89) can now be judged in two ways, a choice under the Neutralisations: by the sign alone (own, exalted or a friend\'s, not combust, the Moon in the bright half), or, as it is at the start, with points for the sign (exaltation or own 2, a friend\'s 1), the Dig Bala (the Sun and Mars in the 10th, the Moon and Venus in the 4th, Mercury and Jupiter in the 1st, Saturn in the 7th) and the Navāṁśa (Vargottama, or its own or exalted sign), 2 points being strong, never in the fall, combust, or the Moon in the dark half. Over a year the Sun and the Moon were strong together in 9.5 % of the time by the sign alone and in 4.5 % by the points; Jupiter in 82 % and 53 %.',
+      'The Shadbala itself is not worked out for each moment of a search, which would make it slow; the chart opened from a stretch has it (ANALYSIS).',
+      'Updated the application version to v3.62.',
+    ],
+  },
+  {
     version: 'v3.61',
     date: '2026-10-31',
     title: 'Muhurta Finder: the Mahādoṣas checked against the Muhūrtacintāmaṇi',

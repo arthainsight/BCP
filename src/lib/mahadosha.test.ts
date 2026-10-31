@@ -11,6 +11,7 @@ import {
   VYATIPATA_SHORT_HOURS, aroundEvent, ardhayama, calendarDays, declinationEqualities, eclipseMoments, insideWindows, mergeWindows,
   sankrantiMoments, varaVishanadi,
 } from './mahadoshaEvents';
+import { isStrong } from './mahadoshaParihara';
 import { SE_MOON, SE_SUN, sweCalcUtEquatorial, sweJulday } from './ephemerisAdapter';
 import { MALEFICS, type FinderCriteria } from './muhurtaFinder';
 import { finderStepMinutes, runMuhurtaFinder } from './muhurtaFinderRun';
@@ -395,6 +396,21 @@ const nearRanges = (value: number, ranges: [number, number][]) => ranges.some(([
   assert.equal(has('kartari', kartariSky(), undefined, { parihara: 'off' }), true);
   assert.equal(has('kartari', kartariSky(), undefined, named), false, 'the Sun and the Moon strong (v. 68)');
   assert.equal(has('kartari', kartariSky({ sun: at(7, 5), moon: at(1, 20) }), undefined, named), true, 'the Sun in its fall region is not strong, the Moon in the dark half is not');
+  // How strong is judged: the sign alone (basic), or with the Dig Bala and the Navāṁśa (extended).
+  assert.equal(isStrong(sky({ sun: at(11, 1) }), 'Sun'), true, 'the Sun in Pisces, a friend\'s sign');
+  assert.equal(isStrong(sky({ sun: at(11, 1) }), 'Sun', 'extended'), false, 'a friend\'s sign, in the Navāṁśa of Cancer, in the 9th: one point');
+  assert.equal(isStrong(sky({ sun: at(11, 1), asc: at(2, 10) }), 'Sun', 'extended'), true, 'the same in the 10th from Gemini: the Dig Bala makes two');
+  assert.equal(isStrong(sky({ sun: at(11, 5) }), 'Sun', 'extended'), true, 'Pisces 5° is in the Navāṁśa of Leo, the Sun\'s own: two points');
+  assert.equal(isStrong(sky({ sun: at(4, 5) }), 'Sun', 'extended'), true, 'the Sun in its own sign');
+  assert.equal(isStrong(sky({ sun: at(6, 5) }), 'Sun'), false, 'the Sun in its fall');
+  assert.equal(isStrong(sky({ sun: at(11, 5) }), 'Moon', 'extended'), true, 'the Moon exalted in the bright half');
+  assert.equal(isStrong(sky(), 'Moon'), false, 'the quiet sky has the Moon in the dark half');
+  assert.equal(isStrong(sky({ sun: at(11, 5) }, { Venus: at(11, 25) }), 'Venus'), true, 'Venus exalted, 20° from the Sun');
+  assert.equal(isStrong(sky({ sun: at(11, 20) }, { Venus: at(11, 25) }), 'Venus'), false, 'Venus exalted but combust, 5° from the Sun');
+  assert.equal(has('kartari', kartariSky({ sun: at(11, 1) }), undefined, { parihara: 'named', strength: 'basic' }), false);
+  assert.equal(has('kartari', kartariSky({ sun: at(11, 1) }), undefined, { parihara: 'named', strength: 'extended' }), true, 'the Sun is not strong enough in the extended judgement');
+  assert.equal(has('kartari', kartariSky(), undefined, { parihara: 'named', strength: 'extended' }), false);
+
   // v. 88: the malefics that make it weak, in the sign of an enemy: Saturn in Leo (the Sun\'s sign) and Mars in Gemini (Mercury\'s).
   const weakKartari = sky({ sun: at(9, 5) }, { Mars: at(2, 5) });
   assert.equal(has('kartari', weakKartari), true);

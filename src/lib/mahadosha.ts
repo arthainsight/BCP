@@ -17,7 +17,7 @@ import { SIGN_LORDS } from './signs';
 import { getVargaSignIndex } from './varga';
 import {
   DAGDHA_TITHI_OF_SUN_SIGN, GENERAL_EXEMPT, SUN_MOON_DESTROYS, isWeakMalefic, leoJupiterApplies, reliefOf, regionAllows, signRelation,
-  type PariharaMode, type Relief, type RegionId,
+  type PariharaMode, type Relief, type RegionId, type StrengthLevel,
 } from './mahadoshaParihara';
 import { combustionOf } from './combustion';
 import { NATURAL_FRIENDS } from './dignity';
@@ -323,6 +323,8 @@ export interface DoshaOptions {
   gandantaNakshatra?: 'pada' | 'four' | 'two';
   /** How much of the neutralisations of the text is applied (none if not given). */
   parihara?: PariharaMode;
+  /** How "strong" is judged for the pariharas that need a strong graha (basic if not given). */
+  strength?: StrengthLevel;
   /** The countries the place is in, for the faults the text binds to a country; not given, every fault counts. */
   regions?: RegionId[];
 }
@@ -603,7 +605,7 @@ export function hasDosha(id: DoshaId, sky: DoshaSky, natal?: DoshaNatal, options
   let relief: Relief | undefined;
   let worked = false;
   const reliefOfSky: ReliefOf = () => {
-    if (!worked) { relief = reliefOf(sky, options?.parihara); worked = true; }
+    if (!worked) { relief = reliefOf(sky, options?.parihara, options?.strength); worked = true; }
     return relief;
   };
   if (!HAS[id](sky, natal, options, reliefOfSky)) return false;

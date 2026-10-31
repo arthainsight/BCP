@@ -86,14 +86,33 @@ const isCombust = (sky: DoshaSky, graha: FinderGraha): boolean =>
   graha !== 'Sun' && combustionOf(graha, longitudeOf(sky, graha), sky.sun, sky.retro?.[graha] ?? false) !== null;
 
 /**
- * "Strong" (balavān), which the verses use without saying what it is: here a graha in its own sign, in its exaltation or in the
- * sign of a friend, neither combust, and the Moon in the bright half. Shadbala is not worked out for a moment of the search.
+ * How "strong" (balavān) is judged, a word the verses use without saying what it is. `basic`: a graha in its own sign, in its
+ * exaltation or in the sign of a friend, neither combust nor, for the Moon, in the dark half. `extended`: points for the sign
+ * (exaltation or own 2, friend 1), for the Dig Bala (in the house where it is strongest: the Sun and Mars the 10th, the Moon and
+ * Venus the 4th, Mercury and Jupiter the 1st, Saturn the 7th) 1, and for the Navāṁśa (Vargottama, or in its own or exalted
+ * Navāṁśa sign) 1; strong with 2 or more, never combust, in its fall, or (the Moon, by its Pakṣa Bala) in the dark half. Mūlatrikoṇa
+ * adds nothing for the Sun and Moon (Leo and Taurus are their own and exalted signs already). Shadbala is not worked out for a
+ * moment of the search; the chart opened from a stretch has it (ANALYSIS).
  */
-export function isStrong(sky: DoshaSky, graha: FinderGraha): boolean {
-  const relation = signRelation(graha, signOf(longitudeOf(sky, graha)));
-  if (relation !== 'own' && relation !== 'exalted' && relation !== 'friend') return false;
+export const STRENGTH_LEVELS = ['basic', 'extended'] as const;
+export type StrengthLevel = (typeof STRENGTH_LEVELS)[number];
+export const isStrengthLevel = (value: string): value is StrengthLevel => (STRENGTH_LEVELS as readonly string[]).includes(value);
+
+/** The house (from the Lagna) in which each graha has its Dig Bala. */
+export const DIG_BALA_HOUSE: Partial<Record<FinderGraha, number>> = { Sun: 10, Mars: 10, Moon: 4, Venus: 4, Mercury: 1, Jupiter: 1, Saturn: 7 };
+
+export function isStrong(sky: DoshaSky, graha: FinderGraha, level: StrengthLevel = 'basic'): boolean {
+  const longitude = longitudeOf(sky, graha);
+  const relation = signRelation(graha, signOf(longitude));
   if (isCombust(sky, graha)) return false;
-  return graha !== 'Moon' || tithiOf(sky.sun, sky.moon) <= 15;
+  if (graha === 'Moon' && tithiOf(sky.sun, sky.moon) > 15) return false;
+  if (level === 'basic') return relation === 'own' || relation === 'exalted' || relation === 'friend';
+  if (relation === 'debilitated') return false;
+  let points = relation === 'own' || relation === 'exalted' ? 2 : relation === 'friend' ? 1 : 0;
+  if (houseFrom(signOf(sky.asc), longitude) === DIG_BALA_HOUSE[graha]) points += 1;
+  const navamsha = getVargaSignIndex(longitude, 9);
+  if (navamsha === signOf(longitude) || ['own', 'exalted'].includes(signRelation(graha, navamsha))) points += 1;
+  return points >= 2;
 }
 
 /** Whether a malefic is weak in the sense of v. 88: in the sign of an enemy, in its fall or combust (the nodes are never). */
@@ -127,7 +146,7 @@ export interface Relief {
 }
 
 /** The pariharas the sky has at the mode; undefined at `off`. */
-export function reliefOf(sky: DoshaSky, mode: PariharaMode | undefined): Relief | undefined {
+export function reliefOf(sky: DoshaSky, mode: PariharaMode | undefined, strength: StrengthLevel = 'basic'): Relief | undefined {
   if (!mode || mode === 'off') return undefined;
   const rank = PARIHARA_RANK[mode];
   const house = (graha: FinderGraha) => houseFrom(signOf(sky.asc), longitudeOf(sky, graha));
@@ -135,18 +154,18 @@ export function reliefOf(sky: DoshaSky, mode: PariharaMode | undefined): Relief 
   const moonHouse = house('Moon');
   const relief: Relief = {
     mode,
-    sunMoonStrong: isStrong(sky, 'Sun') && isStrong(sky, 'Moon'),
+    sunMoonStrong: isStrong(sky, 'Sun', strength) && isStrong(sky, 'Moon', strength),
     faultsOfLagna: false,
     moonEleventh: rank >= PARIHARA_RANK.broad && moonHouse === 11,
-    moonStrong: isStrong(sky, 'Moon'),
-    jupiterStrong: isStrong(sky, 'Jupiter'),
+    moonStrong: isStrong(sky, 'Moon', strength),
+    jupiterStrong: isStrong(sky, 'Jupiter', strength),
     moonInAngleOrTrine: moonHouse !== 1 && [...KENDRA, ...KONA].includes(moonHouse),
     general: false,
     sunInAries: signOf(sky.sun) === 0,
   };
   if (rank >= PARIHARA_RANK.broad) {
     relief.faultsOfLagna =
-      (['Mercury', 'Venus', 'Jupiter'] as FinderGraha[]).some(graha => isStrong(sky, graha) && placed(graha, [...KENDRA, ...KONA]))
+      (['Mercury', 'Venus', 'Jupiter'] as FinderGraha[]).some(graha => isStrong(sky, graha, strength) && placed(graha, [...KENDRA, ...KONA]))
       || placed('Jupiter', [...KENDRA, ...KONA])
       || house('Sun') === 11
       || UPACHAYA.includes(moonHouse)
