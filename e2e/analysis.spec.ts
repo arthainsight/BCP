@@ -178,6 +178,27 @@ test('the chara karakas can be seven or eight, ranked by degrees or minutes', as
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Praśna reads the Tājika yogas between the lord of the Lagna and the lord of the house of the matter', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Praśna', exact: true })).click();
+
+  // The two lords are shown, with their dīptāṁśa, and a sentence says what the chart gives for the house chosen; another house gives another pair.
+  const panel = visible(page, page.locator('[data-prashna="panel"]'));
+  await expect(panel.locator('table[data-prashna="lords"] tbody tr')).toHaveCount(2);
+  await expect(panel.locator('[data-prashna="verdict"]')).not.toBeEmpty();
+  const before = await panel.locator('table[data-prashna="lords"] tbody').innerText();
+  await panel.getByLabel('house of the question').selectOption('10');
+  await expect(panel.locator('table[data-prashna="lords"] tbody')).not.toHaveText(before);
+  await panel.getByLabel('house of the question').selectOption('1');
+  await expect(panel.locator('[data-prashna="verdict"]')).toContainText('first house');
+
+  expect(errors).toEqual([]);
+});
+
 test('ANALYSIS Gochara reads the transits against the Moon and the Ashtakavarga bindus', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

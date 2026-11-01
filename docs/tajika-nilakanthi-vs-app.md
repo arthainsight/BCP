@@ -25,3 +25,22 @@ what could not be read is said below.
   ekādaśāṁśa** are garbled in the print (the daśāṁśa is in sets of two signs, Aries and Libra from Aries, Taurus and Scorpio from Aquarius, Gemini and Sagittarius from Libra, and the rest cannot be read). They are not built until
   a better copy of the text is found: guessing two vargas would make the count of benefic and malefic lords wrong.
 * The Sanskrit verses of the results and the avasthās of the Moon in the Dina-praveśa are legible in part only.
+
+## Praśna: the Tājika yogas of a question — in the app since v3.76
+
+The Praśna Mārga (the Kerala classic of the question) is in the corpus only as a poor OCR of the Sanskrit of its first part, too broken to build on. The Tājika Nīlakaṇṭhī has a Praśna tantra
+(the third, with the Saṃjñātantra's sixteen yogas that it uses), whose Sanskrit is legible in part and whose Hindi commentary is legible enough to follow. The panel (ANALYSIS → Praśna) is built on that.
+
+| Verse | Rule | In the app |
+|---|---|---|
+| 49–56 | The matter of each house: the 1st the body, character; the 2nd gold, jewels, wealth; the 3rd brothers, servants, journeys; the 4th the mother, home, vehicles, land; the 5th children, counsel; the 6th sickness, enemies, four-footed animals; the 7th the wife, trade, things lost; the 8th death, debts; the 9th faith, father, journeys; the 10th the kingdom, honour; the 11th gain; the 12th expense, imprisonment | the house chosen in the panel; the matters are a short form of the commentary |
+| Saṃjñātantra 2 (the dīptāṁśa) | Sun 15, Moon 12, Mars 8, Mercury 7, Jupiter 9, Venus 7, Saturn 9 (some give 12 to all) | as the first |
+| ṣoḍaśayogādhyāya 4–9 | **Ithasāla**: the swifter graha is behind the slower in the degrees of its sign, the signs having a Tājika aspect (conjunction, sextile 3/11, square 4/10, trine 5/9, opposition 7), and the slower within the dīptāṁśa of the swifter; of the lord of the Lagna and the lord of the house of the matter it brings the matter about, and the days are the degrees between times 12 | **built** |
+| 10 | **Īśarāpha**: the swifter has gone a degree beyond the slower: the matter turns away | **built** (a degree or more past, within the dīptāṁśa) |
+| 11–13 | **Nakta**: the two lords have no aspect; a third graha, swifter than both, between them in degrees and aspecting both within its dīptāṁśa, takes the light of the one behind and gives it to the one in front: the matter comes through another | **built** |
+| 14–16 | **Yamayā**: the two lords have no aspect and a slower third graha aspects both and takes the light of the swifter and gives it to the slower | **not built**: the commentary's example cannot be read in the print to say which degrees are meant |
+| 17–20 | **Maṇaū**: Mars or Saturn takes away the light of the swifter in front or behind within its dīptāṁśa, by equal aspect, in the same sign or the 7th and others; the Ithasāla comes to nothing | **not built**: the conditions are broken in the print (twelve kinds are named) |
+| 21–22 | **Kambūla**: the Ithasāla of the two lords and the Ithasāla of the Moon with one of them or both; better as the Moon is stronger (thirty-two kinds by the grade of the Moon and of the lords) | **built** in short: the Moon as a third graha in Ithasāla with either or both, graded uttama in its own or exaltation sign (Cancer, Taurus), adhama in its debilitation (Scorpio) and sama otherwise; the middle grade (the Moon's own hadda, drekkāṇa and navāṁśa) is not given, because the Moon has no hadda and the text's wording is broken |
+| the other eleven | Gairi-kambūla, Khallāsara, Radda, Duphali-kuttha, Duttotthadavīra, Tambīra, Kuttha, Durupha, Ikkabāla, Induvāra, Yamayā/Maṇaū as above | **not built** |
+
+Open points the print leaves: whether the dīptāṁśa of the swifter, or the half of the sum of the two, is the orb of the Ithasāla (the commentary says the swifter's); whether a retrograde graha counts as swifter or slower; the days per degree (12 is the text's rule for the Ithasāla, and it is given as such). The results of the verses by the nature of the grahas (a malefic Ithasāla, the help of the friends of the lords, 7–9) are not built.
