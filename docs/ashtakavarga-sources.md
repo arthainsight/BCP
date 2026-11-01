@@ -55,3 +55,8 @@ Relative houses are counted from the contributing graha/Lagna, as in the Parāś
 The first three differences are in the Moon's BAV as stated in Bṛhajjātaka 9.2; the last is Venus from Mars in Bṛhajjātaka 9.6. The remaining contributor rows match the current Parāśara table. Both systems retain the same BAV totals (48, 49, 39, 54, 56, 52, 39) and SAV total (337), because the changes shift positions without changing the number of bindus in each affected contributor row.
 
 Implementation: `VARAHAMIHIRA_AV` and the `AshtakavargaSystem` parameter in `src/lib/ashtakavarga.ts`; the UI source selector is in `src/components/AshtakavargaPanel.tsx`. The default remains Parāśara, so existing charts retain their prior output unless the user selects Varāhamihira.
+
+
+## Lagna BAV and optional SAV inclusion
+
+BPHS 66.65–68 gives a separate Lagna Aṣṭakavarga table. The implementation exposes it as `lagnaBav`. By default SAV remains the sum of the seven planetary BAVs (337 bindus); the UI offers an explicit checkbox to add Lagna BAV to SAV. This is a user-selectable calculation option, not a claim that BPHS explicitly commands both totals.
