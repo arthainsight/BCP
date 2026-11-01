@@ -116,15 +116,6 @@ export const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number
   },
 };
 
-// A "Varahamihira" system variant was removed in v2.15. After the v2.14
-// Parashara fix its table differed from PARASHARA_AV by a single row — Venus
-// from Mars as [3,5,6,9,11,12] instead of [3,4,6,9,11,12] — which made the UI
-// selector suggest a fully independent Brihat Jataka table that did not exist.
-// Re-add the system only once the complete Brihat Jataka IX table has been
-// verified against a primary source; the one-row delta above is preserved here
-// so that work does not start from zero.
-
-
 // Varahamihira's Bṛhajjātaka, chapter 9 (verses 9.1–9.7).
 // The source gives the same eight contributors, but differs from BPHS in four
 // contributor rows: Moon from Moon, Mars from Moon, Jupiter from Moon, and
