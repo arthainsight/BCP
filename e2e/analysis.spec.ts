@@ -193,6 +193,13 @@ test('ANALYSIS Gochara reads the transits against the Moon and the Ashtakavarga 
   // Rahu and Ketu have no Ashtakavarga of their own.
   await expect(transits.locator('tr[data-graha="Rahu"]')).toContainText('—');
 
+  // The Phaladīpikā 26 table: a row for each graha, the count from the birth nakṣatra (1–27) and the part of the sign it gives its result in.
+  const phaladipika = visible(page, page.locator('table[data-gochara="phaladipika-table"]'));
+  await expect(phaladipika.locator('tr[data-graha]')).toHaveCount(9);
+  await expect(phaladipika.locator('tr[data-graha="Sun"]')).toContainText(/\b(?:[1-9]|1\d|2[0-7])\b/);
+  await expect(phaladipika.locator('tr[data-graha="Mercury"]')).toContainText('the whole sign');
+  await expect(phaladipika.locator('tr[data-graha="Ketu"]')).toContainText('—');
+
   // The grid gives every graha's bindus in the twelve signs, the sign it is in marked, and the Sarva adds to 337.
   const grid = visible(page, page.locator('table[data-gochara="grid"]'));
   await expect(grid.locator('td[data-here="true"]')).toHaveCount(7);

@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.74',
+    date: '2026-11-01',
+    title: 'The transits by the nakṣatras (Phaladīpikā 26)',
+    changes: [
+      'Gochara (ANALYSIS → Gochara): a new table after the Sanskrit and Hindi of the Phaladīpikā 26.25–47. For each transiting graha: whether it stands in the part of the sign in which it gives its result (26.25); the count of its nakṣatra from the birth nakṣatra with the limb and the result of the verses (26.35–40); its lattā, the "kick" on a nakṣatra, and whether it falls on the birth nakṣatra (26.42–47); the vedha of the seven-line wheel on the special nakṣatras of the birth (26.26–28, the pairs of the Muhūrtacintāmaṇi quoted in the commentary); the places the text calls dangerous (26.33–34); and what takes a result away (26.30–32).',
+      'Not applied: the days of the saṅkrānti, the eclipse and the war of the grahas (26.29). The text disagrees with itself on Mercury in the 4th from the Moon (good in 26.2, the worst in 26.34); both are shown. Details and what the verses leave open in docs/phaladipika-vs-app.md.',
+      'Updated the application version to v3.74.',
+    ],
+  },
+  {
     version: 'v3.73',
     date: '2026-11-01',
     title: 'Vedha in the Gochara',
