@@ -836,10 +836,16 @@ test('TIMING Sudarśana draws the three charts and makes the house of the year a
 
   // A Pratyantara daśā opens its twelve Vidāśās, starting from the same house.
   await pratyantaras.first().click();
+  await expect(chart.locator('[data-sud-pratyantara]')).toHaveCount(3);
   const vidasas = visible(page, page.locator('[data-sud="vidasas"]')).locator('[data-sud-vidasha-row]');
   await expect(vidasas).toHaveCount(12);
   await expect(vidasas.first().locator('td').nth(3)).toHaveText('10');
   await expect(vidasas.nth(3).locator('td').nth(3)).toHaveText('1');
+
+  // Selecting a Vidāśā adds its own colour to all three rings.
+  await vidasas.first().click();
+  await expect(chart.locator('[data-sud-vidasha]')).toHaveCount(3);
+  await expect(vidasas.first()).toHaveAttribute('aria-expanded', 'true');
 
   // A year back: the 7th house.
   await visible(page, page.getByRole('button', { name: 'Previous year', exact: true })).click();
