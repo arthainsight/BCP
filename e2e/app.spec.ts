@@ -136,6 +136,10 @@ test('the panels and the sentences the calculations write are in Finnish', async
   await expect(visible(page, page.getByText(/% kulunut/))).toBeVisible();
   await visible(page, page.getByRole('button', { name: 'Varṣaphala', exact: true })).click();
   await expect(visible(page, page.getByText('Pañcādhikārī — viisi virkamiestä'))).toBeVisible();
+  // The Pātyāṁśī daśā of the Tājika Nīlakaṇṭhī, and the month and day of the year (Māsa- and Dina-praveśa) with the six office bearers of the month.
+  await expect(visible(page, page.getByText('Māsa-praveśa ja Dina-praveśa'))).toBeVisible();
+  await expect(visible(page, page.getByText('Kuukauden virkamiehet'))).toBeVisible();
+  await expect(visible(page, page.locator('[data-varsha="period"]')).getByText('Pātyāṁśī daśā', { exact: true })).toBeVisible();
   await visible(page, page.getByRole('button', { name: 'Vuosi yhdellä silmäyksellä', exact: true })).click();
   await expect(visible(page, page.getByText('Neljä vuosikarttaa rinnakkain'))).toBeVisible();
   await expect(visible(page, page.getByText('vuoden herra'))).toBeVisible();

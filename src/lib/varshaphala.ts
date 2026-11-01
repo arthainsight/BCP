@@ -145,6 +145,11 @@ export function panchaVargiyaBala(planet: SevenPlanet, longitude: number): Panch
 const TRI_RASHI_DAY: SevenPlanet[] = ['Sun', 'Venus', 'Saturn', 'Venus', 'Jupiter', 'Moon', 'Mercury', 'Mars', 'Saturn', 'Mars', 'Jupiter', 'Moon'];
 const TRI_RASHI_NIGHT: SevenPlanet[] = ['Jupiter', 'Moon', 'Mercury', 'Mars', 'Sun', 'Venus', 'Saturn', 'Venus', 'Saturn', 'Mars', 'Jupiter', 'Moon'];
 
+/** The Tri-rāśi lord of a lagna sign, by day or by night. */
+export function triRashiLord(lagnaSign: number, dayChart: boolean): SevenPlanet {
+  return (dayChart ? TRI_RASHI_DAY : TRI_RASHI_NIGHT)[lagnaSign - 1];
+}
+
 export type OfficeRole = 'Muntheśa' | 'Janma lagneśa' | 'Varṣa lagneśa' | 'Tri-rāśi pati' | 'Dina-rātri pati';
 
 export interface OfficeBearer {

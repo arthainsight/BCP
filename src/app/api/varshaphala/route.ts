@@ -5,6 +5,7 @@ import { castAt, localizePeriods, offsetAt, parseAnnualRequest } from "@/lib/ann
 import { MUDDA_CYCLE, buildAnnualDasha, muddaFirstLord } from "@/lib/annualDasha";
 import { SEVEN, munthaSign, panchaVargiyaBala, yearLord } from "@/lib/varshaphala";
 import { normalizeDegrees } from "@/lib/angles";
+import { patyamshaDasha } from "@/lib/patyamsha";
 
 // Tājika Varṣaphala: the chart for the Sun's sidereal return in the year in
 // force at `target` (or for `tpYear`), with Muntha, the five office bearers,
@@ -52,6 +53,19 @@ export async function GET(request: NextRequest) {
       next.jd - current.jd,
     ).map((md) => ({ ...md, antardashas: localizePeriods(req, md.antardashas) }));
 
+    // The Pātyāṁśī daśā of the Tājika Nīlakaṇṭhī: the Lagna and the seven grahas by their degrees in their signs.
+    const patyamshi = patyamshaDasha(
+      [
+        ...SEVEN.map((planet) => {
+          const body = chart.planets.find((p) => p.name === planet)!;
+          return { name: planet, degree: body.degree, speed: body.speed };
+        }),
+        { name: "Lagna", degree: chart.ascendant.degree },
+      ],
+      current.jd,
+      next.jd - current.jd,
+    ).map((md) => ({ ...md, antardashas: localizePeriods(req, md.antardashas) }));
+
     const nextTz = offsetAt(req, next.jd);
     return NextResponse.json({
       year: current.year,
@@ -65,6 +79,7 @@ export async function GET(request: NextRequest) {
       ...lord,
       bala,
       dasha: localizePeriods(req, dasha),
+      patyamshi: localizePeriods(req, patyamshi),
       next: { year: next.year, jd: next.jd, local: localPartsFromJd(next.jd, nextTz), tzOffset: nextTz },
       chart,
     });
