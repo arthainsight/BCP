@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.92',
+    date: '2026-11-01',
+    title: 'Loss of children and its causes (BPHS 83)',
+    changes: [
+      'ANALYSIS → Topic yogas → Loss of children and its causes: the rules of chapter 83 of the Bṛhat Parāśara Horā Śāstra (111 verses): childlessness by the weakness of Jupiter and of the lords of the lagna, 5th and 7th, and the yogas of the eight curses that the text names (serpent, father, mother, brother, maternal uncle, Brahmin, wife, departed spirit), 73 rules in all, each with the verses of its remedy.',
+      'The view says that a chart does not show a curse: the rules show only that the yoga of the text is in the chart. What needs Māndi (83.13, 83.104) and the questions and the remedies by graha at the end are listed as not judged. In 83.99 the Sanskrit has Mars, Saturn and Mercury in the 5th, where the English has two of them.',
+      'Updated the application version to v3.92.',
+    ],
+  },
+  {
     version: 'v3.91',
     date: '2026-11-01',
     title: 'The woman\'s chart: BPHS 80 and Phaladīpikā 11',

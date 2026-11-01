@@ -250,6 +250,14 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17
   await expect(panel.locator('[data-topic-caution]')).toContainText('not a prediction');
   expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(15);
 
+  // Loss of children (BPHS 83): the rules, the caution and the remedy verses with a rule.
+  await panel.getByRole('button', { name: 'Loss of children and its causes', exact: true }).click();
+  await panel.locator('[data-topic-filter-key="all"]').click();
+  await expect(panel.locator('[data-topic-rule="c83-sarpa-9"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-rule="c83-preta-99"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-caution]')).toContainText('does not show a curse');
+  expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(60);
+
   expect(errors).toEqual([]);
 });
 
