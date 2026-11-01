@@ -250,6 +250,9 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17
   // Chapter 14 (illness and death).
   await expect(panel.locator('[data-topic-chapter="14"]')).toContainText('Phaladīpikā 14');
   await expect(panel.locator('[data-topic-rule="p14-death-cause"]')).toBeVisible();
+  // Chapter 15 (the good and bad of the houses).
+  await expect(panel.locator('[data-topic-chapter="15"]')).toContainText('Phaladīpikā 15');
+  await expect(panel.locator('[data-topic-rule="p15-lagna-lord-gives"]')).toBeVisible();
 
   // The woman's chart (BPHS 80): the rules, the caution and the verses of the chapter.
   await panel.getByRole('button', { name: "The woman's chart", exact: true }).click();

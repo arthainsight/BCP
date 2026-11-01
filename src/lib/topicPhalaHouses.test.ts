@@ -238,3 +238,38 @@ assert.equal(rule(chart(1, { Sun: [1] }), 'p14-next-birth-land').outcome.met, tr
 const left14 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.${verse.verse}`);
 assert.ok(left14.includes('14.26'));
 assert.ok(!left14.includes('14.2'));
+
+// ── chapter 15: the good and bad of the houses ──
+const verses15 = PHALA_VERSES[15];
+assert.equal(verses15.length, 30);
+assert.deepEqual(verses15.map(verse => verse.verse), Array.from({ length: 30 }, (_, index) => index + 1));
+for (const verse of verses15) {
+  assert.ok(verse.sanskrit.every(line => /[ऀ-ॿ…]/.test(line)), `verse 15.${verse.verse}`);
+  assert.ok(!verse.sanskrit.some(line => /[A-Za-z0-9_$]/.test(line)), `verse 15.${verse.verse} has stray characters`);
+}
+for (const result of evaluateTopic('phalaHouses', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
+// 15.1: Jupiter in the lagna, its lord Mars the only malefic that touches it: the 1st flourishes.
+assert.ok(rule(chart(1, { Jupiter: [1] }), 'p15-flourish').outcome.lines[0].includes('the 1st'));
+// 15.3: the lagna lord Mars in the 8th.
+assert.ok(rule(chart(1, { Mars: [8] }), 'p15-lord-lost').outcome.lines[0].includes('by the lord: the 1st'));
+// 15.4: Mars in the 6th is in the 6th from the lagna.
+assert.ok(rule(chart(1, { Mars: [6] }), 'p15-malefics-6-8-12').outcome.lines[0].includes('the 1st'));
+// 15.5: the lagna lord in the 6th.
+assert.ok(rule(chart(1, { Mars: [6] }), 'p15-lord-in-dusthana').outcome.lines[0].includes('the 1st'));
+// 15.9: the lagna lord and its place.
+assert.ok(rule(chart(1), 'p15-lagna-lord-gives').outcome.lines[0].includes('the lagna lord Mars is in the 11th'));
+// 15.11: Mars rules the 1st (its mūlatrikoṇa) and the 8th.
+assert.ok(rule(chart(1), 'p15-two-houses').outcome.lines.some(line => line.includes('Mars rules the 1st and the 8th: the 1st in full, the 8th half')));
+// 15.18: Jupiter exalted in the 4th.
+assert.ok(rule(chart(1, { Jupiter: [4] }), 'p15-dignity-grows').outcome.lines[0].includes('the 4th'));
+assert.ok(rule(chart(1), 'p15-benefics-malefics').outcome.lines[0].includes('grow:'));
+// 15.26: the Sun in the 9th.
+assert.equal(rule(chart(1, { Sun: [9] }), 'p15-karaka-harms').outcome.met, true);
+assert.equal(rule(chart(1), 'p15-karaka-harms').outcome.met, false);
+// 15.29: Mercury, lord of the 6th, in Gemini, its own sign and the 3rd house.
+assert.equal(rule(chart(1, { Mercury: [3] }), 'p15-dusthana-lord-own').outcome.met, true);
+assert.equal(rule(chart(1), 'p15-dusthana-lord-own').outcome.met, false);
+const left15 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.${verse.verse}`);
+assert.ok(left15.includes('15.7'));
+assert.ok(left15.includes('15.30'));
+assert.ok(!left15.includes('15.1'));

@@ -1,4 +1,4 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93, its span of life since v3.94, its illness and death since v3.95)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93, its span of life since v3.94, its illness and death since v3.95, the good and bad of the houses since v3.96)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
@@ -110,7 +110,7 @@ The topic reads a second classic: the house chapters of the Phaladīpikā of Man
 * **Readings**: "from the Moon" counts from its sign; in 10.5 "the 7th from Venus and the Moon" is read as the 7th from Venus *or* from the Moon; the 5th and 7th of 10.1 are taken from the lagna and by benefics (the lords and the Moon's reckoning are named in the verse and not tried); the direction of a sign is that of its place in the cycle east, south, west, north (Aries east, Taurus south, Gemini west, Cancer north, and again).
 * **Not judged**: the birth sign of the wife and the times of the marriage (10.11, 10.13, 10.14), which need the daśā and the transits. In 10.13 the commentary says the transit of Venus and the Sanskrit the transit of the lagna lord; the verse is not used.
 * The Sanskrit has gaps in the scan: in 10.1 a word restored from the commentary, in 10.5 some letters of the third line and in 10.6 one whole line. The verses say so.
-* Chapters 15 to 17 of the Phaladīpikā (the good and bad of the houses, the houses together, death) are not built yet.
+* Chapters 16 and 17 of the Phaladīpikā (the houses together, death) are not built yet.
 
 ## Phaladīpikā 11 (since v3.91): the woman's chart, 11 verses
 
@@ -179,6 +179,17 @@ Under the same topic ("Phaladīpikā: the houses"), rules `p14-*` in `src/lib/to
   the place after death takes the strongest of the 12th lord and the grahas in the 12th. Gulika is not in the chart data, so what the verses tell of it is not judged.
 * **Not judged**: 14.24 and 14.26-29 (the caste, the direction and the country of the births, and the birth as a tree, a beast or a bird), which rest on the names of the signs and grahas and on speculation the app does not take up.
 * The Sanskrit has gaps in the scan: a line of 14.7 and a word in 14.26 and 14.29. The verses say so.
+
+## Phaladīpikā 15 (since v3.96): the good and bad of the houses, 30 verses
+
+Under the same topic ("Phaladīpikā: the houses"), rules `p15-*` in `src/lib/topicPhalaBhava.ts`, verses in `src/lib/phalaVerses.ts`. The chapter gives the rules by which any house is judged; each rule here goes through the twelve houses and names those that meet it, so a rule is met when at least one house does.
+
+* **Judged** (15 rules): houses that flourish (15.1: a benefic, the lord or a lord of a kendra or trine on it, and no other malefic); houses that prosper, are lost or are mixed by the second, the kendras and the trines from them (15.2, three rules); the lord in the 8th, combust, or fallen or in an enemy sign without benefics, and a graha so afflicted standing in a house (15.3);
+  malefics in the 6th, 8th and 12th from a house (15.4); the lord in the 6th, 8th or 12th and the lord of those houses in it (15.5); two of four conditions (15.6: the lord and the significator weak, between malefics, with malefics or enemies, malefics in the 4th, 8th, 12th or trines); the lagna lord's house and the lords with him (15.9, 15.10, 15.27);
+  the two houses of a graha with the mūlatrikoṇa house in full (15.11); the occupants in their exaltation, own or friend's sign, and in their fall or an enemy's sign (15.18, two rules); benefics and malefics in the houses, reversed in the 6th, 8th and 12th (15.18-19); the significator in its own house (15.26); the lord of an evil house in his own sign of another house (15.29).
+* **Readings**: "touches" is a graha in the house or one seeing its sign; the lords of good houses (15.1) are the lords of the kendras and trines; the places from a house in 15.2 are its own, the 2nd, the kendras and the trines from it; the significator of 15.6 is the one of 15.17, the first when there are several; the lagna lord's gift of 15.9 speaks in every chart.
+* **Not judged**: 15.7-8 and 15.12 (the daśās), 15.13-14 (the points of the houses), 15.15-17 (the significators are listed), 15.20-25 and 15.28 (the method of reading a relative's house from a significator's sign and from the aṣṭakavarga), 15.30 (the five kinds of connection are defined).
+* The Sanskrit has gaps in the scan: a word in 15.8, 15.19 and 15.26 and the end of 15.27. The verses say so.
 
 ## Next topics (not built yet)
 
