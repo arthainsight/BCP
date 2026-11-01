@@ -1,4 +1,4 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93, its span of life since v3.94)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93, its span of life since v3.94, its illness and death since v3.95)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
@@ -110,7 +110,7 @@ The topic reads a second classic: the house chapters of the Phaladīpikā of Man
 * **Readings**: "from the Moon" counts from its sign; in 10.5 "the 7th from Venus and the Moon" is read as the 7th from Venus *or* from the Moon; the 5th and 7th of 10.1 are taken from the lagna and by benefics (the lords and the Moon's reckoning are named in the verse and not tried); the direction of a sign is that of its place in the cycle east, south, west, north (Aries east, Taurus south, Gemini west, Cancer north, and again).
 * **Not judged**: the birth sign of the wife and the times of the marriage (10.11, 10.13, 10.14), which need the daśā and the transits. In 10.13 the commentary says the transit of Venus and the Sanskrit the transit of the lagna lord; the verse is not used.
 * The Sanskrit has gaps in the scan: in 10.1 a word restored from the commentary, in 10.5 some letters of the third line and in 10.6 one whole line. The verses say so.
-* Chapters 14 to 17 of the Phaladīpikā (disease, the good and bad of the houses, the houses together, death) are not built yet.
+* Chapters 15 to 17 of the Phaladīpikā (the good and bad of the houses, the houses together, death) are not built yet.
 
 ## Phaladīpikā 11 (since v3.91): the woman's chart, 11 verses
 
@@ -167,6 +167,18 @@ Under the same topic ("Phaladīpikā: the houses"), rules `p13-*` in `src/lib/to
   in 13.12 the last clause is read as no benefic in a kendra and none seeing the lagna; the weak Moon of the fifth yoga needs no malefic (the Hindi adds one); the friendship is the natural one (the Sanskrit does not name the five-fold).
 * **Not judged**: 13.1-7 (the definitions, the stages of life up to twelve years, the three spans), 13.9 (the junction of signs and the gaṇḍānta, which need the minutes of the lagna and the nakṣatra), 13.10-11 (the fatal degrees of the Moon: the two lists differ and the commentary gives more), 13.18-20 (Saturn's rounds and the transits), 13.25 (the daśās).
 * The first half of 13.8 (the days of death and disease and Puṣya, Pūrvāṣāḍhā and Citrā) and two lines of 13.4 and 13.23 are lost in the scan, and the end of the first line of 13.9; the verses say so.
+
+## Phaladīpikā 14 (since v3.95): illness and death, 29 verses
+
+Under the same topic ("Phaladīpikā: the houses"), rules `p14-*` in `src/lib/topicPhalaRoga.ts`, verses in `src/lib/phalaVerses.ts`.
+
+* **Judged** (25 rules): the illness of each of the nine grahas, by the three places that point to it (14.1-9: in the 6th; in the 8th or 12th; the 6th lord or joined to it — two of the three); the yogas of the eye, the ear, the belly, the anus and the sexual parts (14.10); a graha in the 6th or 8th (14.11);
+  the cause of death by the strongest graha in or seeing the 8th, or by the sign of the 8th and the navāṁśa of the 8th lord (14.12-19, one rule that always speaks); the 8th a sign of a malefic with a malefic in it, and two malefics in kendras in mutual aspect (14.20); the easy and the cruel death (14.21);
+  the way upward and the way downward (14.22); the place after death (14.23, one rule that always speaks); the land of the former and the next birth (14.25, two rules; they hold only for the exaltation, the fall and the enemy's sign, since Bhāratavarṣa is the common case).
+* **Readings**: "two or three agree" (14.1) is two of the three places; for the eye and the ear (14.10) "joined or seen by Mars and Saturn" is both; the ear takes the 3rd, the 11th and Jupiter all three; "the 8th a sign of a malefic" is a sign of the Sun, Mars or Saturn; the way upward and downward (14.22) also looks at who is in the sign of the 12th lord, and the "back-rising" and "upward-facing" signs that some authors name are not tried;
+  the place after death takes the strongest of the 12th lord and the grahas in the 12th. Gulika is not in the chart data, so what the verses tell of it is not judged.
+* **Not judged**: 14.24 and 14.26-29 (the caste, the direction and the country of the births, and the birth as a tree, a beast or a bird), which rest on the names of the signs and grahas and on speculation the app does not take up.
+* The Sanskrit has gaps in the scan: a line of 14.7 and a word in 14.26 and 14.29. The verses say so.
 
 ## Next topics (not built yet)
 

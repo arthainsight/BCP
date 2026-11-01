@@ -9,6 +9,7 @@ import { HOUSES_RULES } from './topicHouses';
 import { PHALA_HOUSES_RULES } from './topicPhalaHouses';
 import { PHALA_CHILDREN_RULES } from './topicPhalaChildren';
 import { PHALA_AYUR_RULES } from './topicPhalaAyur';
+import { PHALA_ROGA_RULES } from './topicPhalaRoga';
 import { WOMAN_RULES } from './topicWoman';
 import { CHILDREN_RULES } from './topicChildren';
 import type { RuleOutcome, TopicContext, TopicKey, TopicYogaRule } from './topicCore';
@@ -47,13 +48,13 @@ export const TOPICS: { key: TopicKey; label: string; source: string; chapters: n
   },
   {
     key: 'phalaHouses', label: 'Phaladīpikā: the houses', text: 'phala',
-    source: 'Phaladīpikā 10 (the 7th house), 11 (the woman\'s chart), 12 (children), 13 (the span of life); the later chapters follow',
-    chapters: [10, 11, 12, 13],
+    source: 'Phaladīpikā 10 (the 7th house), 11 (the woman\'s chart), 12 (children), 13 (the span of life), 14 (illness and death); the later chapters follow',
+    chapters: [10, 11, 12, 13, 14],
     caution: 'The classical statements about the wife, the husband and children are shown as the text has them. They are a reading of the text and not a prediction.',
   },
 ];
 
-export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES, ...WEALTH_RULES, ...ILLNESS_RULES, ...HOUSES_RULES, ...PHALA_HOUSES_RULES, ...PHALA_CHILDREN_RULES, ...PHALA_AYUR_RULES, ...WOMAN_RULES, ...CHILDREN_RULES];
+export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES, ...WEALTH_RULES, ...ILLNESS_RULES, ...HOUSES_RULES, ...PHALA_HOUSES_RULES, ...PHALA_CHILDREN_RULES, ...PHALA_AYUR_RULES, ...PHALA_ROGA_RULES, ...WOMAN_RULES, ...CHILDREN_RULES];
 
 export interface TopicYogaResult { rule: TopicYogaRule; outcome: RuleOutcome; verses: TopicVerse[] }
 
