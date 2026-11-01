@@ -15,9 +15,9 @@ function Verses({ verses }: { verses: TopicVerse[] }) {
         {verses.map(verse => (
           <div key={verse.verse} data-topic-verse={verse.verse}>
             <div className="text-zinc-700 dark:text-zinc-200">{verse.chapter}.{verse.verse}: {verse.gloss}</div>
-            <div lang="sa">{verse.sanskrit[0]}</div>
-            <div lang="sa">{verse.sanskrit[1]}</div>
-            <div className="italic text-zinc-500 dark:text-zinc-400">{verse.iast[0]} / {verse.iast[1]}</div>
+            {verse.sanskrit.map(line => <div key={line} lang="sa">{line}</div>)}
+            {verse.iast && <div className="italic text-zinc-500 dark:text-zinc-400">{verse.iast.join(' / ')}</div>}
+            {verse.note && <div className="text-amber-700 dark:text-amber-400">{t(verse.note)}</div>}
           </div>
         ))}
       </div>
@@ -81,7 +81,7 @@ export default function TopicYogaPanel({ chart }: { chart: ChartData }) {
           const heading = (TOPICS.find(item => item.key === topic)?.chapters.length ?? 0) > 1 && result.rule.chapter !== shown[index - 1]?.rule.chapter;
           return (
             <div key={result.rule.id} className="rounded-lg border border-zinc-200 p-2 font-mono text-xs dark:border-zinc-700" data-topic-rule={result.rule.id} data-met={String(result.outcome.met)}>
-              {heading && <div className="mb-1 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600" data-topic-chapter={result.rule.chapter}>BPHS {result.rule.chapter}</div>}
+              {heading && <div className="mb-1 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600" data-topic-chapter={result.rule.chapter}>{result.rule.text === 'phala' ? 'Phaladīpikā' : 'BPHS'} {result.rule.chapter}</div>}
               <div className="flex items-baseline gap-2">
                 <span className={`font-bold ${color}`} aria-label={word}>{icon}</span>
                 <span className="font-semibold text-zinc-700 dark:text-zinc-200">{t(result.rule.name)}</span>

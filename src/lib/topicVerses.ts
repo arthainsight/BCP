@@ -4,9 +4,13 @@
 export interface TopicVerse {
   chapter: number;
   verse: number;
-  sanskrit: [string, string];
-  iast: [string, string];
+  /** The lines of the verse: two half-verses in the BPHS, usually four lines in the Phaladīpikā. */
+  sanskrit: string[];
+  /** The IAST, where the edition has it (the BPHS of enjoylearningsanskrit.com); the Phaladīpikā edition has none. */
+  iast?: string[];
   gloss: string;
+  /** A word on the reading of the verse, e.g. letters that could not be read in the scan. */
+  note?: string;
 }
 
 export const TOPIC_VERSES: Record<number, TopicVerse[]> = {

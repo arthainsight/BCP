@@ -15,7 +15,7 @@ const rule = (results: ReturnType<typeof evaluateTopic>, id: string) => results.
 // The verses: 15 of them, in Devanagari, with the two half-verses.
 assert.equal(BPHS79_VERSES.length, 15);
 assert.deepEqual(BPHS79_VERSES.map(verse => verse.verse), Array.from({ length: 15 }, (_, index) => index + 1));
-for (const verse of BPHS79_VERSES) assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0] + verse.sanskrit[1]) && verse.iast[0].length > 5);
+for (const verse of BPHS79_VERSES) assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0] + verse.sanskrit[1]) && (verse.iast?.[0].length ?? 0) > 5);
 // The seven kinds of renunciation, one for each graha in the order of 79.2-3.
 assert.equal(Object.keys(PRAVRAJYA_TYPES).length, 7);
 

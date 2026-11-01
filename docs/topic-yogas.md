@@ -1,4 +1,4 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
@@ -98,6 +98,19 @@ BPHS 12–23 are the *house* chapters, one for each house in order (12 the lagna
 * **Readings in 20–23**: "highest exaltation" is the exaltation sign; "the 2nd from the 9th" is the 10th; in 21.19 the trikoṇas from the 10th are the 2nd and 6th; in 22.7 "lābhāt lābhage" is read literally as the 11th from the 11th house, the 9th (the site translation has the 11th).
 * **Not judged in 20–23**: 20.23b–24a (Saturn in the 8th and 7th, or in either, is not clear), the aṃśa conditions of 23.3–6, the navāṁśa of 21.16, the Sun's aṃśa of 22.2 and a few verses that are lists or closings (20.32, 21.1, 21.22, 22.1, 23.7). The view lists them.
 * The view carries a caution that the statements about the death of the father and the loss of children are the text's and not a prediction.
+
+## Phaladīpikā: the houses (since v3.90): chapter 10 (the 7th house), 15 verses
+
+The topic reads a second classic: the house chapters of the Phaladīpikā of Mantreśvara (`phaldipika_202310`, the Sanskrit with the Hindi commentary of the edition, a scan of the print). The rules carry `text: 'phala'` and the verses are in `src/lib/phalaVerses.ts`
+(four lines each; the edition has no IAST); the view shows "Phaladīpikā 10" over the rules. The rules are in `src/lib/topicPhalaHouses.ts`.
+
+* **10 (the 7th house)**: the 5th and 7th joined or seen by benefics (1); the death of the wife by Venus's place (1), by the 7th lord in the 5th or the 5th or 8th lord in the 7th (2), a waning Moon in the 5th (2), the Sun and Rāhu in the 7th (2); the signs that kill the wife (3) and Mars and Saturn in Cancer (3);
+  the 7th or its lord afflicted (4, 15); Venus with malefics, in a varga of Mars or Saturn (4); Mars and Saturn in the 7th from Venus or the Moon (5); two wives (5); the 7th lord a strong benefic, a malefic 7th lord in its own sign, benefics in the 7th (6); the 2nd and 7th with malefics (7);
+  the Moon with Saturn (8), malefics in their fall in the 7th, 8th or 2nd (8); even signs (9); the lords of the 2nd, 7th and 12th with Jupiter (10); benefics from the 7th lord (10); the direction of the wife's home (12).
+* **Readings**: "from the Moon" counts from its sign; in 10.5 "the 7th from Venus and the Moon" is read as the 7th from Venus *or* from the Moon; the 5th and 7th of 10.1 are taken from the lagna and by benefics (the lords and the Moon's reckoning are named in the verse and not tried); the direction of a sign is that of its place in the cycle east, south, west, north (Aries east, Taurus south, Gemini west, Cancer north, and again).
+* **Not judged**: the birth sign of the wife and the times of the marriage (10.11, 10.13, 10.14), which need the daśā and the transits. In 10.13 the commentary says the transit of Venus and the Sanskrit the transit of the lagna lord; the verse is not used.
+* The Sanskrit has gaps in the scan: in 10.1 a word restored from the commentary, in 10.5 some letters of the third line and in 10.6 one whole line. The verses say so.
+* Chapters 11 to 17 of the Phaladīpikā (the woman's chart, the children, the span of life, disease, the good and bad of the houses, the houses together, death) are not built yet.
 
 ## Next topics (not built yet)
 

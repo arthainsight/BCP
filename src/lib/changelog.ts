@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.90',
+    date: '2026-11-01',
+    title: 'The Phaladīpikā\'s chapter on the 7th house, as rules',
+    changes: [
+      'ANALYSIS → Topic yogas → Phaladīpikā: the houses: the rules of chapter 10 of the Phaladīpikā of Mantreśvara (the 7th house, 15 verses): the wife lost or kept by the lord of the 7th, Venus, the malefics and the dignities, two wives and their number, the happy wife, the direction of her home; each with its verse in Devanagari. The verses of marriage in the BPHS (18) and these overlap and differ; both stay.',
+      'The topic view can now hold verses of a second classic (it shows "Phaladīpikā 10" over the rules of that chapter), which lets the other house chapters of the Phaladīpikā (11–17) follow. The Sanskrit is the text layer of a scan with the plain misreadings corrected; where letters or a line could not be read the verse says so. In docs/topic-yogas.md.',
+      'Updated the application version to v3.90.',
+    ],
+  },
+  {
     version: 'v3.89',
     date: '2026-11-01',
     title: 'Tājika: Yamayā, Maṇaū, Ikkavāla and Indūvāra',

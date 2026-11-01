@@ -20,7 +20,7 @@ for (const [chapter, count] of [[12, 15], [13, 13], [14, 15], [15, 14], [16, 32]
   const verses = TOPIC_VERSES[chapter];
   assert.equal(verses.length, count);
   assert.deepEqual(verses.map(verse => verse.verse), Array.from({ length: count }, (_, index) => index + 1));
-  for (const verse of verses) assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0] + verse.sanskrit[1]) && verse.iast[0].length > 5 && verse.gloss.length > 10);
+  for (const verse of verses) assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0] + verse.sanskrit[1]) && (verse.iast?.[0].length ?? 0) > 5 && verse.gloss.length > 10);
 }
 for (const result of evaluateTopic('houses', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
 
@@ -93,7 +93,7 @@ for (const [chapter, count] of [[20, 32], [21, 22], [22, 11], [23, 14]] as const
   const verses = TOPIC_VERSES[chapter];
   assert.equal(verses.length, count);
   assert.deepEqual(verses.map(verse => verse.verse), Array.from({ length: count }, (_, index) => index + 1));
-  for (const verse of verses) assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0] + verse.sanskrit[1]) && verse.iast[0].length > 5 && verse.gloss.length > 10);
+  for (const verse of verses) assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0] + verse.sanskrit[1]) && (verse.iast?.[0].length ?? 0) > 5 && verse.gloss.length > 10);
 }
 for (const result of evaluateTopic('houses', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
 

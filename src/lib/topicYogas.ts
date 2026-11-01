@@ -1,10 +1,12 @@
 import { TOPIC_VERSES, type TopicVerse } from './topicVerses';
+import { PHALA_VERSES } from './phalaVerses';
 import { SPIRITUALITY_RULES, PRAVRAJYA_TYPES } from './topicSpirituality';
 import { MARRIAGE_RULES } from './topicMarriage';
 import { LONGEVITY_RULES } from './topicLongevity';
 import { WEALTH_RULES } from './topicWealth';
 import { ILLNESS_RULES } from './topicIllness';
 import { HOUSES_RULES } from './topicHouses';
+import { PHALA_HOUSES_RULES } from './topicPhalaHouses';
 import type { RuleOutcome, TopicContext, TopicKey, TopicYogaRule } from './topicCore';
 
 /**
@@ -15,7 +17,7 @@ export { SEVEN, type SevenGraha, type TopicContext, type TopicKey, type TopicPla
 export type { TopicVerse };
 export { PRAVRAJYA_TYPES };
 
-export const TOPICS: { key: TopicKey; label: string; source: string; chapters: number[]; caution?: string }[] = [
+export const TOPICS: { key: TopicKey; label: string; source: string; chapters: number[]; caution?: string; text?: 'phala' }[] = [
   { key: 'spirituality', label: 'Renunciation and spirituality', source: 'BPHS 79 (Pravrajyā-yoga)', chapters: [79] },
   { key: 'marriage', label: 'Marriage', source: 'BPHS 18 (the 7th house)', chapters: [18] },
   {
@@ -31,9 +33,15 @@ export const TOPICS: { key: TopicKey; label: string; source: string; chapters: n
     key: 'houses', label: 'The houses (bhāva-phala)', source: 'BPHS 12 (lagna), 13 (2nd), 14 (3rd), 15 (4th), 16 (5th), 20 (9th), 21 (10th), 22 (11th), 23 (12th); the 6th, 7th and 8th are in the illness, marriage and longevity topics', chapters: [12, 13, 14, 15, 16, 20, 21, 22, 23],
     caution: 'The classical statements about the death of the father, the loss of children and the years of life are shown as the text has them. They are a reading of the text and not a prediction.',
   },
+  {
+    key: 'phalaHouses', label: 'Phaladīpikā: the houses', text: 'phala',
+    source: 'Phaladīpikā 10 (the 7th house); the later house chapters follow',
+    chapters: [10],
+    caution: 'The classical statements about the wife, the husband and children are shown as the text has them. They are a reading of the text and not a prediction.',
+  },
 ];
 
-export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES, ...WEALTH_RULES, ...ILLNESS_RULES, ...HOUSES_RULES];
+export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES, ...WEALTH_RULES, ...ILLNESS_RULES, ...HOUSES_RULES, ...PHALA_HOUSES_RULES];
 
 export interface TopicYogaResult { rule: TopicYogaRule; outcome: RuleOutcome; verses: TopicVerse[] }
 
@@ -42,13 +50,15 @@ export function evaluateTopic(topic: TopicKey, context: TopicContext): TopicYoga
   return TOPIC_RULES.filter(rule => rule.topic === topic).map(rule => ({
     rule,
     outcome: rule.evaluate(context),
-    verses: (TOPIC_VERSES[rule.chapter] ?? []).filter(verse => rule.verses.includes(verse.verse)),
+    verses: ((rule.text === 'phala' ? PHALA_VERSES : TOPIC_VERSES)[rule.chapter] ?? []).filter(verse => rule.verses.includes(verse.verse)),
   }));
 }
 
 /** Verses of a topic that no rule judges (they need the war of the grahas, the daśā, the Māndi or a reading the text does not settle). */
 export function notEvaluatedVerses(topic: TopicKey): TopicVerse[] {
-  const chapters = TOPICS.find(item => item.key === topic)?.chapters ?? [];
+  const entry = TOPICS.find(item => item.key === topic);
+  const chapters = entry?.chapters ?? [];
+  const store = entry?.text === 'phala' ? PHALA_VERSES : TOPIC_VERSES;
   const used = new Set(TOPIC_RULES.filter(rule => rule.topic === topic).flatMap(rule => rule.verses.map(verse => `${rule.chapter}.${verse}`)));
-  return chapters.flatMap(chapter => (TOPIC_VERSES[chapter] ?? []).filter(verse => !used.has(`${chapter}.${verse.verse}`)));
+  return chapters.flatMap(chapter => (store[chapter] ?? []).filter(verse => !used.has(`${chapter}.${verse.verse}`)));
 }
