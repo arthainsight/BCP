@@ -1,4 +1,4 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
@@ -131,7 +131,18 @@ A topic of its own ("The woman's chart"), rules `w80-*` in `src/lib/topicWoman.t
 * **Readings**: 80.50 is read as Venus and Saturn in mutual aspect (opposition) with the lagna Taurus or Libra; the navāṁśa and ghaṭa parts of the verse are not tried; 80.22-25 name the sign and the navāṁśa of the 7th, and the navāṁśa is shown only when the longitude of the lagna is known.
 * **Not judged**: the trimshāṁśa table of 80.8-16 (the Phaladīpikā 11 above has the table; the BPHS verses are garbled in the print and the English), 80.17, 80.35, 80.38, 80.40, 80.43 (the weekday and the tithi), 80.48-49 (the husband's chart), 80.55 (equal strength has no measure). The view lists them.
 
+## Loss of children and its causes: BPHS 83 (since v3.92), 111 verses
+
+A topic of its own ("Loss of children and its causes"), rules `c83-*` in `src/lib/topicChildren.ts`. The chapter opens with the questions (83.1-6), names childlessness by the weakness of Jupiter and the lords of the lagna, 5th and 7th (83.7), and then gives, for each of eight causes, a list of yogas and the remedy:
+the serpent (83.9-19), the father (83.20-33), the mother (83.34-50), a brother (83.51-64), the maternal uncle (83.65-70), a Brahmin (83.71-81), the wife (83.82-95) and a departed spirit (83.96-108); 83.109-111 give the remedies by graha.
+
+* **Judged**: 73 rules, one for each yoga that can be read from the rāśi chart (the lords of the houses, the grahas in houses, their fall, enemy signs, navāṁśa lords, malefics between and seeing). The verses of the remedy come with each rule (for instance 83.9 with 83.17-19).
+* **Readings**: "without strength" is a Ṣaḍbala under 1; "ill-placed" (duḥstha) is the 6th, 8th or 12th; "the house of destruction" (nāśa) is the 8th or the 12th; "a malefic sign" is a sign of the Sun, Mars or Saturn; "afflicted" is a malefic in the house or seeing it; the house of kin (jñāti) of 83.68 is read as the 6th;
+  in 83.8 "the Sun, Mars, Rāhu and Saturn strong in the 5th" is read as some of them in the 5th, those with a measure strong; "lost" (lupta) of 83.67 as without strength; in 83.27 Rāhu and Jupiter are taken in the 8th and 12th in either order.
+* **From the Sanskrit, not the English**: 83.20 has the Sun in the navāṁśa of *Saturn*; 83.37 the Moon in a malefic navāṁśa; 83.42 a *waning* Moon in the 7th (the English says debilitated); 83.99 has Mars, Saturn *and* Mercury in the 5th (the English has two).
+* **Not judged**: 83.1-6 (the questions), 83.51, 83.71 and 83.96 (the openings of the brother's, the Brahmin's and the spirit's curse), 83.13 and 83.104 (they need Māndi), 83.109-111 (the remedies by graha and the closing verse). The view lists them.
+* The text says that the loss of children comes "from the curse". A chart does not show a curse; the rules show only that the yoga of the text is in the chart. The view carries a caution, and the remedies are the text's.
+
 ## Next topics (not built yet)
 
-* **Women**: BPHS 83.
 * Other texts: the Phaladīpikā, the Sārāvalī and the Jātakapārijāta for marriage and longevity.

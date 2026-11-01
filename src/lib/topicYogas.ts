@@ -8,6 +8,7 @@ import { ILLNESS_RULES } from './topicIllness';
 import { HOUSES_RULES } from './topicHouses';
 import { PHALA_HOUSES_RULES } from './topicPhalaHouses';
 import { WOMAN_RULES } from './topicWoman';
+import { CHILDREN_RULES } from './topicChildren';
 import type { RuleOutcome, TopicContext, TopicKey, TopicYogaRule } from './topicCore';
 
 /**
@@ -39,6 +40,10 @@ export const TOPICS: { key: TopicKey; label: string; source: string; chapters: n
     caution: 'The classical statements about the husband, widowhood, children and the character of a woman are shown as the text has them. They are a reading of the text and not a prediction. The rules are read for a woman\'s chart; the app does not ask whether a chart is one.',
   },
   {
+    key: 'children', label: 'Loss of children and its causes', source: 'BPHS 83 (the curses and their remedies)', chapters: [83],
+    caution: 'The text names a curse (of a serpent, the father, the mother, a brother, a maternal uncle, a Brahmin, the wife or a departed spirit) as the cause of the loss of children, and gives a remedy for each. A chart does not show a curse: the rules show only that the yoga of the text is in the chart. They are a reading of the text and not a prediction, and the remedies are the text\'s.',
+  },
+  {
     key: 'phalaHouses', label: 'Phaladīpikā: the houses', text: 'phala',
     source: 'Phaladīpikā 10 (the 7th house), 11 (the woman\'s chart); the later house chapters follow',
     chapters: [10, 11],
@@ -46,7 +51,7 @@ export const TOPICS: { key: TopicKey; label: string; source: string; chapters: n
   },
 ];
 
-export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES, ...WEALTH_RULES, ...ILLNESS_RULES, ...HOUSES_RULES, ...PHALA_HOUSES_RULES, ...WOMAN_RULES];
+export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES, ...WEALTH_RULES, ...ILLNESS_RULES, ...HOUSES_RULES, ...PHALA_HOUSES_RULES, ...WOMAN_RULES, ...CHILDREN_RULES];
 
 export interface TopicYogaResult { rule: TopicYogaRule; outcome: RuleOutcome; verses: TopicVerse[] }
 
