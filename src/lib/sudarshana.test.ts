@@ -39,7 +39,7 @@ assert.equal(sudarshanaHouse(25), 2);
 assert.equal(sudarshanaHouse(120), 1);
 assert.equal(sudarshanaHouse(0, 5), 6, 'the 6th month of the first year');
 assert.equal(sudarshanaHouse(1, 11), 1, 'the last month of the second year is the 12th house on from the 2nd, round to the 1st');
-assert.equal(sudarshanaHouse(1, 0, 3), 5, 'the 4th day of the 1st month of the second year');
+assert.equal(sudarshanaHouse(1, 0, 3), 5, 'the 4th Pratyantara of the 1st month of the second year');
 assert.equal(sudarshanaHouse(-1), 12, 'a count before birth stays inside 1 to 12');
 
 // --- A period in twelve ----------------------------------------------------------------------------------------------------
@@ -50,10 +50,16 @@ assert.equal(months[0].startJd, 2451545);
 assert.equal(months[11].endJd, 2451545 + 365.25, 'the last part ends where the whole does');
 for (let index = 1; index < 12; index++) assert.equal(months[index].startJd, months[index - 1].endJd, 'the parts follow without a gap');
 for (const month of months) assert.ok(Math.abs(month.endJd - month.startJd - 365.25 / 12) < 1e-9, 'equal parts');
-// A month in twelve days of about 2.5 days.
-const days = sudarshanaSubPeriods(months[0].startJd, months[0].endJd, months[0].house);
-assert.ok(Math.abs(days[0].endJd - days[0].startJd - 365.25 / 144) < 1e-9);
-assert.equal(days[1].house, 4);
+// A year is divided into months, each month into Pratyantara periods, and each Pratyantara into Vidāśās.
+const yearMonths = sudarshanaSubPeriods(2451545, 2451545 + 365.25, 4);
+assert.deepEqual(yearMonths.map(period => period.house), [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
+const firstMonth = yearMonths[0];
+const pratyantaras = sudarshanaSubPeriods(firstMonth.startJd, firstMonth.endJd, firstMonth.house);
+assert.deepEqual(pratyantaras.map(period => period.house), [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
+assert.ok(Math.abs(pratyantaras[0].endJd - pratyantaras[0].startJd - 365.25 / 144) < 1e-9);
+const vidasas = sudarshanaSubPeriods(pratyantaras[0].startJd, pratyantaras[0].endJd, pratyantaras[0].house);
+assert.deepEqual(vidasas.map(period => period.house), [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
+assert.ok(Math.abs(vidasas[0].endJd - vidasas[0].startJd - 365.25 / 1728) < 1e-9);
 
 // --- The local time of a Julian day ----------------------------------------------------------------------------------------
 assert.deepEqual(jdToLocalParts(2451545, 0), { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 });
