@@ -148,3 +148,50 @@ const left12 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.
 assert.ok(left12.includes('12.12'));
 assert.ok(left12.includes('12.34'));
 assert.ok(!left12.includes('12.2'));
+
+// ── chapter 13: the span of life ──
+const verses13 = PHALA_VERSES[13];
+assert.equal(verses13.length, 25);
+assert.deepEqual(verses13.map(verse => verse.verse), Array.from({ length: 25 }, (_, index) => index + 1));
+for (const verse of verses13) {
+  assert.ok(verse.sanskrit.every(line => /[ऀ-ॿ…]/.test(line)), `verse 13.${verse.verse}`);
+  assert.ok(!verse.sanskrit.some(line => /[A-Za-z0-9_$]/.test(line)), `verse 13.${verse.verse} has stray characters`);
+}
+for (const result of evaluateTopic('phalaHouses', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
+// 13.8: the Moon in Mūla (240° to 253°20'), the 2nd quarter at 245°: the mother; a benefic in the lagna spares it.
+const mula = rule(chart(1, { Moon: [9, 5] }), 'p13-mula-ashlesha');
+assert.equal(mula.outcome.met, true);
+assert.ok(mula.outcome.lines[0].includes('the mother'));
+assert.equal(rule(chart(1, { Moon: [9, 5], Jupiter: [1] }), 'p13-mula-ashlesha').outcome.met, false);
+assert.equal(rule(chart(1), 'p13-mula-ashlesha').outcome.met, false);
+// 13.12: malefics in the 8th and the 7th; a benefic in a kendra saves.
+assert.equal(rule(chart(1, { Mars: [8], Saturn: [7] }), 'p13-quick-death').outcome.met, true);
+assert.equal(rule(chart(1, { Mars: [8], Saturn: [7], Jupiter: [4] }), 'p13-quick-death').outcome.met, false);
+assert.equal(rule(chart(1), 'p13-quick-death').outcome.met, false);
+// 13.13: Mars (the lagna lord, weak) in the 8th (Scorpio, 8 years), malefics in the 5th and 8th.
+const time = rule(chart(1, { Mars: [8], Saturn: [5] }), 'p13-time-of-death');
+assert.equal(time.outcome.met, true);
+assert.ok(time.outcome.lines[0].includes('Mars: 8 years'));
+// 13.14, 13.15: at most one class holds by the majority of the three pairs.
+for (const prefix of ['p13-span-', 'p13-friend-']) {
+  const classes = ['long', 'middle', 'short'].map(span => rule({ ...chart(1), ascendantLongitude: 10 }, prefix + span).outcome.met);
+  assert.ok(classes.filter(value => value === true).length <= 1, prefix);
+}
+// 13.15: Mars the lagna lord and Jupiter in Cancer, a kendra: long life.
+const housesSpan = rule(chart(1, { Mars: [4], Jupiter: [4] }), 'p13-houses-span');
+assert.equal(housesSpan.outcome.met, true);
+assert.ok(housesSpan.outcome.lines[0].includes('long life'));
+// 13.17: Taurus lagna: the 8th lord Jupiter in Scorpio, a kendra, stronger than Venus, with malefics in Sagittarius and Aries.
+assert.equal(rule(chart(2, { Mars: [9], Saturn: [1] }, { Jupiter: 1.2 }), 'p13-eighth-lord-strong').outcome.met, true);
+// 13.21: the lagna lord Mars strong in Capricorn, a kendra, seen by Venus in Cancer, unseen by malefics.
+assert.equal(rule(chart(1, { Mars: [10], Venus: [4] }, { Mars: 1.2 }), 'p13-lagna-lord-guards').outcome.met, true);
+assert.equal(rule(chart(1, { Mars: [10], Venus: [4] }), 'p13-lagna-lord-guards').outcome.met, false);
+// 13.22: Jupiter strong in the lagna.
+assert.equal(rule(chart(1, { Jupiter: [1] }, { Jupiter: 1.1 }), 'p13-jupiter-lagna').outcome.met, true);
+assert.equal(rule(chart(1, { Jupiter: [1] }), 'p13-jupiter-lagna').outcome.met, false);
+// 13.24: Taurus lagna with no malefic in the kendras, trines or the 8th, Venus and Jupiter in kendras.
+assert.equal(rule(chart(2, { Venus: [5], Mars: [1], Saturn: [3], Ketu: [12] }), 'p13-hundred-years').outcome.met, true);
+const left13 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.${verse.verse}`);
+assert.ok(left13.includes('13.18'));
+assert.ok(left13.includes('13.10'));
+assert.ok(!left13.includes('13.12'));
