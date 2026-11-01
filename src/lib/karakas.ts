@@ -50,7 +50,7 @@ const RELEVANT_PLANETS = new Set([
 ]);
 
 export function calculateCharaKarakas(
-  planets: PlanetData[],
+  planets: Pick<PlanetData, 'name' | 'degree'>[],
   rankMode: CharaKarakaRankMode = 'degree',
   count: CharaKarakaCount = 8,
 ): CharaKaraka[] {

@@ -178,7 +178,7 @@ test('the chara karakas can be seven or eight, ranked by degrees or minutes', as
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19 and 44 and shows their verses', async ({ page }) => {
+test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17, 9 and 10 and shows their verses', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -202,6 +202,38 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19 and 44 and shows 
   await panel.getByRole('button', { name: 'Longevity and death', exact: true }).click();
   await expect(panel.locator('[data-topic-caution]')).toContainText('not a prediction');
   await expect(panel.locator('[data-topic-rule="chief-maraka"]')).toBeVisible();
+
+  // Royal yogas, wealth and poverty (BPHS 39 to 42): the rāja, the dhana and the daridra rules each with its verses.
+  await panel.getByRole('button', { name: 'Royal yogas, wealth and poverty', exact: true }).click();
+  await expect(panel.locator('[data-topic-rule="exchange-1-5"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-rule="poor-1-12-exchange"]')).toBeVisible();
+  expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(50);
+
+  // Illness and ariṣṭa (BPHS 17, 9, 10, with its caution).
+  await panel.getByRole('button', { name: 'Illness and ariṣṭa', exact: true }).click();
+  await expect(panel.locator('[data-topic-caution]')).toContainText('not a prediction');
+  await expect(panel.locator('[data-topic-rule="wound-6th-lord"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-rule="benefic-kendra"]')).toBeVisible();
+  expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(40);
+
+  expect(errors).toEqual([]);
+});
+
+test('ANALYSIS Conjunctions gives the results of Phaladīpikā 18 for the Moon and for grahas in one sign', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Conjunctions', exact: true })).click();
+
+  // The three parts are there: the pairs, the Moon by its sign, the Moon by its navāṁśa with the weighing of 18.17.
+  const panel = visible(page, page.locator('[data-dvigraha="panel"]'));
+  await expect(panel.locator('[data-dvigraha="pairs"]')).toBeVisible();
+  await expect(panel.locator('[data-dvigraha="moon-sign"]')).toBeVisible();
+  await expect(panel.locator('[data-dvigraha="moon-navamsha"]')).toContainText('18.17');
+  const placement = await panel.locator('[data-placement]').getAttribute('data-placement');
+  expect(['vargottama', 'own', 'other']).toContain(placement);
 
   expect(errors).toEqual([]);
 });

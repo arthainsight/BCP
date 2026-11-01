@@ -36,6 +36,7 @@ export default function TopicYogaPanel({ chart }: { chart: ChartData }) {
     for (const row of buildShadbalaRows(chart)) if ((SEVEN as readonly string[]).includes(row.planet)) ratio[row.planet as SevenGraha] = row.ratio;
     return {
       ascendantSign: chart.ascendant.sign,
+      ascendantLongitude: chart.ascendant.longitude,
       ratio,
       planets: chart.planets.map(planet => ({ name: planet.name, sign: planet.sign, degree: planet.degree, longitude: planet.longitude, isRetrograde: planet.isRetrograde })),
     };

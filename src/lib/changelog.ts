@@ -1,5 +1,35 @@
 export const CHANGELOG = [
   {
+    version: 'v3.83',
+    date: '2026-11-01',
+    title: 'Illness and ariṣṭa, after the Sanskrit of BPHS 17, 9 and 10',
+    changes: [
+      'ANALYSIS → Topic yogas → Illness and ariṣṭa: the rules of the 6th house (BPHS 17: wounds, leprosy, fevers, the years of the ailments), of the ariṣṭa of birth (9: the dangers to the child, the mother and the father) and of the cancelling of ariṣṭa (10), with all 82 verses in Devanagari and IAST. The view carries a caution: the statements are the text\'s and not a prediction, and nothing in it is medical advice.',
+      'Not judged: what needs the hour of birth (the twilight, the horā, the gaṇḍānta, the eclipse), Māndi, the kārakas of the father and the other houses, and the verses whose sentence runs over the next verse; the view lists them. Chapter 11 (the list of what each house shows) is a list of significations and not a set of yogas, and is not part of it. In docs/topic-yogas.md.',
+      'Updated the application version to v3.83.',
+    ],
+  },
+  {
+    version: 'v3.82',
+    date: '2026-11-01',
+    title: 'Royal yogas, wealth and poverty, after the Sanskrit of BPHS 39–42',
+    changes: [
+      'ANALYSIS → Topic yogas → Royal yogas, wealth and poverty: 63 rules from the rāja yogas (BPHS 39), the minister (40), the dhana yogas (41) and the daridra yogas (42), each with its verses in Devanagari and IAST (all 115 verses are shown) and met, not met or cannot be judged for the chart.',
+      'The Amātyakāraka of chapter 40 is the second by degree in the sign (eight-karaka scheme); the māraka lords of chapter 42 are the lords of the 2nd and 7th. Where the text does not settle a reading, the rule says which was taken. Not judged: what needs the ārūḍha, the pada or the older kāraka, and the divisions of 41.18–34; the view lists those verses. In docs/topic-yogas.md.',
+      'Updated the application version to v3.82.',
+    ],
+  },
+  {
+    version: 'v3.81',
+    date: '2026-11-01',
+    title: 'Two grahas together, and the Moon seen by the others (Phaladīpikā 18)',
+    changes: [
+      'ANALYSIS → Conjunctions (Classical systems): the results of Phaladīpikā chapter 18 for the chart. Two grahas in one sign (18.1–5, the 21 pairs of the seven grahas, each with its verse; with more than two the pairs are to be combined). The Moon in its sign seen by Mars, Mercury, Jupiter, Venus, Saturn and the Sun (18.6–11, 72 results). The Moon in the navāṁśa of a graha seen by the others (18.12–15, 42 results), with whether the Moon is vargottama, in its own or in another\'s navāṁśa and how that weighs the good and the bad (18.17).',
+      'Not judged: the strength of the lord of the navāṁśa (18.17, the text gives no measure). The Sanskrit is the text layer of the edition (a scan of the print) and some letters are misread; the summaries are short and the verse decides. In docs/dvigraha-phaladipika18.md.',
+      'Updated the application version to v3.81.',
+    ],
+  },
+  {
     version: 'v3.80',
     date: '2026-11-01',
     title: 'The upagrahas in the houses, after the Sanskrit of BPHS 25',

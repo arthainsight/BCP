@@ -6,7 +6,7 @@ import type { TopicVerse } from './topicVerses';
  * What the topic yogas (topicYogas.ts) share: the shape of a rule and the small questions of a chart that the rules ask. A rule carries the chapter and verses it is read from and decides from the chart whether
  * it is met (true), not met (false) or cannot be judged (null). "Strong" (bali) is the Ṣaḍbala of the graha at or over the strength it needs (the ratio of the Ṣaḍbala panel is 1 or more); the text does not define it.
  */
-export type TopicKey = 'spirituality' | 'marriage' | 'longevity';
+export type TopicKey = 'spirituality' | 'marriage' | 'longevity' | 'wealth' | 'illness';
 
 export type SevenGraha = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
 export const SEVEN: readonly SevenGraha[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
@@ -15,6 +15,8 @@ export interface TopicPlanet { name: string; sign: number; degree: number; longi
 export interface TopicContext {
   planets: TopicPlanet[];
   ascendantSign: number;
+  /** The sidereal longitude of the lagna, when known; the rules that need its navāṁśa cannot be judged without it. */
+  ascendantLongitude?: number;
   /** Ṣaḍbala against what each graha needs; 1 or more is strong. A graha missing from it cannot be judged. */
   ratio: Partial<Record<SevenGraha, number>>;
 }
@@ -88,3 +90,25 @@ export const drekkanaSign = (sign: number, degree: number) => ((sign - 1 + Math.
 
 /** A rule whose graha is missing from the chart, or whose strength is not known, cannot be judged. */
 export const cannot = (why: string): RuleOutcome => ({ met: null, lines: [why] });
+
+// ── relations between two grahas, shared by the rule files ─────────────────────────────────────────────────────
+/** Whether `from` (one of the seven) aspects the sign of `to`. */
+export const sees = (context: TopicContext, from: string, to: string) => {
+  const a = find(context, from); const b = find(context, to);
+  return Boolean(a && b && (SEVEN as readonly string[]).includes(from) && from !== to && aspectsSign(from, a.sign, b.sign));
+};
+/** Whether `from` (one of the seven) aspects a sign. */
+export const seesSign = (context: TopicContext, from: string, sign: number) => {
+  const a = find(context, from);
+  return Boolean(a && (SEVEN as readonly string[]).includes(from) && aspectsSign(from, a.sign, sign));
+};
+/** Whether `by` is in one sign with `target` or aspects it. */
+export const joinedOrSeen = (context: TopicContext, target: string, by: string) => by !== target && (together(context, target, by) || sees(context, by, target));
+export const mixed = (items: string[]) => (items.length ? items.join(', ') : 'none');
+/** "Mars in the 5th" for the lines of evidence. */
+export const where = (context: TopicContext, name: string) => { const house = houseOf(context, name); return house === null ? `${name} (missing)` : `${name} in the ${ordinalEn(house)}`; };
+/** Whether the signs before and after `sign` both hold a graha of the group (hemmed between them, pāpamadhya). */
+export const hemmedBy = (context: TopicContext, sign: number, group: (name: string) => boolean, exclude = '') => {
+  const near = (target: number) => context.planets.some(planet => planet.sign === target && planet.name !== exclude && group(planet.name));
+  return near(((sign + 10) % 12) + 1) && near((sign % 12) + 1);
+};
