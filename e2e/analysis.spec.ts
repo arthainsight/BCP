@@ -178,6 +178,25 @@ test('the chara karakas can be seven or eight, ranked by degrees or minutes', as
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Topic yogas judges the rules of BPHS 79 and shows their verses', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Topic yogas', exact: true })).click();
+
+  // Seven rules of the Pravrajyā yoga, each met, not met or beyond judging, with the verses in Sanskrit that open.
+  const panel = visible(page, page.locator('[data-topic-yogas="panel"]'));
+  await expect(panel.locator('[data-topic-rule]')).toHaveCount(7);
+  for (const met of await panel.locator('[data-topic-rule]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-met')))) expect(['true', 'false', 'null']).toContain(met);
+  const rule = panel.locator('[data-topic-rule="pravrajya-initiated-king"]');
+  await rule.locator('details summary').click();
+  await expect(rule.locator('[data-topic-verse="15"] [lang="sa"]').first()).toContainText(/[\u0900-\u097F]/);
+
+  expect(errors).toEqual([]);
+});
+
 test('ANALYSIS Bhāveśa gives the verse of BPHS 24 for the lord of each house in the house it stands in', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

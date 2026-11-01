@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.78',
+    date: '2026-11-01',
+    title: 'Yogas by topic, from the classics: renunciation (BPHS 79)',
+    changes: [
+      'ANALYSIS → Topic yogas (Classical systems). Rules that a classic gives for one topic, each with the verses it comes from in Sanskrit, and the chart judged against it: met, not met, or cannot be judged. The first topic is renunciation and spirituality, the Pravrajyā yoga of BPHS chapter 79 in seven rules (four or more strong grahas in a sign and the kind of renunciation by the strongest, combust grahas, the lord of the birth sign and Saturn, the Moon in Saturn\'s drekkāṇa and navāṁśa, the Moon, Jupiter and the Lagna seen by Saturn with Jupiter in the 9th, Saturn alone in the 9th). The verses about the war of the grahas and the daśā (79.1, 9–11) are shown, not judged.',
+      '"Strong" is the Ṣaḍbala of the graha at or over what it needs (the text gives no measure), and the grahas aspect by whole signs. Two readings of 79.6 are named in docs/topic-yogas.md. Next: marriage (BPHS 18, 80, 83), longevity (19, 43–44, 9–11), illness (17), wealth and poverty (41–42).',
+      'Updated the application version to v3.78.',
+    ],
+  },
+  {
     version: 'v3.77',
     date: '2026-11-01',
     title: 'The lord of each house in each house, after the Sanskrit of BPHS 24',
