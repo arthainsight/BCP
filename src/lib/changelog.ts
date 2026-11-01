@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.96',
+    date: '2026-11-01',
+    title: 'The Phaladīpikā\'s chapter on the good and bad of the houses, as rules',
+    changes: [
+      'ANALYSIS → Topic yogas → Phaladīpikā: the houses: chapter 15 of the Phaladīpikā (bhāva-śubhāśubha, 30 verses): the rules by which any house is judged to thrive or to be lost, each going through the twelve houses and naming those that meet it: benefics and good lords on the house, the second, kendras and trines from it, the lord in the 8th or fallen or combust, malefics in the 6th, 8th and 12th from it, the lord in an evil house, two of four conditions, the lagna lord and the houses he gives, the graha that rules two houses, the dignity of the occupants, the significator standing in its own house and the lord of an evil house in his own sign, 15 rules.',
+      'Listed as not judged: what rests on the daśās, the aṣṭakavarga and the points of the houses (15.7-8, 15.12-14, 15.28), the lists of significators and the method of reading from a significator\'s sign (15.15-17, 15.20-25), and the five kinds of connection (15.30).',
+      'Updated the application version to v3.96.',
+    ],
+  },
+  {
     version: 'v3.95',
     date: '2026-11-01',
     title: 'The Phaladīpikā\'s chapter on illness and death, as rules',
