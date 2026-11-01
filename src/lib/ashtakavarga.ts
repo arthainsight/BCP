@@ -25,6 +25,7 @@ export type SarvaAshtakavarga = {
 
 export type AshtakavargaResult = {
   bav: BhinnaAshtakavargaRow[];
+  lagnaBav: BhinnaAshtakavargaRow;
   sav: SarvaAshtakavarga;
 };
 
@@ -137,6 +138,13 @@ export const VARAHAMIHIRA_AV: Record<AshtakavargaPlanet, Record<Contributor, num
 
 export type AshtakavargaSystem = 'Parashara' | 'Varahamihira';
 
+// BPHS 66.65–68: Lagna's own Ashtakavarga table.
+const LAGNA_AV: Record<Contributor, number[]> = {
+  Sun: [3, 4, 6, 10, 11, 12], Moon: [3, 6, 10, 11, 12], Mars: [1, 3, 6, 10, 11],
+  Mercury: [1, 2, 4, 6, 8, 10, 11], Jupiter: [1, 2, 4, 5, 6, 7, 9, 10, 11],
+  Venus: [1, 2, 3, 4, 5, 8, 9], Saturn: [1, 3, 4, 6, 10, 11], Ascendant: [3, 6, 10, 11],
+};
+
 function getPlanet(chart: AshtakavargaChartLike, name: string): AshtakavargaChartPlanet | undefined {
   return chart.planets?.find((planet) => planet.name === name);
 }
@@ -188,7 +196,7 @@ export function buildBhinnaAshtakavarga(chart: AshtakavargaChartLike, system: As
   });
 }
 
-export function buildSarvaAshtakavarga(bav: BhinnaAshtakavargaRow[]): SarvaAshtakavarga {
+export function buildSarvaAshtakavarga(bav: Array<{ houses: number[] }>): SarvaAshtakavarga {
   const houses = Array.from({ length: 12 }, (_, houseIndex) =>
     bav.reduce((sum, row) => sum + (row.houses[houseIndex] ?? 0), 0),
   );
@@ -199,10 +207,25 @@ export function buildSarvaAshtakavarga(bav: BhinnaAshtakavargaRow[]): SarvaAshta
   };
 }
 
-export function buildAshtakavarga(chart: AshtakavargaChartLike, system: AshtakavargaSystem = 'Parashara'): AshtakavargaResult {
+export function buildLagnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAshtakavargaRow {
+  const houses = Array.from({ length: 12 }, (_, index) => {
+    const house = index + 1;
+    let bindu = 0;
+    for (const contributor of CONTRIBUTORS) {
+      const contributorHouse = contributor === 'Ascendant' ? 1 : getPlanetHouse(chart, getPlanet(chart, contributor));
+      if (typeof contributorHouse !== 'number') continue;
+      if (LAGNA_AV[contributor].includes(getRelativeHouse(contributorHouse, house))) bindu += 1;
+    }
+    return bindu;
+  });
+  return { planet: 'Sun', houses, total: houses.reduce((sum, value) => sum + value, 0) };
+}
+
+export function buildAshtakavarga(chart: AshtakavargaChartLike, system: AshtakavargaSystem = 'Parashara', includeLagnaInSav = false): AshtakavargaResult {
   const bav = buildBhinnaAshtakavarga(chart, system);
-  const sav = buildSarvaAshtakavarga(bav);
-  return { bav, sav };
+  const lagnaBav = buildLagnaAshtakavarga(chart);
+  const sav = buildSarvaAshtakavarga(includeLagnaInSav ? [...bav, lagnaBav] : bav);
+  return { bav, lagnaBav, sav };
 }
 
 /** Convert a house-indexed AV row (H1..H12) to fixed zodiac order (Aries..Pisces). */
