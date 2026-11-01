@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.91',
+    date: '2026-11-01',
+    title: 'The woman\'s chart: BPHS 80 and Phaladīpikā 11',
+    changes: [
+      'ANALYSIS → Topic yogas → The woman\'s chart: the rules of chapter 80 of the Bṛhat Parāśara Horā Śāstra (strījātaka, 55 verses): the husband by the 7th, widowhood, the graha in the 8th, barren combinations, miscarriages, the viṣa-yoga and its cancelling, Mars in the houses of kuja-doṣa, and more. What the text leaves unclear (the trimshāṁśa table, the weekday and tithi rule, equal strength) is listed as not judged.',
+      'ANALYSIS → Topic yogas → Phaladīpikā: the houses: chapter 11 of the Phaladīpikā (the woman\'s chart, 11 verses): the good and bad houses of the woman, even and odd signs, the trimshāṁśa of the Moon and the lagna with the table of results, the nakṣatra of the Moon.',
+      'The rules are read for a woman\'s chart (the app does not ask); the view carries a caution that they are the text\'s statements and not a prediction.',
+      'Updated the application version to v3.91.',
+    ],
+  },
+  {
     version: 'v3.90',
     date: '2026-11-01',
     title: 'The Phaladīpikā\'s chapter on the 7th house, as rules',
