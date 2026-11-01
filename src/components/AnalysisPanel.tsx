@@ -20,12 +20,13 @@ import GocharaPanel from './GocharaPanel';
 import PrashnaPanel from './PrashnaPanel';
 import BhavaLordPanel from './BhavaLordPanel';
 import TopicYogaPanel from './TopicYogaPanel';
+import UpagrahaResultsPanel from './UpagrahaResultsPanel';
 import ArgalaPanel from './ArgalaPanel';
 import BhavaChalitPanel from './BhavaChalitPanel';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 
-export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'degrees' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota' | 'prashna' | 'bhavesha' | 'topicyogas';
+export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'degrees' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota' | 'prashna' | 'bhavesha' | 'topicyogas' | 'upagrahas';
 
 const VIEW_GROUPS: { label: string; views: { key: AnalysisView; label: string }[] }[] = [
   { label: 'Chart & strength', views: [
@@ -40,7 +41,7 @@ const VIEW_GROUPS: { label: string; views: { key: AnalysisView; label: string }[
     { key: 'gochara', label: 'Gochara' }, { key: 'tara', label: 'Nava-Tara' }, { key: 'dik', label: 'Directions' },
   ] },
   { label: 'Classical systems', views: [
-    { key: 'ashtakavarga', label: 'Aṣṭakavarga' }, { key: 'sarvatobhadra', label: 'Sarvatobhadra' }, { key: 'kota', label: 'Kota Chakra' }, { key: 'prashna', label: 'Praśna' }, { key: 'bhavesha', label: 'Bhāveśa' }, { key: 'topicyogas', label: 'Topic yogas' },
+    { key: 'ashtakavarga', label: 'Aṣṭakavarga' }, { key: 'sarvatobhadra', label: 'Sarvatobhadra' }, { key: 'kota', label: 'Kota Chakra' }, { key: 'prashna', label: 'Praśna' }, { key: 'bhavesha', label: 'Bhāveśa' }, { key: 'topicyogas', label: 'Topic yogas' }, { key: 'upagrahas', label: 'Upagrahas' },
   ] },
 ];
 
@@ -181,6 +182,7 @@ export default function AnalysisPanel({
       {view === 'prashna' && <PrashnaPanel chart={chart} />}
       {view === 'bhavesha' && <BhavaLordPanel chart={chart} />}
       {view === 'topicyogas' && <TopicYogaPanel chart={chart} />}
+      {view === 'upagrahas' && <UpagrahaResultsPanel chart={chart} />}
 
       {view === 'gochara' && (
         <GocharaPanel chart={chart} transitPlanets={transitPlanets} />

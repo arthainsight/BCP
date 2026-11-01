@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.80',
+    date: '2026-11-01',
+    title: 'The upagrahas in the houses, after the Sanskrit of BPHS 25',
+    changes: [
+      'ANALYSIS → Upagrahas (Classical systems): for Dhūma, Pāta (Vyatipāta), Paridhi (Parivesha), Cāpa (Indrachāpa), Ketu (Upaketu), Gulika and Prāṇapada the sign and the house it stands in from the Lagna, and the verse of Bṛhat Parāśara Horā Śāstra chapter 25 for that body in that house: the Sanskrit as the text has it, the IAST and a one-line summary. 84 verses (seven bodies in twelve houses, 25.2–85); the close of the chapter (25.86–87) is in the view as well.',
+      'Chapter 25 is the non-luminous bodies, not the seven grahas in the houses (those are the chapters of the houses, 12–23, not built). How strong the body is and what aspects it gets (25.87) is not worked out. Māndi is not in the text. In docs/upagraha-results-bphs25.md.',
+      'Updated the application version to v3.80.',
+    ],
+  },
+  {
     version: 'v3.79',
     date: '2026-11-01',
     title: 'Topic yogas: marriage (BPHS 18) and longevity (BPHS 19, 44)',

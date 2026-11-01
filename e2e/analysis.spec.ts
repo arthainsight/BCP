@@ -206,6 +206,28 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19 and 44 and shows 
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Upagrahas gives the verse of BPHS 25 for each body in the house it stands in', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Upagrahas', exact: true })).click();
+
+  // Up to seven bodies (Gulika and the five Sun-based ones, and the Prāṇapada), each with a house and a verse in Sanskrit that opens.
+  const panel = visible(page, page.locator('[data-upagraha="panel"]'));
+  const bodies = panel.locator('[data-upagraha-body]');
+  expect(await bodies.count()).toBeGreaterThanOrEqual(6);
+  const first = bodies.first();
+  const house = Number(await first.getAttribute('data-upagraha-house'));
+  expect(house).toBeGreaterThanOrEqual(1);
+  expect(house).toBeLessThanOrEqual(12);
+  await first.locator('details summary').click();
+  await expect(first.locator('[lang="sa"]').first()).toContainText(/[\u0900-\u097F]/);
+
+  expect(errors).toEqual([]);
+});
+
 test('ANALYSIS Bhāveśa gives the verse of BPHS 24 for the lord of each house in the house it stands in', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
