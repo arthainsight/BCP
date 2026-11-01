@@ -171,10 +171,6 @@ for (const [owner, byHouse] of Object.entries(VERSE_BINDU_BY_HOUSE)) {
 // Venus from Mars gives at the 4th, not the 5th (66.35-38); that is where Brihat Jataka differs.
 assert.deepEqual(PARASHARA_AV.Venus.Mars, [3, 4, 6, 9, 11, 12]);
 
-// The Varahamihira system variant was removed in v2.15 — after the v2.14
-// Parashara fix it differed by one unverified row, so the selector implied a
-// sourced Brihat Jataka table that did not exist. See ashtakavarga.ts.
-
 // ---------------------------------------------------------------------------
 // Varāhamihira — Bṛhajjātaka 9.1–9.7
 // Sanskrit-based differences from the BPHS table. The four rows preserve the
