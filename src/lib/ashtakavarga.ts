@@ -124,6 +124,28 @@ export const PARASHARA_AV: Record<AshtakavargaPlanet, Record<Contributor, number
 // verified against a primary source; the one-row delta above is preserved here
 // so that work does not start from zero.
 
+
+// Varahamihira's Bṛhajjātaka, chapter 9 (verses 9.1–9.7).
+// The source gives the same eight contributors, but differs from BPHS in four
+// contributor rows: Moon from Moon, Mars from Moon, Jupiter from Moon, and
+// Venus from Mars. All other rows match the currently verified Parāśara table.
+// Keep this as a separate named system so the provenance is explicit.
+export const VARAHAMIHIRA_AV: Record<AshtakavargaPlanet, Record<Contributor, number[]>> = {
+  ...PARASHARA_AV,
+  Moon: {
+    ...PARASHARA_AV.Moon,
+    Moon: [1, 3, 6, 7, 10, 11],
+    Mars: [2, 3, 5, 6, 9, 10, 11],
+    Jupiter: [1, 4, 7, 8, 10, 11, 12],
+  },
+  Venus: {
+    ...PARASHARA_AV.Venus,
+    Mars: [3, 5, 6, 9, 11, 12],
+  },
+};
+
+export type AshtakavargaSystem = 'Parashara' | 'Varahamihira';
+
 function getPlanet(chart: AshtakavargaChartLike, name: string): AshtakavargaChartPlanet | undefined {
   return chart.planets?.find((planet) => planet.name === name);
 }
@@ -140,9 +162,9 @@ function getRelativeHouse(fromHouse: number, toHouse: number): number {
   return ((toHouse - fromHouse + 12) % 12) + 1;
 }
 
-export function buildBhinnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAshtakavargaRow[] {
+export function buildBhinnaAshtakavarga(chart: AshtakavargaChartLike, system: AshtakavargaSystem = 'Parashara'): BhinnaAshtakavargaRow[] {
   return PLANETS.map((planetName) => {
-    const rules = PARASHARA_AV[planetName];
+    const rules = (system === 'Varahamihira' ? VARAHAMIHIRA_AV : PARASHARA_AV)[planetName];
 
     const houses = Array.from({ length: 12 }, (_, index) => {
       const house = index + 1;
@@ -186,8 +208,8 @@ export function buildSarvaAshtakavarga(bav: BhinnaAshtakavargaRow[]): SarvaAshta
   };
 }
 
-export function buildAshtakavarga(chart: AshtakavargaChartLike): AshtakavargaResult {
-  const bav = buildBhinnaAshtakavarga(chart);
+export function buildAshtakavarga(chart: AshtakavargaChartLike, system: AshtakavargaSystem = 'Parashara'): AshtakavargaResult {
+  const bav = buildBhinnaAshtakavarga(chart, system);
   const sav = buildSarvaAshtakavarga(bav);
   return { bav, sav };
 }
