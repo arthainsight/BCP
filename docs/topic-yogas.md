@@ -1,4 +1,4 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93, its span of life since v3.94)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
@@ -110,7 +110,7 @@ The topic reads a second classic: the house chapters of the Phaladīpikā of Man
 * **Readings**: "from the Moon" counts from its sign; in 10.5 "the 7th from Venus and the Moon" is read as the 7th from Venus *or* from the Moon; the 5th and 7th of 10.1 are taken from the lagna and by benefics (the lords and the Moon's reckoning are named in the verse and not tried); the direction of a sign is that of its place in the cycle east, south, west, north (Aries east, Taurus south, Gemini west, Cancer north, and again).
 * **Not judged**: the birth sign of the wife and the times of the marriage (10.11, 10.13, 10.14), which need the daśā and the transits. In 10.13 the commentary says the transit of Venus and the Sanskrit the transit of the lagna lord; the verse is not used.
 * The Sanskrit has gaps in the scan: in 10.1 a word restored from the commentary, in 10.5 some letters of the third line and in 10.6 one whole line. The verses say so.
-* Chapters 13 to 17 of the Phaladīpikā (the span of life, disease, the good and bad of the houses, the houses together, death) are not built yet.
+* Chapters 14 to 17 of the Phaladīpikā (disease, the good and bad of the houses, the houses together, death) are not built yet.
 
 ## Phaladīpikā 11 (since v3.91): the woman's chart, 11 verses
 
@@ -155,6 +155,18 @@ Under the same topic ("Phaladīpikā: the houses"), rules `p12-*` in `src/lib/to
 * **Readings**: "well placed" is not in the 6th, 8th or 12th; for 12.1 "seen by the lords of good houses" is read as seen by benefics; the field and the seed of 12.14 are one rule for a woman and one for a man, as the app does not ask; the signs of few sons are Scorpio, Taurus, Virgo and Leo.
 * **Not judged**: 12.12-13 (conception and the number of children), 12.15-18 (the tithi and its remedies), 12.19-21 (the cause by the graha that afflicts the 5th), 12.23-24 (remedies), 12.25-34 (the time of the son, which needs the daśā, the transits and the lagna of conception). Māndi and Gulika are not in the chart data, so 12.8 and 12.22 are tried without them.
 * The Sanskrit has gaps in the scan: the first half of the second line in 12.2, the third line of 12.6, a word in 12.11, 12.21, 12.23 and 12.24, and the first half of 12.28. The verses say so.
+
+## Phaladīpikā 13 (since v3.94): the span of life, 25 verses
+
+Under the same topic ("Phaladīpikā: the houses"), rules `p13-*` in `src/lib/topicPhalaAyur.ts`, verses in `src/lib/phalaVerses.ts`.
+
+* **Judged** (19 rules): birth in Mūla and Āśleṣā by the quarter of the Moon with the lagna unconnected with benefics (13.8); seven yogas of quick death with no benefic in a kendra (13.12); the time of death in years, months and days by the weak lords of the lagna, the Moon, their decanates and navāṁśas in evil houses, with malefics in the 5th and 8th (13.13);
+  long, middle and short life by the movable, fixed and dual signs of three pairs (13.14, three rules); by the houses of the lagna lord with a benefic and of the 8th lord with a malefic (13.15); by the friendship of three pairs of lords (13.15, three rules); by the strength of the lagna lord and the Moon-sign lord and of the lords of their navāṁśas against the lords of their 8ths (13.16, four rules);
+  the 8th lord stronger than the lagna lord (13.17); the lagna lord strong in a kendra seen by benefics (13.21); Jupiter strong in the lagna (13.22); the waxing Moon in a navāṁśa of the Sun, the Moon or Jupiter (13.23); no malefics in the kendras, trines and 8th with the lagna lord and Jupiter in kendras (13.24).
+* **Readings**: "weak" is a Ṣaḍbala under 1; the three pairs of 13.14 and the three friendships of 13.15 are combined by the majority (two of three), as the verse does not say; the table of 13.14 is: movable with movable long, movable with fixed middle, movable with dual short, fixed with dual long, fixed with fixed short, dual with dual middle;
+  in 13.12 the last clause is read as no benefic in a kendra and none seeing the lagna; the weak Moon of the fifth yoga needs no malefic (the Hindi adds one); the friendship is the natural one (the Sanskrit does not name the five-fold).
+* **Not judged**: 13.1-7 (the definitions, the stages of life up to twelve years, the three spans), 13.9 (the junction of signs and the gaṇḍānta, which need the minutes of the lagna and the nakṣatra), 13.10-11 (the fatal degrees of the Moon: the two lists differ and the commentary gives more), 13.18-20 (Saturn's rounds and the transits), 13.25 (the daśās).
+* The first half of 13.8 (the days of death and disease and Puṣya, Pūrvāṣāḍhā and Citrā) and two lines of 13.4 and 13.23 are lost in the scan, and the end of the first line of 13.9; the verses say so.
 
 ## Next topics (not built yet)
 

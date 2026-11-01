@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.94',
+    date: '2026-11-01',
+    title: 'The Phaladīpikā\'s chapter on the span of life, as rules',
+    changes: [
+      'ANALYSIS → Topic yogas → Phaladīpikā: the houses: chapter 13 of the Phaladīpikā (ariṣṭa-cintā, 25 verses): birth in Mūla and Āśleṣā, the yogas of quick death, the time of death by the weak lords (years, months, days), the long, middle and short life by the kind of the signs, the houses, the friendship and the strength of the lords, and the yogas that guard the life, 19 rules.',
+      'Where the verse does not say how three pairs are combined they are taken by the majority (two of three), and the page says so. Listed as not judged: the definitions and stages of life, the junction of signs and the gaṇḍānta (they need the minutes), the fatal degrees of the Moon (the two lists differ), Saturn\'s rounds and the daśās.',
+      'Updated the application version to v3.94.',
+    ],
+  },
+  {
     version: 'v3.93',
     date: '2026-11-01',
     title: 'The Phaladīpikā\'s chapter on children, as rules',
