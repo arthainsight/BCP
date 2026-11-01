@@ -72,3 +72,15 @@ span: Nisargāyu, Piṇḍāyu, Lagnāyu, Aṃśakāyu, Raśmijāyu, Cakrāyu, N
 
 The editor says some verses of the Phaladīpikā are the verses of Vaidyanātha's Jātakapārijāta word for word, so that Mantreśvara cannot be of the thirteenth century (Vaidyanātha being later) and
 the sixteenth is likelier. This is the editor's claim and has not been tested here.
+
+## Vedha of the transits (26.3–8) — in the app since v3.73
+
+Read in the Sanskrit and the Hindi commentary of the edition (the verses with the Nārada verses quoted under them). Each graha is good in some houses from the natal Moon (26.2, already in the
+app) **provided no other graha stands in the vedha house that goes with the good one**. The pairs (good house → vedha house) are in `VEDHA_FROM_MOON` of `src/lib/gochara.ts`; the verses give the two
+lists in the same order, and the Hindi commentary writes them out in pairs, which agree with the Nārada verses under each (Sun 11–5, 3–9, 10–4, 6–12; Moon 7–2, 1–5, 6–12, 11–8, 10–4, 3–9; Mars/Saturn
+3–12, 11–5, 6–9; Mercury 2–5, 4–3, 6–9, 8–1, 10–8, 11–12; Jupiter 2–12, 11–8, 9–10, 5–4, 7–3; Venus 1–8, 2–7, 3–1, 4–10, 5–9, 8–5, 9–11, 11–3, 12–6).
+
+* **Exceptions in the verses:** the Sun and Saturn do not obstruct each other (26.3, 26.5); nor do the Moon and Mercury (26.4, 26.6). Applied.
+* **Rāhu and Ketu** as obstructors: the verses say "any graha" but name neither; left out (`VEDHA_OBSTRUCTORS`). Open.
+* **Not read:** how much a blocked good house is worth (the text only says the good result is not given), and whether the vedha applies to the bad houses (it does not: the text gives no vedha for them).
+* The edition's OCR garbles the last pair of Jupiter's list ("33"/"aut"); 7↔3 is taken from the other pairs (the 5 good houses, 5 vedha houses) and agrees with the usual table.

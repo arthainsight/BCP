@@ -47,7 +47,7 @@ export default function GocharaPanel({ chart, transitPlanets = [] }: Props) {
       <div>
         <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('Gochara and Ashtakavarga')}</div>
         <p className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-          {t('The transiting grahas at the target moment against the natal chart: the house from the Lagna and from the Moon, whether the house from the Moon is a favourable one for the graha, and the bindus that the own Bhinnashtakavarga of the graha and the Sarvashtakavarga give the sign. 5 or more bindus are strong, 4 average, 3 or fewer weak; the average Sarva is 28.')}
+          {t('The transiting grahas at the target moment against the natal chart: the house from the Lagna and from the Moon, whether the house from the Moon is a favourable one for the graha (and whether another graha stands in the vedha house that goes with it and obstructs it, Phaladīpikā 26.3–8), and the bindus that the own Bhinnashtakavarga of the graha and the Sarvashtakavarga give the sign. 5 or more bindus are strong, 4 average, 3 or fewer weak; the average Sarva is 28.')}
         </p>
       </div>
 
@@ -71,8 +71,12 @@ export default function GocharaPanel({ chart, transitPlanets = [] }: Props) {
                 <td className={cell}>{SIGN_NAMES[row.sign - 1]}</td>
                 <td className={cell}>{row.houseFromLagna}</td>
                 <td className={cell}>{row.houseFromMoon}</td>
-                <td className={`${cell} ${row.favourable === null ? 'text-zinc-400' : row.favourable ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                <td
+                  data-vedha={row.blockedBy.length ? row.blockedBy.join(',') : undefined}
+                  className={`${cell} ${row.favourable === null ? 'text-zinc-400' : row.favourable ? (row.blockedBy.length ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400') : 'text-rose-600 dark:text-rose-400'}`}
+                >
                   {row.favourable === null ? '—' : row.favourable ? `✓ ${t('favourable')}` : `✗ ${t('unfavourable')}`}
+                  {row.blockedBy.length > 0 && <div className="text-[10px] font-normal">{t('blocked (vedha) by')} {row.blockedBy.map(grahaName).join(', ')} ({t('house')} {row.vedhaHouse})</div>}
                 </td>
                 <td className={`${cell} font-bold ${row.strength ? STRENGTH_CLASS[row.strength] : 'text-zinc-400'}`}>
                   {row.bindus === null ? '—' : `${row.bindus} · ${t(row.strength!)}`}
