@@ -1,4 +1,4 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
@@ -110,7 +110,7 @@ The topic reads a second classic: the house chapters of the Phaladīpikā of Man
 * **Readings**: "from the Moon" counts from its sign; in 10.5 "the 7th from Venus and the Moon" is read as the 7th from Venus *or* from the Moon; the 5th and 7th of 10.1 are taken from the lagna and by benefics (the lords and the Moon's reckoning are named in the verse and not tried); the direction of a sign is that of its place in the cycle east, south, west, north (Aries east, Taurus south, Gemini west, Cancer north, and again).
 * **Not judged**: the birth sign of the wife and the times of the marriage (10.11, 10.13, 10.14), which need the daśā and the transits. In 10.13 the commentary says the transit of Venus and the Sanskrit the transit of the lagna lord; the verse is not used.
 * The Sanskrit has gaps in the scan: in 10.1 a word restored from the commentary, in 10.5 some letters of the third line and in 10.6 one whole line. The verses say so.
-* Chapters 12 to 17 of the Phaladīpikā (the children, the span of life, disease, the good and bad of the houses, the houses together, death) are not built yet.
+* Chapters 13 to 17 of the Phaladīpikā (the span of life, disease, the good and bad of the houses, the houses together, death) are not built yet.
 
 ## Phaladīpikā 11 (since v3.91): the woman's chart, 11 verses
 
@@ -142,6 +142,19 @@ the serpent (83.9-19), the father (83.20-33), the mother (83.34-50), a brother (
 * **From the Sanskrit, not the English**: 83.20 has the Sun in the navāṁśa of *Saturn*; 83.37 the Moon in a malefic navāṁśa; 83.42 a *waning* Moon in the 7th (the English says debilitated); 83.99 has Mars, Saturn *and* Mercury in the 5th (the English has two).
 * **Not judged**: 83.1-6 (the questions), 83.51, 83.71 and 83.96 (the openings of the brother's, the Brahmin's and the spirit's curse), 83.13 and 83.104 (they need Māndi), 83.109-111 (the remedies by graha and the closing verse). The view lists them.
 * The text says that the loss of children comes "from the curse". A chart does not show a curse; the rules show only that the yoga of the text is in the chart. The view carries a caution, and the remedies are the text's.
+
+## Phaladīpikā 12 (since v3.93): children, 34 verses
+
+Under the same topic ("Phaladīpikā: the houses"), rules `p12-*` in `src/lib/topicPhalaChildren.ts`, verses in `src/lib/phalaVerses.ts`.
+
+* **Judged** (21 rules): the children yoga (12.1: the 5th lords from the lagna and the Moon and Jupiter well placed, benefics on both 5ths, the lagna lord and the 5th lord connected); no children (12.2); a malefic in its own sign in the 5th (12.3); the 5th a sign of a benefic with a malefic in it (12.3); the signs of few sons (12.3);
+  three yogas of late children (12.4); the 5th Cancer with the Sun, Mars, Venus, Saturn, the Moon, Mercury or Jupiter (12.5); four yogas of the end of the line (12.6); the sonless yoga and the Moon in an odd navāṁśa in the 5th (12.7); the adopted son (12.8); the 5th lord lost (12.9); many sons (12.10); a son or a daughter (12.11);
+  the field and the seed by the sum of three longitudes (12.14, four rules: strong and mixed for a woman, strong and mixed for a man); the serpent's and the Brahmin's curse (12.22).
+* **From the Sanskrit, not the commentaries**: 12.3 has the loss of sons when the 5th is a sign of a benefic with a malefic in it (the Hindi and the English have the benefic in the 5th); 12.4 has the Sun in a sign of few sons (the commentaries put it in the 5th); 12.10 has four grahas, the 5th lord, Jupiter, Mars *and the Sun* (the Hindi has three);
+  12.11 reads "joined or seen" (the Hindi: joined and seen).
+* **Readings**: "well placed" is not in the 6th, 8th or 12th; for 12.1 "seen by the lords of good houses" is read as seen by benefics; the field and the seed of 12.14 are one rule for a woman and one for a man, as the app does not ask; the signs of few sons are Scorpio, Taurus, Virgo and Leo.
+* **Not judged**: 12.12-13 (conception and the number of children), 12.15-18 (the tithi and its remedies), 12.19-21 (the cause by the graha that afflicts the 5th), 12.23-24 (remedies), 12.25-34 (the time of the son, which needs the daśā, the transits and the lagna of conception). Māndi and Gulika are not in the chart data, so 12.8 and 12.22 are tried without them.
+* The Sanskrit has gaps in the scan: the first half of the second line in 12.2, the third line of 12.6, a word in 12.11, 12.21, 12.23 and 12.24, and the first half of 12.28. The verses say so.
 
 ## Next topics (not built yet)
 

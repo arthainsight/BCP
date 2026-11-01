@@ -241,6 +241,9 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17
   await panel.locator('[data-topic-filter-key="all"]').click();
   await expect(panel.locator('[data-topic-chapter="11"]')).toContainText('Phaladīpikā 11');
   await expect(panel.locator('[data-topic-rule="p11-trimshamsha-Moon"]')).toBeVisible();
+  // Chapter 12 (children).
+  await expect(panel.locator('[data-topic-chapter="12"]')).toContainText('Phaladīpikā 12');
+  await expect(panel.locator('[data-topic-rule="p12-alpasuta-5th"]')).toBeVisible();
 
   // The woman's chart (BPHS 80): the rules, the caution and the verses of the chapter.
   await panel.getByRole('button', { name: "The woman's chart", exact: true }).click();

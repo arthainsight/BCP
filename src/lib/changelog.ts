@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.93',
+    date: '2026-11-01',
+    title: 'The Phaladīpikā\'s chapter on children, as rules',
+    changes: [
+      'ANALYSIS → Topic yogas → Phaladīpikā: the houses: chapter 12 of the Phaladīpikā (santāna-cintā, 34 verses): the yogas of children, of their loss and delay, of the end of the line, of the adopted son, of the son or the daughter, of the seed and the field, and of the curses of a serpent and of a Brahmin, 21 rules.',
+      'Read from the Sanskrit where the Hindi and the English differ: in 12.3 the loss of sons is a malefic in a 5th that is a sign of a benefic, and in 12.10 the Sun is the fourth graha with the 5th lord, Jupiter and Mars. What needs the tithi, the daśā, the transits, the lagna of conception, Māndi or Gulika is listed as not judged.',
+      'Updated the application version to v3.93.',
+    ],
+  },
+  {
     version: 'v3.92',
     date: '2026-11-01',
     title: 'Loss of children and its causes (BPHS 83)',
