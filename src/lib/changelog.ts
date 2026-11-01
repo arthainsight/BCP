@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.79',
+    date: '2026-11-01',
+    title: 'Topic yogas: marriage (BPHS 18) and longevity (BPHS 19, 44)',
+    changes: [
+      'Topic yogas gets two topics, each rule with its verses in Sanskrit. Marriage, the 7th house of BPHS 18: 33 rules (the 7th lord in its own or exaltation sign, in the 12th/6th/8th, weak, with benefics; Venus in the 7th or with a malefic; the kind of wife by the graha in the 7th; two, three and many wives; the year of marriage by the configuration; loss of the wife). Longevity and death, BPHS 19 and 44: the 8th lord and the lagna lord, the short- and long-life combinations, the death-giving (māraka) grahas and the chief one, Rāhu and Ketu, and the kind and place of death by the 3rd and the 8th.',
+      'The text speaks of a man and his wife; for a woman\'s chart BPHS 80 and 83 are the chapters (not built). The statements about death are shown as the text has them, and the view says they are not predictions. Not judged, with the verses shown: 18.10 and 18.31–34, the daśā rules of 44. The readings made (the eunuch signs, the signs of a benefic, "very strong") are in docs/topic-yogas.md. The rule names and the lines of evidence are in English.',
+      'Updated the application version to v3.79.',
+    ],
+  },
+  {
     version: 'v3.78',
     date: '2026-11-01',
     title: 'Yogas by topic, from the classics: renunciation (BPHS 79)',

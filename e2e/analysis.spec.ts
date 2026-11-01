@@ -178,7 +178,7 @@ test('the chara karakas can be seven or eight, ranked by degrees or minutes', as
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Topic yogas judges the rules of BPHS 79 and shows their verses', async ({ page }) => {
+test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19 and 44 and shows their verses', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -186,13 +186,22 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79 and shows their verses', 
   await selectWorkspace(page, 'ANALYSIS');
   await visible(page, page.getByRole('button', { name: 'Topic yogas', exact: true })).click();
 
-  // Seven rules of the Pravrajyā yoga, each met, not met or beyond judging, with the verses in Sanskrit that open.
+  // Spirituality first: seven rules of the Pravrajyā yoga, each met, not met or beyond judging, with the verses in Sanskrit that open.
   const panel = visible(page, page.locator('[data-topic-yogas="panel"]'));
+  const states = async () => panel.locator('[data-topic-rule]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-met')));
   await expect(panel.locator('[data-topic-rule]')).toHaveCount(7);
-  for (const met of await panel.locator('[data-topic-rule]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-met')))) expect(['true', 'false', 'null']).toContain(met);
+  for (const met of await states()) expect(['true', 'false', 'null']).toContain(met);
   const rule = panel.locator('[data-topic-rule="pravrajya-initiated-king"]');
   await rule.locator('details summary').click();
   await expect(rule.locator('[data-topic-verse="15"] [lang="sa"]').first()).toContainText(/[\u0900-\u097F]/);
+
+  // Marriage (BPHS 18) and longevity (19 and 44, with its caution).
+  await panel.getByRole('button', { name: 'Marriage', exact: true }).click();
+  await expect(panel.locator('[data-topic-rule="own-or-exalted"]')).toBeVisible();
+  expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(25);
+  await panel.getByRole('button', { name: 'Longevity and death', exact: true }).click();
+  await expect(panel.locator('[data-topic-caution]')).toContainText('not a prediction');
+  await expect(panel.locator('[data-topic-rule="chief-maraka"]')).toBeVisible();
 
   expect(errors).toEqual([]);
 });
