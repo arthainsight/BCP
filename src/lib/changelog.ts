@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.76',
+    date: '2026-11-01',
+    title: 'Praśna: the Tājika yogas of a question (Tājika Nīlakaṇṭhī)',
+    changes: [
+      'ANALYSIS → Praśna (Classical systems). Calculate the chart for the moment and the place of a question, choose the house of the matter, and the panel reads the lord of the Lagna (the one who asks) and the lord of that house (the matter) as the Tājika Nīlakaṇṭhī does: Ithasāla (the swifter graha is behind the slower, within its dīptāṁśa, their signs having a Tājika aspect: the matter is brought about, in about 12 days for each degree between them by the rule of the text), Īśarāpha (the swifter has passed it: the matter turns away), Nakta (a third, swifter graha between them takes the light of the one behind and gives it to the one in front: the matter comes through another) and Kambūla (the Ithasāla of the Moon with one of the two or both, graded by the Moon).',
+      'Not built: the Yamayā and Maṇaū, whose conditions cannot be read in the print with certainty, and the other eleven of the sixteen yogas. The Praśna Mārga is not used: the copy found is too poorly printed to read. What the text leaves open (the orb, the retrograde, the Moon\'s middle grade) in docs/tajika-nilakanthi-vs-app.md.',
+      'Updated the application version to v3.76.',
+    ],
+  },
+  {
     version: 'v3.75',
     date: '2026-11-01',
     title: 'The Pātyāṁśī daśā, Māsa-praveśa and Dina-praveśa (Tājika Nīlakaṇṭhī)',

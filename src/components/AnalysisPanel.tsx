@@ -17,12 +17,13 @@ import SpecialSphutasPanel from './SpecialSphutasPanel';
 import SarvatobhadraPanel from './SarvatobhadraPanel';
 import KotaChakraPanel from './KotaChakraPanel';
 import GocharaPanel from './GocharaPanel';
+import PrashnaPanel from './PrashnaPanel';
 import ArgalaPanel from './ArgalaPanel';
 import BhavaChalitPanel from './BhavaChalitPanel';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 
-export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'degrees' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota';
+export type AnalysisView = 'grahas' | 'varga' | 'bala' | 'degrees' | 'nadi' | 'ashtakavarga' | 'gochara' | 'drishti' | 'argala' | 'chalit' | 'tara' | 'dik' | 'sphutas' | 'sarvatobhadra' | 'kota' | 'prashna';
 
 const VIEW_GROUPS: { label: string; views: { key: AnalysisView; label: string }[] }[] = [
   { label: 'Chart & strength', views: [
@@ -37,7 +38,7 @@ const VIEW_GROUPS: { label: string; views: { key: AnalysisView; label: string }[
     { key: 'gochara', label: 'Gochara' }, { key: 'tara', label: 'Nava-Tara' }, { key: 'dik', label: 'Directions' },
   ] },
   { label: 'Classical systems', views: [
-    { key: 'ashtakavarga', label: 'Aṣṭakavarga' }, { key: 'sarvatobhadra', label: 'Sarvatobhadra' }, { key: 'kota', label: 'Kota Chakra' },
+    { key: 'ashtakavarga', label: 'Aṣṭakavarga' }, { key: 'sarvatobhadra', label: 'Sarvatobhadra' }, { key: 'kota', label: 'Kota Chakra' }, { key: 'prashna', label: 'Praśna' },
   ] },
 ];
 
@@ -174,6 +175,8 @@ export default function AnalysisPanel({
       {view === 'ashtakavarga' && (
         <div className="min-w-0 overflow-x-auto"><AshtakavargaPanel chart={chart} /></div>
       )}
+
+      {view === 'prashna' && <PrashnaPanel chart={chart} />}
 
       {view === 'gochara' && (
         <GocharaPanel chart={chart} transitPlanets={transitPlanets} />
