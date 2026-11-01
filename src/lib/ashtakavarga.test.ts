@@ -185,6 +185,36 @@ assert.equal(VARAHAMIHIRA_AV.Moon.Mars.length, PARASHARA_AV.Moon.Mars.length + 1
 assert.equal(VARAHAMIHIRA_AV.Moon.Jupiter.length, PARASHARA_AV.Moon.Jupiter.length);
 assert.equal(VARAHAMIHIRA_AV.Venus.Mars.length, PARASHARA_AV.Venus.Mars.length);
 
+// Exhaustive comparison: only the four rows stated by Bṛhajjātaka 9.2 and
+// 9.6 may differ from the BPHS table. This guards against accidental drift in
+// inherited rows as well as unrecorded differences in the source comparison.
+const EXPECTED_VARAHAMIHIRA_DIFFERENCES = new Set([
+  'Moon.Moon',
+  'Moon.Mars',
+  'Moon.Jupiter',
+  'Venus.Mars',
+]);
+for (const planet of PLANET_NAMES) {
+  for (const contributor of [...CONTRIBUTOR_ORDER, 'Ascendant'] as const) {
+    const key = `${planet}.${contributor}`;
+    const differs =
+      JSON.stringify(VARAHAMIHIRA_AV[planet][contributor]) !==
+      JSON.stringify(PARASHARA_AV[planet][contributor]);
+    assert.equal(
+      differs,
+      EXPECTED_VARAHAMIHIRA_DIFFERENCES.has(key),
+      `Varāhamihira source difference must be explicitly accounted for: ${key}`,
+    );
+  }
+}
+
+// The public default remains Parāśara; selecting it explicitly must be
+// identical to omitting the system argument.
+{
+  const chart = chartWithOffsets(4, [0, 1, 2, 3, 4, 5, 6]);
+  assert.deepEqual(buildAshtakavarga(chart), buildAshtakavarga(chart, 'Parashara'));
+}
+
 for (const ascendant of [1, 4, 7, 10, 12]) {
   for (const offsets of ARRANGEMENTS) {
     const result = buildAshtakavarga(chartWithOffsets(ascendant, offsets), 'Varahamihira');
