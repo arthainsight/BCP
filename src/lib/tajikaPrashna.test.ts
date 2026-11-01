@@ -84,3 +84,28 @@ assert.equal(kambula.kambula!.grade, 'sama');
 assert.equal(readPrashna(1, [body('Sun', 5, 2, 1), body('Moon', 3, 25, 13), body('Mars', 1, 5, 0.5), body('Mercury', 6, 20, 1.4), body('Jupiter', 12, 8, 0.1), body('Venus', 7, 25, 1.2), body('Saturn', 10, 15, 0.03)], 5)!.kambula, null);
 // Fewer than seven grahas: no reading.
 assert.equal(readPrashna(1, [body('Sun', 5, 2, 1)], 5), null);
+
+// ── Yamayā, Maṇaū, Ikkavāla and Indūvāra (v3.89) ──
+import { ikkavalaOrInduvara, manauYogas, yamayaYogas } from './tajikaPrashna';
+// Yamayā (the example of 2.29-30): Venus at 8° of Aries and the Moon at 6° of Taurus have no aspect (the 2nd from each other); Jupiter at 10° of Cancer, slower than both, aspects Venus (the 4th) and the Moon (the 3rd) within its 9°.
+const yamaya = yamayaYogas(body('Venus', 1, 8, 1.2), body('Moon', 2, 6, 13), [body('Jupiter', 4, 10, 0.1), body('Sun', 6, 3, 1)]);
+assert.equal(yamaya.length, 1);
+assert.equal(yamaya[0].carrier, 'Jupiter');
+assert.equal(yamaya[0].lightFrom, 'Moon');
+assert.equal(yamaya[0].lightTo, 'Venus');
+// Not when the two have an aspect, nor when the third is swifter than one of them, nor when a lord is outside its orb.
+assert.deepEqual(yamayaYogas(body('Venus', 1, 8, 1.2), body('Moon', 3, 6, 13), [body('Jupiter', 4, 10, 0.1)]), []);
+assert.deepEqual(yamayaYogas(body('Venus', 1, 8, 1.2), body('Moon', 2, 6, 13), [body('Mercury', 4, 10, 1.4)]), []);
+assert.deepEqual(yamayaYogas(body('Venus', 1, 8, 1.2), body('Moon', 2, 6, 13), [body('Jupiter', 4, 25, 0.1)]), []);
+// Maṇaū (the example of 2.32-33): Mercury at 10° of Virgo is the swifter; Mars at 11° of Gemini (the 10th from the Virgo lagna) has Mercury in its 4th and is within 7° of it.
+const manau = manauYogas([body('Mars', 3, 11, 0.5), body('Saturn', 2, 4, 0.03)], body('Mercury', 6, 10, 1.4));
+assert.equal(manau.length, 1);
+assert.equal(manau[0].thief, 'Mars');
+assert.equal(manau[0].distance, 1);
+// Out of the orb: nothing.
+assert.deepEqual(manauYogas([body('Mars', 3, 25, 0.5)], body('Mercury', 6, 10, 1.4)), []);
+// Ikkavāla and Indūvāra: Aries lagna, the grahas in houses 1, 4, 7, 10, 2, 5, 8; and in houses 3, 6, 9, 12.
+const placed = (signs: number[]) => signs.map((sign, index) => body(['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'][index], sign, 5));
+assert.equal(ikkavalaOrInduvara(1, placed([1, 4, 7, 10, 2, 5, 8])), 'ikkavala');
+assert.equal(ikkavalaOrInduvara(1, placed([3, 6, 9, 12, 3, 6, 9])), 'induvara');
+assert.equal(ikkavalaOrInduvara(1, placed([1, 3, 7, 10, 2, 5, 8])), null);

@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.89',
+    date: '2026-11-01',
+    title: 'Tājika: Yamayā, Maṇaū, Ikkavāla and Indūvāra',
+    changes: [
+      'ANALYSIS → Praśna now also reads four more of the sixteen Tājika yogas (Tājika Nīlakaṇṭhī, Saṃjñātantra 2.17 and 2.28–35): the Yamayā (a graha slower than both lords, aspecting both within its dīptāṁśa, takes the light of the swifter and gives it to the slower: the matter comes through a third), the Maṇaū (Mars or Saturn takes the light of the swifter of two lords in Ithasāla: the matter is destroyed), and the Ikkavāla and Indūvāra (all seven grahas in the kendras and paṇapharas, or all in the āpoklimas, of the chart).',
+      'They are read in a second edition (Naval Kishore, with the Hindi of Pt. Shaktichar Shukla) where the earlier copy was broken. The same edition has the other eight yogas and the sixteen kinds of the Kambūla legible, which are not built yet; its tables of the Dvādaśavargī are scrambled, so that is still not built. In docs/tajika-nilakanthi-vs-app.md.',
+      'Updated the application version to v3.89.',
+    ],
+  },
+  {
     version: 'v3.88',
     date: '2026-11-01',
     title: 'The lagna and the dignity of the grahas, after the Sanskrit of Phaladīpikā 9',

@@ -42,7 +42,8 @@ Tapahtuuko se, riippuu herrojen välisistä Tājika-yogista.
 | Īśarāpha | nopeampi on mennyt asteen tai enemmän ohi; asia kääntyy pois | tehty |
 | Nakta | herroilla ei ole aspektia; kolmas, kumpaakin nopeampi graha asteiden välissä katsoo molempia dīptāṁśansa sisällä ja siirtää valon; asia tulee toisen kautta | tehty |
 | Kambūla | herrojen Ithasāla + Kuun Ithasāla toisen tai molempien kanssa; Kuun luokka (uttama jne.) | tehty lyhennettynä (uttama / adhama / sama; keskiluokka puuttuu, koska teksti on siinä rikki) |
-| Yamayā, Maṇaū ja muut yksitoista | ehdot rikki painossa | **ei tehty** |
+| Yamayā, Maṇaū, Ikkavāla, Indūvāra | luettu toisesta painoksesta (Naval Kishore, hindi-kommentaari Shaktichar Shukla): jakeet 2.17 ja 2.28–35 selvät | **tehty v3.89** |
+| Gairikambūla, Khallāsara, Radda, Duphāli-kuttha, Duttotthadavīra, Tambīra, Kuttha, Duruppha ja Kambūlan 16 lajia | luettavissa samassa painoksessa | **ei vielä tehty** |
 
 Dīptāṁśat: Aurinko 15, Kuu 12, Mars 8, Merkurius 7, Jupiter 9, Venus 7, Saturnus 9 (jotkut antavat kaikille 12).
 
@@ -63,7 +64,7 @@ Ei tehty: saṅkrānti-, pimennys- ja graha-sotapäivät (26.29).
 2. **Takaperoinen graha** nopeampana/hitaampana: teksti ei sano luettavasti; käytetään nopeuden itseisarvoa.
 3. **Antardaśojen järjestys** Pātyāṁśīssa: lukemissani riveissä ei sanota; sama kuin muissa paneelin daśoissa (alkaa daśān herrasta).
 4. **Kuukauden Muntha** (n−1) vai n kertaa 2°30′.
-5. Kopio, jossa Dvādaśavargī, Yamayā ja Maṇaū ovat luettavissa, ja kunnollinen Praśna Mārga.
+5. Kopio, jossa Dvādaśavargī-taulukot ovat luettavissa (löytyi toinen painos, jossa jakeet ja selitykset ovat luettavissa mutta taulukot eivät), ja kunnollinen Praśna Mārga.
 
 ## 6. Mitä seuraavaksi kannattaa tehdä
 
