@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.97',
+    date: '2026-11-01',
+    title: 'The Phaladīpikā\'s chapter on the houses together, as rules',
+    changes: [
+      'ANALYSIS → Topic yogas → Phaladīpikā: the houses: chapter 16 of the Phaladīpikā (bhāva-samudāya, 35 verses): what the lord and the occupants of each house say, house by house: the lagna lord and where he lives, the 2nd lord and learning and speech, the 3rd and the brothers, the mother and her last rites, the home, enemies and health, the wife, a long life, the father, adoption, the 10th and the work, gain and loss, 33 rules.',
+      'Listed as not judged: the body and the complexion by the navāṁśa lord (16.1), the method for the father, brothers and sons (16.12), and the times at which the results come (16.31-35), which need the transits and the daśās.',
+      'Updated the application version to v3.97.',
+    ],
+  },
+  {
     version: 'v3.96',
     date: '2026-11-01',
     title: 'The Phaladīpikā\'s chapter on the good and bad of the houses, as rules',

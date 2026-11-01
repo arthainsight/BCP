@@ -273,3 +273,41 @@ const left15 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.
 assert.ok(left15.includes('15.7'));
 assert.ok(left15.includes('15.30'));
 assert.ok(!left15.includes('15.1'));
+
+// ── chapter 16: the houses together ──
+const verses16 = PHALA_VERSES[16];
+assert.equal(verses16.length, 35);
+assert.deepEqual(verses16.map(verse => verse.verse), Array.from({ length: 35 }, (_, index) => index + 1));
+for (const verse of verses16) {
+  assert.ok(verse.sanskrit.every(line => /[ऀ-ॿ…]/.test(line)), `verse 16.${verse.verse}`);
+  assert.ok(!verse.sanskrit.some(line => /[A-Za-z0-9_$]/.test(line)), `verse 16.${verse.verse} has stray characters`);
+}
+for (const result of evaluateTopic('phalaHouses', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
+// 16.4: the lagna lord Mars exalted in Capricorn, a kendra; in its own sign Aries it is not "bad".
+assert.equal(rule(chart(1, { Mars: [10] }), 'p16-lagna-lord-good').outcome.met, true);
+assert.equal(rule(chart(1, { Mars: [1] }), 'p16-lagna-lord-bad').outcome.met, false);
+assert.equal(rule(chart(1), 'p16-lagna-lord-bad').outcome.met, true);
+// 16.5: the 2nd lord Venus in the lagna with Mercury.
+assert.equal(rule(chart(1, { Venus: [1], Mercury: [1] }), 'p16-2nd-lord-lagna').outcome.met, true);
+// 16.7: the lords of the lagna and the 3rd in each other's signs, both strong.
+assert.equal(rule(chart(1, { Mars: [3], Mercury: [1] }, { Mars: 1.1, Mercury: 1.1 }), 'p16-3rd-exchange').outcome.met, true);
+assert.equal(rule(chart(1, { Mars: [3], Mercury: [1] }), 'p16-3rd-exchange').outcome.met, false);
+// 16.10: the Moon (the 4th lord) in Virgo with Saturn, in an evil house.
+assert.equal(rule(chart(1, { Moon: [6] }), 'p16-mother-lost').outcome.met, true);
+// 16.11: the lagna lord in the 4th, seen by the Moon in Capricorn.
+assert.equal(rule(chart(1, { Mars: [4], Moon: [10] }), 'p16-last-rites').outcome.met, true);
+// 16.13: the 4th lord in the lagna, Venus in the 4th.
+assert.equal(rule(chart(1, { Moon: [1], Venus: [4] }), 'p16-4th-venus').outcome.met, true);
+// 16.16: Saturn in the 6th (the default chart).
+assert.equal(rule(chart(1), 'p16-enemy-trouble').outcome.met, true);
+// 16.20: Jupiter in the 7th and the 7th lord strong.
+assert.equal(rule(chart(1, { Jupiter: [7] }, { Venus: 1.2 }), 'p16-wife-virtuous').outcome.met, true);
+// 16.22: the Sun in the 9th, its lord Jupiter in the 8th.
+assert.equal(rule(chart(1, { Sun: [9] }), 'p16-father-dies').outcome.met, true);
+// 16.28: the Sun in the 10th.
+assert.ok(rule(chart(1, { Sun: [10] }), 'p16-10th-occupants').outcome.lines[0].includes('energetic'));
+const left16 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.${verse.verse}`);
+assert.ok(left16.includes('16.1'));
+assert.ok(left16.includes('16.12'));
+assert.ok(left16.includes('16.31'));
+assert.ok(!left16.includes('16.2'));
