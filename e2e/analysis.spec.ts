@@ -237,6 +237,18 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17
   await expect(panel.locator('[data-topic-chapter="10"]')).toContainText('Phaladīpikā 10');
   await expect(panel.locator('[data-topic-rule="p10-7th-afflicted"]')).toBeVisible();
   expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(15);
+  // Chapter 11 of the Phaladīpikā (the woman's chart) is under the same topic, with its own heading.
+  await panel.locator('[data-topic-filter-key="all"]').click();
+  await expect(panel.locator('[data-topic-chapter="11"]')).toContainText('Phaladīpikā 11');
+  await expect(panel.locator('[data-topic-rule="p11-trimshamsha-Moon"]')).toBeVisible();
+
+  // The woman's chart (BPHS 80): the rules, the caution and the verses of the chapter.
+  await panel.getByRole('button', { name: "The woman's chart", exact: true }).click();
+  await panel.locator('[data-topic-filter-key="all"]').click();
+  await expect(panel.locator('[data-topic-rule="w80-mars-kills-husband"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-rule="w80-8th-graha"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-caution]')).toContainText('not a prediction');
+  expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(15);
 
   expect(errors).toEqual([]);
 });

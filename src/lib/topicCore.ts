@@ -6,7 +6,7 @@ import type { TopicVerse } from './topicVerses';
  * What the topic yogas (topicYogas.ts) share: the shape of a rule and the small questions of a chart that the rules ask. A rule carries the chapter and verses it is read from and decides from the chart whether
  * it is met (true), not met (false) or cannot be judged (null). "Strong" (bali) is the Ṣaḍbala of the graha at or over the strength it needs (the ratio of the Ṣaḍbala panel is 1 or more); the text does not define it.
  */
-export type TopicKey = 'spirituality' | 'marriage' | 'longevity' | 'wealth' | 'illness' | 'houses' | 'phalaHouses';
+export type TopicKey = 'spirituality' | 'marriage' | 'longevity' | 'wealth' | 'illness' | 'houses' | 'phalaHouses' | 'woman';
 /** The classic a topic is read from: the Bṛhat Parāśara Horā Śāstra (the default) or the Phaladīpikā. */
 export type TopicText = 'bphs' | 'phala';
 
