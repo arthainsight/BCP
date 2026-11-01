@@ -1775,6 +1775,13 @@ export const FI: Record<string, string> = {
   'inactive': 'ei aktiivinen',
   'Dignity': 'Arvokkuus',
   'Conjunctions': 'Yhtymät',
+  'Grahas in houses': 'Grahat taloissa',
+  'Grahas in the houses (Phaladīpikā 8)': 'Grahat taloissa (Phaladīpikā 8)',
+  'Phaladīpikā chapter 8: the result of each graha, and of Rāhu and Ketu, in the house it stands in from the lagna. The summaries are short and the verse decides; the Sanskrit is the text layer of the edition, a scan of the print, with the plain misreadings corrected. The commentary also quotes the Sārāvalī and the Jātakābharaṇa; those are not used here.': 'Phaladīpikā, luku 8: kunkin grahan, sekä Rāhun ja Ketun, tulos siinä talossa, jossa se on lagnasta laskien. Tiivistelmät ovat lyhyitä ja jae ratkaisee; sanskrit on painoksen tekstikerros, painetun sivun skannaus, jossa selvät virhelukemat on korjattu. Kommentaari lainaa myös Sārāvalīa ja Jātakābharaṇaa; niitä ei käytetä tässä.',
+  'By 8.34–35 a graha gives the whole result of its house at the middle of the house, which is the degree of the lagna ({degree}°) in each sign, and less or more the farther or nearer it is; the text gives no measure. Rāhu acts like Saturn and Ketu like Mars.': 'Jakeiden 8.34–35 mukaan graha antaa talonsa koko tuloksen talon keskikohdassa, joka on lagnan aste ({degree}°) kussakin merkissä, ja vähemmän tai enemmän sen mukaan, kuinka kaukana tai lähellä se on; teksti ei anna mittaa. Rāhu toimii kuten Saturnus ja Ketu kuten Mars.',
+  'in the {house} house ({sign}), 8.{verse}': '{house}. talossa ({sign}), 8.{verse}',
+  '{degrees}° from the middle of the house (8.34–35)': '{degrees}° talon keskikohdasta (8.34–35)',
+  'The verses on the strength by degrees (8.34–35)': 'Asteiden mukaista voimaa koskevat jakeet (8.34–35)',
 
   // Dasha notes
   'Date is before birth': 'Päivä on ennen syntymää',
