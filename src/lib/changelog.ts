@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.88',
+    date: '2026-11-01',
+    title: 'The lagna and the dignity of the grahas, after the Sanskrit of Phaladīpikā 9',
+    changes: [
+      'ANALYSIS → Lagna and dignities (Classical systems): the lagna by its sign (Phaladīpikā 9.1–12) and the same for the Moon sign (9.13), and the result of each of the seven grahas by its dignity: in its exaltation (9.14), own sign (9.15), the sign of a friend (9.16) or of an enemy (9.17), its fall (9.18) or a neutral sign (9.19), with the combust graha (9.19), the retrograde graha (9.20) and the vargottama graha (9.20); each with its verse in Devanagari. The friend and the enemy are the natural ones.',
+      'The Sanskrit is the text layer of the edition, a scan of the print, with the plain misreadings corrected; in 9.16 and 9.19 some letters could not be read and the verse says so. The commentary quotes the Jātakābharaṇa and other books for each graha; those are not used. In docs/lagna-dignity-phaladipika9.md.',
+      'Updated the application version to v3.88.',
+    ],
+  },
+  {
     version: 'v3.87',
     date: '2026-11-01',
     title: 'Topic yogas: only the rules the chart meets are shown first',

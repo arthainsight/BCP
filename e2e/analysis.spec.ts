@@ -277,6 +277,28 @@ test('ANALYSIS Grahas in houses gives the verse of Phaladīpikā 8 for each grah
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Lagna and dignities gives the lagna sign and the dignity of each graha after Phaladīpikā 9', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Lagna and dignities', exact: true })).click();
+
+  // The lagna by its sign with its verse, the Moon sign, and a card with the dignity for each of the seven grahas.
+  const panel = visible(page, page.locator('[data-lagna="panel"]'));
+  await expect(panel.locator('[data-lagna="sign"]')).toContainText('9.');
+  await expect(panel.locator('[data-lagna="moon-sign"]')).toBeVisible();
+  await expect(panel.locator('[data-lagna-graha]')).toHaveCount(7);
+  const dignity = await panel.locator('[data-lagna-graha="Sun"]').getAttribute('data-dignity');
+  expect(['exalted', 'own', 'friend', 'enemy', 'debilitated', 'neutral']).toContain(dignity);
+  const verse = panel.locator('[data-lagna="sign"] details').first();
+  await verse.locator('summary').click();
+  await expect(verse.locator('[lang="sa"]').first()).toContainText(/[\u0900-\u097F]/);
+
+  expect(errors).toEqual([]);
+});
+
 test('ANALYSIS Upagrahas gives the verse of BPHS 25 for each body in the house it stands in', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
