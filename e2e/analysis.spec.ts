@@ -178,7 +178,7 @@ test('the chara karakas can be seven or eight, ranked by degrees or minutes', as
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44 and 39 to 42 and shows their verses', async ({ page }) => {
+test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17, 9 and 10 and shows their verses', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -208,6 +208,13 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44 and 39 to 42 
   await expect(panel.locator('[data-topic-rule="exchange-1-5"]')).toBeVisible();
   await expect(panel.locator('[data-topic-rule="poor-1-12-exchange"]')).toBeVisible();
   expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(50);
+
+  // Illness and ariṣṭa (BPHS 17, 9, 10, with its caution).
+  await panel.getByRole('button', { name: 'Illness and ariṣṭa', exact: true }).click();
+  await expect(panel.locator('[data-topic-caution]')).toContainText('not a prediction');
+  await expect(panel.locator('[data-topic-rule="wound-6th-lord"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-rule="benefic-kendra"]')).toBeVisible();
+  expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(40);
 
   expect(errors).toEqual([]);
 });

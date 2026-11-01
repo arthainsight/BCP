@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.83',
+    date: '2026-11-01',
+    title: 'Illness and ariṣṭa, after the Sanskrit of BPHS 17, 9 and 10',
+    changes: [
+      'ANALYSIS → Topic yogas → Illness and ariṣṭa: the rules of the 6th house (BPHS 17: wounds, leprosy, fevers, the years of the ailments), of the ariṣṭa of birth (9: the dangers to the child, the mother and the father) and of the cancelling of ariṣṭa (10), with all 82 verses in Devanagari and IAST. The view carries a caution: the statements are the text\'s and not a prediction, and nothing in it is medical advice.',
+      'Not judged: what needs the hour of birth (the twilight, the horā, the gaṇḍānta, the eclipse), Māndi, the kārakas of the father and the other houses, and the verses whose sentence runs over the next verse; the view lists them. Chapter 11 (the list of what each house shows) is a list of significations and not a set of yogas, and is not part of it. In docs/topic-yogas.md.',
+      'Updated the application version to v3.83.',
+    ],
+  },
+  {
     version: 'v3.82',
     date: '2026-11-01',
     title: 'Royal yogas, wealth and poverty, after the Sanskrit of BPHS 39–42',

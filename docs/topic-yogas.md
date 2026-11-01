@@ -1,10 +1,10 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
 
-Code: `src/lib/topicYogas.ts` (the topics and `evaluateTopic`), `src/lib/topicCore.ts` (the shape of a rule and the questions a chart is asked), `src/lib/topicSpirituality.ts`, `topicMarriage.ts`, `topicLongevity.ts`, `topicWealth.ts`
-(the rules), `src/lib/topicVerses.ts` (the verses of chapters 18, 19, 39, 40, 41, 42, 44 and 79: Devanagari, IAST and a short gloss) and `src/components/TopicYogaPanel.tsx`.
+Code: `src/lib/topicYogas.ts` (the topics and `evaluateTopic`), `src/lib/topicCore.ts` (the shape of a rule and the questions a chart is asked), `src/lib/topicSpirituality.ts`, `topicMarriage.ts`, `topicLongevity.ts`, `topicWealth.ts`, `topicIllness.ts`
+(the rules), `src/lib/topicVerses.ts` (the verses of chapters 9, 10, 17, 18, 19, 39, 40, 41, 42, 44 and 79: Devanagari, IAST and a short gloss) and `src/components/TopicYogaPanel.tsx`.
 A rule has an id, the topic, the chapter and verses it comes from, what the text says follows, and a function from the chart to *met*, *not met* or *cannot be judged*. The rule names, the lines of evidence and the glosses are in English.
 
 ## Readings made throughout
@@ -65,8 +65,19 @@ A rule has an id, the topic, the chapter and verses it comes from, what the text
 * **Not judged**: what needs the ārūḍha, the pada or the older kāraka (39.3–5, 39.8–10, 39.12–16, 39.22–27, 39.29, 39.31, 39.40, 40.3, 40.7, 40.11, 42.14–15); what the verse leaves open (the second half of 39.21 gives no number, 42.6 does not say whether its conditions are alternatives,
   42.12 gives no number); and the Pārijāta, Uttama, Gopura, Siṃhāsana and other divisions of 41.18–34 (they need the divisional scheme of chapter 7). The view lists these verses.
 
+## Illness and ariṣṭa: BPHS 17 (the 6th house), 9 (ariṣṭa), 10 (its cancelling), 82 verses, 59 rules
+
+* **17 (28 verses)**: the 6th lord in its own sign, the lagna or the 8th, with the limb of the 6th sign (the Kālapuruṣa of BPHS 4) (2); the lagna lord and the face (6); the leprosies by the Moon in the lagna with Rāhu, Saturn or Mars (7–9);
+  the lords of the 6th and 8th with the Sun in the lagna and the kind of boil by the graha that joins (9–11); the critical period (13); Saturn with Rāhu (14); the ailments with the year of life that the verse names (14–15, 19–20, 21, 23–28).
+* **9 (45 verses)**: the dangers of birth to the child (3–12, 16–23), to the mother (5, 24–32), to the father (34–39, 41–42, 44) and to the family (30). The first twenty-four years belong to the ariṣṭa of birth (9.2).
+* **10 (9 verses)**: what cancels ariṣṭa: a benefic or the lagna lord in a kendra, Jupiter in the lagna, the night birth in the bright half, Jupiter with Mars, the malefics between benefics.
+* **Readings**: "between two malefics" is a malefic in the sign before and one in the sign after; "night" is the Sun in the 1st to 6th house; the strong ("balavān") are the Ṣaḍbala ratio of 1 or more; the 24th year and the other ages are the text's; in 17.6 the aspect of Mercury is read as part of the condition;
+  17.7's "lagnādhipau kujabudhau" is read as the lagna lord being Mars or Mercury; 17.24 "or" Mars in the 12th from the 8th (the 7th); 9.18 asks for a malefic in a kendra other than the lagna and one in the 8th.
+* **Not judged**: what needs the hour of birth (9.7, 9.13's twilight, horā and gaṇḍānta, 9.14, 9.15's east and west halves), Māndi (17.16), a drekkāṇa (9.22), the kārakas (17.3–5, 17.12), the house of destruction of 17.17 (the 8th or the 12th), the sentences that run over verses (17.11b, 17.18, 17.21b–22),
+  the milk (9.27), the navāṁśa of Mars (9.40) and 9.43, 9.45's second half (read with 9.44). The view lists these verses.
+* The view says that the statements are the text's and not a prediction, and that nothing in it is medical advice. Chapter 11 (what each house shows, 16 verses) is a list of significations and not a set of yogas and is not built here.
+
 ## Next topics (not built yet)
 
-* **Illness**: BPHS 17 (the 6th), 9–11 (ariṣṭa and its cancelling).
 * **Women**: BPHS 80 and 83.
 * Other texts: the Phaladīpikā, the Sārāvalī and the Jātakapārijāta for marriage and longevity.

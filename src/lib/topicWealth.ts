@@ -2,8 +2,8 @@ import { navamshaSign } from './birthConditions';
 import { calculateCharaKarakas } from './karakas';
 import { EXALTATION, MOOLATRIKONA, OWN_SIGNS } from './dignity';
 import {
-  SEVEN, aspectsSign, cannot, debilitated, find, grahasInHouse, houseOf, houseOfSign, inEnemySign, isBenefic, isMalefic, isStrong, lordHouse, lordOfHouse, lordOfSign, ordinalEn,
-  ownOrExalted, signName, signOf, signOfHouse, together, type RuleOutcome, type TopicContext, type TopicYogaRule,
+  SEVEN, cannot, debilitated, find, grahasInHouse, houseOf, houseOfSign, inEnemySign, isBenefic, isMalefic, isStrong, joinedOrSeen, lordHouse, lordOfHouse, lordOfSign, mixed, ordinalEn,
+  ownOrExalted, signName, signOf, signOfHouse, sees, seesSign, together, where, type RuleOutcome, type TopicContext, type TopicYogaRule,
 } from './topicCore';
 
 /**
@@ -18,22 +18,10 @@ const rule = (chapter: number, id: string, verses: number[], name: string, effec
 
 const KENDRA = [1, 4, 7, 10]; const TRIKONA = [1, 5, 9]; const TRIKA = [6, 8, 12];
 const has = (house: number | null, list: number[]) => house !== null && list.includes(house);
-const where = (context: TopicContext, name: string) => { const house = houseOf(context, name); return house === null ? `${name} (missing)` : `${name} in the ${ordinalEn(house)}`; };
 const lord = (context: TopicContext, house: number) => lordOfHouse(context, house);
-/** Whether `from` aspects the sign of `to` (only the seven grahas aspect). */
-const sees = (context: TopicContext, from: string, to: string) => {
-  const a = find(context, from); const b = find(context, to);
-  return Boolean(a && b && (SEVEN as readonly string[]).includes(from) && from !== to && aspectsSign(from, a.sign, b.sign));
-};
-const seesSign = (context: TopicContext, from: string, sign: number) => {
-  const a = find(context, from);
-  return Boolean(a && (SEVEN as readonly string[]).includes(from) && aspectsSign(from, a.sign, sign));
-};
-const joinedOrSeen = (context: TopicContext, target: string, by: string) => by !== target && (together(context, target, by) || sees(context, by, target));
 const ownNavamsha = (context: TopicContext, name: string) => { const body = find(context, name); return Boolean(body && OWN_SIGNS[name]?.includes(navamshaSign(body.longitude))); };
 const dignified = (context: TopicContext, name: string) => { const sign = signOf(context, name); return sign !== null && ownOrExalted(name, sign); };
 const beneficsSeeing = (context: TopicContext, name: string) => SEVEN.filter(other => other !== name && isBenefic(context, other) && sees(context, other, name));
-const mixed = (items: string[]) => (items.length ? items.join(', ') : 'none');
 /** The lords of the 2nd and 7th, the māraka lords (chapter 44). */
 const marakas = (context: TopicContext): string[] => [...new Set([lord(context, 2), lord(context, 7)])];
 const withMaraka = (context: TopicContext, name: string) => marakas(context).filter(maraka => joinedOrSeen(context, name, maraka));
