@@ -654,6 +654,8 @@ export const FI: Record<string, string> = {
   'Longevity and death': 'Pitkäikäisyys ja kuolema',
   'Royal yogas, wealth and poverty': 'Rāja-yogat, vauraus ja köyhyys',
   'Illness and ariṣṭa': 'Sairaus ja ariṣṭa',
+  'No rule of this topic is met by the chart; the other rules are under the buttons above.': 'Mikään tämän aiheen sääntö ei täyty tässä kartassa; muut säännöt ovat ylläolevien painikkeiden takana.',
+  'No rule of this kind.': 'Ei tämän laatuisia sääntöjä.',
   'The houses (bhāva-phala)': 'Talot (bhāva-phala)',
   'The classical statements about the death of the father, the loss of children and the years of life are shown as the text has them. They are a reading of the text and not a prediction.': 'Klassiset väitteet isän kuolemasta, lasten menetyksestä ja elinvuosista näytetään sellaisina kuin teksti ne antaa. Ne ovat tekstin lukutapa eivätkä ennustus.',
   'The classical statements about disease, the dangers of birth and the death of the child or of the parents are shown as the text has them. They are a reading of the text and not a prediction, and nothing here is medical advice.': 'Klassiset väitteet taudeista, syntymän vaaroista sekä lapsen tai vanhempien kuolemasta näytetään sellaisina kuin teksti ne antaa. Ne ovat tekstin lukutapa eivätkä ennustus, eikä tämä ole lääketieteellinen neuvo.',

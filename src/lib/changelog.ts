@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v3.87',
+    date: '2026-11-01',
+    title: 'Topic yogas: only the rules the chart meets are shown first',
+    changes: [
+      'ANALYSIS → Topic yogas now shows by default only the rules that the chart meets. The buttons above the list count the rules by state (met, not met, cannot be judged, all) and show the others; the choice stays when the topic is changed. With the houses and the topics of the earlier versions the view holds some five hundred rules, and most of them are not met by any one chart.',
+      'Updated the application version to v3.87.',
+    ],
+  },
+  {
     version: 'v3.86',
     date: '2026-11-01',
     title: 'Grahas in the houses, after the Sanskrit of Phaladīpikā 8',
