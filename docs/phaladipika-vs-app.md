@@ -84,3 +84,21 @@ lists in the same order, and the Hindi commentary writes them out in pairs, whic
 * **Rāhu and Ketu** as obstructors: the verses say "any graha" but name neither; left out (`VEDHA_OBSTRUCTORS`). Open.
 * **Not read:** how much a blocked good house is worth (the text only says the good result is not given), and whether the vedha applies to the bad houses (it does not: the text gives no vedha for them).
 * The edition's OCR garbles the last pair of Jupiter's list ("33"/"aut"); 7↔3 is taken from the other pairs (the 5 good houses, 5 vedha houses) and agrees with the usual table.
+
+## The transits by the nakṣatras (26.25–48) — in the app since v3.74
+
+Read in the Sanskrit and the Hindi commentary of the edition (`phaldipika_202310`). The Gochara view has a table beside the rows of the houses (`GocharaNakshatraTable`, rules in `src/lib/phaladipikaGochara.ts`):
+
+| Verse | Rule | In the app |
+|---|---|---|
+| 26.25 | The Sun and Mars give their result in the first 10° of a sign, Jupiter and Venus in the middle 10°, the Moon and Saturn in the last 10°, Mercury and Rāhu all through | "Gives its result" column; Ketu is not named, so none |
+| 26.26–28 | Vedha of the seven-line wheel (Saptaśalākā): the nakṣatra of the Sun pierces the birth (janma), ādhāna (19th) or karma (10th) nakṣatra: danger to life, fear, loss of wealth, and death with a malefic in it; for the other malefics (Mars, Saturn, Rāhu, Ketu) on any of the janma, ādhāna, karma, vipat (3rd), vainaśika (23rd), pratyari (5th) and vadha (7th), death or the like; a benefic only a loss in the work | "Vedha" column. The pairs that pierce one another are the verse of the Muhūrtacintāmaṇi that the commentary quotes (14 pairs, Abhijit included); the Moon is not classed by the text and gives "not stated" |
+| 26.29 | The days of the saṅkrānti, a graha's entry in a sign, an eclipse, a war of the grahas or a meteor fall on the janma, anujanma (karma) or trijanma (ādhāna) nakṣatra | **not applied** (needs the days) |
+| 26.30–32 | A result is void if the graha is aspected by the opposite kind or by its enemy; a graha in a bad house is harmless in its own or exaltation sign and gives the full good in a good house there; a good house with debilitation, an enemy's sign or combustion gives no good, a bad house with them is worse | "Notes" column; the aspects are the whole-sign ones (7th for all, Mars 4/8, Jupiter 5/9, Saturn 3/10), the good and bad house is that of 26.2 |
+| 26.33–34 | Saturn, the Sun, Mars and Jupiter in the birth sign, the 8th and the 12th from the Moon; and the Moon in the 8th, Mars 7th, Rāhu 9th, Venus 6th, Jupiter 3rd, the Sun 5th, Saturn 1st, Mercury 4th: danger to life, standing and wealth | "Notes" column. **The text disagrees with itself:** the 4th is a good house for Mercury in 26.2, and here the worst. Both are shown as written |
+| 26.35–40 | The limbs: the 27 nakṣatras from the birth nakṣatra are laid on the body for the Sun; for the Moon; for Mars; for Mercury, Jupiter and Venus; for Saturn, Rāhu and Ketu, each limb with its result | "Count · limb" column; each table covers the 27 once (a test). The verses give the counts in words and the commentary the summary tables, which agree |
+| 26.41 | The sign with more aṣṭakavarga bindus gives a good result even in the 6th, 8th or 12th | the Sarva column already shows the bindus; the text does not say how many |
+| 26.42–47 | Lattā ("kick"): the Sun's falls on the 12th nakṣatra from its own, Mars's the 3rd, Jupiter's the 6th, Saturn's the 8th, counted forward; Venus's the 5th, Mercury's the 7th, Rāhu's the 9th and the Moon's the 22nd, counted backward; on the birth nakṣatra it brings distress; the lattās of several grahas on one nakṣatra multiply it | "Lattā" column, with the commentary's three examples in the tests (Sun in Krittikā, Venus in Jyeṣṭhā, Mars in Uttara Phalgunī: all on Citrā). Ketu's is not given |
+| 26.48 | Benefic vedha of the Sarvatobhadra is good, malefic bad | **not applied** here (the Sarvatobhadra view has the vedha) |
+
+What the text does not give: how the verdicts are weighed against each other, and the lattā results of Mars and Saturn. The "sensitive ages of Saturn" and the other sensitive-transit tables of the Kala software are not in this chapter.

@@ -7,6 +7,7 @@ import type { AshtakavargaPlanet } from '@/lib/ashtakavarga';
 import { useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
+import GocharaNakshatraTable from './GocharaNakshatraTable';
 
 type Props = {
   chart: ChartData;
@@ -87,6 +88,8 @@ export default function GocharaPanel({ chart, transitPlanets = [] }: Props) {
           </tbody>
         </table>
       </div>
+
+      <GocharaNakshatraTable chart={chart} transitPlanets={transitPlanets} />
 
       <div className="overflow-x-auto">
         <div className="mb-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('Bindus by sign')}</div>
