@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.73',
+    date: '2026-11-01',
+    title: 'Vedha in the Gochara',
+    changes: [
+      'Gochara (ANALYSIS → Gochara): a graha in a favourable house from the natal Moon is now checked for vedha, the obstruction of Phaladīpikā 26.3–8. Every good house has a vedha house (the Sun 3↔9, 6↔12, 10↔4, 11↔5; the Moon 1↔5, 3↔9, 6↔12, 7↔2, 10↔4, 11↔8; Mars and Saturn 3↔12, 6↔9, 11↔5; Mercury 2↔5, 4↔3, 6↔9, 8↔1, 10↔8, 11↔12; Jupiter 2↔12, 5↔4, 7↔3, 9↔10, 11↔8; Venus 1↔8, 2↔7, 3↔1, 4↔10, 5↔9, 8↔5, 9↔11, 11↔3, 12↔6) and if another transiting graha stands in it the good result is taken away. The "From Moon" column keeps the ✓ and adds, in amber, which graha obstructs and from which house. The verses\' exceptions are applied: the Sun and Saturn do not obstruct each other, nor do the Moon and Mercury.',
+      'Rāhu and Ketu do not obstruct: the verses say "any graha" but name neither, and give them no good houses of their own either. A choice in one line (VEDHA_OBSTRUCTORS in gochara.ts). The Research feature "house from the Moon" is unchanged; the vedha is not in it. This is the vedha of the transits and has nothing to do with the vedha of the Sarvatobhadra chakra (nakṣatra lines), which was in the app already.',
+      'Updated the application version to v3.73.',
+    ],
+  },
+  {
     version: 'v3.72',
     date: '2026-10-31',
     title: 'The Kālachakra condition and the span of life of the Phaladīpikā',
