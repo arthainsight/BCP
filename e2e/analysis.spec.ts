@@ -189,6 +189,12 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17
   // Spirituality first: seven rules of the Pravrajyā yoga, each met, not met or beyond judging, with the verses in Sanskrit that open.
   const panel = visible(page, page.locator('[data-topic-yogas="panel"]'));
   const states = async () => panel.locator('[data-topic-rule]').evaluateAll(nodes => nodes.map(node => node.getAttribute('data-met')));
+  // By default only the rules the chart meets are shown; the buttons above them count and show the others.
+  await expect(panel.locator('[data-topic-filter-key="met"]')).toHaveAttribute('aria-pressed', 'true');
+  for (const met of await states()) expect(met).toBe('true');
+  await panel.locator('[data-topic-filter-key="not"]').click();
+  for (const met of await states()) expect(met).toBe('false');
+  await panel.locator('[data-topic-filter-key="all"]').click();
   await expect(panel.locator('[data-topic-rule]')).toHaveCount(7);
   for (const met of await states()) expect(['true', 'false', 'null']).toContain(met);
   const rule = panel.locator('[data-topic-rule="pravrajya-initiated-king"]');

@@ -31,6 +31,7 @@ function Verses({ verses }: { verses: TopicVerse[] }) {
 export default function TopicYogaPanel({ chart }: { chart: ChartData }) {
   const t = useT();
   const [topic, setTopic] = useState<TopicKey>('spirituality');
+  const [show, setShow] = useState<'met' | 'not' | 'unknown' | 'all'>('met');
   const context = useMemo<TopicContext>(() => {
     const ratio: Partial<Record<SevenGraha, number>> = {};
     for (const row of buildShadbalaRows(chart)) if ((SEVEN as readonly string[]).includes(row.planet)) ratio[row.planet as SevenGraha] = row.ratio;
@@ -43,6 +44,13 @@ export default function TopicYogaPanel({ chart }: { chart: ChartData }) {
   }, [chart]);
   const results = useMemo(() => evaluateTopic(topic, context), [topic, context]);
   const left = useMemo(() => notEvaluatedVerses(topic), [topic]);
+  const counts = useMemo(() => ({
+    met: results.filter(result => result.outcome.met === true).length,
+    not: results.filter(result => result.outcome.met === false).length,
+    unknown: results.filter(result => result.outcome.met === null).length,
+    all: results.length,
+  }), [results]);
+  const shown = useMemo(() => results.filter(result => show === 'all' || (show === 'met' ? result.outcome.met === true : show === 'not' ? result.outcome.met === false : result.outcome.met === null)), [results, show]);
   const badge = (met: boolean | null) => met === true ? ['✓', 'text-emerald-600 dark:text-emerald-400', t('met')] : met === false ? ['✗', 'text-zinc-400', t('not met')] : ['?', 'text-amber-600 dark:text-amber-400', t('cannot be judged')];
 
   return (
@@ -59,11 +67,18 @@ export default function TopicYogaPanel({ chart }: { chart: ChartData }) {
         ))}
       </div>
       <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{TOPICS.find(item => item.key === topic)?.source}</div>
+      <div className="flex flex-wrap items-center gap-1" data-topic-filter>
+        {([['met', t('met')], ['not', t('not met')], ['unknown', t('cannot be judged')], ['all', t('all')]] as const).map(([key, label]) => (
+          <button key={key} type="button" onClick={() => setShow(key)} aria-pressed={show === key} data-topic-filter-key={key} className={`rounded border px-2 py-0.5 text-[10px] font-mono ${show === key ? 'border-zinc-800 bg-zinc-800 text-white dark:border-zinc-200 dark:bg-zinc-200 dark:text-zinc-900' : 'border-zinc-300 text-zinc-600 dark:border-zinc-600 dark:text-zinc-300'}`}>{label} ({counts[key]})</button>
+        ))}
+      </div>
+
       {TOPICS.find(item => item.key === topic)?.caution && <p className="text-[10px] font-mono text-amber-700 dark:text-amber-400" data-topic-caution>{t(TOPICS.find(item => item.key === topic)!.caution!)}</p>}
       <div className="space-y-2">
-        {results.map((result, index) => {
+        {shown.length === 0 && <p className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400" data-topic-empty>{show === 'met' ? t('No rule of this topic is met by the chart; the other rules are under the buttons above.') : t('No rule of this kind.')}</p>}
+        {shown.map((result, index) => {
           const [icon, color, word] = badge(result.outcome.met);
-          const heading = (TOPICS.find(item => item.key === topic)?.chapters.length ?? 0) > 1 && result.rule.chapter !== results[index - 1]?.rule.chapter;
+          const heading = (TOPICS.find(item => item.key === topic)?.chapters.length ?? 0) > 1 && result.rule.chapter !== shown[index - 1]?.rule.chapter;
           return (
             <div key={result.rule.id} className="rounded-lg border border-zinc-200 p-2 font-mono text-xs dark:border-zinc-700" data-topic-rule={result.rule.id} data-met={String(result.outcome.met)}>
               {heading && <div className="mb-1 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600" data-topic-chapter={result.rule.chapter}>BPHS {result.rule.chapter}</div>}
