@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.99',
+    date: '2026-11-01',
+    title: 'The rest of the Tājika yogas of a question',
+    changes: [
+      'ANALYSIS → Praśna: Gairikambūla, Khallāsara, Radda, Duphāli-kuttha, Duttotthadavīra and Tambīra, the other six of the sixteen Tājika yogas that read the chart as it stands (Tājika Nīlakaṇṭhī, 2.57–66), are now read between the two lords of a question, beside the Ithasāla, Nakta, Kambūla, Yamayā and Maṇaū.',
+      'A list of the marks of strength (Kuttha, 67–70) and weakness (Duruppha, 71–75) of the two lords and the Moon is under the yogas. Not taken: the time strengths of the rising of Venus, the Moon and Mars, the middle motion and Rāhu\'s head and tail. The sixteen kinds of the Kambūla and the Dvādaśavargī (its tables are garbled in the print) are still not built.',
+      'Updated the application version to v3.99.',
+    ],
+  },
+  {
     version: 'v3.98',
     date: '2026-11-01',
     title: 'The Phaladīpikā\'s chapter on death by the transits: the verses',

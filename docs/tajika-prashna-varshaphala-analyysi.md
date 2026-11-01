@@ -43,7 +43,8 @@ Tapahtuuko se, riippuu herrojen välisistä Tājika-yogista.
 | Nakta | herroilla ei ole aspektia; kolmas, kumpaakin nopeampi graha asteiden välissä katsoo molempia dīptāṁśansa sisällä ja siirtää valon; asia tulee toisen kautta | tehty |
 | Kambūla | herrojen Ithasāla + Kuun Ithasāla toisen tai molempien kanssa; Kuun luokka (uttama jne.) | tehty lyhennettynä (uttama / adhama / sama; keskiluokka puuttuu, koska teksti on siinä rikki) |
 | Yamayā, Maṇaū, Ikkavāla, Indūvāra | luettu toisesta painoksesta (Naval Kishore, hindi-kommentaari Shaktichar Shukla): jakeet 2.17 ja 2.28–35 selvät | **tehty v3.89** |
-| Gairikambūla, Khallāsara, Radda, Duphāli-kuttha, Duttotthadavīra, Tambīra, Kuttha, Duruppha ja Kambūlan 16 lajia | luettavissa samassa painoksessa | **ei vielä tehty** |
+| Gairikambūla, Khallāsara, Radda, Duphāli-kuttha, Duttotthadavīra, Tambīra, Kuttha, Duruppha | luettavissa samassa painoksessa | **tehty (v3.99)**; Kuttha ja Duruppha osittain |
+| Kambūlan 16 lajia | luettavissa samassa painoksessa | **ei vielä tehty** |
 
 Dīptāṁśat: Aurinko 15, Kuu 12, Mars 8, Merkurius 7, Jupiter 9, Venus 7, Saturnus 9 (jotkut antavat kaikille 12).
 
