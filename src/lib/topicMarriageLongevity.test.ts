@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { PHALA_VERSES } from './phalaVerses';
 import { SEVEN, TOPICS, TOPIC_RULES, evaluateTopic, notEvaluatedVerses, type SevenGraha, type TopicContext, type TopicKey, type TopicPlanet } from './topicYogas';
 import { TOPIC_VERSES } from './topicVerses';
 
@@ -10,7 +11,7 @@ for (const [chapter, count] of Object.entries(COUNTS)) {
   assert.deepEqual(verses.map(verse => verse.verse), Array.from({ length: count }, (_, index) => index + 1));
   for (const verse of verses) {
     assert.equal(verse.chapter, Number(chapter));
-    assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0]) && /[ऀ-ॿ]/.test(verse.sanskrit[1]) && verse.iast[0].length > 5 && verse.gloss.length > 10, `${chapter}.${verse.verse}`);
+    assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0]) && /[ऀ-ॿ]/.test(verse.sanskrit[1]) && (verse.iast?.[0].length ?? 0) > 5 && verse.gloss.length > 10, `${chapter}.${verse.verse}`);
   }
 }
 // The rules: unique ids, and each names verses that exist in its chapter and topic.
@@ -18,7 +19,7 @@ assert.equal(new Set(TOPIC_RULES.map(rule => rule.id)).size, TOPIC_RULES.length,
 for (const rule of TOPIC_RULES) {
   const topic = TOPICS.find(item => item.key === rule.topic)!;
   assert.ok(topic.chapters.includes(rule.chapter), `${rule.id}: chapter ${rule.chapter} belongs to ${rule.topic}`);
-  for (const verse of rule.verses) assert.ok(TOPIC_VERSES[rule.chapter].some(item => item.verse === verse), `${rule.id}: verse ${rule.chapter}.${verse} exists`);
+  for (const verse of rule.verses) assert.ok((rule.text === 'phala' ? PHALA_VERSES : TOPIC_VERSES)[rule.chapter].some(item => item.verse === verse), `${rule.id}: verse ${rule.chapter}.${verse} exists`);
 }
 // What each topic leaves unjudged is stated.
 const left = (topic: TopicKey) => notEvaluatedVerses(topic).map(verse => `${verse.chapter}.${verse.verse}`);

@@ -20,7 +20,7 @@ for (const [chapter, count] of [[17, 28], [9, 45], [10, 9]] as const) {
   const verses = TOPIC_VERSES[chapter];
   assert.equal(verses.length, count);
   assert.deepEqual(verses.map(verse => verse.verse), Array.from({ length: count }, (_, index) => index + 1));
-  for (const verse of verses) assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0] + verse.sanskrit[1]) && verse.iast[0].length > 5 && verse.gloss.length > 10);
+  for (const verse of verses) assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0] + verse.sanskrit[1]) && (verse.iast?.[0].length ?? 0) > 5 && verse.gloss.length > 10);
 }
 for (const result of evaluateTopic('illness', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
 
