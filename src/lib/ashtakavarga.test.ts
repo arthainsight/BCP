@@ -181,17 +181,13 @@ assert.deepEqual(PARASHARA_AV.Venus.Mars, [3, 4, 6, 9, 11, 12]);
 // same row totals; only the benefic relative houses differ.
 // ---------------------------------------------------------------------------
 assert.deepEqual(VARAHAMIHIRA_AV.Moon.Moon, [1, 3, 6, 7, 10, 11]);
-assert.deepEqual(VARAHAMIHARA_AV_FIX(), [2, 3, 5, 6, 9, 10, 11]);
+assert.deepEqual(VARAHAMIHIRA_AV.Moon.Mars, [2, 3, 5, 6, 9, 10, 11]);
 assert.deepEqual(VARAHAMIHIRA_AV.Moon.Jupiter, [1, 4, 7, 8, 10, 11, 12]);
 assert.deepEqual(VARAHAMIHIRA_AV.Venus.Mars, [3, 5, 6, 9, 11, 12]);
 assert.equal(VARAHAMIHIRA_AV.Moon.Moon.length, PARASHARA_AV.Moon.Moon.length - 1);
 assert.equal(VARAHAMIHIRA_AV.Moon.Mars.length, PARASHARA_AV.Moon.Mars.length + 1);
 assert.equal(VARAHAMIHIRA_AV.Moon.Jupiter.length, PARASHARA_AV.Moon.Jupiter.length);
 assert.equal(VARAHAMIHIRA_AV.Venus.Mars.length, PARASHARA_AV.Venus.Mars.length);
-
-function VARAHAMIHARA_AV_FIX() {
-  return VARAHAMIHIRA_AV.Moon.Mars;
-}
 
 for (const ascendant of [1, 4, 7, 10, 12]) {
   for (const offsets of ARRANGEMENTS) {
