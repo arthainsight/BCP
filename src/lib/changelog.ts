@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.75',
+    date: '2026-11-01',
+    title: 'The Pātyāṁśī daśā, Māsa-praveśa and Dina-praveśa (Tājika Nīlakaṇṭhī)',
+    changes: [
+      'Varṣaphala: the Pātyāṁśī daśā, the daśā that Nīlakaṇṭha himself gives for the year (Varṣatantra, verses 1–3). The degrees of the Lagna and the seven grahas within their signs are put in order from the smallest; each one\'s share is its degrees less those of the one before it, and the year is divided among them in that proportion; the antardaśā of a graha in the daśā of another is the product of their days over the days of the year. It stands before the Mudda daśā, which is of the commentary of Mahīdhara and not of Nīlakaṇṭha (the panel now says so). The order of the antardaśās is not stated in the lines read: they begin with the lord of the daśā, as the other daśās of the panel do.',
+      'Varṣaphala: below the year, the Māsa-praveśa and the Dina-praveśa. The chart for the moment the Sun is (n − 1) signs beyond its natal longitude for the nth month, or (n − 1) degrees beyond it for the nth day, counted from the Varṣa-praveśa (12 months, 360 days). For a month: the six office bearers of the text and the Pātyāṁśī daśā of 30 days for 360. The text does not say what makes one office bearer "more"; the strongest by Pañcavargīya Bala is marked and said to be the app\'s measure.',
+      'Not built: the results of the month and the day, the seven office bearers of a day, the other year daśās of the commentary, the Harṣa Bala (not in this text) and the Dvādaśavargī, which is in the text but whose daśāṁśa and ekādaśāṁśa cannot be read in the print. Details in docs/tajika-nilakanthi-vs-app.md.',
+      'Updated the application version to v3.75.',
+    ],
+  },
+  {
     version: 'v3.74',
     date: '2026-11-01',
     title: 'The transits by the nakṣatras (Phaladīpikā 26)',

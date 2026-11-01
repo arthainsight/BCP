@@ -23,6 +23,7 @@ import {
   type LocalParts,
 } from './annualShared';
 import { SIGN_ABBR } from '@/lib/signs';
+import VarshaPeriodPanel from './VarshaPeriodPanel';
 
 import { fill, useLanguage, useT } from '@/lib/i18n';
 import { ordinal } from '@/lib/ordinal';
@@ -39,6 +40,7 @@ type VpResponse = {
   reason: string;
   bala: PanchaVargiyaBala[];
   dasha: LocalMahadasha[];
+  patyamshi: LocalMahadasha[];
   next: { year: number; local: LocalParts; tzOffset: number };
   chart: ChartData;
 };
@@ -183,13 +185,34 @@ export default function VarshaphalaPanel({
           </div>
 
           <AnnualDashaList
+            title={t('Pātyāṁśī daśā')}
+            note={t('The daśā of the Tājika Nīlakaṇṭhī itself (Varṣatantra, verses 1–3): the Lagna and the grahas by their degrees in their signs, from the smallest; each takes the part of the year that its degrees less those of the one before it are of the greatest degrees. The running period at the target date is highlighted.')}
+            dasha={shown.patyamshi}
+            referenceJd={referenceJd(targetDate, shown.tzOffset)}
+          />
+
+          <AnnualDashaList
             title="Mudda daśā (Varṣa Vimśottarī)"
-            note={t('Vimśottarī compressed into this year, entered from the natal nakṣatra advanced one lord per completed year. The running period at the target date is highlighted.')}
+            note={t('Vimśottarī compressed into this year, entered from the natal nakṣatra advanced one lord per completed year (a daśā of the commentary of Mahīdhara, not of Nīlakaṇṭha). The running period at the target date is highlighted.')}
             dasha={shown.dasha}
             referenceJd={referenceJd(targetDate, shown.tzOffset)}
           />
 
           <AnnualPlanetTable annual={shown.chart} natal={chart} showOuterPlanets={chartDisplaySettings.showOuterPlanets} />
+
+          <VarshaPeriodPanel
+            chart={chart}
+            birthDatetime={birthDatetime}
+            targetDate={targetDate}
+            ianaTimezone={ianaTimezone}
+            calculationSettings={calculationSettings}
+            chartStyle={chartStyle}
+            chartDisplaySettings={chartDisplaySettings}
+            nakshatraAdjust={nakshatraAdjust}
+            place={place}
+            onPlaceChange={onPlaceChange}
+            year={shown.year}
+          />
         </div>
       )}
     </div>
