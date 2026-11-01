@@ -90,7 +90,22 @@ export default function PrashnaPanel({ chart }: { chart: ChartData }) {
                 })}
               </p>
             )}
-            {!reading.sameLord && !reading.pair && reading.nakta.length === 0 && (
+            {reading.yamaya.map(item => (
+              <p key={`y-${item.carrier}`} className="text-amber-700 dark:text-amber-400" data-yoga="yamaya">
+                {fill(t('Yamayā: {carrier} is slower than both lords and aspects both within its own dīptāṁśa: it takes the light of {from} and gives it to {to}, so the matter comes through a third.'), { carrier: grahaName(item.carrier), from: grahaName(item.lightFrom), to: grahaName(item.lightTo) })}
+              </p>
+            ))}
+            {reading.manau.map(item => (
+              <p key={`m-${item.thief}`} className="text-rose-600 dark:text-rose-400" data-yoga="manau">
+                {fill(t('Maṇaū: {thief} stands by {of} ({distance}° apart, within its dīptāṁśa) and takes its light: the matter is destroyed.'), { thief: grahaName(item.thief), of: grahaName(item.of), distance: round(item.distance) })}
+              </p>
+            ))}
+            {reading.placement && (
+              <p className={reading.placement === 'ikkavala' ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} data-yoga={reading.placement}>
+                {t(reading.placement === 'ikkavala' ? 'Ikkavāla: all seven grahas are in the kendras and paṇapharas of the chart (17).' : 'Indūvāra: all seven grahas are in the āpoklimas of the chart; the text calls it not good (17).')}
+              </p>
+            )}
+            {!reading.sameLord && !reading.pair && reading.nakta.length === 0 && reading.yamaya.length === 0 && (
               <p>{t('No Ithasāla, Īśarāpha or Nakta between the two lords. The text then looks at the other yogas, which are not built.')}</p>
             )}
           </div>

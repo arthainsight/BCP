@@ -38,9 +38,24 @@ The Praśna Mārga (the Kerala classic of the question) is in the corpus only as
 | ṣoḍaśayogādhyāya 4–9 | **Ithasāla**: the swifter graha is behind the slower in the degrees of its sign, the signs having a Tājika aspect (conjunction, sextile 3/11, square 4/10, trine 5/9, opposition 7), and the slower within the dīptāṁśa of the swifter; of the lord of the Lagna and the lord of the house of the matter it brings the matter about, and the days are the degrees between times 12 | **built** |
 | 10 | **Īśarāpha**: the swifter has gone a degree beyond the slower: the matter turns away | **built** (a degree or more past, within the dīptāṁśa) |
 | 11–13 | **Nakta**: the two lords have no aspect; a third graha, swifter than both, between them in degrees and aspecting both within its dīptāṁśa, takes the light of the one behind and gives it to the one in front: the matter comes through another | **built** |
-| 14–16 | **Yamayā**: the two lords have no aspect and a slower third graha aspects both and takes the light of the swifter and gives it to the slower | **not built**: the commentary's example cannot be read in the print to say which degrees are meant |
+| 28–30 | **Yamayā**: the two lords have no aspect and a slower third graha aspects both within its own dīptāṁśa and takes the light of the swifter and gives it to the slower | **built (v3.89)**, after the Naval Kishore edition (below). Read: the third is slower than both, aspects both with a Tājika aspect, and each lord's degree is within the third's dīptāṁśa of its own degree |
 | 17–20 | **Maṇaū**: Mars or Saturn takes away the light of the swifter in front or behind within its dīptāṁśa, by equal aspect, in the same sign or the 7th and others; the Ithasāla comes to nothing | **not built**: the conditions are broken in the print (twelve kinds are named) |
 | 21–22 | **Kambūla**: the Ithasāla of the two lords and the Ithasāla of the Moon with one of them or both; better as the Moon is stronger (thirty-two kinds by the grade of the Moon and of the lords) | **built** in short: the Moon as a third graha in Ithasāla with either or both, graded uttama in its own or exaltation sign (Cancer, Taurus), adhama in its debilitation (Scorpio) and sama otherwise; the middle grade (the Moon's own hadda, drekkāṇa and navāṁśa) is not given, because the Moon has no hadda and the text's wording is broken |
-| the other eleven | Gairi-kambūla, Khallāsara, Radda, Duphali-kuttha, Duttotthadavīra, Tambīra, Kuttha, Durupha, Ikkabāla, Induvāra, Yamayā/Maṇaū as above | **not built** |
+| 31–35 | **Maṇaū**: the two are in Ithasāla and Mars or Saturn, in the sign of the swifter or the 4th or 7th from it and within the swifter's dīptāṁśa, takes its light: the matter is destroyed | **built (v3.89)**. The variant of 34 (Saturn and Mars together in the sign of one of the lords) is not built |
+| 17 | **Ikkavāla** (all seven in the kendras and paṇapharas) and **Indūvāra** (all in the āpoklimas) | **built (v3.89)**, for the chart of the question |
+| the other eight | Gairikambūla, Khallāsara, Radda, Duphāli-kuttha, Duttotthadavīra, Tambīra, Kuttha, Duruppha, and the sixteen kinds of the Kambūla (53–57 and on) | **not built**; readable in the Naval Kishore edition, see below |
 
 Open points the print leaves: whether the dīptāṁśa of the swifter, or the half of the sum of the two, is the orb of the Ithasāla (the commentary says the swifter's); whether a retrograde graha counts as swifter or slower; the days per degree (12 is the text's rule for the Ithasāla, and it is given as such). The results of the verses by the nature of the grahas (a malefic Ithasāla, the help of the friends of the lords, 7–9) are not built.
+
+
+## A second edition: the Naval Kishore print with the Hindi of Pt. Shaktichar Shukla (found 1 November 2026)
+
+`in.ernet.dli.2015.329420`, "Śrī Tājika Nīlakaṇṭhī", Naval Kishore Press, Lucknow: all three tantras (Saṃjñā, Varṣa, Praśna) with a Hindi commentary. Its text layer is poor in the tables (the charts of the vargas are scrambled)
+but the **verses and the prose are legible** where the earlier copy (`tajika_nilakanthi`) is broken:
+
+* **Yamayā and Maṇaū** (Saṃjñātantra 2.28–35) are legible with their examples and are built (v3.89).
+* **Ikkavāla and Indūvāra** (2.17) are built.
+* **Gairikambūla, Khallāsara, Radda, Duphāli-kuttha, Duttotthadavīra, Tambīra, Kuttha and Duruppha** (2.55 and on) and the **sixteen kinds of the Kambūla** (2.20–50) are legible and **not yet built**.
+* **Dvādaśavargī** (Varṣatantra 41–47): the verses 45–47 are legible (the good result when the lord has more benefic vargas, the bad when more malefic), and the prose says how the ekādaśāṁśa is counted (each sign in eleven parts of 2°43′38″; the first part of Aries belongs to the lord of the 12th sign from it); but the **tables of the twelve vargas are scrambled in the scan**,
+  so the daśāṁśa and ekādaśāṁśa rulers cannot be taken from them. The Dvādaśavargī is therefore **still not built**: it needs either the tables from a clean copy or the rules in words for all twelve vargas, which the commentary gives only in part.
+* The Harṣa Bala is not in this edition either.
