@@ -195,3 +195,46 @@ const left13 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.
 assert.ok(left13.includes('13.18'));
 assert.ok(left13.includes('13.10'));
 assert.ok(!left13.includes('13.12'));
+
+// ── chapter 14: illness and death ──
+const verses14 = PHALA_VERSES[14];
+assert.equal(verses14.length, 29);
+assert.deepEqual(verses14.map(verse => verse.verse), Array.from({ length: 29 }, (_, index) => index + 1));
+for (const verse of verses14) {
+  assert.ok(verse.sanskrit.every(line => /[ऀ-ॿ…]/.test(line)), `verse 14.${verse.verse}`);
+  assert.ok(!verse.sanskrit.some(line => /[A-Za-z0-9_$]/.test(line)), `verse 14.${verse.verse} has stray characters`);
+}
+for (const result of evaluateTopic('phalaHouses', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
+// 14.1-2: the Sun in the 6th with the 6th lord Mercury: two of the three agree; alone in the 12th it is one.
+assert.equal(rule(chart(1, { Sun: [6], Mercury: [6] }), 'p14-graha-sun').outcome.met, true);
+assert.equal(rule(chart(1), 'p14-graha-sun').outcome.met, false);
+// 14.8: Saturn in the 6th with the 6th lord.
+assert.equal(rule(chart(1, { Mercury: [6] }), 'p14-graha-saturn').outcome.met, true);
+// 14.10: the Sun in the 12th joined by Mars and seen by Saturn: the eye.
+assert.equal(rule(chart(1, { Mars: [12] }), 'p14-eye').outcome.met, true);
+assert.equal(rule(chart(1), 'p14-eye').outcome.met, false);
+assert.equal(rule(chart(1, { Mars: [5], Mercury: [5] }), 'p14-belly').outcome.met, true);
+assert.equal(rule(chart(1, { Mercury: [7], Mars: [7] }), 'p14-anus').outcome.met, true);
+assert.equal(rule(chart(1, { Mercury: [7], Mars: [7] }), 'p14-genital').outcome.met, false);
+assert.equal(rule(chart(1, { Mercury: [7], Mars: [7], Venus: [7] }), 'p14-genital').outcome.met, true);
+// 14.11: Jupiter is in the 8th of the default chart: consumption.
+assert.ok(rule(chart(1), 'p14-6th-8th').outcome.lines[0].includes('Jupiter: consumption'));
+// 14.12-19: the cause of death always names the sign of the 8th.
+assert.ok(rule(chart(1), 'p14-death-cause').outcome.lines[0].includes('the 8th sign Scorpio'));
+// 14.20: Mars in the 8th (a sign of Mars); Mars and Saturn in kendras in opposition.
+assert.equal(rule(chart(1, { Mars: [8] }), 'p14-weapons').outcome.met, true);
+assert.equal(rule(chart(1), 'p14-weapons').outcome.met, false);
+assert.equal(rule(chart(1, { Mars: [1], Saturn: [7] }), 'p14-kings-wrath').outcome.met, true);
+// 14.21: Jupiter in Pisces, its own sign, the lord of the 12th (Aries lagna).
+assert.equal(rule(chart(1, { Jupiter: [12] }), 'p14-easy-death').outcome.met, true);
+// 14.22: the 12th lord Jupiter in Leo (a friend\'s sign): upward; in Capricorn (its fall): downward.
+assert.equal(rule(chart(1, { Jupiter: [5] }), 'p14-upward').outcome.met, true);
+assert.equal(rule(chart(1, { Jupiter: [10] }), 'p14-downward').outcome.met, true);
+assert.equal(rule(chart(1, { Jupiter: [10] }), 'p14-upward').outcome.met, false);
+assert.ok(rule(chart(1), 'p14-after-death').outcome.lines[0].length > 0);
+// 14.25: the 9th lord Jupiter exalted in Cancer; the 5th lord Sun exalted in Aries.
+assert.equal(rule(chart(1, { Jupiter: [4] }), 'p14-former-birth-land').outcome.met, true);
+assert.equal(rule(chart(1, { Sun: [1] }), 'p14-next-birth-land').outcome.met, true);
+const left14 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.${verse.verse}`);
+assert.ok(left14.includes('14.26'));
+assert.ok(!left14.includes('14.2'));

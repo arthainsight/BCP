@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.95',
+    date: '2026-11-01',
+    title: 'The Phaladīpikā\'s chapter on illness and death, as rules',
+    changes: [
+      'ANALYSIS → Topic yogas → Phaladīpikā: the houses: chapter 14 of the Phaladīpikā (roga-cintā, 29 verses): the illness of each graha by the places that point to it, the yogas of the eye, the ear, the belly and the anus, the grahas in the 6th and 8th, the cause of death by the grahas in the 8th and by its sign, the death by weapons or by the wrath of a king, the easy or the cruel death, the way upward or downward and the place after death, and the land of the former and the next birth, 25 rules.',
+      'Listed as not judged: the caste, the direction and the country of the births and the birth as a tree, a beast or a bird (14.24, 14.26-29), which rest on the names of the signs and grahas and on speculation the app does not take up.',
+      'Updated the application version to v3.95.',
+    ],
+  },
+  {
     version: 'v3.94',
     date: '2026-11-01',
     title: 'The Phaladīpikā\'s chapter on the span of life, as rules',
