@@ -1,4 +1,4 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93, its span of life since v3.94, its illness and death since v3.95, the good and bad of the houses since v3.96, the houses together since v3.97)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93, its span of life since v3.94, its illness and death since v3.95, the good and bad of the houses since v3.96, the houses together since v3.97, its death by the transits (verses only) since v3.98)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
@@ -110,7 +110,6 @@ The topic reads a second classic: the house chapters of the Phaladīpikā of Man
 * **Readings**: "from the Moon" counts from its sign; in 10.5 "the 7th from Venus and the Moon" is read as the 7th from Venus *or* from the Moon; the 5th and 7th of 10.1 are taken from the lagna and by benefics (the lords and the Moon's reckoning are named in the verse and not tried); the direction of a sign is that of its place in the cycle east, south, west, north (Aries east, Taurus south, Gemini west, Cancer north, and again).
 * **Not judged**: the birth sign of the wife and the times of the marriage (10.11, 10.13, 10.14), which need the daśā and the transits. In 10.13 the commentary says the transit of Venus and the Sanskrit the transit of the lagna lord; the verse is not used.
 * The Sanskrit has gaps in the scan: in 10.1 a word restored from the commentary, in 10.5 some letters of the third line and in 10.6 one whole line. The verses say so.
-* Chapter 17 of the Phaladīpikā (death) is not built yet.
 
 ## Phaladīpikā 11 (since v3.91): the woman's chart, 11 verses
 
@@ -203,6 +202,15 @@ Under the same topic ("Phaladīpikā: the houses"), rules `p16-*` in `src/lib/to
 * **Not judged**: 16.1 (the body and the complexion by the lord of the lagna navāṁśa and the parts of Kālapuruṣa), 16.12 (the method for the father, brothers and sons), 16.31-35 (the times at which the results come, by the transits and the joining of the lords).
 * The Sanskrit has gaps in the scan: a word in 16.1, 16.3, 16.13 (the first word). The verses say so.
 
+## Phaladīpikā 17 (since v3.98): death by the transits, 28 verses (not judged)
+
+The verses (`src/lib/phalaVerses.ts`) are in the topic with their Sanskrit and a gloss, under "Verses not judged"; no rule reads them. The chapter (niryāṇa-vicāra) gives no condition of the birth chart. It names the signs through which the transit of Saturn, Jupiter, the Sun and the Moon is said to bring death (or the loss of the father, the mother, a brother or a son),
+as the sign, navāṁśa and trines of the 8th lord, the lord of the Khara decanate, the Sun, Gulika, Māndi, Yamakaṇṭaka and the sums of longitudes of the lagna, Māndi, Saturn, Jupiter and Rāhu, with some of them told by day and some by night.
+
+* **Why not judged**: a rule of the topic yogas says whether a condition of the chart holds; these verses fix points in the zodiac for a transit. They need the upagrahas and several sums the topic does not carry, and they would be a prediction of the time of death, which the app does not make. If it is wanted, it is a feature of its own (the signs for the transits, shown with the verse) and not a rule of this topic.
+* The Sanskrit has gaps in the scan: 17.26 and 17.27 are lost, the first line of 17.8 and the end of 17.19, and a word in 17.6 and 17.25. Several letters of 17.7 and 17.18 were corrected from a poor scan. The verses say so.
+* With chapter 17 the chapters of the Phaladīpikā on the person and the houses (8 to 18) are all in the app.
+
 ## Next topics (not built yet)
 
-* Other texts: the Phaladīpikā, the Sārāvalī and the Jātakapārijāta for marriage and longevity.
+* Other texts: the Sārāvalī and the Jātakapārijāta for marriage and longevity. The Phaladīpikā's chapters on the yogas (6 and 7) are compared with the yogas of the app in their own document.

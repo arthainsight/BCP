@@ -50,8 +50,8 @@ export const TOPICS: { key: TopicKey; label: string; source: string; chapters: n
   },
   {
     key: 'phalaHouses', label: 'Phaladīpikā: the houses', text: 'phala',
-    source: 'Phaladīpikā 10 (the 7th house), 11 (the woman\'s chart), 12 (children), 13 (the span of life), 14 (illness and death), 15 (the good and bad of the houses), 16 (the houses together); the last chapter follows',
-    chapters: [10, 11, 12, 13, 14, 15, 16],
+    source: 'Phaladīpikā 10 (the 7th house), 11 (the woman\'s chart), 12 (children), 13 (the span of life), 14 (illness and death), 15 (the good and bad of the houses), 16 (the houses together), 17 (death by the transits: the verses only)',
+    chapters: [10, 11, 12, 13, 14, 15, 16, 17],
     caution: 'The classical statements about the wife, the husband and children are shown as the text has them. They are a reading of the text and not a prediction.',
   },
 ];

@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.98',
+    date: '2026-11-01',
+    title: 'The Phaladīpikā\'s chapter on death by the transits: the verses',
+    changes: [
+      'ANALYSIS → Topic yogas → Phaladīpikā: the houses: chapter 17 of the Phaladīpikā (niryāṇa-vicāra, 28 verses) is now there with its Sanskrit and a short gloss of each verse, under "Verses not judged". The chapter gives no condition of the birth chart: it names the signs through which the transit of Saturn, Jupiter, the Sun and the Moon is said to bring death, from points (the 8th lord, Gulika, Māndi, Yamakaṇṭaka and sums of longitudes) the app does not take up here.',
+      'With this the Phaladīpikā\'s chapters on the houses and the person (8 to 18) are all in the app. Two verses (17.26 and 17.27) are lost in the scan, and the verses say so.',
+      'Updated the application version to v3.98.',
+    ],
+  },
+  {
     version: 'v3.97',
     date: '2026-11-01',
     title: 'The Phaladīpikā\'s chapter on the houses together, as rules',

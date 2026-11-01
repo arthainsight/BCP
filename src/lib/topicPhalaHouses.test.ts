@@ -311,3 +311,15 @@ assert.ok(left16.includes('16.1'));
 assert.ok(left16.includes('16.12'));
 assert.ok(left16.includes('16.31'));
 assert.ok(!left16.includes('16.2'));
+
+// ── chapter 17: death by the transits (the verses only) ──
+const verses17 = PHALA_VERSES[17];
+assert.equal(verses17.length, 28);
+assert.deepEqual(verses17.map(verse => verse.verse), Array.from({ length: 28 }, (_, index) => index + 1));
+for (const verse of verses17) {
+  assert.ok(verse.sanskrit.every(line => /[ऀ-ॿ…]/.test(line)), `verse 17.${verse.verse}`);
+  assert.ok(!verse.sanskrit.some(line => /[A-Za-z0-9_$]/.test(line)), `verse 17.${verse.verse} has stray characters`);
+}
+// No rule reads chapter 17: all its verses are listed as not judged.
+const left17 = notEvaluatedVerses('phalaHouses').filter(verse => verse.chapter === 17);
+assert.equal(left17.length, 28);
