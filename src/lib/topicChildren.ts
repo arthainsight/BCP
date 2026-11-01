@@ -11,21 +11,21 @@ import {
  * "afflicted" is a malefic in the house or a malefic seeing it; the 6th is read as the house of kin (jñāti) and of the maternal uncle. In 83.8 "the Sun, Mars, Rāhu and Saturn strong in the 5th" is read as some of them there and those that have a measure strong.
  * Not judged: 83.1-6 (the questions), 83.13 and 83.104 (need Māndi), the remedies of 83.109-111 by graha, and the closing verses.
  */
-type Cond = [string, boolean | null];
-const L = (c: TopicContext, house: number) => lordOfHouse(c, house);
-const at = (c: TopicContext, name: string, houses: number[]): boolean => has(houseOf(c, name), houses);
-const DUSTHANA = [6, 8, 12];
-const NASHA = [8, 12];
-const weak = (c: TopicContext, name: string): boolean | null => { const strong = isStrong(c, name); return strong === null ? null : !strong; };
-const fall = (c: TopicContext, name: string) => { const sign = signOf(c, name); return sign !== null && debilitated(name, sign); };
+export type Cond = [string, boolean | null];
+export const L = (c: TopicContext, house: number) => lordOfHouse(c, house);
+export const at = (c: TopicContext, name: string, houses: number[]): boolean => has(houseOf(c, name), houses);
+export const DUSTHANA = [6, 8, 12];
+export const NASHA = [8, 12];
+export const weak = (c: TopicContext, name: string): boolean | null => { const strong = isStrong(c, name); return strong === null ? null : !strong; };
+export const fall = (c: TopicContext, name: string) => { const sign = signOf(c, name); return sign !== null && debilitated(name, sign); };
 const malSign = (c: TopicContext, name: string) => { const sign = signOf(c, name); return sign !== null && ['Sun', 'Mars', 'Saturn'].includes(lordOfSign(sign)); };
-const enemy = (c: TopicContext, name: string) => { const sign = signOf(c, name); return sign !== null && inEnemySign(name, sign); };
-const navLord = (c: TopicContext, name: string) => { const planet = find(c, name); return planet ? lordOfSign(navamshaSign(planet.longitude)) : null; };
-const afflicted = (c: TopicContext, house: number) => maleficsIn(c, house).length > 0 || SEVEN.some(name => isMalefic(c, name) && seesSign(c, name, signOfHouse(c, house)));
-const hemmed = (c: TopicContext, sign: number | null) => sign !== null && hemmedBy(c, sign, name => isMalefic(c, name));
-const joined = (c: TopicContext, a: string, b: string) => a !== b && together(c, a, b);
-const withMal = (c: TopicContext, name: string) => withMalefics(c, name).length > 0;
-const yes = (value: boolean | null) => value === null ? '?' : value ? 'yes' : 'no';
+export const enemy = (c: TopicContext, name: string) => { const sign = signOf(c, name); return sign !== null && inEnemySign(name, sign); };
+export const navLord = (c: TopicContext, name: string) => { const planet = find(c, name); return planet ? lordOfSign(navamshaSign(planet.longitude)) : null; };
+export const afflicted = (c: TopicContext, house: number) => maleficsIn(c, house).length > 0 || SEVEN.some(name => isMalefic(c, name) && seesSign(c, name, signOfHouse(c, house)));
+export const hemmed = (c: TopicContext, sign: number | null) => sign !== null && hemmedBy(c, sign, name => isMalefic(c, name));
+export const joined = (c: TopicContext, a: string, b: string) => a !== b && together(c, a, b);
+export const withMal = (c: TopicContext, name: string) => withMalefics(c, name).length > 0;
+export const yes = (value: boolean | null) => value === null ? '?' : value ? 'yes' : 'no';
 
 const SARPA = 'Loss of children from a serpent\'s curse. Remedy: the worship of the Nāga (a golden serpent, consecrated), and the gift of cows, land, sesame and gold.';
 const PITRI = 'Loss of children from the father\'s curse. Remedy: the Gayā śrāddha, feeding Brahmins, the gift of a maiden and of a cow.';

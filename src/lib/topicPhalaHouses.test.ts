@@ -101,3 +101,50 @@ assert.equal(rule(chart(1, { Moon: [2, 6] }), 'p11-nakshatra-kin').outcome.met, 
 const left11 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.${verse.verse}`);
 assert.ok(left11.includes('11.11'));
 assert.ok(!left11.includes('11.3'));
+
+// ── chapter 12: children ──
+import { navamshaSign } from './birthConditions';
+const verses12 = PHALA_VERSES[12];
+assert.equal(verses12.length, 34);
+assert.deepEqual(verses12.map(verse => verse.verse), Array.from({ length: 34 }, (_, index) => index + 1));
+for (const verse of verses12) {
+  assert.ok(verse.sanskrit.every(line => /[ऀ-ॿ…]/.test(line)), `verse 12.${verse.verse}`);
+  assert.ok(!verse.sanskrit.some(line => /[A-Za-z0-9_$]/.test(line)), `verse 12.${verse.verse} has stray characters`);
+}
+for (const result of evaluateTopic('phalaHouses', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
+// 12.3: the 5th Leo (Aries lagna): a sign of few sons; Gemini lagna: Libra, not.
+assert.equal(rule(chart(1), 'p12-alpasuta-5th').outcome.met, true);
+assert.equal(rule(chart(3), 'p12-alpasuta-5th').outcome.met, false);
+// 12.3: the Sun in Leo, its own sign, in the 5th.
+assert.equal(rule(chart(1, { Sun: [5] }), 'p12-malefic-own-5th').outcome.met, true);
+assert.equal(rule(chart(1), 'p12-malefic-own-5th').outcome.met, false);
+// 12.3 (the Sanskrit): Taurus lagna: the 5th Virgo, a sign of Mercury, with Saturn in it.
+assert.equal(rule(chart(2), 'p12-benefic-sign-malefic').outcome.met, true);
+assert.equal(rule(chart(2, { Saturn: [7] }), 'p12-benefic-sign-malefic').outcome.met, false);
+// 12.5: the 5th Cancer (Pisces lagna) with Saturn: many sons.
+const cancer = rule(chart(12, { Saturn: [4] }), 'p12-cancer-5th');
+assert.equal(cancer.outcome.met, true);
+assert.ok(cancer.outcome.lines[0].includes('many sons'));
+// 12.6: malefics in the 12th, 8th, 5th and lagna (Aries lagna).
+assert.equal(rule(chart(1, { Mars: [8], Saturn: [5], Rahu: [1] }), 'p12-lineage-ends').outcome.met, true);
+assert.equal(rule(chart(1), 'p12-lineage-ends').outcome.met, false);
+// 12.7: a malefic in the lagna, the lagna lord in the 5th, the 5th lord in the 3rd, the Moon in the 4th.
+assert.equal(rule(chart(1, { Rahu: [1], Mars: [5], Sun: [3], Moon: [4] }), 'p12-sonless').outcome.met, true);
+// 12.8: the 5th Gemini (Aquarius lagna) with Saturn in it.
+assert.equal(rule(chart(11, { Saturn: [3] }), 'p12-adopted-son').outcome.met, true);
+// 12.9: the 5th lord (the Sun for Aries) in its fall.
+assert.equal(rule(chart(1, { Sun: [7] }), 'p12-5th-lord-lost').outcome.met, true);
+assert.equal(rule(chart(1), 'p12-5th-lord-lost').outcome.met, false);
+// 12.14: the sum of the longitudes of Jupiter, the Moon and Mars; the sign and the navāṁśa decide which of the two rules holds.
+const sum = (8 * 30 - 30 + 9 + 30 + 6 + 10 * 30 + 7) % 360;
+const parity = [Math.floor(sum / 30) + 1, navamshaSign(sum)].map(value => value % 2);
+const strongField = parity[0] === 0 && parity[1] === 0; const mixedField = parity[0] !== parity[1];
+assert.equal(rule(chart(1), 'p12-field-woman').outcome.met, strongField);
+assert.equal(rule(chart(1), 'p12-field-woman-effort').outcome.met, mixedField);
+// 12.22: Rāhu in the 5th with the 5th lord; Ketu in the 5th.
+assert.equal(rule(chart(1, { Rahu: [5], Sun: [5] }), 'p12-serpent-curse').outcome.met, true);
+assert.equal(rule(chart(1, { Ketu: [5] }), 'p12-brahmin-curse').outcome.met, true);
+const left12 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.${verse.verse}`);
+assert.ok(left12.includes('12.12'));
+assert.ok(left12.includes('12.34'));
+assert.ok(!left12.includes('12.2'));
