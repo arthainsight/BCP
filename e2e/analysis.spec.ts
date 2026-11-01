@@ -248,6 +248,29 @@ test('ANALYSIS Conjunctions gives the results of Phaladīpikā 18 for the Moon a
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Grahas in houses gives the verse of Phaladīpikā 8 for each graha in the house it stands in', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Grahas in houses', exact: true })).click();
+
+  // A card for each graha with the house, the result and, when opened, the verse in Sanskrit.
+  const panel = visible(page, page.locator('[data-bhava="panel"]'));
+  expect(await panel.locator('[data-bhava-graha]').count()).toBeGreaterThanOrEqual(7);
+  const sun = panel.locator('[data-bhava-graha="Sun"]');
+  await expect(sun).toBeVisible();
+  const house = Number(await sun.getAttribute('data-house'));
+  expect(house).toBeGreaterThanOrEqual(1);
+  expect(house).toBeLessThanOrEqual(12);
+  await sun.locator('details summary').click();
+  await expect(sun.locator('[lang="sa"]').first()).toContainText(/[\u0900-\u097F]/);
+  await expect(panel.locator('[data-bhava-middle]').first()).toContainText('8.34');
+
+  expect(errors).toEqual([]);
+});
+
 test('ANALYSIS Upagrahas gives the verse of BPHS 25 for each body in the house it stands in', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

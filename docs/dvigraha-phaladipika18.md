@@ -21,6 +21,11 @@ the view ANALYSIS → Conjunctions (v3.81). The Sanskrit is shown as the text la
 
 ## Not done
 
+* **18.5**: with more than two grahas in a sign the text says to combine the results of the pairs; the app names the crowded sign and lists the pairs but does not combine them.
+* **The end of 18.15**: the text says that the same is to be imagined for the Sun and the other grahas in the navāṁśas of the grahas, as for the Moon. It gives no table for them, so the app does the Moon only.
+* **Rāhu and Ketu** are not in the chapter and are not in the view.
+* **Other classics** (the Sārāvalī, the Jātakapārijāta) have their own tables for grahas together; they are not built.
+
 * The strength of the lord of the navāṁśa (18.17) is not judged: the text gives no measure.
 * The summaries are short; the Hindi commentary has the full wording. In the table of the Moon in Taurus the commentary's line for Saturn is garbled in the scan and is taken from the Sanskrit verse (wealthy).
 * "Seen by" is the aspect of the graha (the 7th for all, Mars the 4th and 8th, Jupiter the 5th and 9th, Saturn the 3rd and 10th); the text says only *dṛṣṭa*.

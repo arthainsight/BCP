@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.86',
+    date: '2026-11-01',
+    title: 'Grahas in the houses, after the Sanskrit of Phaladīpikā 8',
+    changes: [
+      'ANALYSIS → Grahas in houses (Classical systems): the result of each of the seven grahas, and of Rāhu and Ketu, in the house it stands in from the lagna, after the 33 verses of Phaladīpikā chapter 8 (Grahabhāvaphalabheda) with the verse in Devanagari: 9 grahas × 12 houses, 108 results. The Sun in the lagna is read by the sign of the lagna (8.1), the Moon by its phase (8.5) and Saturn by its sign (8.20).',
+      'By 8.34–35 the view also gives how many degrees the graha is from the middle of the house, the degree of the lagna in each sign; the text says the whole result is given at the middle and less or more the farther or nearer, and gives no measure, so none is applied. The Sanskrit is the text layer of the edition, a scan of the print, with the plain misreadings corrected; the verses where letters could not be read say so. The commentary quotes the Sārāvalī and the Jātakābharaṇa, which are not used. In docs/graha-bhava-phaladipika8.md.',
+      'Docs: docs/dvigraha-phaladipika18.md now lists what 18.5 and the end of 18.15 leave to the reader (combining the pairs; the same method for the Sun and the other grahas) and that Rāhu and Ketu are not in the chapter.',
+      'Updated the application version to v3.86.',
+    ],
+  },
+  {
     version: 'v3.85',
     date: '2026-11-01',
     title: 'The houses of BPHS 20–23: the 9th to the 12th house',
