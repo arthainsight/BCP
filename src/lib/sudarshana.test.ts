@@ -39,7 +39,7 @@ assert.equal(sudarshanaHouse(25), 2);
 assert.equal(sudarshanaHouse(120), 1);
 assert.equal(sudarshanaHouse(0, 5), 6, 'the 6th month of the first year');
 assert.equal(sudarshanaHouse(1, 11), 1, 'the last month of the second year is the 12th house on from the 2nd, round to the 1st');
-assert.equal(sudarshanaHouse(1, 0, 3), 5, 'the 4th day of the 1st month of the second year');
+assert.equal(sudarshanaHouse(1, 0, 3), 5, 'the 4th Pratyantara of the 1st month of the second year');
 assert.equal(sudarshanaHouse(-1), 12, 'a count before birth stays inside 1 to 12');
 
 // --- A period in twelve ----------------------------------------------------------------------------------------------------
