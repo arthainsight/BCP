@@ -50,10 +50,15 @@ assert.equal(months[0].startJd, 2451545);
 assert.equal(months[11].endJd, 2451545 + 365.25, 'the last part ends where the whole does');
 for (let index = 1; index < 12; index++) assert.equal(months[index].startJd, months[index - 1].endJd, 'the parts follow without a gap');
 for (const month of months) assert.ok(Math.abs(month.endJd - month.startJd - 365.25 / 12) < 1e-9, 'equal parts');
-// A month in twelve days of about 2.5 days.
-const days = sudarshanaSubPeriods(months[0].startJd, months[0].endJd, months[0].house);
-assert.ok(Math.abs(days[0].endJd - days[0].startJd - 365.25 / 144) < 1e-9);
-assert.equal(days[1].house, 4);
+// A month is divided into twelve Pratyantara periods, each into twelve Vidāśās.
+const firstMonth = sudarshanaSubPeriods(2451545, 2451545 + 365.25 / 12, 4);
+assert.deepEqual(firstMonth.map(period => period.house), [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
+const pratyantaras = sudarshanaSubPeriods(firstMonth[0].startJd, firstMonth[0].endJd, firstMonth[0].house);
+assert.deepEqual(pratyantaras.map(period => period.house), [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
+assert.ok(Math.abs(pratyantaras[0].endJd - pratyantaras[0].startJd - 365.25 / 144) < 1e-9);
+const vidasas = sudarshanaSubPeriods(pratyantaras[0].startJd, pratyantaras[0].endJd, pratyantaras[0].house);
+assert.deepEqual(vidasas.map(period => period.house), [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
+assert.ok(Math.abs(vidasas[0].endJd - vidasas[0].startJd - 365.25 / 1728) < 1e-9);
 
 // --- The local time of a Julian day ----------------------------------------------------------------------------------------
 assert.deepEqual(jdToLocalParts(2451545, 0), { year: 2000, month: 1, day: 1, hour: 12, minute: 0, second: 0 });
