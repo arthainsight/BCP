@@ -105,6 +105,45 @@ export default function PrashnaPanel({ chart }: { chart: ChartData }) {
                 {t(reading.placement === 'ikkavala' ? 'Ikkavāla: all seven grahas are in the kendras and paṇapharas of the chart (17).' : 'Indūvāra: all seven grahas are in the āpoklimas of the chart; the text calls it not good (17).')}
               </p>
             )}
+            {reading.gairikambula.map(item => (
+              <p key={`g-${item.graha}`} className={item.favourable ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} data-yoga="gairikambula">
+                {fill(t(item.favourable ? 'Gairikambūla: the Moon is void and goes on into the next sign, where {graha} stands in its own sign or its exaltation, {distance}° ahead: the result is that of the Kambūla (57-60).' : 'Gairikambūla: the Moon is void and goes on into the next sign, where {graha} stands without authority, {distance}° ahead: the result is not good (57-60).'), { graha: grahaName(item.graha), distance: round(item.distance) })}
+              </p>
+            ))}
+            {reading.khallasara && (
+              <p className="text-rose-600 dark:text-rose-400" data-yoga="khallasara">{t('Khallāsara: the Moon is void, has no Ithasāla with either lord and is not with either: it destroys the fruit of the Kambūla (61).')}</p>
+            )}
+            {reading.radda.map(item => (
+              <p key={`r-${item.weak}`} className="text-rose-600 dark:text-rose-400" data-yoga="radda">
+                {fill(t('Radda: {graha} is weak ({reasons}) and in Ithasāla: the matter is not accomplished (62).'), { graha: grahaName(item.weak), reasons: item.reasons.map(reason => t(reason)).join(', ') })}
+                {item.timing && ` ${t(item.timing === 'good-then-lost' ? 'The Kāryeśa is weak in a kendra and the Lagneśa in an āpoklima: it begins well and ends in ruin (63).' : 'The Kāryeśa is weak in an āpoklima and the Lagneśa in a kendra: it is lost first and succeeds afterwards (63).')}`}
+              </p>
+            ))}
+            {reading.duphaliKuttha && (
+              <p className={reading.duphaliKuttha.accomplished ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} data-yoga="duphali-kuttha">
+                {fill(t(reading.duphaliKuttha.accomplished ? 'Duphāli-kuttha: {slow}, the slower, holds a place of authority and is in Ithasāla with {fast}, the swifter, which holds none: the matter is done (64).' : 'Duphāli-kuttha: {slow}, the slower, holds a place of authority and is in Ithasāla with {fast}, the swifter, which holds none but is weak ({reasons}): the matter is not done (64).'), {
+                  slow: grahaName(reading.duphaliKuttha.slow), fast: grahaName(reading.duphaliKuttha.fast), reasons: reading.duphaliKuttha.reasons.map(reason => t(reason)).join(', '),
+                })}
+              </p>
+            )}
+            {reading.duttotthaDavira.map(item => (
+              <p key={`d-${item.kind}`} className="text-amber-700 dark:text-amber-400" data-yoga="duttothadavira">
+                {fill(t(item.kind === 'weak-lords' ? 'Duttotthadavīra: both lords are weak and {helpers}, which holds a place of authority, is in Ithasāla with one of them: the matter comes by another\'s help (65).' : 'Duttotthadavīra: {helpers}, each holding a place of authority, are in Ithasāla with a lord: the matter comes by another\'s help (65).'), { helpers: item.helpers.map(grahaName).join(', ') })}
+              </p>
+            ))}
+            {reading.tambira.map(item => (
+              <p key={`t-${item.giver}-${item.receiver}`} className="text-emerald-700 dark:text-emerald-400" data-yoga="tambira">
+                {fill(t('Tambīra: the lords are not in Ithasāla; {giver} holds a place of authority and is in the last degree of its sign, about to enter the next, where {receiver} stands: it gives its light to {receiver} (66).'), { giver: grahaName(item.giver), receiver: grahaName(item.receiver) })}
+              </p>
+            ))}
+            <details className="text-zinc-600 dark:text-zinc-300" data-yoga="marks">
+              <summary className="cursor-pointer">{t('The marks of strength (Kuttha) and of weakness (Duruppha) of the two lords and the Moon (67-75)')}</summary>
+              <ul className="mt-1 space-y-1">
+                {reading.marks.map(item => (
+                  <li key={item.name}>{grahaName(item.name)}: {t('strong')} — {item.kuttha.map(mark => t(mark)).join(', ') || t('none')}; {t('weak')} — {item.duruppha.map(mark => t(mark)).join(', ') || t('none')}</li>
+                ))}
+              </ul>
+            </details>
             {!reading.sameLord && !reading.pair && reading.nakta.length === 0 && reading.yamaya.length === 0 && (
               <p>{t('No Ithasāla, Īśarāpha or Nakta between the two lords. The text then looks at the other yogas, which are not built.')}</p>
             )}

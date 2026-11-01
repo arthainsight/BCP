@@ -1,5 +1,8 @@
-import { tajikaAspect, signLord, type TajikaAspect } from './varshaphala';
-import { EXALTATION, OWN_SIGNS } from './dignity';
+import { tajikaAspect, signLord, haddaLord, type TajikaAspect } from './varshaphala';
+import { DEBILITATION, EXALTATION, NATURAL_ENEMIES, OWN_SIGNS } from './dignity';
+import { combustionOf } from './combustion';
+import { navamshaSign } from './birthConditions';
+import { drekkanaSign } from './topicCore';
 
 /**
  * The Tājika yogas of a question, after the Tājika Nīlakaṇṭhī (Saṃjñātantra, "ṣoḍaśayogādhyāya", and the Praśnatantra that uses them), with the commentary of Mahīdhara. A question is read in the chart of its
@@ -15,7 +18,9 @@ import { EXALTATION, OWN_SIGNS } from './dignity';
  * * **Ikkavāla** and **Indūvāra** (17): all the seven grahas in the kendras and paṇapharas, or all in the āpoklimas of the chart.
  *
  * The Yamayā, Maṇaū, Ikkavāla and Indūvāra are read in the Naval Kishore edition with the Hindi commentary of Pt. Shaktichar Shukla (`in.ernet.dli.2015.329420`), where they are legible; the edition used for the earlier yogas has them broken.
- * Not built: Gairikambūla, Khallāsara, Radda, Duphāli-kuttha, Duttotthadavīra, Tambīra, Kuttha and Duruppha (the other eight of the sixteen yogas), the sixteen kinds of the Kambūla, and the results of the verses that depend on the nature of the grahas.
+ * * **Gairikambūla** (57–60), **Khallāsara** (61), **Radda** (62–63), **Duphāli-kuttha** (64), **Duttotthadavīra** (65), **Tambīra** (66) (v3.99): the other yogas of the sixteen that read the chart as it stands, and the marks of a strong graha (**Kuttha**, 67–70) and of a weak one (**Duruppha**, 71–75), which the others use.
+ * Readings: the "pada" (place of authority) of a graha is its own sign, its exaltation, its own hadda, drekkāṇa or navāṁśa; the Moon is "void" (śūnyamārga) with none of those and not in its fall; "weak" is combust (by the orbs of the app), in its fall, in an enemy's sign or retrograde; the last degree is the 30th (29° and over).
+ * Not built: the sixteen kinds of the Kambūla, the Maṇaū of the second kind (2.34), and the results of the verses that depend on the nature of the grahas.
  */
 export type TajikaGraha = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
 export const TAJIKA_GRAHAS: readonly TajikaGraha[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
@@ -131,6 +136,145 @@ export function ikkavalaOrInduvara(ascendantSign: number, bodies: PrashnaBody[])
   return null;
 }
 
+
+const longitudeOf = (body: PrashnaBody) => (body.sign - 1) * 30 + body.degree;
+
+/** The places of authority (pada) of a graha: its own sign, its exaltation, its own hadda, drekkāṇa and navāṁśa. */
+export function padaOf(body: PrashnaBody): string[] {
+  const longitude = longitudeOf(body);
+  const places: string[] = [];
+  if (OWN_SIGNS[body.name]?.includes(body.sign)) places.push('own sign');
+  if (EXALTATION[body.name] === body.sign) places.push('exaltation');
+  if (haddaLord(longitude) === body.name) places.push('own hadda');
+  if (signLord(drekkanaSign(body.sign, body.degree)) === body.name) places.push('own drekkāṇa');
+  if (signLord(navamshaSign(longitude)) === body.name) places.push('own navāṁśa');
+  return places;
+}
+
+/** Why a graha is weak for the Radda and the Duttotthadavīra: combust, in its fall, in an enemy's sign, retrograde. */
+export function weakReasons(body: PrashnaBody, sun: PrashnaBody | undefined): string[] {
+  const reasons: string[] = [];
+  if (sun && body.name !== 'Sun' && combustionOf(body.name, longitudeOf(body), longitudeOf(sun), (body.speed ?? 1) < 0) !== null) reasons.push('combust');
+  if (DEBILITATION[body.name] === body.sign) reasons.push('in its fall');
+  if (NATURAL_ENEMIES[body.name]?.includes(signLord(body.sign))) reasons.push('in an enemy\'s sign');
+  if ((body.speed ?? 1) < 0) reasons.push('retrograde');
+  return reasons;
+}
+
+/** The Moon is "void" (śūnyamārga) when it holds no pada and is not in its fall (it has no enemy sign). */
+export function moonVoid(moon: PrashnaBody): boolean {
+  return padaOf(moon).length === 0 && DEBILITATION.Moon !== moon.sign;
+}
+
+const houseFrom = (ascendantSign: number, sign: number) => ((sign - ascendantSign + 12) % 12) + 1;
+const ithasalaBehind = (fast: PrashnaBody, slow: PrashnaBody): PairYoga | null => { const yoga = pairYoga(fast, slow); return yoga?.kind === 'ithasala' && yoga.fast === fast.name ? yoga : null; };
+
+export interface GairikambulaYoga { graha: string; distance: number; favourable: boolean }
+
+/**
+ * Gairikambūla (57–60): the two lords are in Ithasāla; the Moon is void, makes no Ithasāla with either, stands in the last degree of its sign and goes on into the next; a graha there that holds its own sign or its exaltation, with which the Moon makes the Ithasāla
+ * as it enters, gives the result of the Kambūla; with a graha that has no such authority the yoga is not good.
+ */
+export function gairikambula(moon: PrashnaBody, lords: [PrashnaBody, PrashnaBody], others: PrashnaBody[]): GairikambulaYoga[] {
+  if (!moonVoid(moon) || moon.degree < 29) return [];
+  if (lords.some(lord => lord.name !== 'Moon' && ithasalaBehind(moon, lord))) return [];
+  const next = (moon.sign % 12) + 1;
+  return others
+    .filter(other => other.name !== 'Moon' && other.sign === next)
+    .map(other => ({ graha: other.name, distance: 30 - moon.degree + other.degree, favourable: OWN_SIGNS[other.name]?.includes(other.sign) === true || EXALTATION[other.name] === other.sign }))
+    .filter(item => item.distance <= DIPTAMSHA.Moon);
+}
+
+/** Khallāsara (61): the two lords are in Ithasāla; the Moon is void, makes no Ithasāla with either lord and is not with either: it destroys the fruit of the Kambūla. */
+export function khallasara(moon: PrashnaBody, lords: [PrashnaBody, PrashnaBody]): boolean {
+  if (!moonVoid(moon) || lords.some(lord => lord.name === 'Moon')) return false;
+  return lords.every(lord => !ithasalaBehind(moon, lord) && lord.sign !== moon.sign);
+}
+
+export interface RaddaYoga { weak: string; reasons: string[]; timing: 'good-then-lost' | 'lost-then-good' | null }
+
+/** Radda (62–63): the two lords in Ithasāla and one of them weak: the matter is not accomplished; the weak Kāryeśa in a kendra with the Lagneśa in an āpoklima begins well and ends in ruin, the reverse ends well. */
+export function raddaYoga(ascendantSign: number, lagnesha: PrashnaBody, karyesha: PrashnaBody, sun: PrashnaBody | undefined): RaddaYoga[] {
+  const houseOf = (body: PrashnaBody) => houseFrom(ascendantSign, body.sign);
+  const kendra = (body: PrashnaBody) => [1, 4, 7, 10].includes(houseOf(body)); const apoklima = (body: PrashnaBody) => [3, 6, 9, 12].includes(houseOf(body));
+  return [lagnesha, karyesha].map(body => ({ body, reasons: weakReasons(body, sun) })).filter(item => item.reasons.length > 0).map(item => ({
+    weak: item.body.name, reasons: item.reasons,
+    timing: item.body === karyesha && kendra(karyesha) && apoklima(lagnesha) ? 'good-then-lost' as const : item.body === karyesha && apoklima(karyesha) && kendra(lagnesha) ? 'lost-then-good' as const : null,
+  }));
+}
+
+export interface DuphaliKuttha { slow: string; fast: string; accomplished: boolean; reasons: string[] }
+
+/** Duphāli-kuttha (64): the slower of the two lords holds a pada and is in Ithasāla with the swifter that holds none: the matter is done, unless the swifter is weak. */
+export function duphaliKuttha(a: PrashnaBody, b: PrashnaBody, sun: PrashnaBody | undefined): DuphaliKuttha | null {
+  const yoga = pairYoga(a, b);
+  if (yoga?.kind !== 'ithasala') return null;
+  const [fast, slow] = yoga.fast === a.name ? [a, b] : [b, a];
+  if (padaOf(slow).length === 0 || padaOf(fast).length > 0) return null;
+  const reasons = weakReasons(fast, sun);
+  return { slow: slow.name, fast: fast.name, accomplished: reasons.length === 0, reasons };
+}
+
+export interface DuttotthaDavira { kind: 'weak-lords' | 'two-strong'; helpers: string[] }
+
+/** Duttotthadavīra (65): both lords weak and one of them in Ithasāla with a third that holds a pada; or two other grahas that hold a pada, each in Ithasāla with a lord: help comes from another. */
+export function duttotthaDavira(a: PrashnaBody, b: PrashnaBody, others: PrashnaBody[], sun: PrashnaBody | undefined): DuttotthaDavira[] {
+  const helpers = others.filter(other => other.name !== a.name && other.name !== b.name && padaOf(other).length > 0 && [a, b].some(lord => pairYoga(other, lord)?.kind === 'ithasala'));
+  const found: DuttotthaDavira[] = [];
+  if (weakReasons(a, sun).length > 0 && weakReasons(b, sun).length > 0 && helpers.length > 0) found.push({ kind: 'weak-lords', helpers: helpers.map(h => h.name) });
+  if (helpers.length >= 2) found.push({ kind: 'two-strong', helpers: helpers.map(h => h.name) });
+  return found;
+}
+
+export interface TambiraYoga { giver: string; receiver: string }
+
+/** Tambīra (66): the two lords are not in Ithasāla; one of them holds a pada and stands in the last degree of its sign, about to enter the next: it gives its light to a graha there. */
+export function tambira(lords: [PrashnaBody, PrashnaBody], others: PrashnaBody[]): TambiraYoga[] {
+  if (pairYoga(lords[0], lords[1])?.kind === 'ithasala') return [];
+  return lords.filter(lord => lord.degree >= 29 && padaOf(lord).length > 0).flatMap(lord =>
+    others.filter(other => other.name !== lord.name && other.sign === (lord.sign % 12) + 1).map(other => ({ giver: lord.name, receiver: other.name })));
+}
+
+/** The marks of a strong graha (Kuttha, 67–70) that a chart shows: its place, its pada, direct motion, a benefic's company and the freedom from a malefic's aspect, and the strength of its day or night and of its kind. */
+export function kutthaMarks(ascendantSign: number, body: PrashnaBody, bodies: PrashnaBody[]): string[] {
+  const marks: string[] = [];
+  const house = houseFrom(ascendantSign, body.sign);
+  if (house === 1) marks.push('in the lagna'); else if ([4, 7, 10].includes(house)) marks.push('in a kendra'); else if ([2, 5, 11].includes(house)) marks.push('in a paṇaphara');
+  else if (tajikaAspect(body.sign, ascendantSign)) marks.push('seeing the lagna');
+  if (padaOf(body).length > 0) marks.push('holding a pada');
+  if ((body.speed ?? 1) >= 0) marks.push('direct');
+  const others = bodies.filter(other => other.name !== body.name && (TAJIKA_GRAHAS as readonly string[]).includes(other.name));
+  if (others.some(other => ['Jupiter', 'Venus', 'Mercury'].includes(other.name) && other.sign === body.sign)) marks.push('with a benefic');
+  if (!others.some(other => ['Sun', 'Mars', 'Saturn'].includes(other.name) && (other.sign === body.sign || [4, 7, 10].includes(houseFrom(other.sign, body.sign))))) marks.push('free of the malefics\' joining and square, opposition aspect');
+  const sun = bodies.find(other => other.name === 'Sun');
+  const day = sun ? houseFrom(ascendantSign, sun.sign) >= 7 : null;
+  if (day !== null && (['Sun', 'Mars', 'Jupiter'].includes(body.name) ? day : ['Moon', 'Mercury', 'Venus', 'Saturn'].includes(body.name) ? !day : false)) marks.push(day ? 'strong by day' : 'strong by night');
+  if (['Moon', 'Venus'].includes(body.name) && house >= 4 && house <= 9) marks.push('a woman graha in the 4th to the 9th');
+  if (['Sun', 'Mars', 'Jupiter'].includes(body.name) && (house >= 10 || house <= 3)) marks.push('a man graha in the 10th to the 3rd');
+  return marks;
+}
+
+/** The marks of a weak graha (Duruppha, 71–75) that a chart shows. */
+export function durupphaMarks(ascendantSign: number, body: PrashnaBody, bodies: PrashnaBody[]): string[] {
+  const marks: string[] = [];
+  const house = houseFrom(ascendantSign, body.sign);
+  if ([6, 8, 12].includes(house)) marks.push('in the 6th, 8th or 12th');
+  marks.push(...weakReasons(body, bodies.find(other => other.name === 'Sun')).filter(reason => reason !== 'combust'));
+  const others = bodies.filter(other => other.name !== body.name && (TAJIKA_GRAHAS as readonly string[]).includes(other.name));
+  if (others.some(other => ['Sun', 'Mars', 'Saturn'].includes(other.name) && other.sign === body.sign)) marks.push('with a malefic');
+  if (others.some(other => ['Sun', 'Mars', 'Saturn'].includes(other.name) && [4, 7, 10].includes(houseFrom(other.sign, body.sign)))) marks.push('square or opposed by a malefic');
+  if (!tajikaAspect(body.sign, ascendantSign) && body.sign !== ascendantSign) marks.push('not seeing the lagna');
+  if (padaOf(body).length === 0) marks.push('holding no pada');
+  const sixth = OWN_SIGNS[body.name]?.map(sign => ((sign + 5) % 12) + 1);
+  if (sixth?.includes(body.sign)) marks.push('in the 7th sign from its own');
+  if (body.name === 'Moon') {
+    const sun = bodies.find(other => other.name === 'Sun');
+    if (sun && body.sign === ((sun.sign + 10) % 12) + 1) marks.push('in the 12th from the Sun');
+    if ((body.sign === 8 && body.degree < 15) || (body.sign === 7 && body.degree >= 15)) marks.push('in the first half of Scorpio or the second half of Libra');
+  }
+  return marks;
+}
+
 export interface Kambula { withLagnesha: PairYoga | null; withKaryesha: PairYoga | null; grade: MoonGrade }
 
 export interface PrashnaReading {
@@ -148,6 +292,14 @@ export interface PrashnaReading {
   manau: ManauYoga[];
   /** Ikkavāla or Indūvāra of the chart (17). */
   placement: 'ikkavala' | 'induvara' | null;
+  gairikambula: GairikambulaYoga[];
+  khallasara: boolean;
+  radda: RaddaYoga[];
+  duphaliKuttha: DuphaliKuttha | null;
+  duttotthaDavira: DuttotthaDavira[];
+  tambira: TambiraYoga[];
+  /** The marks of strength (Kuttha) and of weakness (Duruppha) of the two lords and the Moon. */
+  marks: { name: string; kuttha: string[]; duruppha: string[] }[];
 }
 
 /** The reading of a question about `house`, in the chart of its moment. */
@@ -178,5 +330,20 @@ export function readPrashna(ascendantSign: number, bodies: PrashnaBody[], house:
     const swift = find(pair.fast);
     manau = manauYogas(seven.filter(body => body.name !== a.name && body.name !== b.name), swift);
   }
-  return { house, lagnesha, karyesha, sameLord, pair, days, nakta, kambula, yamaya, manau, placement: ikkavalaOrInduvara(ascendantSign, seven) };
+  const sun = find('Sun');
+  const lords: [PrashnaBody, PrashnaBody] = [a, b];
+  const moonBody = find('Moon');
+  const pairHeld = !sameLord && pair?.kind === 'ithasala';
+  const gairikambulaFound = pairHeld && lagnesha !== 'Moon' && karyesha !== 'Moon' ? gairikambula(moonBody, lords, seven) : [];
+  const marks = [...new Set([lagnesha, karyesha, 'Moon'])].map(name => ({ name, kuttha: kutthaMarks(ascendantSign, find(name), seven), duruppha: durupphaMarks(ascendantSign, find(name), seven) }));
+  return {
+    house, lagnesha, karyesha, sameLord, pair, days, nakta, kambula, yamaya, manau, placement: ikkavalaOrInduvara(ascendantSign, seven),
+    gairikambula: gairikambulaFound,
+    khallasara: pairHeld && gairikambulaFound.length === 0 && khallasara(moonBody, lords),
+    radda: pairHeld ? raddaYoga(ascendantSign, a, b, sun) : [],
+    duphaliKuttha: sameLord ? null : duphaliKuttha(a, b, sun),
+    duttotthaDavira: sameLord ? [] : duttotthaDavira(a, b, seven, sun),
+    tambira: sameLord ? [] : tambira(lords, seven),
+    marks,
+  };
 }
