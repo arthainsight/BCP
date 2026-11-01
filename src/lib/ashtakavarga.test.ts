@@ -171,6 +171,51 @@ for (const [owner, byHouse] of Object.entries(VERSE_BINDU_BY_HOUSE)) {
 // Venus from Mars gives at the 4th, not the 5th (66.35-38); that is where Brihat Jataka differs.
 assert.deepEqual(PARASHARA_AV.Venus.Mars, [3, 4, 6, 9, 11, 12]);
 
+// The Sanskrit karana verses for Jupiter (66.31–34), Venus (66.35–38),
+// and Saturn (66.39–42) give the complementary lists. These explicit row
+// vectors make the contributor identities auditable, not just the house counts.
+const KARANA_VERSE_ROWS = {
+  Jupiter: {
+    Sun: [1, 2, 3, 4, 7, 8, 9, 10, 11],
+    Moon: [2, 5, 7, 9, 11],
+    Mars: [1, 2, 4, 7, 8, 10, 11],
+    Mercury: [1, 2, 4, 5, 6, 9, 10, 11],
+    Jupiter: [1, 2, 3, 4, 7, 8, 10, 11],
+    Venus: [2, 5, 6, 9, 10, 11],
+    Saturn: [3, 5, 6, 12],
+    Ascendant: [1, 2, 4, 5, 6, 7, 9, 10, 11],
+  },
+  Venus: {
+    Sun: [8, 11, 12],
+    Moon: [1, 2, 3, 4, 5, 8, 9, 11, 12],
+    Mars: [3, 4, 6, 9, 11, 12],
+    Mercury: [3, 5, 6, 9, 11],
+    Jupiter: [5, 8, 9, 10, 11],
+    Venus: [1, 2, 3, 4, 5, 8, 9, 10, 11],
+    Saturn: [3, 4, 5, 8, 9, 10, 11],
+    Ascendant: [1, 2, 3, 4, 5, 8, 9, 11],
+  },
+  Saturn: {
+    Sun: [1, 2, 4, 7, 8, 10, 11],
+    Moon: [3, 6, 11],
+    Mars: [3, 5, 6, 10, 11, 12],
+    Mercury: [6, 8, 9, 10, 11, 12],
+    Jupiter: [5, 6, 11, 12],
+    Venus: [6, 11, 12],
+    Saturn: [3, 5, 6, 11],
+    Ascendant: [1, 3, 4, 6, 10, 11],
+  },
+} as const;
+for (const planet of ['Jupiter', 'Venus', 'Saturn'] as const) {
+  for (const contributor of ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Ascendant'] as const) {
+    assert.deepEqual(
+      PARASHARA_AV[planet][contributor],
+      KARANA_VERSE_ROWS[planet][contributor],
+      `BPHS Sanskrit karana row: ${planet} from ${contributor}`,
+    );
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Varāhamihira — Bṛhajjātaka 9.1–9.7
 // Sanskrit-based differences from the BPHS table. The four rows preserve the
