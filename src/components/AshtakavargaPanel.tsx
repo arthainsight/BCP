@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { ChartData } from '@/types';
 import { buildAshtakavarga, mapAshtakavargaHousesToSigns } from '@/lib/ashtakavarga';
-import type { AshtakavargaPlanet } from '@/lib/ashtakavarga';
+import type { AshtakavargaPlanet, AshtakavargaSystem } from '@/lib/ashtakavarga';
 import { SIGN_ABBR } from '@/lib/signs';
 
 import { useT } from '@/lib/i18n';
@@ -75,7 +75,8 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
   const ascendantSign = chart.ascendant.sign;
   const [view, setView] = useState<'table' | 'north'>('table');
   const [selection, setSelection] = useState<AvSelection>('SAV');
-  const { bav, sav } = buildAshtakavarga(chart);
+  const [system, setSystem] = useState<AshtakavargaSystem>('Parashara');
+  const { bav, sav } = buildAshtakavarga(chart, system);
   const selectedRow = selection === 'SAV' ? null : bav.find((row) => row.planet === selection);
   const selectedHouses = selectedRow?.houses ?? sav.houses;
 
@@ -92,6 +93,16 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
         </div>
       </div>
 
+      <div className="mb-3 flex items-center gap-2">
+        <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+          {t('Source')}
+          <select value={system} onChange={(event) => setSystem(event.target.value as AshtakavargaSystem)} className="ml-2 rounded border border-zinc-300 bg-white px-2 py-1.5 text-xs normal-case tracking-normal text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200">
+            <option value="Parashara">Parāśara · BPHS 66</option>
+            <option value="Varahamihira">Varāhamihira · Bṛhajjātaka 9</option>
+          </select>
+        </label>
+      </div>
+
       {view === 'north' ? (
         <div>
           <label className="mb-3 block text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
@@ -101,7 +112,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
               {bav.map((row) => <option key={row.planet} value={row.planet}>{row.planet} BAV</option>)}
             </select>
           </label>
-          <NorthIndianAvChart houses={selectedHouses} ascendantSign={ascendantSign} label={`Parāśara · ${selection === 'SAV' ? 'SAV' : `${selection} BAV`}`} isSav={selection === 'SAV'} />
+          <NorthIndianAvChart houses={selectedHouses} ascendantSign={ascendantSign} label={`${system === 'Parashara' ? 'Parāśara' : 'Varāhamihira'} · ${selection === 'SAV' ? 'SAV' : `${selection} BAV`}`} isSav={selection === 'SAV'} />
         </div>
       ) : (
       <div className="overflow-x-auto">

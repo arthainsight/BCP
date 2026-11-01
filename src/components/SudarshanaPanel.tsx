@@ -60,6 +60,8 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
   const { code, name: grahaFullName } = useGrahaNames();
   const [year, setYear] = useState<number | null>(null);
   const [month, setMonth] = useState<number | null>(null);
+  const [pratyantara, setPratyantara] = useState<number | null>(null);
+  const [vidasha, setVidasha] = useState<number | null>(null);
 
   const query = buildAnnualParams({ chart, birthDatetime, ianaTimezone, calculationSettings, place: null, year, targetDate });
   const { data: shown, error, loading } = useAnnualFetch<YearResponse>('/api/sudarshana', query);
@@ -78,8 +80,55 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
   const yearHouse = age === undefined ? null : sudarshanaHouse(age);
   const months = shown && yearHouse ? sudarshanaSubPeriods(shown.jd, shown.next.jd, yearHouse) : [];
   const selected = month !== null && months[month] ? months[month] : null;
-  const days = selected ? sudarshanaSubPeriods(selected.startJd, selected.endJd, selected.house) : [];
-  const local = (jd: number) => jdToLocalParts(jd, shown?.tzOffset ?? 0);
+  const pratyantaras = selected ? sudarshanaSubPeriods(selected.startJd, selected.endJd, selected.house) : [];
+  const selectedPratyantara = pratyantara !== null && pratyantaras[pratyantara] ? pratyantaras[pratyantara] : null;
+  const vidasas = selectedPratyantara
+    ? sudarshanaSubPeriods(selectedPratyantara.startJd, selectedPratyantara.endJd, selectedPratyantara.house)
+    : [];
+  const selectedVidasha = vidasha !== null && vidasas[vidasha] ? vidasas[vidasha] : null;
+  const local = (jd: number): LocalParts => {
+    if (ianaTimezone) {
+      try {
+        const date = new Date(Math.round((jd - 2440587.5) * 86400000));
+        const parts = new Intl.DateTimeFormat('en-GB', {
+          timeZone: ianaTimezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hourCycle: 'h23',
+        }).formatToParts(date);
+        const read = (type: string) => Number(parts.find(part => part.type === type)?.value ?? 0);
+        return {
+          year: read('year'),
+          month: read('month'),
+          day: read('day'),
+          hour: read('hour'),
+          minute: read('minute'),
+          second: read('second'),
+        };
+      } catch {
+        // Fall back to the offset at the start of the Sudarśana year.
+      }
+    }
+    return jdToLocalParts(jd, shown?.tzOffset ?? 0);
+  };
+  const toggleMonth = (index: number) => {
+    setMonth(current => current === index ? null : index);
+    setPratyantara(null);
+    setVidasha(null);
+  };
+  const togglePratyantara = (index: number) => {
+    setPratyantara(current => current === index ? null : index);
+    setVidasha(null);
+  };
+  const toggleVidasha = (index: number) => {
+    setVidasha(current => current === index ? null : index);
+  };
+  const signsForHouse = (house: number) =>
+    SUDARSHANA_RINGS.map(id => SIGN_ABBR[rings.find(ring => ring.id === id)!.houses[house - 1].sign - 1]).join(' · ');
 
   const renderCell = (ring: SudarshanaRing, ringIndex: number, house: number) => {
     const entry = ring.houses[house - 1];
@@ -95,6 +144,8 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
         <path d={wedge(RADII[ringIndex + 1], RADII[ringIndex], house)} className="fill-white stroke-zinc-400 dark:fill-zinc-900 dark:stroke-zinc-600" strokeWidth={1.5} />
         {yearHouse === house && <path data-sud-year={ring.id} d={wedge(RADII[ringIndex + 1], RADII[ringIndex], house)} className="fill-amber-300/60 stroke-amber-500 dark:fill-amber-500/35" strokeWidth={3} pointerEvents="none" />}
         {selected && selected.house === house && <path data-sud-month={ring.id} d={wedge(RADII[ringIndex + 1] + 6, RADII[ringIndex] - 6, house)} fill="none" className="stroke-rose-500" strokeWidth={4} pointerEvents="none" />}
+        {selectedPratyantara && selectedPratyantara.house === house && <path data-sud-pratyantara={ring.id} d={wedge(RADII[ringIndex + 1] + 18, RADII[ringIndex] - 18, house)} fill="none" className="stroke-emerald-500" strokeWidth={4} pointerEvents="none" />}
+        {selectedVidasha && selectedVidasha.house === house && <path data-sud-vidasha={ring.id} d={wedge(RADII[ringIndex + 1] + 30, RADII[ringIndex] - 30, house)} fill="none" className="stroke-violet-500" strokeWidth={4} pointerEvents="none" />}
         <text x={middle.x} y={middle.y - 14} textAnchor="middle" fontSize={22} fontWeight={600} className="fill-blue-700 dark:fill-blue-400">{SIGN_ABBR[entry.sign - 1]}</text>
         {lines.map((line, lineIndex) => (
           <text key={lineIndex} x={middle.x} y={middle.y + 8 + lineIndex * (size + 3)} textAnchor="middle" fontSize={size} fontWeight={700} className="fill-red-700 dark:fill-red-400">
@@ -105,22 +156,17 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
     );
   };
 
-  const chip = (on: boolean) =>
-    `rounded-md border px-2 py-1 text-[10px] font-mono ${on
-      ? 'border-emerald-500 bg-emerald-500 text-white dark:border-green-600 dark:bg-green-600'
-      : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400'}`;
-
   return (
     <div className="min-w-0 space-y-3">
       <div>
         <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">{t('Sudarshana chakra')}</div>
         <div className="mt-1 text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-          {t('The chart counted from the Lagna, from the Moon and from the Sun, one inside another. In the Sudarshana dasha each year of age makes the next house active, the same house number in all three: the 1st in the first year, the 2nd in the second, round to the 1st again in the 13th. A year is cut in twelve months and a month in twelve days in the same order.')}
+          {t('The chart counted from the Lagna, from the Moon and from the Sun, one inside another. In the Sudarshana dasha each year of age makes the next house active, the same house number in all three: the 1st in the first year, the 2nd in the second, round to the 1st again in the 13th. A year is divided into twelve months, each month into twelve Pratyantara daśās, and each Pratyantara into twelve Vidāśās.')}
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <YearStepper shownYear={shown?.year} year={year} onChange={(value) => { setYear(value); setMonth(null); }} />
+        <YearStepper shownYear={shown?.year} year={year} onChange={(value) => { setYear(value); setMonth(null); setPratyantara(null); setVidasha(null); }} />
         {loading && <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('calculating…')}</span>}
       </div>
 
@@ -141,6 +187,13 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
           {age !== undefined && <text x={CENTRE} y={CENTRE + 8} textAnchor="middle" fontSize={18} className="fill-zinc-500 dark:fill-zinc-400" data-sud="centre-age">{fill(t('age {age}'), { age })}</text>}
           {yearHouse && <text x={CENTRE} y={CENTRE + 34} textAnchor="middle" fontSize={18} className="fill-amber-700 dark:fill-amber-400" data-sud="centre-house">{fill(t('house {house}'), { house: yearHouse })}</text>}
         </svg>
+      </div>
+
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[9px] font-mono text-zinc-500 dark:text-zinc-400" data-sud="period-legend">
+        <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-amber-400/70 ring-1 ring-amber-600" />{t('MD · year')}</span>
+        <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-rose-500" />{t('AD · month')}</span>
+        <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />{t('PD · Pratyantara')}</span>
+        <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-violet-500" />{t('Vidāśā')}</span>
       </div>
 
       <ul className="space-y-0.5 text-[10px] font-mono text-zinc-600 dark:text-zinc-300" data-sud="rings">
@@ -220,28 +273,122 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
                 </thead>
                 <tbody>
                   {months.map((item, index) => (
-                    <tr key={index} data-sud-month-row={index + 1} aria-selected={month === index} onClick={() => setMonth(current => (current === index ? null : index))} className={`cursor-pointer border-t border-zinc-100 dark:border-zinc-800 ${month === index ? 'bg-rose-50 dark:bg-rose-950/30' : ''}`}>
+                    <tr
+                      key={index}
+                      data-sud-month-row={index + 1}
+                      aria-expanded={month === index}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => toggleMonth(index)}
+                      onKeyDown={event => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          toggleMonth(index);
+                        }
+                      }}
+                      className={`cursor-pointer border-t border-zinc-100 dark:border-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500 ${month === index ? 'bg-rose-50 dark:bg-rose-950/30' : ''}`}
+                    >
                       <td className="py-1 pr-3 text-zinc-500">{index + 1}</td>
                       <td className="py-1 pr-3 tabular-nums">{fmtDate(local(item.startJd))}</td>
                       <td className="py-1 pr-3 font-bold">{item.house}</td>
-                      <td className="py-1">{SUDARSHANA_RINGS.map(id => SIGN_ABBR[rings.find(ring => ring.id === id)!.houses[item.house - 1].sign - 1]).join(' · ')}</td>
+                      <td className="py-1">{signsForHouse(item.house)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('Choose a month to see its twelve days.')}</p>
+            <p className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('Choose a month to see its twelve Pratyantara daśās.')}</p>
           </div>
 
           {selected && (
-            <div data-sud="days">
-              <div className="mb-1 text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{fill(t('The twelve days of month {month}'), { month: (month ?? 0) + 1 })}</div>
-              <div className="flex flex-wrap gap-1">
-                {days.map((day, index) => (
-                  <span key={index} data-sud-day-row={index + 1} className={chip(false)}>
-                    {fmtDate(local(day.startJd))} · {t('house')} {day.house}
-                  </span>
-                ))}
+            <div data-sud="pratyantaras" className="space-y-2">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                {fill(t('The twelve Pratyantara daśās of month {month}'), { month: (month ?? 0) + 1 })}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-[10px] font-mono">
+                  <thead>
+                    <tr className="text-left text-[9px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                      <th className="py-1 pr-2 font-normal">#</th>
+                      <th className="py-1 pr-2 font-normal">{t('from')}</th>
+                      <th className="py-1 pr-2 font-normal">{t('to')}</th>
+                      <th className="py-1 pr-2 font-normal">{t('house')}</th>
+                      <th className="py-1 font-normal">{t('signs')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pratyantaras.map((item, index) => (
+                      <tr
+                        key={index}
+                        data-sud-pratyantara-row={index + 1}
+                        aria-expanded={pratyantara === index}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => togglePratyantara(index)}
+                        onKeyDown={event => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            togglePratyantara(index);
+                          }
+                        }}
+                        className={`cursor-pointer border-t border-zinc-100 dark:border-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-500 ${pratyantara === index ? 'bg-emerald-50 dark:bg-emerald-950/30' : ''}`}
+                      >
+                        <td className="py-1 pr-2 text-zinc-500">{index + 1}</td>
+                        <td className="py-1 pr-2 whitespace-nowrap tabular-nums">{fmtLocal(local(item.startJd))}</td>
+                        <td className="py-1 pr-2 whitespace-nowrap tabular-nums">{fmtLocal(local(item.endJd))}</td>
+                        <td className="py-1 pr-2 font-bold">{item.house}</td>
+                        <td className="py-1 whitespace-nowrap">{signsForHouse(item.house)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('Choose a Pratyantara daśā to see its twelve Vidāśās.')}</p>
+            </div>
+          )}
+
+          {selectedPratyantara && (
+            <div data-sud="vidasas" className="space-y-2">
+              <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                {fill(t('The twelve Vidāśās of Pratyantara {pratyantara}'), { pratyantara: (pratyantara ?? 0) + 1 })}
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-[10px] font-mono">
+                  <thead>
+                    <tr className="text-left text-[9px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                      <th className="py-1 pr-2 font-normal">#</th>
+                      <th className="py-1 pr-2 font-normal">{t('from')}</th>
+                      <th className="py-1 pr-2 font-normal">{t('to')}</th>
+                      <th className="py-1 pr-2 font-normal">{t('house')}</th>
+                      <th className="py-1 font-normal">{t('signs')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {vidasas.map((item, index) => (
+                      <tr
+                        key={index}
+                        data-sud-vidasha-row={index + 1}
+                        aria-expanded={vidasha === index}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => toggleVidasha(index)}
+                        onKeyDown={event => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            toggleVidasha(index);
+                          }
+                        }}
+                        className={`cursor-pointer border-t border-zinc-100 dark:border-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 ${vidasha === index ? 'bg-violet-50 dark:bg-violet-950/30' : ''}`}
+                      >
+                        <td className="py-1 pr-2 text-zinc-500">{index + 1}</td>
+                        <td className="py-1 pr-2 whitespace-nowrap tabular-nums">{fmtLocal(local(item.startJd))}</td>
+                        <td className="py-1 pr-2 whitespace-nowrap tabular-nums">{fmtLocal(local(item.endJd))}</td>
+                        <td className="py-1 pr-2 font-bold">{item.house}</td>
+                        <td className="py-1 whitespace-nowrap">{signsForHouse(item.house)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
@@ -249,7 +396,7 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
       )}
 
       <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-        {t('A year of age runs from one solar return to the next (the Sun back at its natal sidereal longitude), the first from birth; the months and days are equal parts of it. BPHS does not say what a year is; this is the choice made here, as for the annual charts. The aspects are those of Parashara: the 7th from every graha, and the special aspects of Mars, Jupiter, Saturn and the nodes.')}
+        {t('A year of age runs from one solar return to the next (the Sun back at its natal sidereal longitude), the first from birth. The year is divided into twelve equal months, each month into twelve equal Pratyantara daśās, and each Pratyantara into twelve equal Vidāśās. BPHS does not say what a year is; this is the choice made here, as for the annual charts. The aspects are those of Parashara: the 7th from every graha, and the special aspects of Mars, Jupiter, Saturn and the nodes.')}
         <br />
         {t('The verdict follows BPHS 74: the grahas in the house decide, benefics against malefics (the Sun is a benefic only in the 1st house of a ring, a malefic in its exaltation sign does no harm); with none, the grahas that aspect it; with none, its lord. The natal grahas are used. The adjustment by the Saptavarga, the check against the Ashtakavarga and the grahas at the start of the year are not taken into account, and BPHS gives no way of combining the three charts, so none is made.')}
       </p>

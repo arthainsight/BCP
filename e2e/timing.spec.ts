@@ -826,13 +826,26 @@ test('TIMING Sudarśana draws the three charts and makes the house of the year a
   const houses = await months.evaluateAll((rows) => rows.map((row) => Number(row.querySelectorAll('td')[2].textContent)));
   expect(houses).toEqual([8, 9, 10, 11, 12, 1, 2, 3, 4, 5, 6, 7]);
 
-  // A month opens its twelve days, and is marked in the three rings.
+  // A month opens its twelve Pratyantara daśās, and is marked in the three rings.
   await months.nth(2).click();
   await expect(chart.locator('[data-sud-month]')).toHaveCount(3);
-  const days = visible(page, page.locator('[data-sud="days"]')).locator('[data-sud-day-row]');
-  await expect(days).toHaveCount(12);
-  await expect(days.first()).toContainText('house 10');
-  await expect(days.nth(3)).toContainText('house 1');
+  const pratyantaras = visible(page, page.locator('[data-sud="pratyantaras"]')).locator('[data-sud-pratyantara-row]');
+  await expect(pratyantaras).toHaveCount(12);
+  await expect(pratyantaras.first().locator('td').nth(3)).toHaveText('10');
+  await expect(pratyantaras.nth(3).locator('td').nth(3)).toHaveText('1');
+
+  // A Pratyantara daśā opens its twelve Vidāśās, starting from the same house.
+  await pratyantaras.first().click();
+  await expect(chart.locator('[data-sud-pratyantara]')).toHaveCount(3);
+  const vidasas = visible(page, page.locator('[data-sud="vidasas"]')).locator('[data-sud-vidasha-row]');
+  await expect(vidasas).toHaveCount(12);
+  await expect(vidasas.first().locator('td').nth(3)).toHaveText('10');
+  await expect(vidasas.nth(3).locator('td').nth(3)).toHaveText('1');
+
+  // Selecting a Vidāśā adds its own colour to all three rings.
+  await vidasas.first().click();
+  await expect(chart.locator('[data-sud-vidasha]')).toHaveCount(3);
+  await expect(vidasas.first()).toHaveAttribute('aria-expanded', 'true');
 
   // A year back: the 7th house.
   await visible(page, page.getByRole('button', { name: 'Previous year', exact: true })).click();

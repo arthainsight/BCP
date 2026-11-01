@@ -399,6 +399,8 @@ test('ANALYSIS Praśna reads the Tājika yogas between the lord of the Lagna and
   await expect(panel.locator('table[data-prashna="lords"] tbody')).not.toHaveText(before);
   await panel.getByLabel('house of the question').selectOption('1');
   await expect(panel.locator('[data-prashna="verdict"]')).toContainText('first house');
+  // The marks of strength and weakness of the lords and the Moon are given.
+  await expect(panel.locator('[data-yoga="marks"]')).toHaveCount(1);
 
   expect(errors).toEqual([]);
 });
