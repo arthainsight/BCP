@@ -6,7 +6,7 @@ import type { TopicVerse } from './topicVerses';
  * What the topic yogas (topicYogas.ts) share: the shape of a rule and the small questions of a chart that the rules ask. A rule carries the chapter and verses it is read from and decides from the chart whether
  * it is met (true), not met (false) or cannot be judged (null). "Strong" (bali) is the Ṣaḍbala of the graha at or over the strength it needs (the ratio of the Ṣaḍbala panel is 1 or more); the text does not define it.
  */
-export type TopicKey = 'spirituality' | 'marriage' | 'longevity';
+export type TopicKey = 'spirituality' | 'marriage' | 'longevity' | 'wealth';
 
 export type SevenGraha = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
 export const SEVEN: readonly SevenGraha[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
@@ -15,6 +15,8 @@ export interface TopicPlanet { name: string; sign: number; degree: number; longi
 export interface TopicContext {
   planets: TopicPlanet[];
   ascendantSign: number;
+  /** The sidereal longitude of the lagna, when known; the rules that need its navāṁśa cannot be judged without it. */
+  ascendantLongitude?: number;
   /** Ṣaḍbala against what each graha needs; 1 or more is strong. A graha missing from it cannot be judged. */
   ratio: Partial<Record<SevenGraha, number>>;
 }

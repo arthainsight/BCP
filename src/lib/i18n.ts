@@ -652,6 +652,7 @@ export const FI: Record<string, string> = {
   '{body} in the {house} house ({sign})': '{body} {house} talossa ({sign})',
   'The close of the chapter (25.86–87)': 'Luvun päätös (25.86–87)',
   'Longevity and death': 'Pitkäikäisyys ja kuolema',
+  'Royal yogas, wealth and poverty': 'Rāja-yogat, vauraus ja köyhyys',
   'The classical statements about the length of life and about death are shown as the text has them. They are a reading of the text and not a prediction.': 'Klassiset väitteet elämän pituudesta ja kuolemasta näytetään sellaisina kuin teksti ne antaa. Ne ovat tekstin luentaa eivätkä ennustus.',
   'the verses': 'jakeet',
   'met': 'täyttyy',

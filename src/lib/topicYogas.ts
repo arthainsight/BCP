@@ -2,6 +2,7 @@ import { TOPIC_VERSES, type TopicVerse } from './topicVerses';
 import { SPIRITUALITY_RULES, PRAVRAJYA_TYPES } from './topicSpirituality';
 import { MARRIAGE_RULES } from './topicMarriage';
 import { LONGEVITY_RULES } from './topicLongevity';
+import { WEALTH_RULES } from './topicWealth';
 import type { RuleOutcome, TopicContext, TopicKey, TopicYogaRule } from './topicCore';
 
 /**
@@ -19,9 +20,10 @@ export const TOPICS: { key: TopicKey; label: string; source: string; chapters: n
     key: 'longevity', label: 'Longevity and death', source: 'BPHS 19 (the 8th house), 44 (the māraka)', chapters: [19, 44],
     caution: 'The classical statements about the length of life and about death are shown as the text has them. They are a reading of the text and not a prediction.',
   },
+  { key: 'wealth', label: 'Royal yogas, wealth and poverty', source: 'BPHS 39 (rāja yogas), 40 (the minister), 41 (dhana yogas), 42 (daridra yogas)', chapters: [39, 40, 41, 42] },
 ];
 
-export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES];
+export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES, ...WEALTH_RULES];
 
 export interface TopicYogaResult { rule: TopicYogaRule; outcome: RuleOutcome; verses: TopicVerse[] }
 

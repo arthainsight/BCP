@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.82',
+    date: '2026-11-01',
+    title: 'Royal yogas, wealth and poverty, after the Sanskrit of BPHS 39–42',
+    changes: [
+      'ANALYSIS → Topic yogas → Royal yogas, wealth and poverty: 63 rules from the rāja yogas (BPHS 39), the minister (40), the dhana yogas (41) and the daridra yogas (42), each with its verses in Devanagari and IAST (all 115 verses are shown) and met, not met or cannot be judged for the chart.',
+      'The Amātyakāraka of chapter 40 is the second by degree in the sign (eight-karaka scheme); the māraka lords of chapter 42 are the lords of the 2nd and 7th. Where the text does not settle a reading, the rule says which was taken. Not judged: what needs the ārūḍha, the pada or the older kāraka, and the divisions of 41.18–34; the view lists those verses. In docs/topic-yogas.md.',
+      'Updated the application version to v3.82.',
+    ],
+  },
+  {
     version: 'v3.81',
     date: '2026-11-01',
     title: 'Two grahas together, and the Moon seen by the others (Phaladīpikā 18)',
