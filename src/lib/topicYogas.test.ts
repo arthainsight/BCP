@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { PRAVRAJYA_TYPES, SEVEN, evaluateTopic, notEvaluatedVerses, type SevenGraha, type TopicContext, type TopicPlanet } from './topicYogas';
-import { BPHS79_VERSES } from './bphs79Data';
+import { TOPIC_VERSES } from './topicVerses';
+
+const BPHS79_VERSES = TOPIC_VERSES[79];
 
 const body = (name: string, sign: number, degree: number): TopicPlanet => ({ name, sign, degree, longitude: (sign - 1) * 30 + degree });
 const context = (planets: TopicPlanet[], ascendantSign: number, strong: Partial<Record<SevenGraha, number>> = {}): TopicContext => {

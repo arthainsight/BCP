@@ -10,11 +10,11 @@ function Verses({ verses }: { verses: TopicVerse[] }) {
   const t = useT();
   return (
     <details className="mt-1 rounded border border-zinc-200 px-2 py-1 dark:border-zinc-700">
-      <summary className="cursor-pointer text-[10px] text-zinc-500 dark:text-zinc-400">{t('the verses')}: {verses.map(verse => `79.${verse.verse}`).join(', ')}</summary>
+      <summary className="cursor-pointer text-[10px] text-zinc-500 dark:text-zinc-400">{t('the verses')}: {verses.map(verse => `${verse.chapter}.${verse.verse}`).join(', ')}</summary>
       <div className="mt-1 space-y-2 text-[11px]">
         {verses.map(verse => (
           <div key={verse.verse} data-topic-verse={verse.verse}>
-            <div className="text-zinc-700 dark:text-zinc-200">79.{verse.verse}: {verse.gloss}</div>
+            <div className="text-zinc-700 dark:text-zinc-200">{verse.chapter}.{verse.verse}: {verse.gloss}</div>
             <div lang="sa">{verse.sanskrit[0]}</div>
             <div lang="sa">{verse.sanskrit[1]}</div>
             <div className="italic text-zinc-500 dark:text-zinc-400">{verse.iast[0]} / {verse.iast[1]}</div>
@@ -58,6 +58,7 @@ export default function TopicYogaPanel({ chart }: { chart: ChartData }) {
         ))}
       </div>
       <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{TOPICS.find(item => item.key === topic)?.source}</div>
+      {TOPICS.find(item => item.key === topic)?.caution && <p className="text-[10px] font-mono text-amber-700 dark:text-amber-400" data-topic-caution>{t(TOPICS.find(item => item.key === topic)!.caution!)}</p>}
       <div className="space-y-2">
         {results.map(result => {
           const [icon, color, word] = badge(result.outcome.met);
@@ -77,7 +78,7 @@ export default function TopicYogaPanel({ chart }: { chart: ChartData }) {
       </div>
       {left.length > 0 && (
         <details className="rounded-lg border border-zinc-200 p-2 font-mono text-xs dark:border-zinc-700">
-          <summary className="cursor-pointer text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400">{t('Verses not judged here (they need the war of the grahas or the daśā)')}</summary>
+          <summary className="cursor-pointer text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-400">{t('Verses not judged here (they need the war of the grahas, the daśā or a reading the text does not settle)')}</summary>
           <div className="mt-2"><Verses verses={left} /></div>
         </details>
       )}
