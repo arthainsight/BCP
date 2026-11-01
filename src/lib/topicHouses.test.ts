@@ -87,3 +87,55 @@ assert.ok(left.includes('12.9'));
 assert.ok(left.includes('13.12'));
 assert.ok(!left.includes('14.1'));
 assert.ok(!left.includes('16.32'));
+
+// ── chapters 20 to 23 ──
+for (const [chapter, count] of [[20, 32], [21, 22], [22, 11], [23, 14]] as const) {
+  const verses = TOPIC_VERSES[chapter];
+  assert.equal(verses.length, count);
+  assert.deepEqual(verses.map(verse => verse.verse), Array.from({ length: count }, (_, index) => index + 1));
+  for (const verse of verses) assert.ok(/[ऀ-ॿ]/.test(verse.sanskrit[0] + verse.sanskrit[1]) && verse.iast[0].length > 5 && verse.gloss.length > 10);
+}
+for (const result of evaluateTopic('houses', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
+
+// 20.1: Aries lagna, the 9th lord Jupiter in the 9th (Sagittarius) and strong.
+assert.equal(rule(chart(1, { Jupiter: [9] }, { Jupiter: 1.3 }), 'ninth-lord-strong').outcome.met, true);
+assert.equal(rule(chart(1, { Jupiter: [9] }), 'ninth-lord-strong').outcome.met, false);
+// 20.4: the 9th lord Jupiter in the 10th (Capricorn is its debilitation: also met).
+assert.equal(rule(chart(1, { Jupiter: [10] }), 'father-poor').outcome.met, true);
+// 20.10: the 9th lord Jupiter in the 2nd (Taurus) and the 2nd lord Venus in the 9th.
+assert.equal(rule(chart(1, { Jupiter: [2], Venus: [9] }), 'exchange-9-2').outcome.met, true);
+// 20.14b-15a: the Sun in the 8th and the 8th lord Mars in the 9th: the first year.
+const first = rule(chart(1, { Sun: [8], Mars: [9] }), 'father-year-1');
+assert.equal(first.outcome.met, true);
+assert.deepEqual(first.verses.map(verse => verse.verse), [14, 15]);
+// 20.19b-20a: the 9th lord Jupiter in the 12th (Pisces) and the 12th lord (Jupiter) in the 9th: only if one graha, so an Aries lagna cannot; Taurus lagna: 9th Capricorn (Saturn), 12th Aries (Mars).
+assert.equal(rule(chart(2, { Saturn: [1], Mars: [10] }), 'father-year-44').outcome.met, true);
+// 20.17b-18a: Rāhu in the 4th and the Sun in the 5th.
+assert.equal(rule(chart(1, { Rahu: [4], Sun: [5] }), 'father-year-16-18').outcome.met, true);
+
+// 21.5: malefics in the 10th and 11th.
+assert.equal(rule(chart(1, { Saturn: [10], Sun: [11] }), 'malefics-10-11').outcome.met, true);
+// 21.8: the 10th lord Saturn exalted (Libra) with Jupiter, the 9th lord Jupiter in the 10th (Capricorn): Jupiter and Saturn cannot share Libra and Capricorn; check the parts: Saturn exalted.
+assert.equal(rule(chart(1, { Saturn: [7], Jupiter: [7] }), 'tenth-lord-exalted-jupiter').outcome.met, false);
+assert.equal(rule(chart(1, { Saturn: [10], Jupiter: [10] }), 'tenth-lord-exalted-jupiter').outcome.met, false);
+// 21.13: a kendra lord in the 11th (the 4th lord Moon in Aquarius), the 11th lord Saturn in the lagna, Venus in the 10th.
+assert.equal(rule(chart(1, { Moon: [11], Saturn: [1], Venus: [10] }), 'jewels').outcome.met, true);
+// 21.3: the 10th lord's strength needs a value.
+assert.equal(rule(chart(1, {}, { Saturn: 0.7 }), 'tenth-lord-weak').outcome.met, true);
+
+// 22.8: the 11th lord (Saturn) in the lagna and the lagna lord (Mars) in the 11th (Aquarius).
+assert.equal(rule(chart(1, { Saturn: [1], Mars: [11] }), 'exchange-11-1').outcome.met, true);
+// 22.6: Jupiter in the 11th, the Moon in the 2nd, Venus in the 9th.
+assert.equal(rule(chart(1, { Jupiter: [11], Moon: [2], Venus: [9] }), 'jupiter-11-moon-2-venus-9').outcome.met, true);
+
+// 23.14: the lagna lord Mars in the 12th (Pisces), the 12th lord Jupiter in the lagna with Venus.
+assert.equal(rule(chart(1, { Mars: [12], Jupiter: [1], Venus: [1] }), 'exchange-1-12-venus').outcome.met, true);
+// 23.8 always lists the halves.
+assert.ok(rule(chart(1), 'visible-half').outcome.lines[0].includes('Visible half'));
+// 23.9: Rāhu in the 12th with Mars, Saturn and the Sun (the 12th lord Jupiter with the Sun).
+assert.equal(rule(chart(1, { Rahu: [12], Mars: [12], Saturn: [12], Sun: [12], Jupiter: [12] }), 'rahu-12-hell').outcome.met, true);
+
+const left2 = notEvaluatedVerses('houses').map(verse => `${verse.chapter}.${verse.verse}`);
+assert.ok(!left2.includes('20.14'));
+assert.ok(!left2.includes('23.14'));
+assert.ok(left2.includes('21.16'));

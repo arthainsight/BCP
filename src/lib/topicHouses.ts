@@ -1,16 +1,17 @@
 import { combustionOf } from './combustion';
 import {
   SEVEN, beneficsIn, beneficsSeeing, beneficsSeeingSign, cannot, drekkanaSign, find, grahasInHouse, has, houseOf, isBenefic, isMalefic, isStrong, joinedOrSeen, lordHouse, lordOfHouse, lordOfSign,
-  maleficsIn, maleficsSeeing, mixed, ordinalEn, ownOrExalted, debilitated, inEnemySign, signName, signOf, signOfHouse, seesSign, together, where, withMalefics, type RuleOutcome, type TopicContext, type TopicYogaRule,
+  maleficsIn, maleficsSeeing, mixed, ordinalEn, ownOrExalted, debilitated, inEnemySign, signName, signOf, signOfHouse, sees, seesSign, together, where, withMalefics, type RuleOutcome, type TopicContext, type TopicYogaRule,
 } from './topicCore';
 import { navamshaSign } from './birthConditions';
 import { EXALTATION, NATURAL_FRIENDS, OWN_SIGNS } from './dignity';
 
 /**
- * The twelve houses, "bhāva-phala": Bṛhat Parāśara Horā Śāstra chapters 12 (the lagna), 13 (the 2nd), 14 (the 3rd), 15 (the 4th) and 16 (the 5th). The 6th, 7th and 8th are in the illness, marriage and longevity topics (17, 18, 19).
+ * The twelve houses, "bhāva-phala": Bṛhat Parāśara Horā Śāstra chapters 12 (the lagna), 13 (the 2nd), 14 (the 3rd), 15 (the 4th), 16 (the 5th), 20 (the 9th), 21 (the 10th), 22 (the 11th) and 23 (the 12th). The 6th, 7th and 8th are in the illness, marriage and longevity topics (17, 18, 19).
  * "Strong" is a Ṣaḍbala of 1 or more; a "kendra" is the 1st, 4th, 7th, 10th and a "trikoṇa" the 5th and 9th (the lagna counts as both); the kāraka of the siblings is Mars and of the children Jupiter.
  * Where a sentence of the text runs over to the next verse (the number of sons, 16.24–31, the vehicles, 15.10–14) it is read as one rule with the verses it uses. Readings are named in the rule.
- * Not judged: Māndi (16.9, 16.23), the Pārāvata and other divisions (13.11), the "lord of the eyes" (13.12), the twins of 12.9, 13.4 (which asks for the 11th and 2nd in kendras and trikoṇas, which they cannot be), the lists of 15.10,
+ * The years of the father's death (20.13–25) are given as the text has them: the conditions end one verse and the years open the next. Not judged there: 20.23b–24a (whether Saturn is in the 8th and 7th, or in either, is not clear), 20.20's "lagna lord with the 8th" is read as with the 8th lord.
+ * Not judged: the aṃśa conditions of 23.3–6, the navāṁśa of 21.16, Māndi (16.9, 16.23), the Pārāvata and other divisions (13.11), the "lord of the eyes" (13.12), the twins of 12.9, 13.4 (which asks for the 11th and 2nd in kendras and trikoṇas, which they cannot be), the lists of 15.10,
  * 16.17 ("not devoid of benefics" does not say which way), and the years of life the text gives for what it does not condition.
  */
 const rule = (chapter: number, id: string, verses: number[], name: string, effect: string, evaluate: (context: TopicContext) => RuleOutcome): TopicYogaRule =>
@@ -32,9 +33,10 @@ const friendOrOwn = (context: TopicContext, name: string) => {
 /** The Nth sign counted from a graha's own sign, 1 being that sign. */
 const signFrom = (context: TopicContext, name: string, count: number): number | null => { const sign = signOf(context, name); return sign === null ? null : ((sign - 1 + count - 1) % 12) + 1; };
 const MOVABLE_SIGNS = (sign: number) => [1, 4, 7, 10].includes(sign);
+const BENEFIC_SIGN = (sign: number) => ['Jupiter', 'Venus', 'Mercury', 'Moon'].includes(lordOfSign(sign));
 const lagnaBenefics = (context: TopicContext) => beneficsSeeingSign(context, context.ascendantSign);
 
-export const HOUSES_RULES: TopicYogaRule[] = [
+const FIRST_FIVE: TopicYogaRule[] = [
   // ── chapter 12: the lagna ──
   rule(12, 'lagna-lord-trika-malefic', [1], 'The lagna lord with malefics in the 6th, 8th or 12th', 'It takes away bodily happiness.', context => {
     const l1 = lord(context, 1); const with_ = withMalefics(context, l1);
@@ -372,3 +374,262 @@ export const HOUSES_RULES: TopicYogaRule[] = [
   }),
 ];
 
+/** The text gives the years of the father's death in a pattern: the conditions close one verse and the years open the next. `verses` are those two. */
+const fatherRule = (id: string, verses: number[], name: string, years: string, test: (context: TopicContext) => { ok: boolean; line: string }): TopicYogaRule =>
+  rule(20, id, verses, name, `The father dies in ${years}. (The conditions end one verse and the years open the next.)`, context => { const r = test(context); return { met: r.ok, lines: [r.line] }; });
+
+const LAST_FOUR: TopicYogaRule[] = [
+  // ── chapter 20: the 9th house ──
+  rule(20, 'ninth-lord-strong', [1], 'The 9th lord strong in the 9th', 'One of great fortune.', context => {
+    const l9 = lord(context, 9); const strong = isStrong(context, l9);
+    if (strong === null) return cannot(`The strength of the 9th lord ${l9} is not known`);
+    return { met: strong && houseOf(context, l9) === 9, lines: [`${where(context, l9)}, ${strong ? 'strong' : 'not strong'}`] };
+  }),
+  rule(20, 'jupiter-9th', [2], 'Jupiter in the 9th, its lord in a kendra and the lagna lord strong', 'Much fortune. (Read: "its lord" is the lord of the 9th.)', context => {
+    const l1 = lord(context, 1); const strong = isStrong(context, l1);
+    if (strong === null) return cannot(`The strength of the lagna lord ${l1} is not known`);
+    return { met: houseOf(context, 'Jupiter') === 9 && has(lordHouse(context, 9), KENDRA) && strong, lines: [`${where(context, 'Jupiter')}; ${where(context, lord(context, 9))}; the lagna lord ${l1} ${strong ? 'strong' : 'not strong'}`] };
+  }),
+  rule(20, 'father-fortunate', [3], 'The 9th lord strong, Venus in the 9th, Jupiter in a kendra', 'The father is fortunate. (Read: "with Venus" as Venus in the 9th.)', context => {
+    const l9 = lord(context, 9); const strong = isStrong(context, l9);
+    if (strong === null) return cannot(`The strength of the 9th lord ${l9} is not known`);
+    return { met: strong && houseOf(context, 'Venus') === 9 && has(houseOf(context, 'Jupiter'), KENDRA), lines: [`The 9th lord ${l9} ${strong ? 'strong' : 'not strong'}; ${where(context, 'Venus')}; ${where(context, 'Jupiter')}`] };
+  }),
+  rule(20, 'father-poor', [4], 'The 9th lord in the 10th, or Mars in the 4th, or the 9th lord debilitated', 'The father is poor. (The 2nd from the 9th is the 10th.)', context => {
+    const l9 = lord(context, 9); const sign = signOf(context, l9);
+    if (sign === null) return cannot('The 9th lord is missing');
+    const found = [lordHouse(context, 9) === 10 ? 'the 9th lord in the 10th' : '', houseOf(context, 'Mars') === 4 ? 'Mars in the 4th' : '', debilitated(l9, sign) ? 'the 9th lord debilitated' : ''].filter(Boolean);
+    return { met: found.length > 0, lines: [found.length ? found.join('; ') : `${where(context, l9)}; ${where(context, 'Mars')}`] };
+  }),
+  rule(20, 'father-long-lived', [5], 'The 9th lord exalted with Jupiter and Venus in a kendra', 'The father is long-lived. (Read: "highest exaltation" as the exaltation sign; "the 9th aṃśa with Jupiter" as the 9th lord with Jupiter.)', context => {
+    const l9 = lord(context, 9);
+    return { met: exalted(context, l9) && l9 !== 'Jupiter' && together(context, l9, 'Jupiter') && has(houseOf(context, 'Venus'), KENDRA), lines: [`${where(context, l9)}${exalted(context, l9) ? ', exalted' : ''}; with Jupiter: ${together(context, l9, 'Jupiter') ? 'yes' : 'no'}; ${where(context, 'Venus')}`] };
+  }),
+  rule(20, 'father-king', [6], 'The 9th lord in a kendra and seen by Jupiter', 'The father has vehicles and is a king or like one.', context => {
+    const l9 = lord(context, 9);
+    return { met: has(houseOf(context, l9), KENDRA) && sees(context, 'Jupiter', l9), lines: [`${where(context, l9)}; Jupiter ${sees(context, 'Jupiter', l9) ? 'aspects' : 'does not aspect'} it`] };
+  }),
+  rule(20, 'father-wealthy', [7], 'The 9th lord in the 10th and the 10th lord in the 9th, seen by benefics', 'The father is wealthy and famous. (Read: one of the two is seen by a benefic.)', context => {
+    const a = lord(context, 9); const b = lord(context, 10);
+    const ben = [...beneficsSeeing(context, a), ...beneficsSeeing(context, b)];
+    return { met: lordHouse(context, 9) === 10 && lordHouse(context, 10) === 9 && ben.length > 0, lines: [`${where(context, a)}; ${where(context, b)}; benefics aspecting: ${mixed([...new Set(ben)])}`] };
+  }),
+  rule(20, 'sun-exalted-ninth-lord-11', [8], 'The Sun exalted and the 9th lord in the 11th', 'Devoted to dharma, dear to the king, devoted to his father.', context => ({
+    met: exalted(context, 'Sun') && lordHouse(context, 9) === 11, lines: [`Sun ${exalted(context, 'Sun') ? 'exalted' : 'not exalted'}; ${where(context, lord(context, 9))}`],
+  })),
+  rule(20, 'sun-trikona-ninth-7', [9], 'The Sun in a trikoṇa, the 9th lord in the 7th with or seen by Jupiter', 'Devotion to the father.', context => {
+    const l9 = lord(context, 9);
+    return { met: has(houseOf(context, 'Sun'), [1, 5, 9]) && lordHouse(context, 9) === 7 && joinedOrSeen(context, l9, 'Jupiter'), lines: [`${where(context, 'Sun')}; ${where(context, l9)}; Jupiter joins or aspects it: ${joinedOrSeen(context, l9, 'Jupiter') ? 'yes' : 'no'}`] };
+  }),
+  rule(20, 'exchange-9-2', [10], 'The 9th lord in the 2nd and the 2nd lord in the 9th', 'Fortune after the age of thirty-two, vehicles and fame.', context => ({
+    met: lordHouse(context, 9) === 2 && lordHouse(context, 2) === 9, lines: [`${where(context, lord(context, 9))}; ${where(context, lord(context, 2))}`],
+  })),
+  rule(20, 'father-enemy', [11], 'The lagna lord in the 9th with the 6th lord', 'Mutual enmity; the father is despised.', context => {
+    const l1 = lord(context, 1); const l6 = lord(context, 6);
+    return { met: lordHouse(context, 1) === 9 && l1 !== l6 && together(context, l1, l6), lines: [`${where(context, l1)}; the 6th lord ${l6} with it: ${together(context, l1, l6) ? 'yes' : 'no'}`] };
+  }),
+  rule(20, 'begging', [12], 'The 3rd lord weak with the 10th lord, the 9th lord debilitated and combust', 'He lives by begging for food. ("Weak" is a Ṣaḍbala under 1.)', context => {
+    const l3 = lord(context, 3); const l10 = lord(context, 10); const l9 = lord(context, 9); const sign = signOf(context, l9);
+    const weak = weakOrNot(context, l3);
+    if (weak === null || sign === null) return cannot('A strength is not known');
+    return { met: weak && l3 !== l10 && together(context, l3, l10) && debilitated(l9, sign) && combust(context, l9), lines: [`The 3rd lord ${l3} ${weak ? 'weak' : 'not weak'}, with the 10th lord ${l10}: ${together(context, l3, l10) ? 'yes' : 'no'}; the 9th lord ${l9} in ${signName(sign)}${combust(context, l9) ? ', combust' : ''}`] };
+  }),
+  fatherRule('father-before-birth', [13, 14], 'The Sun in the 6th, 8th or 12th, the 8th lord with the 9th lord, the 12th lord in the lagna, the 6th lord in the 5th', 'the womb, before the native\'s birth', context => ({
+    ok: has(houseOf(context, 'Sun'), TRIKA) && lord(context, 8) !== lord(context, 9) && together(context, lord(context, 8), lord(context, 9)) && lordHouse(context, 12) === 1 && lordHouse(context, 6) === 5,
+    line: `${where(context, 'Sun')}; ${where(context, lord(context, 8))}, ${where(context, lord(context, 9))}; ${where(context, lord(context, 12))}; ${where(context, lord(context, 6))}`,
+  })),
+  fatherRule('father-year-1', [14, 15], 'The Sun in the 8th and the 8th lord in the 9th', 'the first year', context => ({ ok: houseOf(context, 'Sun') === 8 && lordHouse(context, 8) === 9, line: `${where(context, 'Sun')}; ${where(context, lord(context, 8))}` })),
+  fatherRule('father-year-3-16', [15, 16], 'The 12th lord in the 9th and the 9th lord in a debilitated sign', 'the 3rd or 16th year', context => {
+    const l9 = lord(context, 9); const sign = signOf(context, l9);
+    return { ok: lordHouse(context, 12) === 9 && sign !== null && debilitated(l9, sign), line: `${where(context, lord(context, 12))}; ${where(context, l9)}` };
+  }),
+  fatherRule('father-year-2-12', [16, 17], 'The lagna lord in the 8th and the 8th lord with the Sun', 'the 2nd or 12th year', context => {
+    const l8 = lord(context, 8);
+    return { ok: lordHouse(context, 1) === 8 && l8 !== 'Sun' && together(context, l8, 'Sun'), line: `${where(context, lord(context, 1))}; the 8th lord ${l8} with the Sun: ${together(context, l8, 'Sun') ? 'yes' : 'no'}` };
+  }),
+  fatherRule('father-year-16-18', [17, 18], 'Rāhu in the 8th from the 9th and the Sun in the 9th from the 9th', 'the 16th or 18th year', context => ({ ok: houseOf(context, 'Rahu') === 4 && houseOf(context, 'Sun') === 5, line: `${where(context, 'Rahu')}; ${where(context, 'Sun')}` })),
+  fatherRule('father-year-7-19', [18, 19], 'The Sun with Rāhu and Saturn in the 9th from the Moon', 'the 7th or 19th year', context => {
+    const moon = find(context, 'Moon'); const saturn = find(context, 'Saturn');
+    const ninth = moon ? ((moon.sign - 1 + 8) % 12) + 1 : null;
+    return { ok: together(context, 'Sun', 'Rahu') && saturn !== undefined && saturn.sign === ninth, line: `The Sun with Rāhu: ${together(context, 'Sun', 'Rahu') ? 'yes' : 'no'}; ${where(context, 'Saturn')}; the Moon in ${signName(moon?.sign ?? 1)}` };
+  }),
+  fatherRule('father-year-44', [19, 20], 'The 9th lord in the 12th and the 12th lord in the 9th', 'the 44th year', context => ({ ok: lordHouse(context, 9) === 12 && lordHouse(context, 12) === 9, line: `${where(context, lord(context, 9))}; ${where(context, lord(context, 12))}` })),
+  fatherRule('father-year-35-41', [20, 21], 'The Moon in a navāṁśa of the Sun and the lagna lord with the 8th lord', 'the 35th or 41st year', context => {
+    const moon = find(context, 'Moon'); const l1 = lord(context, 1); const l8 = lord(context, 8);
+    return { ok: moon !== undefined && lordOfSign(navamshaSign(moon.longitude)) === 'Sun' && l1 !== l8 && together(context, l1, l8), line: `The Moon's navāṁśa: ${moon ? signName(navamshaSign(moon.longitude)) : 'unknown'}; the lagna lord ${l1} with the 8th lord ${l8}: ${together(context, l1, l8) ? 'yes' : 'no'}` };
+  }),
+  fatherRule('father-year-50', [21, 22], 'The Sun as 9th lord with Saturn and Mars', 'the 50th year', context => ({ ok: lord(context, 9) === 'Sun' && together(context, 'Sun', 'Saturn') && together(context, 'Sun', 'Mars'), line: `The 9th lord is ${lord(context, 9)}; the Sun with Saturn: ${together(context, 'Sun', 'Saturn') ? 'yes' : 'no'}, with Mars: ${together(context, 'Sun', 'Mars') ? 'yes' : 'no'}` })),
+  fatherRule('father-year-6-25', [22, 23], 'The Sun in the 7th from the 9th (the 3rd) and Rāhu in the 7th from the 3rd (the 9th)', 'the 6th or 25th year', context => ({ ok: houseOf(context, 'Sun') === 3 && houseOf(context, 'Rahu') === 9, line: `${where(context, 'Sun')}; ${where(context, 'Rahu')}` })),
+  fatherRule('father-year-26-33', [24, 25], 'The 9th lord in a debilitated sign and the lord of that sign in the 9th', 'the 26th or 33rd year', context => {
+    const l9 = lord(context, 9); const sign = signOf(context, l9);
+    return { ok: sign !== null && debilitated(l9, sign) && houseOf(context, lordOfSign(sign)) === 9, line: `${where(context, l9)}${sign !== null && debilitated(l9, sign) ? `, debilitated in ${signName(sign)} (lord ${lordOfSign(sign)})` : ''}` };
+  }),
+  rule(20, 'venus-exalted-ninth-lord', [26], 'Venus exalted with the 9th lord and Saturn in the 3rd', 'Great fortune. ("Highest exaltation" is read as the exaltation sign.)', context => {
+    const l9 = lord(context, 9);
+    return { met: exalted(context, 'Venus') && l9 !== 'Venus' && together(context, 'Venus', l9) && houseOf(context, 'Saturn') === 3, lines: [`Venus ${exalted(context, 'Venus') ? 'exalted' : 'not exalted'}, with the 9th lord ${l9}: ${together(context, 'Venus', l9) ? 'yes' : 'no'}; ${where(context, 'Saturn')}`] };
+  }),
+  rule(20, 'jupiter-ninth', [27], 'Jupiter in the 9th and the 9th lord in a kendra', 'Abundant fortune after twenty years.', context => ({ met: houseOf(context, 'Jupiter') === 9 && has(lordHouse(context, 9), KENDRA), lines: [`${where(context, 'Jupiter')}; ${where(context, lord(context, 9))}`] })),
+  rule(20, 'mercury-ninth', [28], 'Mercury exalted and the 9th lord in the 9th', 'Great fortune from the age of thirty-six.', context => ({ met: exalted(context, 'Mercury') && lordHouse(context, 9) === 9, lines: [`Mercury ${exalted(context, 'Mercury') ? 'exalted' : 'not exalted'}; ${where(context, lord(context, 9))}`] })),
+  rule(20, 'exchange-1-9-jupiter-7', [29], 'The lagna lord in the 9th, the 9th lord in the lagna and Jupiter in the 7th', 'Wealth and vehicles.', context => ({
+    met: lordHouse(context, 1) === 9 && lordHouse(context, 9) === 1 && houseOf(context, 'Jupiter') === 7, lines: [`${where(context, lord(context, 1))}; ${where(context, lord(context, 9))}; ${where(context, 'Jupiter')}`],
+  })),
+  rule(20, 'without-fortune', [30], 'Rāhu in the 9th and the 9th lord in the 8th, or the 9th lord debilitated', 'Without fortune.', context => {
+    const l9 = lord(context, 9); const sign = signOf(context, l9);
+    if (sign === null) return cannot('The 9th lord is missing');
+    const found = [houseOf(context, 'Rahu') === 9 && lordHouse(context, 9) === 8 ? 'Rāhu in the 9th and the 9th lord in the 8th' : '', debilitated(l9, sign) ? 'the 9th lord debilitated' : ''].filter(Boolean);
+    return { met: found.length > 0, lines: [found.length ? found.join('; ') : `${where(context, 'Rahu')}; ${where(context, l9)}`] };
+  }),
+  rule(20, 'beggar-saturn-moon', [31], 'Saturn with the Moon in the 9th and the lagna lord debilitated', 'A beggar.', context => {
+    const l1 = lord(context, 1); const sign = signOf(context, l1);
+    return { met: houseOf(context, 'Saturn') === 9 && together(context, 'Saturn', 'Moon') && sign !== null && debilitated(l1, sign), lines: [`${where(context, 'Saturn')}; ${where(context, 'Moon')}; the lagna lord ${l1} in ${signName(sign ?? 1)}`] };
+  }),
+  // ── chapter 21: the 10th house ──
+  rule(21, 'tenth-lord-strong-dignified', [2], 'The 10th lord strong and exalted, in its own navāṁśa or its own sign', 'Happiness from the father, fame, good deeds.', context => {
+    const l10 = lord(context, 10); const strong = isStrong(context, l10); const body = find(context, l10);
+    if (strong === null || !body) return cannot(`The strength of the 10th lord ${l10} is not known`);
+    const ownNav = OWN_SIGNS[l10]?.includes(navamshaSign(body.longitude)) === true;
+    return { met: strong && (dignified(context, l10) || ownNav), lines: [`The 10th lord ${l10} ${strong ? 'strong' : 'not strong'}, in ${signName(body.sign)}${ownNav ? ' (own navāṁśa)' : ''}`] };
+  }),
+  rule(21, 'tenth-lord-weak', [3], 'The 10th lord weak', 'A fault in the work. ("Weak" is a Ṣaḍbala under 1.)', context => {
+    const l10 = lord(context, 10); const weak = weakOrNot(context, l10);
+    if (weak === null) return cannot(`The strength of the 10th lord ${l10} is not known`);
+    return { met: weak, lines: [`The 10th lord ${l10} is ${weak ? 'weak' : 'not weak'}`] };
+  }),
+  rule(21, 'rahu-kendra-yajna', [3], 'Rāhu in a kendra or trikoṇa', 'He performs great sacrifices like the Jyotiṣṭoma.', context => ({ met: has(houseOf(context, 'Rahu'), KENDRA_TRIKONA), lines: [where(context, 'Rahu')] })),
+  rule(21, 'tenth-lord-benefics', [4], 'The 10th lord with benefics in a good house', 'Always gain at the court and in trade. (A good house is read as a kendra or trikoṇa.)', context => {
+    const l10 = lord(context, 10);
+    const ben = beneficsIn(context, houseOf(context, l10) ?? 0).filter(name => name !== l10);
+    return { met: ben.length > 0 && has(houseOf(context, l10), KENDRA_TRIKONA), lines: [`${where(context, l10)}; with benefics: ${mixed(ben)}`] };
+  }),
+  rule(21, 'malefics-10-11', [5], 'Malefics in the 10th and in the 11th', 'Evil deeds, a slanderer of his own people.', context => ({ met: maleficsIn(context, 10).length > 0 && maleficsIn(context, 11).length > 0, lines: [`10th: ${mixed(maleficsIn(context, 10))}; 11th: ${mixed(maleficsIn(context, 11))}`] })),
+  rule(21, 'tenth-lord-12-rahu', [6], 'The 10th lord in the 12th with Rāhu', 'Hateful to people, a great fool, wrongdoing.', context => ({ met: lordHouse(context, 10) === 12 && together(context, lord(context, 10), 'Rahu'), lines: [`${where(context, lord(context, 10))}; with Rāhu: ${together(context, lord(context, 10), 'Rahu') ? 'yes' : 'no'}`] })),
+  rule(21, 'tenth-lord-7-saturn-mars', [7], 'The 10th lord in the 7th with Saturn and Mars, the 7th lord with malefics', 'Given to lust and the belly.', context => {
+    const l10 = lord(context, 10); const l7 = lord(context, 7);
+    return { met: lordHouse(context, 10) === 7 && l10 !== 'Saturn' && l10 !== 'Mars' && together(context, l10, 'Saturn') && together(context, l10, 'Mars') && withMalefics(context, l7).length > 0, lines: [`${where(context, l10)}; with Saturn: ${together(context, l10, 'Saturn') ? 'yes' : 'no'}, Mars: ${together(context, l10, 'Mars') ? 'yes' : 'no'}; the 7th lord ${l7} with ${mixed(withMalefics(context, l7))}`] };
+  }),
+  rule(21, 'tenth-lord-exalted-jupiter', [8], 'The 10th lord exalted with Jupiter and the 9th lord in the 10th', 'Honour, prosperity and great influence.', context => {
+    const l10 = lord(context, 10);
+    return { met: exalted(context, l10) && l10 !== 'Jupiter' && together(context, l10, 'Jupiter') && lordHouse(context, 9) === 10, lines: [`${where(context, l10)}${exalted(context, l10) ? ', exalted' : ''}; with Jupiter: ${together(context, l10, 'Jupiter') ? 'yes' : 'no'}; ${where(context, lord(context, 9))}`] };
+  }),
+  rule(21, 'eleventh-lord-in-10th', [9], 'The 11th lord in the 10th and the 10th lord in the lagna, or both in kendras', 'A happy life.', context => {
+    const first = lordHouse(context, 11) === 10 && lordHouse(context, 10) === 1;
+    const second = has(lordHouse(context, 11), KENDRA) && has(lordHouse(context, 10), KENDRA);
+    return { met: first || second, lines: [`${where(context, lord(context, 11))}; ${where(context, lord(context, 10))}`] };
+  }),
+  rule(21, 'tenth-lord-pisces', [10], 'The 10th lord strong with Jupiter in Pisces', 'Clothes, ornaments and comforts.', context => {
+    const l10 = lord(context, 10); const strong = isStrong(context, l10);
+    if (strong === null) return cannot(`The strength of the 10th lord ${l10} is not known`);
+    return { met: strong && l10 !== 'Jupiter' && together(context, l10, 'Jupiter') && signOf(context, 'Jupiter') === 12, lines: [`The 10th lord ${l10} ${strong ? 'strong' : 'not strong'}; ${where(context, 'Jupiter')} in ${signName(signOf(context, 'Jupiter') ?? 1)}; together: ${together(context, l10, 'Jupiter') ? 'yes' : 'no'}`] };
+  }),
+  rule(21, 'sun-11-nodes', [11], 'The Sun in the 11th with Rāhu, Mars and Saturn', 'He destroys his actions.', context => ({ met: houseOf(context, 'Sun') === 11 && ['Rahu', 'Mars', 'Saturn'].every(name => together(context, 'Sun', name)), lines: [`${where(context, 'Sun')}; with Rāhu, Mars and Saturn: ${['Rahu', 'Mars', 'Saturn'].map(name => (together(context, 'Sun', name) ? 'yes' : 'no')).join(', ')}`] })),
+  rule(21, 'jupiter-pisces-venus', [12], 'Jupiter in Pisces with Venus, the lagna lord strong, the Moon exalted', 'Perfect knowledge and wealth.', context => {
+    const l1 = lord(context, 1); const strong = isStrong(context, l1);
+    if (strong === null) return cannot(`The strength of the lagna lord ${l1} is not known`);
+    return { met: signOf(context, 'Jupiter') === 12 && together(context, 'Jupiter', 'Venus') && strong && exalted(context, 'Moon'), lines: [`Jupiter in ${signName(signOf(context, 'Jupiter') ?? 1)}, with Venus: ${together(context, 'Jupiter', 'Venus') ? 'yes' : 'no'}; the lagna lord ${l1} ${strong ? 'strong' : 'not strong'}; the Moon ${exalted(context, 'Moon') ? 'exalted' : 'not exalted'}`] };
+  }),
+  rule(21, 'jewels', [13], 'A kendra lord in the 11th, the 11th lord in the lagna, Venus in the 10th', 'He has jewels.', context => {
+    const kendraLord = [4, 7, 10].map(house => lord(context, house)).filter(name => houseOf(context, name) === 11);
+    return { met: kendraLord.length > 0 && lordHouse(context, 11) === 1 && houseOf(context, 'Venus') === 10, lines: [`Kendra lords in the 11th: ${mixed(kendraLord)}; ${where(context, lord(context, 11))}; ${where(context, 'Venus')}`] };
+  }),
+  rule(21, 'tenth-lord-exalted-kendra', [14], 'The 10th lord exalted in a kendra or trikoṇa, joined or seen by Jupiter', 'He is engaged in great works.', context => {
+    const l10 = lord(context, 10);
+    return { met: exalted(context, l10) && has(houseOf(context, l10), KENDRA_TRIKONA) && l10 !== 'Jupiter' && joinedOrSeen(context, l10, 'Jupiter'), lines: [`${where(context, l10)}${exalted(context, l10) ? ', exalted' : ''}; Jupiter joins or aspects it: ${joinedOrSeen(context, l10, 'Jupiter') ? 'yes' : 'no'}`] };
+  }),
+  rule(21, 'tenth-lord-lagna', [15], 'The 10th lord in the lagna with the lagna lord, the Moon in a kendra or trikoṇa', 'Devoted to good works.', context => ({
+    met: lordHouse(context, 10) === 1 && lordHouse(context, 1) === 1 && has(houseOf(context, 'Moon'), KENDRA_TRIKONA), lines: [`${where(context, lord(context, 10))}; ${where(context, lord(context, 1))}; ${where(context, 'Moon')}`],
+  })),
+  rule(21, 'tenth-lord-12-eighth', [17], 'The 10th lord in the 12th and the 8th lord in the 10th with a malefic', 'Devoted to evil deeds.', context => {
+    const l8 = lord(context, 8);
+    return { met: lordHouse(context, 10) === 12 && lordHouse(context, 8) === 10 && withMalefics(context, l8).length > 0, lines: [`${where(context, lord(context, 10))}; ${where(context, l8)}, with ${mixed(withMalefics(context, l8))}`] };
+  }),
+  rule(21, 'tenth-debilitated', [18], 'The 10th lord debilitated, a malefic in the 10th and another in the 7th', 'A fault in the work.', context => {
+    const l10 = lord(context, 10); const sign = signOf(context, l10);
+    return { met: sign !== null && debilitated(l10, sign) && maleficsIn(context, 10).length > 0 && maleficsIn(context, 7).length > 0, lines: [`The 10th lord ${l10} in ${signName(sign ?? 1)}; malefics in the 10th: ${mixed(maleficsIn(context, 10))}, 7th: ${mixed(maleficsIn(context, 7))}`] };
+  }),
+  rule(21, 'moon-10th-fame', [19], 'The Moon in the 10th, the 10th lord in a trikoṇa from it and the lagna lord in a kendra', 'Good fame. (The trikoṇas from the 10th are the 2nd and 6th.)', context => ({
+    met: houseOf(context, 'Moon') === 10 && has(lordHouse(context, 10), [2, 6]) && has(lordHouse(context, 1), KENDRA), lines: [`${where(context, 'Moon')}; ${where(context, lord(context, 10))}; ${where(context, lord(context, 1))}`],
+  })),
+  rule(21, 'eleventh-in-10th-fame', [20], 'The 11th lord in the 10th and the 10th lord strong, seen by Jupiter', 'Good fame.', context => {
+    const l10 = lord(context, 10); const strong = isStrong(context, l10);
+    if (strong === null) return cannot(`The strength of the 10th lord ${l10} is not known`);
+    return { met: lordHouse(context, 11) === 10 && strong && sees(context, 'Jupiter', l10), lines: [`${where(context, lord(context, 11))}; the 10th lord ${l10} ${strong ? 'strong' : 'not strong'}, Jupiter ${sees(context, 'Jupiter', l10) ? 'aspects' : 'does not aspect'} it`] };
+  }),
+  rule(21, 'tenth-lord-9th-moon-5th', [21], 'The 10th lord in the 9th, the lagna lord in the 10th and the Moon in the 5th', 'A renowned man.', context => ({
+    met: lordHouse(context, 10) === 9 && lordHouse(context, 1) === 10 && houseOf(context, 'Moon') === 5, lines: [`${where(context, lord(context, 10))}; ${where(context, lord(context, 1))}; ${where(context, 'Moon')}`],
+  })),
+  // ── chapter 22: the 11th house ──
+  rule(22, 'eleventh-lord-placed', [2], 'The 11th lord in the 11th, a kendra or a trikoṇa, or exalted', 'Much gain. (The alternative of the Sun\'s aṃśa is not tested.)', context => {
+    const l11 = lord(context, 11);
+    return { met: has(houseOf(context, l11), [11, ...KENDRA_TRIKONA]) || exalted(context, l11), lines: [`${where(context, l11)}${exalted(context, l11) ? ', exalted' : ''}`] };
+  }),
+  rule(22, 'eleventh-lord-2nd-jupiter', [3], 'The 11th lord in the 2nd, the 2nd lord in a kendra and Jupiter in the 2nd', 'Great gain.', context => ({
+    met: lordHouse(context, 11) === 2 && has(lordHouse(context, 2), KENDRA) && houseOf(context, 'Jupiter') === 2, lines: [`${where(context, lord(context, 11))}; ${where(context, lord(context, 2))}; ${where(context, 'Jupiter')}`],
+  })),
+  rule(22, 'eleventh-lord-3rd', [4], 'The 11th lord in the 3rd with benefics', 'In the 36th year two thousand niṣkas.', context => {
+    const l11 = lord(context, 11); const ben = beneficsIn(context, 3).filter(name => name !== l11);
+    return { met: lordHouse(context, 11) === 3 && ben.length > 0, lines: [`${where(context, l11)}; with benefics: ${mixed(ben)}`] };
+  }),
+  rule(22, 'eleventh-lord-kendra-benefics', [5], 'The 11th lord in a kendra or trikoṇa with benefics', 'In the 40th year five hundred niṣkas.', context => {
+    const l11 = lord(context, 11); const house = houseOf(context, l11);
+    const ben = beneficsIn(context, house ?? 0).filter(name => name !== l11);
+    return { met: has(house, KENDRA_TRIKONA) && ben.length > 0, lines: [`${where(context, l11)}; with benefics: ${mixed(ben)}`] };
+  }),
+  rule(22, 'jupiter-11-moon-2-venus-9', [6], 'Jupiter in the 11th, the Moon in the 2nd and Venus in the 9th', 'The owner of six thousand.', context => ({
+    met: houseOf(context, 'Jupiter') === 11 && houseOf(context, 'Moon') === 2 && houseOf(context, 'Venus') === 9, lines: [`${where(context, 'Jupiter')}; ${where(context, 'Moon')}; ${where(context, 'Venus')}`],
+  })),
+  rule(22, 'jupiter-9-mercury-moon', [7], 'Jupiter in the 11th from the 11th (the 9th) with Mercury and the Moon', 'Lord of wealth and grain, with jewels. (Read literally: "lābhāt lābhage" is the 11th from the 11th house, the 9th.)', context => ({
+    met: houseOf(context, 'Jupiter') === 9 && together(context, 'Jupiter', 'Mercury') && together(context, 'Jupiter', 'Moon'), lines: [`${where(context, 'Jupiter')}; with Mercury: ${together(context, 'Jupiter', 'Mercury') ? 'yes' : 'no'}, the Moon: ${together(context, 'Jupiter', 'Moon') ? 'yes' : 'no'}`],
+  })),
+  rule(22, 'exchange-11-1', [8], 'The 11th lord in the lagna and the lagna lord in the 11th', 'A thousand niṣkas in the 33rd year.', context => ({ met: lordHouse(context, 11) === 1 && lordHouse(context, 1) === 11, lines: [`${where(context, lord(context, 11))}; ${where(context, lord(context, 1))}`] })),
+  rule(22, 'exchange-2-11', [9], 'The 2nd lord in the 11th and the 11th lord in the 2nd', 'Great fortune after marriage.', context => ({ met: lordHouse(context, 2) === 11 && lordHouse(context, 11) === 2, lines: [`${where(context, lord(context, 2))}; ${where(context, lord(context, 11))}`] })),
+  rule(22, 'exchange-3-11', [10], 'The 3rd lord in the 11th and the 11th lord in the 3rd', 'Wealth from brothers and fine ornaments.', context => ({ met: lordHouse(context, 3) === 11 && lordHouse(context, 11) === 3, lines: [`${where(context, lord(context, 3))}; ${where(context, lord(context, 11))}`] })),
+  rule(22, 'no-gain', [11], 'The 11th lord debilitated, in the 7th or in a trika house, with malefics', 'No gain however he tries.', context => {
+    const l11 = lord(context, 11); const sign = signOf(context, l11);
+    if (sign === null) return cannot('The 11th lord is missing');
+    const place = debilitated(l11, sign) || has(houseOf(context, l11), [7, ...TRIKA]);
+    return { met: place && withMalefics(context, l11).length > 0, lines: [`${where(context, l11)}${debilitated(l11, sign) ? ', debilitated' : ''}; with malefics: ${mixed(withMalefics(context, l11))}`] };
+  }),
+  // ── chapter 23: the 12th house ──
+  rule(23, 'twelfth-benefic', [1, 2], 'The 12th lord with benefics, in its own sign or exaltation, or the 12th with benefics', 'Spending on good works. (Read as alternatives.)', context => {
+    const l12 = lord(context, 12);
+    const found = [beneficsIn(context, houseOf(context, l12) ?? 0).some(name => name !== l12) ? 'the 12th lord with benefics' : '', dignified(context, l12) ? 'the 12th lord in its own sign or exaltation' : '', beneficsIn(context, 12).length > 0 ? 'benefics in the 12th' : ''].filter(Boolean);
+    return { met: found.length > 0, lines: [found.length ? found.join('; ') : where(context, l12)] };
+  }),
+  rule(23, 'moon-twelfth-lord', [2, 3], 'The Moon as lord of the 12th in the 5th, 9th or 11th', 'Fine houses and beds, divine scents, a splendid beloved, clothes and ornaments, immense wealth.', context => ({
+    met: lord(context, 12) === 'Moon' && has(houseOf(context, 'Moon'), [5, 9, 11]), lines: [`The 12th lord is ${lord(context, 12)}; ${where(context, 'Moon')}`],
+  })),
+  rule(23, 'visible-half', [8], 'Grahas in the visible half (the 7th to 12th) and in the invisible half (the 1st to 6th)', 'The first give their results openly, the second indirectly.', context => {
+    const seen = SEVEN.filter(name => has(houseOf(context, name), [7, 8, 9, 10, 11, 12])); const hidden = SEVEN.filter(name => has(houseOf(context, name), [1, 2, 3, 4, 5, 6]));
+    return { met: true, lines: [`Visible half: ${mixed(seen)}; invisible half: ${mixed(hidden)}`] };
+  }),
+  rule(23, 'rahu-12-hell', [9], 'Rāhu in the 12th with Mars, Saturn and the Sun, the 12th lord with the Sun', 'A fall into hell (naraka).', context => {
+    const l12 = lord(context, 12);
+    return { met: houseOf(context, 'Rahu') === 12 && ['Mars', 'Saturn', 'Sun'].every(name => together(context, 'Rahu', name)) && (l12 === 'Sun' || together(context, l12, 'Sun')), lines: [`${where(context, 'Rahu')}; with Mars, Saturn, the Sun: ${['Mars', 'Saturn', 'Sun'].map(name => (together(context, 'Rahu', name) ? 'yes' : 'no')).join(', ')}; the 12th lord ${l12}${l12 === 'Sun' || together(context, l12, 'Sun') ? ' with the Sun' : ' not with the Sun'}`] };
+  }),
+  rule(23, 'mercury-12-moksha', [10], 'Mercury in the 12th, the 12th lord exalted, with and seen by benefics', 'Liberation (mokṣa), without doubt.', context => {
+    const l12 = lord(context, 12);
+    const with_ = beneficsIn(context, houseOf(context, l12) ?? 0).filter(name => name !== l12); const seen = beneficsSeeing(context, l12);
+    return { met: houseOf(context, 'Mercury') === 12 && exalted(context, l12) && with_.length > 0 && seen.length > 0, lines: [`${where(context, 'Mercury')}; the 12th lord ${l12}${exalted(context, l12) ? ' exalted' : ' not exalted'}; with benefics: ${mixed(with_)}; seen by ${mixed(seen)}`] };
+  }),
+  rule(23, 'wanderer', [11], 'The 12th lord with malefics, malefics in the 12th, the 12th aspected by a malefic', 'He goes from land to land.', context => {
+    const l12 = lord(context, 12);
+    const seers = SEVEN.filter(name => isMalefic(context, name) && seesSign(context, name, signOfHouse(context, 12)));
+    return { met: withMalefics(context, l12).length > 0 && maleficsIn(context, 12).length > 0 && seers.length > 0, lines: [`The 12th lord ${l12} with ${mixed(withMalefics(context, l12))}; malefics in the 12th: ${mixed(maleficsIn(context, 12))}; aspecting it: ${mixed(seers)}`] };
+  }),
+  rule(23, 'journey', [12], 'The 12th lord in a benefic sign, the 12th with benefics and seen by a benefic', 'A journey from his own country.', context => {
+    const l12 = lord(context, 12); const sign = signOf(context, l12);
+    if (sign === null) return cannot('The 12th lord is missing');
+    const seers = SEVEN.filter(name => isBenefic(context, name) && seesSign(context, name, signOfHouse(context, 12)));
+    return { met: BENEFIC_SIGN(sign) && beneficsIn(context, 12).length > 0 && seers.length > 0, lines: [`The 12th lord in ${signName(sign)}; benefics in the 12th: ${mixed(beneficsIn(context, 12))}; aspecting it: ${mixed(seers)}`] };
+  }),
+  rule(23, 'sinful-wealth', [13], 'The 12th with Saturn, Mars and other malefics, not seen by benefics', 'Wealth from sinful sources.', context => {
+    const seers = SEVEN.filter(name => isBenefic(context, name) && seesSign(context, name, signOfHouse(context, 12)));
+    return { met: houseOf(context, 'Saturn') === 12 && houseOf(context, 'Mars') === 12 && seers.length === 0, lines: [`${where(context, 'Saturn')}; ${where(context, 'Mars')}; benefics aspecting the 12th: ${mixed(seers)}`] };
+  }),
+  rule(23, 'exchange-1-12-venus', [14], 'The lagna lord in the 12th, the 12th lord in the lagna with Venus', 'Wealth spent for dharma.', context => {
+    const l12 = lord(context, 12);
+    return { met: lordHouse(context, 1) === 12 && lordHouse(context, 12) === 1 && houseOf(context, 'Venus') === 1, lines: [`${where(context, lord(context, 1))}; ${where(context, l12)}; ${where(context, 'Venus')}`] };
+  }),
+];
+
+export const HOUSES_RULES: TopicYogaRule[] = [...FIRST_FIVE, ...LAST_FOUR];
