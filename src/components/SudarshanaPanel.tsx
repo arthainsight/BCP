@@ -147,11 +147,6 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
     );
   };
 
-  const chip = (on: boolean) =>
-    `rounded-md border px-2 py-1 text-[10px] font-mono ${on
-      ? 'border-emerald-500 bg-emerald-500 text-white dark:border-green-600 dark:bg-green-600'
-      : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400'}`;
-
   return (
     <div className="min-w-0 space-y-3">
       <div>
@@ -265,7 +260,6 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
                     <tr
                       key={index}
                       data-sud-month-row={index + 1}
-                      aria-selected={month === index}
                       aria-expanded={month === index}
                       role="button"
                       tabIndex={0}
@@ -311,7 +305,6 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
                       <tr
                         key={index}
                         data-sud-pratyantara-row={index + 1}
-                        aria-selected={pratyantara === index}
                         aria-expanded={pratyantara === index}
                         role="button"
                         tabIndex={0}
