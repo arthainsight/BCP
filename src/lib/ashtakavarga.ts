@@ -25,7 +25,7 @@ export type SarvaAshtakavarga = {
 
 export type AshtakavargaResult = {
   bav: BhinnaAshtakavargaRow[];
-  lagnaBav: BhinnaAshtakavargaRow;
+  lagnaBav: { planet: 'Ascendant'; houses: number[]; total: number };
   sav: SarvaAshtakavarga;
 };
 
@@ -207,7 +207,7 @@ export function buildSarvaAshtakavarga(bav: Array<{ houses: number[] }>): SarvaA
   };
 }
 
-export function buildLagnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAshtakavargaRow {
+export function buildLagnaAshtakavarga(chart: AshtakavargaChartLike): { planet: 'Ascendant'; houses: number[]; total: number } {
   const houses = Array.from({ length: 12 }, (_, index) => {
     const house = index + 1;
     let bindu = 0;
@@ -218,7 +218,7 @@ export function buildLagnaAshtakavarga(chart: AshtakavargaChartLike): BhinnaAsht
     }
     return bindu;
   });
-  return { planet: 'Sun', houses, total: houses.reduce((sum, value) => sum + value, 0) };
+  return { planet: 'Ascendant', houses, total: houses.reduce((sum, value) => sum + value, 0) };
 }
 
 export function buildAshtakavarga(chart: AshtakavargaChartLike, system: AshtakavargaSystem = 'Parashara', includeLagnaInSav = false): AshtakavargaResult {
