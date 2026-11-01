@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { PARASHARA_AV, VARAHAMIHIRA_AV, buildAshtakavarga, buildBhinnaAshtakavarga, mapAshtakavargaHousesToSigns } from './ashtakavarga';
+import { PARASHARA_AV, VARAHAMIHIRA_AV, buildAshtakavarga, buildBhinnaAshtakavarga, buildLagnaAshtakavarga, mapAshtakavargaHousesToSigns } from './ashtakavarga';
 
 // ---------------------------------------------------------------------------
 // Golden vectors — BPHS Ashtakavarga
@@ -281,3 +281,13 @@ assert.deepEqual(
 );
 
 console.log('Aṣṭakavarga tests passed');
+
+// BPHS 66.65–68: Lagna BAV can be optionally included in SAV.
+{
+ const chart = chartWithOffsets(1, [0, 1, 2, 3, 4, 5, 6]);
+ const standard = buildAshtakavarga(chart);
+ const withLagna = buildAshtakavarga(chart, 'Parashara', true);
+ const lagnaBav = buildLagnaAshtakavarga(chart);
+ assert.equal(standard.sav.total, 337, 'default SAV excludes Lagna BAV');
+ assert.equal(withLagna.sav.total, 337 + lagnaBav.total, 'optional SAV includes Lagna BAV');
+}
