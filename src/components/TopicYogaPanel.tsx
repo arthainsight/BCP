@@ -61,10 +61,12 @@ export default function TopicYogaPanel({ chart }: { chart: ChartData }) {
       <div className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{TOPICS.find(item => item.key === topic)?.source}</div>
       {TOPICS.find(item => item.key === topic)?.caution && <p className="text-[10px] font-mono text-amber-700 dark:text-amber-400" data-topic-caution>{t(TOPICS.find(item => item.key === topic)!.caution!)}</p>}
       <div className="space-y-2">
-        {results.map(result => {
+        {results.map((result, index) => {
           const [icon, color, word] = badge(result.outcome.met);
+          const heading = (TOPICS.find(item => item.key === topic)?.chapters.length ?? 0) > 1 && result.rule.chapter !== results[index - 1]?.rule.chapter;
           return (
             <div key={result.rule.id} className="rounded-lg border border-zinc-200 p-2 font-mono text-xs dark:border-zinc-700" data-topic-rule={result.rule.id} data-met={String(result.outcome.met)}>
+              {heading && <div className="mb-1 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600" data-topic-chapter={result.rule.chapter}>BPHS {result.rule.chapter}</div>}
               <div className="flex items-baseline gap-2">
                 <span className={`font-bold ${color}`} aria-label={word}>{icon}</span>
                 <span className="font-semibold text-zinc-700 dark:text-zinc-200">{t(result.rule.name)}</span>

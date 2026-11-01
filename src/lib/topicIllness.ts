@@ -1,8 +1,9 @@
 import { navamshaSign } from './birthConditions';
 import { NATURAL_ENEMIES, OWN_SIGNS } from './dignity';
 import {
+  has, maleficsIn, beneficsIn, beneficsSeeingSign, maleficsSeeing, beneficsSeeing, withMalefics,
   SEVEN, cannot, find, grahasInHouse, hemmedBy, houseOf, houseOfSign, inEnemySign, isBenefic, isMalefic, isStrong, lordHouse, lordOfHouse, lordOfSign, mixed, moonWaxing, ordinalEn,
-  sees, seesSign, signName, signOf, signOfHouse, together, where, type RuleOutcome, type TopicContext, type TopicYogaRule,
+  sees, signName, signOf, signOfHouse, together, where, type RuleOutcome, type TopicContext, type TopicYogaRule,
 } from './topicCore';
 
 /**
@@ -15,14 +16,7 @@ import {
 const rule = (chapter: number, id: string, verses: number[], name: string, effect: string, evaluate: (context: TopicContext) => RuleOutcome): TopicYogaRule =>
   ({ id, topic: 'illness', chapter, verses, name, effect, evaluate });
 
-const has = (house: number | null, list: number[]) => house !== null && list.includes(house);
 const lord = (context: TopicContext, house: number) => lordOfHouse(context, house);
-const maleficsIn = (context: TopicContext, house: number) => grahasInHouse(context, house).filter(name => isMalefic(context, name));
-const beneficsIn = (context: TopicContext, house: number) => grahasInHouse(context, house).filter(name => isBenefic(context, name));
-const beneficsSeeingSign = (context: TopicContext, sign: number) => SEVEN.filter(name => isBenefic(context, name) && seesSign(context, name, sign));
-const maleficsSeeing = (context: TopicContext, name: string) => SEVEN.filter(other => isMalefic(context, other) && sees(context, other, name));
-const beneficsSeeing = (context: TopicContext, name: string) => SEVEN.filter(other => isBenefic(context, other) && sees(context, other, name));
-const withMalefics = (context: TopicContext, name: string) => context.planets.map(planet => planet.name).filter(other => other !== name && isMalefic(context, other) && together(context, name, other));
 const MALEFIC = (context: TopicContext) => (name: string) => isMalefic(context, name);
 const BENEFIC = (context: TopicContext) => (name: string) => isBenefic(context, name);
 /** The house number (from the lagna) of the `count`th sign from a graha's. */

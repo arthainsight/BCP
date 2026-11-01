@@ -178,7 +178,7 @@ test('the chara karakas can be seven or eight, ranked by degrees or minutes', as
   expect(errors).toEqual([]);
 });
 
-test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17, 9 and 10 and shows their verses', async ({ page }) => {
+test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17, 9, 10 and 12 to 16 and shows their verses', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -214,6 +214,13 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17
   await expect(panel.locator('[data-topic-caution]')).toContainText('not a prediction');
   await expect(panel.locator('[data-topic-rule="wound-6th-lord"]')).toBeVisible();
   await expect(panel.locator('[data-topic-rule="benefic-kendra"]')).toBeVisible();
+  expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(40);
+
+  // The houses (BPHS 12 to 16): the rules by chapter, each chapter with its heading.
+  await panel.getByRole('button', { name: 'The houses (bhāva-phala)', exact: true }).click();
+  await expect(panel.locator('[data-topic-chapter="12"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-rule="lagna-lord-weak"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-rule="children-die"]')).toBeVisible();
   expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(40);
 
   expect(errors).toEqual([]);

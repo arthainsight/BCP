@@ -6,7 +6,7 @@ import type { TopicVerse } from './topicVerses';
  * What the topic yogas (topicYogas.ts) share: the shape of a rule and the small questions of a chart that the rules ask. A rule carries the chapter and verses it is read from and decides from the chart whether
  * it is met (true), not met (false) or cannot be judged (null). "Strong" (bali) is the Ṣaḍbala of the graha at or over the strength it needs (the ratio of the Ṣaḍbala panel is 1 or more); the text does not define it.
  */
-export type TopicKey = 'spirituality' | 'marriage' | 'longevity' | 'wealth' | 'illness';
+export type TopicKey = 'spirituality' | 'marriage' | 'longevity' | 'wealth' | 'illness' | 'houses';
 
 export type SevenGraha = 'Sun' | 'Moon' | 'Mars' | 'Mercury' | 'Jupiter' | 'Venus' | 'Saturn';
 export const SEVEN: readonly SevenGraha[] = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
@@ -112,3 +112,12 @@ export const hemmedBy = (context: TopicContext, sign: number, group: (name: stri
   const near = (target: number) => context.planets.some(planet => planet.sign === target && planet.name !== exclude && group(planet.name));
   return near(((sign + 10) % 12) + 1) && near((sign % 12) + 1);
 };
+
+// ── small questions about houses and nature, shared by the rule files ──
+export const has = (house: number | null, list: number[]) => house !== null && list.includes(house);
+export const maleficsIn = (context: TopicContext, house: number) => grahasInHouse(context, house).filter(name => isMalefic(context, name));
+export const beneficsIn = (context: TopicContext, house: number) => grahasInHouse(context, house).filter(name => isBenefic(context, name));
+export const beneficsSeeingSign = (context: TopicContext, sign: number) => SEVEN.filter(name => isBenefic(context, name) && seesSign(context, name, sign));
+export const maleficsSeeing = (context: TopicContext, name: string) => SEVEN.filter(other => isMalefic(context, other) && sees(context, other, name));
+export const beneficsSeeing = (context: TopicContext, name: string) => SEVEN.filter(other => isBenefic(context, other) && sees(context, other, name));
+export const withMalefics = (context: TopicContext, name: string) => context.planets.map(planet => planet.name).filter(other => other !== name && isMalefic(context, other) && together(context, name, other));
