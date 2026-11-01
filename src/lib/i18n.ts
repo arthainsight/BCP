@@ -54,6 +54,7 @@ export const FI: Record<string, string> = {
   'Dasha': 'Daśā',
   'Public': 'Julkiset',
   'Settings': 'Asetukset',
+  'Source': 'Lähde',
   'data': 'tiedot',
   'grahas': 'grahat',
   'dasha': 'daśā',
