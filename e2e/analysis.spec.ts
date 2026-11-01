@@ -178,6 +178,26 @@ test('the chara karakas can be seven or eight, ranked by degrees or minutes', as
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Bhāveśa gives the verse of BPHS 24 for the lord of each house in the house it stands in', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Bhāveśa', exact: true })).click();
+
+  // Twelve houses, each with a summary and a verse in Sanskrit that opens to be read; the rules of 24.145–148 are there too.
+  const panel = visible(page, page.locator('[data-bhavesha="panel"]'));
+  await expect(panel.locator('[data-bhavesha-house]')).toHaveCount(12);
+  const verse = panel.locator('[data-bhavesha-house="1"] details').first();
+  await verse.locator('summary').click();
+  await expect(verse.locator('[lang="sa"]').first()).toContainText(/[\u0900-\u097F]/);
+  await panel.locator('[data-bhavesha="rules"] summary').click();
+  await expect(panel.locator('[data-bhavesha="rules"]')).toContainText('24.146');
+
+  expect(errors).toEqual([]);
+});
+
 test('ANALYSIS Praśna reads the Tājika yogas between the lord of the Lagna and the lord of the house of the matter', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

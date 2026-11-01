@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.77',
+    date: '2026-11-01',
+    title: 'The lord of each house in each house, after the Sanskrit of BPHS 24',
+    changes: [
+      'ANALYSIS → Bhāveśa (Classical systems): for each of the twelve houses its lord, the house the lord stands in, and the verse of Bṛhat Parāśara Horā Śāstra chapter 24 for that pair: the Sanskrit as the text has it, the IAST and a one-line summary. These are the 144 verses (12 lords in 12 houses, 24.1–144); the rules of use, 24.145–148, are in the view as well. A lord of two signs gets the verse of its other house too (24.146–147).',
+      'Not worked out: how much of an effect the lord gives by its strength (full, a half, a quarter, 24.147–148), whether two effects contradict, and the conditions inside the verses. Verse 37 is irregular in the print (it reads "dhanage" as verse 38 does) and is placed in the 1st house by the order of the verses, with a note. The summaries are short and the verse decides. All in docs/bhava-lord-effects-bphs24.md.',
+      'Updated the application version to v3.77.',
+    ],
+  },
+  {
     version: 'v3.76',
     date: '2026-11-01',
     title: 'Praśna: the Tājika yogas of a question (Tājika Nīlakaṇṭhī)',
