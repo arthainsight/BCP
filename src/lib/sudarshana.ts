@@ -7,8 +7,8 @@ import type { PlanetData } from '@/types';
 // from the Sun, so that the same house (1 to 12) stands on the same side of all three. The Lagna chart is the innermost
 // ring, the Moon's the middle one and the Sun's the outermost. The Sudarśana daśā moves through them together: in the
 // first year of life the 1st house of each is active, in the second year the 2nd, and so on round the twelve houses,
-// the 13th year being the 1st again. A year is divided in twelve like that into months, and a month into twelve days,
-// the first of each being the house of the whole it belongs to.
+// the 13th year being the 1st again. A year is divided into twelve months, each month into twelve Pratyantara
+// periods, and each Pratyantara into twelve Vidāśās; the first subdivision starts with the house of its parent period.
 
 export type SudarshanaRingId = 'lagna' | 'moon' | 'sun';
 
@@ -63,10 +63,10 @@ export function sudarshanaRings(
 
 /**
  * The house the Sudarśana daśā makes active, the same number in the three rings. `age` is the completed years (0
- * in the first year of life), `month` the month of that year (0 to 11) and `day` the twelfth of the month (0 to 11).
+ * in the first year of life), `month` the month of that year (0 to 11) and `pratyantara` the Pratyantara subdivision of that month (0 to 11).
  */
-export function sudarshanaHouse(age: number, month = 0, day = 0): number {
-  return ((((age + month + day) % 12) + 12) % 12) + 1;
+export function sudarshanaHouse(age: number, month = 0, pratyantara = 0): number {
+  return ((((age + month + pratyantara) % 12) + 12) % 12) + 1;
 }
 
 export interface SudarshanaPeriod {
