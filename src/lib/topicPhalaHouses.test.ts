@@ -56,3 +56,48 @@ const left = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.${
 assert.ok(left.includes('10.11'));
 assert.ok(left.includes('10.13'));
 assert.ok(!left.includes('10.2'));
+
+// ── chapter 11: the woman's chart ──
+import { trimshamshaLord, WOMAN_BY_TRIMSHAMSHA } from './topicPhalaHouses';
+const verses11 = PHALA_VERSES[11];
+assert.equal(verses11.length, 11);
+assert.deepEqual(verses11.map(verse => verse.verse), Array.from({ length: 11 }, (_, index) => index + 1));
+for (const verse of verses11) {
+  assert.ok(verse.sanskrit.every(line => /[ऀ-ॿ…]/.test(line)), `verse 11.${verse.verse}`);
+  assert.ok(!verse.sanskrit.some(line => /[A-Za-z0-9_$]/.test(line)), `verse 11.${verse.verse} has stray characters`);
+}
+for (const result of evaluateTopic('phalaHouses', chart(1))) assert.ok(result.verses.length === result.rule.verses.length, result.rule.id);
+// The trimshāṁśa lord: odd signs Mars 0-5, Saturn 5-10, Jupiter 10-18, Mercury 18-25, Venus 25-30; even signs the reverse.
+assert.equal(trimshamshaLord(1, 3), 'Mars');
+assert.equal(trimshamshaLord(1, 7), 'Saturn');
+assert.equal(trimshamshaLord(1, 12), 'Jupiter');
+assert.equal(trimshamshaLord(1, 20), 'Mercury');
+assert.equal(trimshamshaLord(1, 29), 'Venus');
+assert.equal(trimshamshaLord(2, 3), 'Venus');
+assert.equal(trimshamshaLord(2, 8), 'Mercury');
+assert.equal(trimshamshaLord(2, 15), 'Jupiter');
+assert.equal(trimshamshaLord(2, 22), 'Saturn');
+assert.equal(trimshamshaLord(2, 28), 'Mars');
+// The table: seven rows of five.
+assert.equal(Object.keys(WOMAN_BY_TRIMSHAMSHA).length, 7);
+for (const row of Object.values(WOMAN_BY_TRIMSHAMSHA)) assert.equal(Object.keys(row).length, 5);
+// 11.3: Mars in the 7th (Aries lagna: Libra) makes a widow.
+assert.equal(rule(chart(1, { Mars: [7] }), 'p11-mars-7th').outcome.met, true);
+// 11.1: a benefic in the 7th and no malefic other than its lord: Aries lagna, Jupiter in Libra; the 7th lord Venus.
+assert.equal(rule(chart(1, { Jupiter: [7] }), 'p11-7th-good').outcome.met, true);
+assert.equal(rule(chart(1, { Jupiter: [7], Saturn: [7] }), 'p11-7th-good').outcome.met, false);
+assert.equal(rule(chart(1, { Saturn: [7] }), 'p11-7th-bad').outcome.met, true);
+// A malefic that is the lord of the house is not counted: Taurus lagna, the 8th is Sagittarius; Jupiter is benefic anyway; use Aries lagna, the 8th Scorpio, its lord Mars in Scorpio.
+assert.equal(rule(chart(1, { Mars: [8] }), 'p11-8th-bad').outcome.met, false);
+// 11.8: the trimshāṁśa of the Moon: the Moon at 12° of Aries is in Jupiter's: virtuous and rich.
+const trim = rule(chart(1, { Moon: [1, 12] }), 'p11-trimshamsha-Moon');
+assert.equal(trim.outcome.met, true);
+assert.ok(trim.outcome.lines[0].includes('Jupiter: virtuous and rich'));
+// The lagna's trimshāṁśa needs the longitude of the lagna.
+assert.equal(rule(chart(1), 'p11-trimshamsha-lagna').outcome.met, null);
+// 11.9: the Moon in Jyeṣṭhā (nakṣatra 18: 226°40' to 240°, Scorpio 16°40' to 30°): Scorpio 20°.
+assert.equal(rule(chart(1, { Moon: [8, 20] }), 'p11-nakshatra-kin').outcome.met, true);
+assert.equal(rule(chart(1, { Moon: [2, 6] }), 'p11-nakshatra-kin').outcome.met, false);
+const left11 = notEvaluatedVerses('phalaHouses').map(verse => `${verse.chapter}.${verse.verse}`);
+assert.ok(left11.includes('11.11'));
+assert.ok(!left11.includes('11.3'));

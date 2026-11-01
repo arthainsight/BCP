@@ -1,4 +1,4 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
@@ -110,9 +110,28 @@ The topic reads a second classic: the house chapters of the Phaladīpikā of Man
 * **Readings**: "from the Moon" counts from its sign; in 10.5 "the 7th from Venus and the Moon" is read as the 7th from Venus *or* from the Moon; the 5th and 7th of 10.1 are taken from the lagna and by benefics (the lords and the Moon's reckoning are named in the verse and not tried); the direction of a sign is that of its place in the cycle east, south, west, north (Aries east, Taurus south, Gemini west, Cancer north, and again).
 * **Not judged**: the birth sign of the wife and the times of the marriage (10.11, 10.13, 10.14), which need the daśā and the transits. In 10.13 the commentary says the transit of Venus and the Sanskrit the transit of the lagna lord; the verse is not used.
 * The Sanskrit has gaps in the scan: in 10.1 a word restored from the commentary, in 10.5 some letters of the third line and in 10.6 one whole line. The verses say so.
-* Chapters 11 to 17 of the Phaladīpikā (the woman's chart, the children, the span of life, disease, the good and bad of the houses, the houses together, death) are not built yet.
+* Chapters 12 to 17 of the Phaladīpikā (the children, the span of life, disease, the good and bad of the houses, the houses together, death) are not built yet.
+
+## Phaladīpikā 11 (since v3.91): the woman's chart, 11 verses
+
+Under the same topic ("Phaladīpikā: the houses"), rules `p11-*` in `src/lib/topicPhalaHouses.ts`, verses in `src/lib/phalaVerses.ts`.
+
+* **Judged**: the 7th, 8th, 9th, 4th houses and the lagna as good or bad for a woman (benefics in them, malefics other than the lord of the house); even and odd signs of the lagna and the 7th and of its navāṁśa; Mars in the 7th (a widow); malefics and benefics together in the 7th; benefics in the 2nd; the Moon in the 5th (few children);
+  malefics in the 4th; the lagna, the Moon and Venus in the signs of Mars or Saturn; benefics in the 5th and 9th; the trimshāṁśa of the Moon and of the lagna with the table of results (`WOMAN_BY_TRIMSHAMSHA`: seven rows of five); the nakṣatra of the Moon for kin and barrenness; the four lords.
+* **Readings**: a malefic that is the lord of the house is not counted as a malefic in it; the trimshāṁśa of the lagna needs the longitude of the lagna and is "cannot be judged" without it.
+* **Not judged**: 11.11 (a remedy and a closing statement, nothing to read from the chart).
+
+## The woman's chart: BPHS 80 (since v3.91), 55 verses
+
+A topic of its own ("The woman's chart"), rules `w80-*` in `src/lib/topicWoman.ts`. The text says (80.2) that what is told for men holds for women, and then what is special: the husband, widowhood, children, the 8th house. The app does not ask whether a chart is a woman's, so the rules stand as rules for a chart read so (the caution says it).
+
+* **Judged**: even signs of the lagna and the Moon with benefic aspect (80.5-6) and odd signs with malefics (80.6-7); the Sun or Mars in the 7th (80.18); malefics, benefics or both in the 7th (80.19); Venus and Mars in each other's navāṁśa and the Moon in the 7th (80.20); the lagna a sign of Venus or Saturn (80.21);
+  the husband by the lord of the 7th sign and its navāṁśa (80.22-25); each graha in the 8th (80.26-33); barren combinations (80.34, 80.39); the lagna of Mercury with the Moon and Venus in the 5th (80.36); the Moon, Mercury and Venus in the lagna (80.37); miscarriages (80.41); the Moon between malefics (80.42);
+  the viṣa-yoga and what cancels it (80.44-46); Mars in the 1st, 4th, 7th, 8th or 12th without a benefic (80.47); Venus and Saturn (80.50); strong Mars, Mercury, Jupiter, Venus in an even lagna (80.52); a malefic in the 7th with a graha in the 9th (80.53); Mercury alone in the 8th (80.54).
+* **Readings**: 80.50 is read as Venus and Saturn in mutual aspect (opposition) with the lagna Taurus or Libra; the navāṁśa and ghaṭa parts of the verse are not tried; 80.22-25 name the sign and the navāṁśa of the 7th, and the navāṁśa is shown only when the longitude of the lagna is known.
+* **Not judged**: the trimshāṁśa table of 80.8-16 (the Phaladīpikā 11 above has the table; the BPHS verses are garbled in the print and the English), 80.17, 80.35, 80.38, 80.40, 80.43 (the weekday and the tithi), 80.48-49 (the husband's chart), 80.55 (equal strength has no measure). The view lists them.
 
 ## Next topics (not built yet)
 
-* **Women**: BPHS 80 and 83.
+* **Women**: BPHS 83.
 * Other texts: the Phaladīpikā, the Sārāvalī and the Jātakapārijāta for marriage and longevity.

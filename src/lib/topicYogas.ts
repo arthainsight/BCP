@@ -7,6 +7,7 @@ import { WEALTH_RULES } from './topicWealth';
 import { ILLNESS_RULES } from './topicIllness';
 import { HOUSES_RULES } from './topicHouses';
 import { PHALA_HOUSES_RULES } from './topicPhalaHouses';
+import { WOMAN_RULES } from './topicWoman';
 import type { RuleOutcome, TopicContext, TopicKey, TopicYogaRule } from './topicCore';
 
 /**
@@ -34,14 +35,18 @@ export const TOPICS: { key: TopicKey; label: string; source: string; chapters: n
     caution: 'The classical statements about the death of the father, the loss of children and the years of life are shown as the text has them. They are a reading of the text and not a prediction.',
   },
   {
+    key: 'woman', label: 'The woman\'s chart', source: 'BPHS 80 (strījātaka)', chapters: [80],
+    caution: 'The classical statements about the husband, widowhood, children and the character of a woman are shown as the text has them. They are a reading of the text and not a prediction. The rules are read for a woman\'s chart; the app does not ask whether a chart is one.',
+  },
+  {
     key: 'phalaHouses', label: 'Phaladīpikā: the houses', text: 'phala',
-    source: 'Phaladīpikā 10 (the 7th house); the later house chapters follow',
-    chapters: [10],
+    source: 'Phaladīpikā 10 (the 7th house), 11 (the woman\'s chart); the later house chapters follow',
+    chapters: [10, 11],
     caution: 'The classical statements about the wife, the husband and children are shown as the text has them. They are a reading of the text and not a prediction.',
   },
 ];
 
-export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES, ...WEALTH_RULES, ...ILLNESS_RULES, ...HOUSES_RULES, ...PHALA_HOUSES_RULES];
+export const TOPIC_RULES: TopicYogaRule[] = [...SPIRITUALITY_RULES, ...MARRIAGE_RULES, ...LONGEVITY_RULES, ...WEALTH_RULES, ...ILLNESS_RULES, ...HOUSES_RULES, ...PHALA_HOUSES_RULES, ...WOMAN_RULES];
 
 export interface TopicYogaResult { rule: TopicYogaRule; outcome: RuleOutcome; verses: TopicVerse[] }
 
