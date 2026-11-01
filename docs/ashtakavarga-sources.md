@@ -35,3 +35,23 @@ The app now follows the verses. If you hold another printed table for the Moon, 
 ## What is not in the app
 
 The reductions (*trikoṇa śodhana*, 67; *ekādhipatya śodhana*, 68), the multiplication into the Piṇḍas (69), the effects (70) and the longevity from the Aṣṭakavarga (71) are not calculated: the app shows the BAV and the SAV only.
+
+
+## Varāhamihira: Bṛhajjātaka, chapter 9
+
+The application now includes a separate **Varāhamihira** system based on the Sanskrit bindu lists in Bṛhajjātaka 9.1–9.7. The Sanskrit text and a word-by-word-supported translation can be consulted at [Wisdomlib, Bṛhajjātaka chapter 9](https://www.wisdomlib.org/hinduism/book/brihat-jataka-by-varahamihira-sanskrit-english/d/doc1501544.html); the chapter's Sanskrit verses are also available individually for [9.1](https://www.wisdomlib.org/hinduism/book/brihat-jataka-by-varahamihira-sanskrit-english/d/doc1501710.html), [9.2](https://www.wisdomlib.org/hinduism/book/brihat-jataka-by-varahamihira-sanskrit-english/d/doc1501711.html), [9.3](https://www.wisdomlib.org/hinduism/book/brihat-jataka-by-varahamihira-sanskrit-english/d/doc1501712.html), [9.4](https://www.wisdomlib.org/hinduism/book/brihat-jataka-by-varahamihira-sanskrit-english/d/doc1501713.html), [9.5](https://www.wisdomlib.org/hinduism/book/brihat-jataka-by-varahamihira-sanskrit-english/d/doc1501714.html), [9.6](https://www.wisdomlib.org/hinduism/book/brihat-jataka-by-varahamihira-sanskrit-english/d/doc1501715.html), and [9.7](https://www.wisdomlib.org/hinduism/book/brihat-jataka-by-varahamihira-sanskrit-english/d/doc1501716.html).
+
+### Table differences encoded
+
+Relative houses are counted from the contributing graha/Lagna, as in the Parāśara implementation. The Bṛhajjātaka lists differ from the currently verified BPHS table in these four contributor rows:
+
+| Target BAV | Contributor | BPHS 66 | Bṛhajjātaka 9 |
+|---|---|---|---|
+| Moon | Moon | 1, 3, 6, 7, 9, 10, 11 | 1, 3, 6, 7, 10, 11 |
+| Moon | Mars | 2, 3, 5, 6, 10, 11 | 2, 3, 5, 6, 9, 10, 11 |
+| Moon | Jupiter | 1, 2, 4, 7, 8, 10, 11 | 1, 4, 7, 8, 10, 11, 12 |
+| Venus | Mars | 3, 4, 6, 9, 11, 12 | 3, 5, 6, 9, 11, 12 |
+
+The first three differences are in the Moon's BAV as stated in Bṛhajjātaka 9.2; the last is Venus from Mars in Bṛhajjātaka 9.6. The remaining contributor rows match the current Parāśara table. Both systems retain the same BAV totals (48, 49, 39, 54, 56, 52, 39) and SAV total (337), because the changes shift positions without changing the number of bindus in each affected contributor row.
+
+Implementation: `VARAHAMIHIRA_AV` and the `AshtakavargaSystem` parameter in `src/lib/ashtakavarga.ts`; the UI source selector is in `src/components/AshtakavargaPanel.tsx`. The default remains Parāśara, so existing charts retain their prior output unless the user selects Varāhamihira.

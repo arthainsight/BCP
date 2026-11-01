@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { PARASHARA_AV, buildAshtakavarga, buildBhinnaAshtakavarga, mapAshtakavargaHousesToSigns } from './ashtakavarga';
+import { PARASHARA_AV, VARAHAMIHIRA_AV, buildAshtakavarga, buildBhinnaAshtakavarga, mapAshtakavargaHousesToSigns } from './ashtakavarga';
 
 // ---------------------------------------------------------------------------
 // Golden vectors — BPHS Ashtakavarga
@@ -171,9 +171,104 @@ for (const [owner, byHouse] of Object.entries(VERSE_BINDU_BY_HOUSE)) {
 // Venus from Mars gives at the 4th, not the 5th (66.35-38); that is where Brihat Jataka differs.
 assert.deepEqual(PARASHARA_AV.Venus.Mars, [3, 4, 6, 9, 11, 12]);
 
-// The Varahamihira system variant was removed in v2.15 — after the v2.14
-// Parashara fix it differed by one unverified row, so the selector implied a
-// sourced Brihat Jataka table that did not exist. See ashtakavarga.ts.
+// The Sanskrit karana verses for Jupiter (66.31–34), Venus (66.35–38),
+// and Saturn (66.39–42) give the complementary lists. These explicit row
+// vectors make the contributor identities auditable, not just the house counts.
+const KARANA_VERSE_ROWS = {
+  Jupiter: {
+    Sun: [1, 2, 3, 4, 7, 8, 9, 10, 11],
+    Moon: [2, 5, 7, 9, 11],
+    Mars: [1, 2, 4, 7, 8, 10, 11],
+    Mercury: [1, 2, 4, 5, 6, 9, 10, 11],
+    Jupiter: [1, 2, 3, 4, 7, 8, 10, 11],
+    Venus: [2, 5, 6, 9, 10, 11],
+    Saturn: [3, 5, 6, 12],
+    Ascendant: [1, 2, 4, 5, 6, 7, 9, 10, 11],
+  },
+  Venus: {
+    Sun: [8, 11, 12],
+    Moon: [1, 2, 3, 4, 5, 8, 9, 11, 12],
+    Mars: [3, 4, 6, 9, 11, 12],
+    Mercury: [3, 5, 6, 9, 11],
+    Jupiter: [5, 8, 9, 10, 11],
+    Venus: [1, 2, 3, 4, 5, 8, 9, 10, 11],
+    Saturn: [3, 4, 5, 8, 9, 10, 11],
+    Ascendant: [1, 2, 3, 4, 5, 8, 9, 11],
+  },
+  Saturn: {
+    Sun: [1, 2, 4, 7, 8, 10, 11],
+    Moon: [3, 6, 11],
+    Mars: [3, 5, 6, 10, 11, 12],
+    Mercury: [6, 8, 9, 10, 11, 12],
+    Jupiter: [5, 6, 11, 12],
+    Venus: [6, 11, 12],
+    Saturn: [3, 5, 6, 11],
+    Ascendant: [1, 3, 4, 6, 10, 11],
+  },
+} as const;
+for (const planet of ['Jupiter', 'Venus', 'Saturn'] as const) {
+  for (const contributor of ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Ascendant'] as const) {
+    assert.deepEqual(
+      PARASHARA_AV[planet][contributor],
+      KARANA_VERSE_ROWS[planet][contributor],
+      `BPHS Sanskrit karana row: ${planet} from ${contributor}`,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Varāhamihira — Bṛhajjātaka 9.1–9.7
+// Sanskrit-based differences from the BPHS table. The four rows preserve the
+// same row totals; only the benefic relative houses differ.
+// ---------------------------------------------------------------------------
+assert.deepEqual(VARAHAMIHIRA_AV.Moon.Moon, [1, 3, 6, 7, 10, 11]);
+assert.deepEqual(VARAHAMIHIRA_AV.Moon.Mars, [2, 3, 5, 6, 9, 10, 11]);
+assert.deepEqual(VARAHAMIHIRA_AV.Moon.Jupiter, [1, 4, 7, 8, 10, 11, 12]);
+assert.deepEqual(VARAHAMIHIRA_AV.Venus.Mars, [3, 5, 6, 9, 11, 12]);
+assert.equal(VARAHAMIHIRA_AV.Moon.Moon.length, PARASHARA_AV.Moon.Moon.length - 1);
+assert.equal(VARAHAMIHIRA_AV.Moon.Mars.length, PARASHARA_AV.Moon.Mars.length + 1);
+assert.equal(VARAHAMIHIRA_AV.Moon.Jupiter.length, PARASHARA_AV.Moon.Jupiter.length);
+assert.equal(VARAHAMIHIRA_AV.Venus.Mars.length, PARASHARA_AV.Venus.Mars.length);
+
+// Exhaustive comparison: only the four rows stated by Bṛhajjātaka 9.2 and
+// 9.6 may differ from the BPHS table. This guards against accidental drift in
+// inherited rows as well as unrecorded differences in the source comparison.
+const EXPECTED_VARAHAMIHIRA_DIFFERENCES = new Set([
+  'Moon.Moon',
+  'Moon.Mars',
+  'Moon.Jupiter',
+  'Venus.Mars',
+]);
+for (const planet of PLANET_NAMES) {
+  for (const contributor of [...CONTRIBUTOR_ORDER, 'Ascendant'] as const) {
+    const key = `${planet}.${contributor}`;
+    const differs =
+      JSON.stringify(VARAHAMIHIRA_AV[planet][contributor]) !==
+      JSON.stringify(PARASHARA_AV[planet][contributor]);
+    assert.equal(
+      differs,
+      EXPECTED_VARAHAMIHIRA_DIFFERENCES.has(key),
+      `Varāhamihira source difference must be explicitly accounted for: ${key}`,
+    );
+  }
+}
+
+// The public default remains Parāśara; selecting it explicitly must be
+// identical to omitting the system argument.
+{
+  const chart = chartWithOffsets(4, [0, 1, 2, 3, 4, 5, 6]);
+  assert.deepEqual(buildAshtakavarga(chart), buildAshtakavarga(chart, 'Parashara'));
+}
+
+for (const ascendant of [1, 4, 7, 10, 12]) {
+  for (const offsets of ARRANGEMENTS) {
+    const result = buildAshtakavarga(chartWithOffsets(ascendant, offsets), 'Varahamihira');
+    assert.equal(result.sav.total, CLASSICAL_SAV_TOTAL, 'Varāhamihira SAV total remains 337');
+    for (const row of result.bav) {
+      assert.equal(row.total, CLASSICAL_BAV_TOTALS[row.planet], `Varāhamihira ${row.planet} BAV total`);
+    }
+  }
+}
 
 // ---------------------------------------------------------------------------
 // House-to-sign mapping
