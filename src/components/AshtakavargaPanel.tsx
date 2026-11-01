@@ -76,7 +76,8 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
   const [view, setView] = useState<'table' | 'north'>('table');
   const [selection, setSelection] = useState<AvSelection>('SAV');
   const [system, setSystem] = useState<AshtakavargaSystem>('Parashara');
-  const { bav, sav } = buildAshtakavarga(chart, system);
+  const [includeLagnaInSav, setIncludeLagnaInSav] = useState(false);
+  const { bav, sav } = buildAshtakavarga(chart, system, includeLagnaInSav);
   const selectedRow = selection === 'SAV' ? null : bav.find((row) => row.planet === selection);
   const selectedHouses = selectedRow?.houses ?? sav.houses;
 
@@ -102,6 +103,11 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
           </select>
         </label>
       </div>
+      <label className="mb-3 flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-300">
+        <input type="checkbox" checked={includeLagnaInSav} onChange={(event) => setIncludeLagnaInSav(event.target.checked)} />
+        {t('Include Lagna BAV in SAV')}
+        <span className="text-[10px] text-zinc-400">({sav.total} {t('total bindus')})</span>
+      </label>
 
       {view === 'north' ? (
         <div>
