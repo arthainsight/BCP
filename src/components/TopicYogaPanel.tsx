@@ -78,7 +78,8 @@ export default function TopicYogaPanel({ chart }: { chart: ChartData }) {
         {shown.length === 0 && <p className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400" data-topic-empty>{show === 'met' ? t('No rule of this topic is met by the chart; the other rules are under the buttons above.') : t('No rule of this kind.')}</p>}
         {shown.map((result, index) => {
           const [icon, color, word] = badge(result.outcome.met);
-          const heading = (TOPICS.find(item => item.key === topic)?.chapters.length ?? 0) > 1 && result.rule.chapter !== shown[index - 1]?.rule.chapter;
+          const entry = TOPICS.find(item => item.key === topic);
+          const heading = ((entry?.chapters.length ?? 0) > 1 || entry?.text === 'phala') && result.rule.chapter !== shown[index - 1]?.rule.chapter;
           return (
             <div key={result.rule.id} className="rounded-lg border border-zinc-200 p-2 font-mono text-xs dark:border-zinc-700" data-topic-rule={result.rule.id} data-met={String(result.outcome.met)}>
               {heading && <div className="mb-1 text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600" data-topic-chapter={result.rule.chapter}>{result.rule.text === 'phala' ? 'Phaladīpikā' : 'BPHS'} {result.rule.chapter}</div>}
