@@ -206,6 +206,25 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19 and 44 and shows 
   expect(errors).toEqual([]);
 });
 
+test('ANALYSIS Conjunctions gives the results of Phaladīpikā 18 for the Moon and for grahas in one sign', async ({ page }) => {
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+
+  await calculateChart(page);
+  await selectWorkspace(page, 'ANALYSIS');
+  await visible(page, page.getByRole('button', { name: 'Conjunctions', exact: true })).click();
+
+  // The three parts are there: the pairs, the Moon by its sign, the Moon by its navāṁśa with the weighing of 18.17.
+  const panel = visible(page, page.locator('[data-dvigraha="panel"]'));
+  await expect(panel.locator('[data-dvigraha="pairs"]')).toBeVisible();
+  await expect(panel.locator('[data-dvigraha="moon-sign"]')).toBeVisible();
+  await expect(panel.locator('[data-dvigraha="moon-navamsha"]')).toContainText('18.17');
+  const placement = await panel.locator('[data-placement]').getAttribute('data-placement');
+  expect(['vargottama', 'own', 'other']).toContain(placement);
+
+  expect(errors).toEqual([]);
+});
+
 test('ANALYSIS Upagrahas gives the verse of BPHS 25 for each body in the house it stands in', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

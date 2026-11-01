@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.81',
+    date: '2026-11-01',
+    title: 'Two grahas together, and the Moon seen by the others (Phaladīpikā 18)',
+    changes: [
+      'ANALYSIS → Conjunctions (Classical systems): the results of Phaladīpikā chapter 18 for the chart. Two grahas in one sign (18.1–5, the 21 pairs of the seven grahas, each with its verse; with more than two the pairs are to be combined). The Moon in its sign seen by Mars, Mercury, Jupiter, Venus, Saturn and the Sun (18.6–11, 72 results). The Moon in the navāṁśa of a graha seen by the others (18.12–15, 42 results), with whether the Moon is vargottama, in its own or in another\'s navāṁśa and how that weighs the good and the bad (18.17).',
+      'Not judged: the strength of the lord of the navāṁśa (18.17, the text gives no measure). The Sanskrit is the text layer of the edition (a scan of the print) and some letters are misread; the summaries are short and the verse decides. In docs/dvigraha-phaladipika18.md.',
+      'Updated the application version to v3.81.',
+    ],
+  },
+  {
     version: 'v3.80',
     date: '2026-11-01',
     title: 'The upagrahas in the houses, after the Sanskrit of BPHS 25',
