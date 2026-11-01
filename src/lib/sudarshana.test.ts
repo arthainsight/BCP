@@ -50,10 +50,11 @@ assert.equal(months[0].startJd, 2451545);
 assert.equal(months[11].endJd, 2451545 + 365.25, 'the last part ends where the whole does');
 for (let index = 1; index < 12; index++) assert.equal(months[index].startJd, months[index - 1].endJd, 'the parts follow without a gap');
 for (const month of months) assert.ok(Math.abs(month.endJd - month.startJd - 365.25 / 12) < 1e-9, 'equal parts');
-// A month is divided into twelve Pratyantara periods, each into twelve Vidāśās.
-const firstMonth = sudarshanaSubPeriods(2451545, 2451545 + 365.25 / 12, 4);
-assert.deepEqual(firstMonth.map(period => period.house), [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
-const pratyantaras = sudarshanaSubPeriods(firstMonth[0].startJd, firstMonth[0].endJd, firstMonth[0].house);
+// A year is divided into months, each month into Pratyantara periods, and each Pratyantara into Vidāśās.
+const yearMonths = sudarshanaSubPeriods(2451545, 2451545 + 365.25, 4);
+assert.deepEqual(yearMonths.map(period => period.house), [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
+const firstMonth = yearMonths[0];
+const pratyantaras = sudarshanaSubPeriods(firstMonth.startJd, firstMonth.endJd, firstMonth.house);
 assert.deepEqual(pratyantaras.map(period => period.house), [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3]);
 assert.ok(Math.abs(pratyantaras[0].endJd - pratyantaras[0].startJd - 365.25 / 144) < 1e-9);
 const vidasas = sudarshanaSubPeriods(pratyantaras[0].startJd, pratyantaras[0].endJd, pratyantaras[0].house);
