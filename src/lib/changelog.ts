@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.85',
+    date: '2026-11-01',
+    title: 'The houses of BPHS 20–23: the 9th to the 12th house',
+    changes: [
+      'ANALYSIS → Topic yogas → The houses (bhāva-phala) now has the rules of the 9th (BPHS 20), 10th (21), 11th (22) and 12th (23) house chapters, with all 79 verses in Devanagari and IAST: 68 more rules, 142 in all with the lagna and the 2nd to 5th houses. With the 6th, 7th and 8th in the illness, marriage and longevity topics, all twelve house chapters of the Bṛhat Parāśara Horā Śāstra are now in the app.',
+      'The years of the father\'s death in 20.13–25 are given as the text has them (the conditions end one verse and the years open the next); the view carries the caution that they are the text\'s statements and not a prediction. Not judged: a few verses with unclear or aṃśa-only conditions; the view lists them. In docs/topic-yogas.md.',
+      'Updated the application version to v3.85.',
+    ],
+  },
+  {
     version: 'v3.84',
     date: '2026-11-01',
     title: 'The houses of BPHS 12–16: the lagna and the 2nd to 5th houses',

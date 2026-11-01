@@ -1,10 +1,10 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
 
 Code: `src/lib/topicYogas.ts` (the topics and `evaluateTopic`), `src/lib/topicCore.ts` (the shape of a rule and the questions a chart is asked), `src/lib/topicSpirituality.ts`, `topicMarriage.ts`, `topicLongevity.ts`, `topicWealth.ts`, `topicIllness.ts`, `topicHouses.ts`
-(the rules), `src/lib/topicVerses.ts` (the verses of chapters 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 39, 40, 41, 42, 44 and 79: Devanagari, IAST and a short gloss) and `src/components/TopicYogaPanel.tsx`.
+(the rules), `src/lib/topicVerses.ts` (the verses of chapters 9, 10, 12, 13, 14, 15, 16, 17, 20, 21, 22, 23, 18, 19, 39, 40, 41, 42, 44 and 79: Devanagari, IAST and a short gloss) and `src/components/TopicYogaPanel.tsx`.
 A rule has an id, the topic, the chapter and verses it comes from, what the text says follows, and a function from the chart to *met*, *not met* or *cannot be judged*. The rule names, the lines of evidence and the glosses are in English.
 
 ## Readings made throughout
@@ -77,9 +77,9 @@ A rule has an id, the topic, the chapter and verses it comes from, what the text
   the milk (9.27), the navāṁśa of Mars (9.40) and 9.43, 9.45's second half (read with 9.44). The view lists these verses.
 * The view says that the statements are the text's and not a prediction, and that nothing in it is medical advice. Chapter 11 (what each house shows, 16 verses) is a list of significations and not a set of yogas and is not built here.
 
-## The houses (bhāva-phala): BPHS 12–16 (the lagna and the 2nd to 5th houses), 89 verses, 74 rules
+## The houses (bhāva-phala): BPHS 12–16 and 20–23, 168 verses, 142 rules
 
-BPHS 12–23 are the *house* chapters, one for each house in order (12 the lagna … 23 the 12th); they are not chapters of the grahas in the houses. The 6th, 7th and 8th (17, 18, 19) are in the illness, marriage and longevity topics; the 9th to 12th (20–23) are not built yet.
+BPHS 12–23 are the *house* chapters, one for each house in order (12 the lagna … 23 the 12th); they are not chapters of the grahas in the houses. The 6th, 7th and 8th (17, 18, 19) are in the illness, marriage and longevity topics; the rest, 12–16 and 20–23, are here.
 
 * **12 (the lagna, 15 verses)**: the lagna lord in the trika with malefics or in a kendra/trikoṇa (1), weak (2), benefics in kendras and trikoṇas (2), the Moon in the lagna afflicted (3), benefics or malefics in the lagna (4), the lagna lord a benefic in a kendra (5),
   in a movable sign (6), the benefics and the Moon (7), Aries/Taurus/Leo with Saturn or Mars (8), the Sun and Moon in one navāṁśa (10) and the limbs of the lagna's drekkāṇa (12–15).
@@ -91,9 +91,15 @@ BPHS 12–23 are the *house* chapters, one for each house in order (12 the lagna
   in 16.3 "combust, with malefics or weak" are read as alternatives; the sentences of 16.24–31 that give the conditions in one verse and the number of sons in the next are read as one rule with both verses; 16.29b–30a is read without its half that cannot be met (Jupiter and Saturn each in the 5th from the other).
 * **Not judged**: Māndi (16.9, 16.23), the Pārāvata and other divisions (13.11), the lord of the eyes (13.12), the twins of 12.9, 13.4 (it asks for the 11th and 2nd lords in kendras and trikoṇas, which they cannot be in the same breath), the list of 15.10–11a, 16.17 and a few verses
   that the text leaves open. The view lists them.
+* **20 (the 9th, 32 verses)**: the 9th lord strong in the 9th, Jupiter in the 9th, the fortune of the father (3–7), the Sun and the 9th lord (8–9), the exchange with the 2nd (10), the enmity with the father (11), begging (12), the **years of the father's death** (13–25: the conditions end one verse and the years open the next, so each rule names the two verses) and the fortune rules of 26–31.
+* **21 (the 10th, 22 verses)**: the 10th lord strong and dignified, weak, with benefics or malefics, the sacrifices of Rāhu in a kendra, the exchanges with the 11th, 9th and 8th lords, Jupiter in Pisces, the Moon in the 10th, fame and the fault in the work.
+* **22 (the 11th, 11 verses)**: the 11th lord placed, with the 2nd and 3rd lords, Jupiter, the gains with the years the text gives, and the absence of gain.
+* **23 (the 12th, 14 verses)**: the 12th lord with benefics or malefics, the Moon as the 12th lord, Rāhu in the 12th (naraka), Mercury and liberation (mokṣa), travel abroad, the lagna lord in the 12th, and the visible and invisible halves (8).
+* **Readings in 20–23**: "highest exaltation" is the exaltation sign; "the 2nd from the 9th" is the 10th; in 21.19 the trikoṇas from the 10th are the 2nd and 6th; in 22.7 "lābhāt lābhage" is read literally as the 11th from the 11th house, the 9th (the site translation has the 11th).
+* **Not judged in 20–23**: 20.23b–24a (Saturn in the 8th and 7th, or in either, is not clear), the aṃśa conditions of 23.3–6, the navāṁśa of 21.16, the Sun's aṃśa of 22.2 and a few verses that are lists or closings (20.32, 21.1, 21.22, 22.1, 23.7). The view lists them.
+* The view carries a caution that the statements about the death of the father and the loss of children are the text's and not a prediction.
 
 ## Next topics (not built yet)
 
-* **The houses 9 to 12**: BPHS 20–23.
 * **Women**: BPHS 80 and 83.
 * Other texts: the Phaladīpikā, the Sārāvalī and the Jātakapārijāta for marriage and longevity.
