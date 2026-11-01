@@ -61,6 +61,7 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
   const [year, setYear] = useState<number | null>(null);
   const [month, setMonth] = useState<number | null>(null);
   const [pratyantara, setPratyantara] = useState<number | null>(null);
+  const [vidasha, setVidasha] = useState<number | null>(null);
 
   const query = buildAnnualParams({ chart, birthDatetime, ianaTimezone, calculationSettings, place: null, year, targetDate });
   const { data: shown, error, loading } = useAnnualFetch<YearResponse>('/api/sudarshana', query);
@@ -84,6 +85,7 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
   const vidasas = selectedPratyantara
     ? sudarshanaSubPeriods(selectedPratyantara.startJd, selectedPratyantara.endJd, selectedPratyantara.house)
     : [];
+  const selectedVidasha = vidasha !== null && vidasas[vidasha] ? vidasas[vidasha] : null;
   const local = (jd: number): LocalParts => {
     if (ianaTimezone) {
       try {
@@ -116,9 +118,14 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
   const toggleMonth = (index: number) => {
     setMonth(current => current === index ? null : index);
     setPratyantara(null);
+    setVidasha(null);
   };
   const togglePratyantara = (index: number) => {
     setPratyantara(current => current === index ? null : index);
+    setVidasha(null);
+  };
+  const toggleVidasha = (index: number) => {
+    setVidasha(current => current === index ? null : index);
   };
   const signsForHouse = (house: number) =>
     SUDARSHANA_RINGS.map(id => SIGN_ABBR[rings.find(ring => ring.id === id)!.houses[house - 1].sign - 1]).join(' · ');
@@ -137,6 +144,8 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
         <path d={wedge(RADII[ringIndex + 1], RADII[ringIndex], house)} className="fill-white stroke-zinc-400 dark:fill-zinc-900 dark:stroke-zinc-600" strokeWidth={1.5} />
         {yearHouse === house && <path data-sud-year={ring.id} d={wedge(RADII[ringIndex + 1], RADII[ringIndex], house)} className="fill-amber-300/60 stroke-amber-500 dark:fill-amber-500/35" strokeWidth={3} pointerEvents="none" />}
         {selected && selected.house === house && <path data-sud-month={ring.id} d={wedge(RADII[ringIndex + 1] + 6, RADII[ringIndex] - 6, house)} fill="none" className="stroke-rose-500" strokeWidth={4} pointerEvents="none" />}
+        {selectedPratyantara && selectedPratyantara.house === house && <path data-sud-pratyantara={ring.id} d={wedge(RADII[ringIndex + 1] + 18, RADII[ringIndex] - 18, house)} fill="none" className="stroke-emerald-500" strokeWidth={4} pointerEvents="none" />}
+        {selectedVidasha && selectedVidasha.house === house && <path data-sud-vidasha={ring.id} d={wedge(RADII[ringIndex + 1] + 30, RADII[ringIndex] - 30, house)} fill="none" className="stroke-violet-500" strokeWidth={4} pointerEvents="none" />}
         <text x={middle.x} y={middle.y - 14} textAnchor="middle" fontSize={22} fontWeight={600} className="fill-blue-700 dark:fill-blue-400">{SIGN_ABBR[entry.sign - 1]}</text>
         {lines.map((line, lineIndex) => (
           <text key={lineIndex} x={middle.x} y={middle.y + 8 + lineIndex * (size + 3)} textAnchor="middle" fontSize={size} fontWeight={700} className="fill-red-700 dark:fill-red-400">
@@ -157,7 +166,7 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <YearStepper shownYear={shown?.year} year={year} onChange={(value) => { setYear(value); setMonth(null); setPratyantara(null); }} />
+        <YearStepper shownYear={shown?.year} year={year} onChange={(value) => { setYear(value); setMonth(null); setPratyantara(null); setVidasha(null); }} />
         {loading && <span className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">{t('calculating…')}</span>}
       </div>
 
@@ -178,6 +187,13 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
           {age !== undefined && <text x={CENTRE} y={CENTRE + 8} textAnchor="middle" fontSize={18} className="fill-zinc-500 dark:fill-zinc-400" data-sud="centre-age">{fill(t('age {age}'), { age })}</text>}
           {yearHouse && <text x={CENTRE} y={CENTRE + 34} textAnchor="middle" fontSize={18} className="fill-amber-700 dark:fill-amber-400" data-sud="centre-house">{fill(t('house {house}'), { house: yearHouse })}</text>}
         </svg>
+      </div>
+
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[9px] font-mono text-zinc-500 dark:text-zinc-400" data-sud="period-legend">
+        <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-amber-400/70 ring-1 ring-amber-600" />{t('MD · year')}</span>
+        <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-rose-500" />{t('AD · month')}</span>
+        <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" />{t('PD · Pratyantara')}</span>
+        <span className="inline-flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-violet-500" />{t('Vidāśā')}</span>
       </div>
 
       <ul className="space-y-0.5 text-[10px] font-mono text-zinc-600 dark:text-zinc-300" data-sud="rings">
@@ -349,7 +365,21 @@ export default function SudarshanaPanel({ chart, birthDatetime, targetDate, iana
                   </thead>
                   <tbody>
                     {vidasas.map((item, index) => (
-                      <tr key={index} data-sud-vidasha-row={index + 1} className="border-t border-zinc-100 dark:border-zinc-800">
+                      <tr
+                        key={index}
+                        data-sud-vidasha-row={index + 1}
+                        aria-expanded={vidasha === index}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => toggleVidasha(index)}
+                        onKeyDown={event => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            toggleVidasha(index);
+                          }
+                        }}
+                        className={`cursor-pointer border-t border-zinc-100 dark:border-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-500 ${vidasha === index ? 'bg-violet-50 dark:bg-violet-950/30' : ''}`}
+                      >
                         <td className="py-1 pr-2 text-zinc-500">{index + 1}</td>
                         <td className="py-1 pr-2 whitespace-nowrap tabular-nums">{fmtLocal(local(item.startJd))}</td>
                         <td className="py-1 pr-2 whitespace-nowrap tabular-nums">{fmtLocal(local(item.endJd))}</td>
