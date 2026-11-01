@@ -1,10 +1,10 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
 
-Code: `src/lib/topicYogas.ts` (the topics and `evaluateTopic`), `src/lib/topicCore.ts` (the shape of a rule and the questions a chart is asked), `src/lib/topicSpirituality.ts`, `topicMarriage.ts`, `topicLongevity.ts`, `topicWealth.ts`, `topicIllness.ts`
-(the rules), `src/lib/topicVerses.ts` (the verses of chapters 9, 10, 17, 18, 19, 39, 40, 41, 42, 44 and 79: Devanagari, IAST and a short gloss) and `src/components/TopicYogaPanel.tsx`.
+Code: `src/lib/topicYogas.ts` (the topics and `evaluateTopic`), `src/lib/topicCore.ts` (the shape of a rule and the questions a chart is asked), `src/lib/topicSpirituality.ts`, `topicMarriage.ts`, `topicLongevity.ts`, `topicWealth.ts`, `topicIllness.ts`, `topicHouses.ts`
+(the rules), `src/lib/topicVerses.ts` (the verses of chapters 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 39, 40, 41, 42, 44 and 79: Devanagari, IAST and a short gloss) and `src/components/TopicYogaPanel.tsx`.
 A rule has an id, the topic, the chapter and verses it comes from, what the text says follows, and a function from the chart to *met*, *not met* or *cannot be judged*. The rule names, the lines of evidence and the glosses are in English.
 
 ## Readings made throughout
@@ -77,7 +77,23 @@ A rule has an id, the topic, the chapter and verses it comes from, what the text
   the milk (9.27), the navāṁśa of Mars (9.40) and 9.43, 9.45's second half (read with 9.44). The view lists these verses.
 * The view says that the statements are the text's and not a prediction, and that nothing in it is medical advice. Chapter 11 (what each house shows, 16 verses) is a list of significations and not a set of yogas and is not built here.
 
+## The houses (bhāva-phala): BPHS 12–16 (the lagna and the 2nd to 5th houses), 89 verses, 74 rules
+
+BPHS 12–23 are the *house* chapters, one for each house in order (12 the lagna … 23 the 12th); they are not chapters of the grahas in the houses. The 6th, 7th and 8th (17, 18, 19) are in the illness, marriage and longevity topics; the 9th to 12th (20–23) are not built yet.
+
+* **12 (the lagna, 15 verses)**: the lagna lord in the trika with malefics or in a kendra/trikoṇa (1), weak (2), benefics in kendras and trikoṇas (2), the Moon in the lagna afflicted (3), benefics or malefics in the lagna (4), the lagna lord a benefic in a kendra (5),
+  in a movable sign (6), the benefics and the Moon (7), Aries/Taurus/Leo with Saturn or Mars (8), the Sun and Moon in one navāṁśa (10) and the limbs of the lagna's drekkāṇa (12–15).
+* **13 (the 2nd, 13 verses)**: the 2nd lord placed, in the trika, benefics and malefics in the 2nd, Jupiter or Mars with it, the 2nd and 11th lords (5–8), wealth spent on dharma (9), the 2nd lord in its own sign (10), with malefics (13).
+* **14 (the 3rd, 15 verses)**: benefics on the 3rd, Mars, the destroyers of siblings, a sister or a brother by the gender of the graha, Mars as kāraka, the number of siblings (7–13) and the elder and the younger (14).
+* **15 (the 4th, 14 verses)**: the 4th lord and the lagna lord, own sign or exaltation, with the 10th lord, the mother's life and happiness, cattle, muteness, vehicles (12–14).
+* **16 (the 5th, 32 verses)**: the 5th lord placed, in the trika, combust or weak, the one-child yogas, an adopted son, many sons, a daughter, a child of another, the fortune of children, the years of the births and the losses and the number of sons (24–31).
+* **Readings**: the kāraka of the siblings is Mars and of the children Jupiter; the lagna counts as a kendra and a trikoṇa; "highest exaltation" (paramoccha) is read as the exaltation sign; the female grahas are the Moon and Venus and the male the Sun, Mars and Jupiter (14.4, 14.13);
+  in 16.3 "combust, with malefics or weak" are read as alternatives; the sentences of 16.24–31 that give the conditions in one verse and the number of sons in the next are read as one rule with both verses; 16.29b–30a is read without its half that cannot be met (Jupiter and Saturn each in the 5th from the other).
+* **Not judged**: Māndi (16.9, 16.23), the Pārāvata and other divisions (13.11), the lord of the eyes (13.12), the twins of 12.9, 13.4 (it asks for the 11th and 2nd lords in kendras and trikoṇas, which they cannot be in the same breath), the list of 15.10–11a, 16.17 and a few verses
+  that the text leaves open. The view lists them.
+
 ## Next topics (not built yet)
 
+* **The houses 9 to 12**: BPHS 20–23.
 * **Women**: BPHS 80 and 83.
 * Other texts: the Phaladīpikā, the Sārāvalī and the Jātakapārijāta for marriage and longevity.

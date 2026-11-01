@@ -277,7 +277,7 @@ export const HOUSES_RULES: TopicYogaRule[] = [
     const second = lordHouse(context, 9) === 1 && debilitated(l5, sign) && houseOf(context, 'Ketu') === 5 && houseOf(context, 'Mercury') === 5;
     return { met: (weak && afflicted) || second, lines: [`${where(context, l5)}${weak ? ' (weak)' : ''}; malefics in the 5th: ${mixed(maleficsIn(context, 5))}`] };
   }),
-  rule(16, 'two-mothers', [10], 'The Sun and Moon in one sign and one navāṁśa', 'Brought up by three mothers or by two fathers.', context => {
+  rule(16, 'raised-by-three-mothers', [10], 'The Sun and Moon in one sign and one navāṁśa', 'Brought up by three mothers or by two fathers.', context => {
     const sun = find(context, 'Sun'); const moon = find(context, 'Moon');
     if (!sun || !moon) return cannot('The Sun or the Moon is missing');
     return { met: sun.sign === moon.sign && navamshaSign(sun.longitude) === navamshaSign(moon.longitude), lines: [`The Sun and Moon: ${signName(sun.sign)} and ${signName(moon.sign)}`] };
@@ -362,7 +362,7 @@ export const HOUSES_RULES: TopicYogaRule[] = [
   rule(16, 'one-son', [29, 30], 'The 5th joined by a malefic', 'One son. (Read from 16.29b–30a; the other half of the sentence, Jupiter and Saturn each in the 5th from the other, cannot be met.)', context => ({
     met: maleficsIn(context, 5).length > 0, lines: [`Malefics in the 5th: ${mixed(maleficsIn(context, 5))}`],
   })),
-  rule(16, 'three-wives', [30, 31], 'Saturn in the 5th from Jupiter', 'A son by another wife, and three wives. (Read from 16.30b–31a.)', context => {
+  rule(16, 'wives-and-son-by-another', [30, 31], 'Saturn in the 5th from Jupiter', 'A son by another wife, and three wives. (Read from 16.30b–31a.)', context => {
     const target = signFrom(context, 'Jupiter', 5);
     return { met: target !== null && signOf(context, 'Saturn') === target, lines: [`Jupiter in ${signName(signOf(context, 'Jupiter') ?? 1)}, Saturn in ${signName(signOf(context, 'Saturn') ?? 1)}`] };
   }),

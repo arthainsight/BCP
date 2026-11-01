@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.84',
+    date: '2026-11-01',
+    title: 'The houses of BPHS 12–16: the lagna and the 2nd to 5th houses',
+    changes: [
+      'ANALYSIS → Topic yogas → The houses (bhāva-phala): the rules of the house chapters of the Bṛhat Parāśara Horā Śāstra for the lagna (12), the 2nd (13), the 3rd (14), the 4th (15) and the 5th (16), with all 89 verses in Devanagari and IAST and met, not met or cannot be judged for the chart. The 6th, 7th and 8th houses (17, 18, 19) were already in the illness, marriage and longevity topics; the 9th to 12th (20–23) follow.',
+      'Where a sentence runs over to the next verse (the number of sons, the vehicles) it is read as one rule with the verses it uses, and the reading is named. Not judged: Māndi, the Pārāvata and other divisions, the lord of the eyes and a few verses whose conditions the text leaves open; the view lists them. The topic view now shows the chapter above its rules. In docs/topic-yogas.md.',
+      'Updated the application version to v3.84.',
+    ],
+  },
+  {
     version: 'v3.83',
     date: '2026-11-01',
     title: 'Illness and ariṣṭa, after the Sanskrit of BPHS 17, 9 and 10',
