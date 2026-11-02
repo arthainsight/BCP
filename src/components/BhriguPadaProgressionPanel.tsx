@@ -37,10 +37,10 @@ function ageLabel(age: number): string {
   return years + ' y ' + months + ' m';
 }
 
-function relationLabel(kind: 'same' | 'kendra' | 'trikona' | 'other', relation: number): string {
-  if (kind === 'same') return 'Same sign (1)';
-  if (kind === 'kendra') return 'Kendra (' + relation + ')';
-  if (kind === 'trikona') return 'Trikona (' + relation + ')';
+function relationLabel(kind: 'same' | 'kendra' | 'trikona' | 'other', relation: number, t: (text: string) => string): string {
+  if (kind === 'same') return t('Same sign') + ' (1)';
+  if (kind === 'kendra') return t('Kendra') + ' (' + relation + ')';
+  if (kind === 'trikona') return t('Trikona') + ' (' + relation + ')';
   return '—';
 }
 
@@ -260,7 +260,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
                     <td className={CELL}>{lordProgression ? SIGN_NAMES[lordProgression.sign - 1] : '—'}</td>
                     <td className={CELL}>
                       <span className={item.kind === 'other' ? 'text-zinc-400' : 'font-semibold text-emerald-700 dark:text-emerald-300'}>
-                        {relationLabel(item.kind, item.relationFromPada)}
+                        {relationLabel(item.kind, item.relationFromPada, t)}
                       </span>
                     </td>
                   </tr>
