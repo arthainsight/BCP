@@ -96,7 +96,9 @@ assert.equal(BHRIGU_PADA_CYCLES['sundaram-7'].Rahu, undefined);
   assert.equal(oldPadas.length, 12);
   assert.equal(newPadas.length, 12);
 
-  for (const [marsSign, expectedOldPada] of [[1, 10], [4, 4], [7, 10], [10, 4]] as const) {
+  for (const [marsSign, expectedOldPada, expected2019Pada] of [
+    [1, 10, 1], [4, 4, 7], [7, 10, 1], [10, 4, 7],
+  ] as const) {
     const varied = {
       ...chart,
       planets: chart.planets.map(item => item.name === 'Mars' ? { ...item, sign: marsSign } : item),
@@ -108,7 +110,7 @@ assert.equal(BHRIGU_PADA_CYCLES['sundaram-7'].Rahu, undefined);
     );
     assert.equal(
       calculateBhriguPadas(varied, 'nadi-praveshika-8').find(pada => pada.house === 1)?.sign,
-      ((1 + ((marsSign - 1) + 12) % 12) - 1 + 12) % 12 + 1,
+      expected2019Pada,
       'No kendra correction in the 2019 version when Mars is in sign ' + marsSign,
     );
   }
