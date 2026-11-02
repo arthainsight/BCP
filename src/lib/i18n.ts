@@ -192,6 +192,7 @@ export const FI: Record<string, string> = {
   'Uses seven grahas, a 30-year Saturn cycle, and the standard same-sign / seventh-sign Arudha correction.': 'Käyttää seitsemää grahaa, Saturnukselle 30 vuoden kiertoa sekä tavanomaista saman merkin / seitsemännen merkin Arudha-korjausta.',
   'Age': 'Ikä',
   'Age in years': 'Ikä vuosina',
+  'Progression age': 'Progression ikä',
   'Date-derived age': 'Päivämäärästä laskettu ikä',
   'One sign-step is one twelfth of each graha cycle.': 'Yksi merkkisiirtymä on yksi kahdestoistaosa kunkin grahan kierrosta.',
   'Set chart date to this age': 'Aseta kartan päivämääräksi tämä ikä',
