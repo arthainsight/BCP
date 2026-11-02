@@ -85,8 +85,9 @@ assert.equal(BHRIGU_PADA_CYCLES['nadi-praveshika-8'].Saturn, 29);
 assert.equal(BHRIGU_PADA_CYCLES['nadi-praveshika-8'].Rahu, 93);
 assert.equal(BHRIGU_PADA_CYCLES['sundaram-7'].Rahu, undefined);
 
-// The 2019 version does not apply the standard same-sign Arudha exception.
-// In the 7-graha version, Mars in Aries gives Aries AL the 10th (Capricorn).
+// The 2019 version does not apply any Arudha kendra exceptions.
+// The seven-graha Vaani/Sundaram rule shifts every raw pada in a kendra
+// (1st, 4th, 7th or 10th from the house) to the 10th from that pada.
 {
   const oldPadas = calculateBhriguPadas(chart, 'sundaram-7');
   const newPadas = calculateBhriguPadas(chart, 'nadi-praveshika-8');
@@ -94,6 +95,23 @@ assert.equal(BHRIGU_PADA_CYCLES['sundaram-7'].Rahu, undefined);
   assert.equal(newPadas.find(pada => pada.house === 1)?.sign, 1);
   assert.equal(oldPadas.length, 12);
   assert.equal(newPadas.length, 12);
+
+  for (const [marsSign, expectedOldPada] of [[1, 10], [4, 4], [7, 10], [10, 4]] as const) {
+    const varied = {
+      ...chart,
+      planets: chart.planets.map(item => item.name === 'Mars' ? { ...item, sign: marsSign } : item),
+    } as ChartData;
+    assert.equal(
+      calculateBhriguPadas(varied, 'sundaram-7').find(pada => pada.house === 1)?.sign,
+      expectedOldPada,
+      'Kendra exception when the Lagna lord Mars is in sign ' + marsSign,
+    );
+    assert.equal(
+      calculateBhriguPadas(varied, 'nadi-praveshika-8').find(pada => pada.house === 1)?.sign,
+      ((1 + ((marsSign - 1) + 12) % 12) - 1 + 12) % 12 + 1,
+      'No kendra correction in the 2019 version when Mars is in sign ' + marsSign,
+    );
+  }
 }
 
 // A pada's lord progression is related to its own Arudha sign by inclusive sign count.
