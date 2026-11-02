@@ -55,6 +55,11 @@ function houseLord(ascSign: number, houseNum: number): string {
   return signLord(houseSign);
 }
 
+/** The house number of `sign` counted from `reference` (1 = the same sign). */
+function houseNumber(reference: number, sign: number): number {
+  return ((sign - reference + 12) % 12) + 1;
+}
+
 function sn(sign: number): string {
   return signName(sign) ?? `sign ${sign}`;
 }
@@ -341,6 +346,40 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
     });
   }
 
+  // Adhi from the Lagna as well (Phaladipika 6.42: "so too from the lagna").
+  {
+    const b6 = getBeneficsInRelativeSign(ascendantSign, 6, planets);
+    const b7 = getBeneficsInRelativeSign(ascendantSign, 7, planets);
+    const b8 = getBeneficsInRelativeSign(ascendantSign, 8, planets);
+    const adhi = b6.length > 0 && b7.length > 0 && b8.length > 0;
+    const missingPositions = [...(b6.length === 0 ? ['6th'] : []), ...(b7.length === 0 ? ['7th'] : []), ...(b8.length === 0 ? ['8th'] : [])];
+    results.push({
+      id: 'adhi-lagna', name: 'Adhi (from Lagna)', category: 'general',
+      status: adhi ? 'active' : 'inactive',
+      referencePlanet: 'Lagna',
+      planetsInvolved: adhi ? [...new Set([...b6, ...b7, ...b8].map(p => p.name))] : [],
+      rule: 'Natural benefics (Jupiter, Venus, Mercury) in all of 6th, 7th, 8th signs from the Lagna (Phaladipika 6.42)',
+      resultText: adhi
+        ? `6th: ${b6.map(p => p.name).join(', ')}; 7th: ${b7.map(p => p.name).join(', ')}; 8th: ${b8.map(p => p.name).join(', ')}`
+        : `No benefic from Lagna in ${missingPositions.join(', ')}`,
+    });
+  }
+
+  // Vasumat from the Lagna (Phaladipika 6.19: all the benefics in the upacayas from the lagna or from the Moon; from the Moon it
+  // is the 'vasumati-all' of BPHS 37.6, which asks the same of the same three grahas).
+  {
+    const three = ['Jupiter', 'Venus', 'Mercury'].map(name => planets.find(p => p.name === name));
+    const all = three.every((p): p is PlanetData => Boolean(p) && [3, 6, 10, 11].includes(houseNumber(ascendantSign, p!.sign)));
+    results.push({
+      id: 'vasumat-lagna', name: 'Vasumat (from Lagna)', category: 'dhana',
+      status: all ? 'active' : 'inactive',
+      referencePlanet: 'Lagna',
+      planetsInvolved: all ? ['Jupiter', 'Venus', 'Mercury'] : [],
+      rule: 'Jupiter, Venus and Mercury all in the 3rd, 6th, 10th or 11th from the Lagna (Phaladipika 6.19)',
+      resultText: three.map(p => p ? `${p.name} ${houseNumber(ascendantSign, p.sign)}` : '').filter(Boolean).join(', ').replace(/^/, 'Houses from Lagna: '),
+    });
+  }
+
   // ── Varishta / Sama / Adhama (BPHS 37.1) ──────────────────────────────────────────────────────────────────────────
   // The Moon's place from the Sun: in a Kendra (1, 4, 7, 10) the lowest, Adhama; in a Panaphara (2, 5, 8, 11) the middle,
   // Sama; in an Apoklima (3, 6, 9, 12) the best (named Uttama in the app before v3.01). Exactly one of the three always
@@ -387,6 +426,48 @@ export function calculateYogas(planets: PlanetData[], ascendantSign: number): Yo
         : !inQualSign
           ? `${pm.planet} in ${sn(p.sign)} — not own or exaltation sign`
           : `${pm.planet} in ${sn(p.sign)} (${signQuality}) but in house ${p.house} — not Kendra`,
+    });
+  }
+
+  // ── Pancha Mahapurusha yogas from the Moon, and their count (Phaladipika 6.4) ───────────────────────────────────────
+  // "Of the lagna and of the Moon": the five yogas are read from the Moon as well, and how many of them the chart has tells
+  // the rank: one, fortune; two, a king's wealth; three, a king; four, an emperor; five, the lord of the earth.
+  if (moon) {
+    const present = new Set<string>();
+    for (const pm of PANCHA_DEFS) {
+      const p = planets.find(pl => pl.name === pm.planet);
+      if (!p) continue;
+      const fromMoon = houseNumber(moon.sign, p.sign);
+      const inQualSign = pm.ownSigns.includes(p.sign) || p.sign === pm.exaltSign;
+      const inKendra = [1, 4, 7, 10].includes(fromMoon);
+      const active = inQualSign && inKendra;
+      if (active) present.add(pm.name);
+      const signQuality = p.sign === pm.exaltSign ? 'exaltation' : 'own sign';
+      results.push({
+        id: `${pm.id}-moon`, name: `${pm.name} (from Moon)`, category: 'pancha-mahapurusha',
+        status: active ? 'active' : 'inactive',
+        referencePlanet: pm.planet,
+        planetsInvolved: active ? [pm.planet] : [],
+        rule: `${pm.planet} in own or exaltation sign AND in Kendra (1/4/7/10) from the Moon (Phaladipika 6.4)`,
+        resultText: active
+          ? `${pm.planet} in ${sn(p.sign)} (${signQuality}), house ${fromMoon} from Moon`
+          : !inQualSign
+            ? `${pm.planet} in ${sn(p.sign)} — not own or exaltation sign`
+            : `${pm.planet} in ${sn(p.sign)} (${signQuality}) but in house ${fromMoon} from Moon — not Kendra`,
+      });
+    }
+    for (const pm of PANCHA_DEFS) {
+      const p = planets.find(pl => pl.name === pm.planet);
+      if (p && (pm.ownSigns.includes(p.sign) || p.sign === pm.exaltSign) && [1, 4, 7, 10].includes(p.house)) present.add(pm.name);
+    }
+    const rank = ['', 'fortune', 'a king\'s wealth', 'a king', 'an emperor', 'the lord of the earth'][present.size];
+    results.push({
+      id: 'pancha-count', name: 'Pancha Mahapurusha count', category: 'pancha-mahapurusha',
+      status: present.size > 0 ? 'active' : 'inactive',
+      referencePlanet: 'Mars, Mercury, Jupiter, Venus, Saturn',
+      planetsInvolved: [...PANCHA_DEFS.filter(pm => present.has(pm.name)).map(pm => pm.planet)],
+      rule: 'How many of the five Mahapurusha yogas the chart has, from the Lagna or the Moon: one gives fortune, two a king\'s wealth, three a king, four an emperor, five the lord of the earth (Phaladipika 6.4)',
+      resultText: present.size > 0 ? `${present.size} of the 5: ${[...present].join(', ')} — ${rank}` : '0 of the 5',
     });
   }
 

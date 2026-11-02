@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v3.100',
+    date: '2026-11-02',
+    title: 'The yogas from the Moon (Phaladīpikā 6)',
+    changes: [
+      'ANALYSIS → Grahas: the five Mahāpuruṣa yogas (Ruchaka, Bhadra, Hamsa, Mālavya, Śaśa) are now read from the Moon as well as from the Lagna, as the Phaladīpikā has it (6.4: "of the lagna and of the Moon"), and a new row counts how many of the five the chart has from either: one gives fortune, two a king\'s wealth, three a king, four an emperor, five the lord of the earth.',
+      'Adhi is read from the Lagna as well as from the Moon (6.42), and Vasumat from the Lagna (6.19); from the Moon it is the Vasumati that was already there. The table has 107 yogas.',
+      'Not built from the same chapter: Śubha and aśubha Vesi, Vāsi and Ubhayacarī, Mahābhāgya, Puṣkala, and the twelve house yogas (docs/phaladipika-yogas-vs-app.md).',
+      'Updated the application version to v3.100.',
+    ],
+  },
+  {
     version: 'v3.99',
     date: '2026-11-01',
     title: 'The rest of the Tājika yogas of a question',

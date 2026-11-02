@@ -357,6 +357,17 @@ function expected({ ascendant, planets }: Chart): Record<string, boolean> {
     const p = at(name);
     result[id] = (own.includes(p.sign) || p.sign === exalt) && KENDRA.includes(p.house);
   }
+  // Phaladipika 6.4: the same five from the Moon, their count, and Adhi from the lagna too (6.42).
+  let panchaCount = 0;
+  for (const [id, name, own, exalt] of PANCHA) {
+    const p = at(name);
+    const qualifies = own.includes(p.sign) || p.sign === exalt;
+    result[`${id}-moon`] = qualifies && KENDRA.includes(((p.sign - moon.sign + 12) % 12) + 1);
+    if (qualifies && (KENDRA.includes(p.house) || result[`${id}-moon`])) panchaCount++;
+  }
+  result['pancha-count'] = panchaCount > 0;
+  result['adhi-lagna'] = [6, 7, 8].every(n => beneficsIn(relSign(ascendant, n)));
+  result['vasumat-lagna'] = ['Jupiter', 'Venus', 'Mercury'].every(n => [3, 6, 10, 11].includes(((at(n).sign - ascendant + 12) % 12) + 1));
 
   const candidates = ['Jupiter', 'Venus', 'Mercury', 'Moon'];
   result['amala-lagna'] = candidates.some(n => at(n).house === 10 && benefic(n, planets) === true);
