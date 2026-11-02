@@ -142,10 +142,22 @@ function rawArudhaSign(houseSign: number, lordSign: number): number {
 }
 
 /**
+ * The 2008 K. P. Vaani / A. V. Sundaram presentation shifts a pada to the
+ * tenth from itself whenever the uncorrected pada falls in any kendra
+ * (1st, 4th, 7th or 10th) from the house being considered. This is broader
+ * than the common Jaimini same-sign / seventh-sign correction.
+ *
+ * The 2019 Nadi Pravesika presentation explicitly says not to apply any
+ * such exception.
+ */
+function sundaramKendraArudhaSign(houseSign: number, lordSign: number): number {
+  const pada = rawArudhaSign(houseSign, lordSign);
+  const relation = signRelation(houseSign, pada);
+  return [1, 4, 7, 10].includes(relation) ? wrapSign(pada + 9) : pada;
+}
+
+/**
  * Calculates all available Arudhas for the chosen source variant.
- * The 2019 Nadi Pravesika presentation explicitly says not to apply the
- * standard same-sign / seventh-sign exception. The 2008/2014 presentation
- * uses the standard Jaimini correction already implemented in arudhaSign.
  */
 export function calculateBhriguPadas(chart: ChartData, version: BhriguPadaVersion): BhriguPada[] {
   const result: BhriguPada[] = [];
@@ -158,7 +170,7 @@ export function calculateBhriguPadas(chart: ChartData, version: BhriguPadaVersio
 
     const sign = version === 'nadi-praveshika-8'
       ? rawArudhaSign(houseSign, natalLord.sign)
-      : arudhaSign(houseSign, natalLord.sign);
+      : sundaramKendraArudhaSign(houseSign, natalLord.sign);
 
     result.push({
       house,
