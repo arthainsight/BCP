@@ -9,7 +9,6 @@ import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { useT } from '@/lib/i18n';
 import {
-  BHRIGU_PADA_CYCLES,
   calculateBhriguPadaActivations,
   calculateBhriguPadas,
   calculateBhriguProgressions,
