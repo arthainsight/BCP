@@ -5,6 +5,7 @@ import {
   BHRIGU_PADA_CYCLES,
   calculateBhriguPadaActivations,
   calculateBhriguPadaAntardashas,
+  calculateBhriguPadaPratyantardashas,
   calculateBhriguPadas,
   calculateBhriguProgressions,
   progressBhriguGraha,
@@ -184,6 +185,66 @@ assert.equal(BHRIGU_PADA_CYCLES['sundaram-7'].Rahu, undefined);
   const firstRahuAntardasha = calculateBhriguPadaAntardashas([atBirth], 0)[0];
   assert.equal(firstRahuAntardasha.antardashaNumber, 1);
   assert.equal(firstRahuAntardasha.antardashaSign, 8);
+}
+
+// Pratyantardashas divide every antardasha into twelve equal parts.
+{
+  const age = 57 + 10 / 12;
+  const jupiter = progressBhriguGraha({
+    body: 'Jupiter',
+    natalSign: 1,
+    ageYears: age,
+    version: 'nadi-praveshika-8',
+  });
+  assert.ok(jupiter);
+  const current = calculateBhriguPadaPratyantardashas([jupiter], age)[0];
+  assert.ok(current);
+  assert.equal(current.mahaDashaSign, jupiter.sign);
+  assert.equal(current.mahaDashaNumber, Math.floor((age * 1728) / 83 / 144) + 1);
+  assert.equal(current.pratyantardashaDurationYears, 83 / 1728);
+  assert.ok(current.pratyantardashaSign >= 1 && current.pratyantardashaSign <= 12);
+  assert.ok(current.startAgeYears <= age + 1e-9);
+  assert.ok(current.endAgeYears > age);
+
+  const pdDuration = 83 / 1728;
+  const atBirth = progressBhriguGraha({ body: 'Jupiter', natalSign: 1, ageYears: 0, version: 'nadi-praveshika-8' });
+  assert.ok(atBirth);
+  const firstPd = calculateBhriguPadaPratyantardashas([atBirth], 0)[0];
+  assert.equal(firstPd.pratyantardashaNumber, 1);
+  assert.equal(firstPd.pratyantardashaSign, 1);
+
+  const afterFirstPd = progressBhriguGraha({
+    body: 'Jupiter', natalSign: 1, ageYears: pdDuration, version: 'nadi-praveshika-8',
+  });
+  assert.ok(afterFirstPd);
+  const secondPd = calculateBhriguPadaPratyantardashas([afterFirstPd], pdDuration)[0];
+  assert.equal(secondPd.pratyantardashaNumber, 2);
+  assert.equal(secondPd.pratyantardashaSign, 2);
+
+  // At an antardasha boundary, the AD advances and PD resets to its first sign.
+  const adBoundaryAge = 83 / 144;
+  const atAdBoundary = progressBhriguGraha({
+    body: 'Jupiter', natalSign: 1, ageYears: adBoundaryAge, version: 'nadi-praveshika-8',
+  });
+  assert.ok(atAdBoundary);
+  const firstPdOfNextAd = calculateBhriguPadaPratyantardashas([atAdBoundary], adBoundaryAge)[0];
+  assert.equal(firstPdOfNextAd.antardashaNumber, 2);
+  assert.equal(firstPdOfNextAd.pratyantardashaNumber, 1);
+  assert.equal(
+    firstPdOfNextAd.pratyantardashaSign,
+    firstPdOfNextAd.antardashaSign,
+  );
+
+  // At a new mahadasha, both lower levels restart from the new MD sign.
+  const mdBoundaryAge = 83 / 12;
+  const atMdBoundary = progressBhriguGraha({
+    body: 'Jupiter', natalSign: 1, ageYears: mdBoundaryAge, version: 'nadi-praveshika-8',
+  });
+  assert.ok(atMdBoundary);
+  const firstPdOfNextMd = calculateBhriguPadaPratyantardashas([atMdBoundary], mdBoundaryAge)[0];
+  assert.equal(firstPdOfNextMd.antardashaNumber, 1);
+  assert.equal(firstPdOfNextMd.pratyantardashaNumber, 1);
+  assert.equal(firstPdOfNextMd.pratyantardashaSign, atMdBoundary.sign);
 }
 
 // Invalid ages and signs do not yield positions.
