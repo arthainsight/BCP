@@ -174,6 +174,11 @@ assert.equal(BHRIGU_PADA_CYCLES['sundaram-7'].Rahu, undefined);
   assert.equal(nextMahaAntardasha.mahaDashaSign, 2);
   assert.equal(nextMahaAntardasha.antardashaSign, 2);
 
+  const allGrahaProgressions = calculateBhriguProgressions(chart, age, 'nadi-praveshika-8');
+  const allGrahaAntardashas = calculateBhriguPadaAntardashas(allGrahaProgressions, age);
+  assert.equal(allGrahaAntardashas.length, 8);
+  assert.deepEqual(allGrahaAntardashas.map(item => item.body), BHRIGU_PADA_BODIES['nadi-praveshika-8']);
+
   const atBirth = progressBhriguGraha({ body: 'Rahu', natalSign: 8, ageYears: 0, version: 'nadi-praveshika-8' });
   assert.ok(atBirth);
   const firstRahuAntardasha = calculateBhriguPadaAntardashas([atBirth], 0)[0];
