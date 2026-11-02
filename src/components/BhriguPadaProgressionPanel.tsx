@@ -24,7 +24,7 @@ type Props = {
 
 const VERSIONS: { value: BhriguPadaVersion; label: string }[] = [
   { value: 'nadi-praveshika-8', label: 'Nāḍī Praveśikā (2019) · 8 grahas' },
-  { value: 'sundaram-7', label: 'Sundaram / Insights in Nadis (2008–2014) · 7 grahas' },
+  { value: 'sundaram-7', label: 'K. P. Vaani / A. V. Sundaram · 7 grahas' },
 ];
 
 const HEAD = 'px-2 py-2 text-left text-[9px] font-mono uppercase tracking-wide text-zinc-400';
