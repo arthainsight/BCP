@@ -225,7 +225,7 @@ export const FI: Record<string, string> = {
   // Bhrigu Pada antardashas
   'Antardashas': 'Antardaśat',
   'Current sub-period inside each progressed sign-period': 'Nykyinen alajakso kunkin etenevän merkkijakson sisällä',
-  'Each major sign-period is divided into twelve equal antardashas, beginning from the major-period sign. The current sub-period is shown for every running graha.': 'Kukin pääjakson merkkijakso jaetaan 12 yhtä pitkään antardaśaan, jotka alkavat pääjakson merkistä. Jokaisen käynnissä olevan grahan nykyinen alajakso näytetään.',
+  'Each major sign-period is divided into twelve equal antardashas, beginning from the major-period sign. The source highlights long periods, especially Jupiter and Rahu; this tool shows the same subdivision for all eight grahas.': 'Kukin pääjakson merkkijakso jaetaan 12 yhtä pitkään antardaśaan, jotka alkavat pääjakson merkistä. Lähde korostaa pitkiä jaksoja, erityisesti Jupiteria ja Rahua; tämä työkalu näyttää saman jaon vertailun vuoksi kaikille kahdeksalle grahalle.',
   'Mahadasha sign': 'Mahādaśā-merkki',
   'Antardasha sign': 'Antardaśā-merkki',
   'Sub-period': 'Alajakso',
