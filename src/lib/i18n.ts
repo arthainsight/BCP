@@ -14,6 +14,15 @@ export const LANGUAGES: { value: Language; label: string }[] = [
 ];
 
 export const FI: Record<string, string> = {
+  "Progression date": "Progression päivämäärä",
+  "Age at selected date": "Ikä valittuna päivänä",
+  "The progression is calculated for the selected date, not by manually changing the age.": "Progressio lasketaan valitulle päivämäärälle, ei ikää käsin muuttamalla.",
+  "Pratyantardashas": "Pratyantardaśāt",
+  "Current third-level sub-period inside each antardasha": "Kunkin antardaśān kolmannen tason alajakso",
+  "Pratyantardasha sign": "Pratyantardaśān merkki",
+  "Each antardasha is divided into twelve equal pratyantardashas, proceeding from the antardasha sign. This is a derived subdivision of the implemented equal-part structure, not a separately stated rule in the source.": "Jokainen antardaśā jaetaan kahteentoista yhtä suureen pratyantardaśāan, jotka alkavat antardaśān merkistä. Tämä on toteutetusta tasajaosta johdettu alajako, ei lähteessä erikseen annettu sääntö.",
+  "No pratyantardashas can be calculated for this chart.": "Tälle kartalle ei voida laskea pratyantardaśā-jaksoja.",
+  "Pratyantardasha duration is one thousand seven hundred and twenty-eighth of the graha cycle. Dates are calculated from birth using the full sign-periods, irrespective of the natal degree.": "Pratyantardaśān kesto on 1/1728 grahan kierrosta. Päivät lasketaan syntymästä merkkijaksojen perusteella syntymäasteesta riippumatta.",
   // Navigation
   'CHART': 'KARTTA',
   'TIMING': 'AJANKOHTA',
