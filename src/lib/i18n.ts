@@ -187,6 +187,8 @@ export const FI: Record<string, string> = {
   'Bhṛgu Pada Progression': 'Bhṛgu Pada -progressio',
   'A sign-only age progression of the grahas, read together with the twelve Arudha Padas. It is separate from Paraya and Sudarśana.': 'Grahojen iän mukaan etenevä, merkkipohjainen progressio, jota luetaan yhdessä kahdentoista Arudha Padan kanssa. Se on erillinen Parayasta ja Sudarśana Cakrasta.',
   'Source / rule set': 'Lähde / sääntöversio',
+  'Nāḍī Praveśikā (2019) · 8 grahas': 'Nāḍī Praveśikā (2019) · 8 grahaa',
+  'K. P. Vaani / A. V. Sundaram · 7 grahas': 'K. P. Vaani / A. V. Sundaram · 7 grahaa',
   'Bhrigu Pada version': 'Bhrigu Pada -versio',
   'Includes Rahu, uses a 29-year Saturn cycle, and calculates Arudhas without the standard exceptions.': 'Sisältää Rahun, käyttää Saturnukselle 29 vuoden kiertoa ja laskee Arudhat ilman tavanomaisia poikkeuksia.',
   'Uses seven grahas, a 30-year Saturn cycle, and the standard same-sign / seventh-sign Arudha correction.': 'Käyttää seitsemää grahaa, Saturnukselle 30 vuoden kiertoa sekä tavanomaista saman merkin / seitsemännen merkin Arudha-korjausta.',
