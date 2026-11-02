@@ -127,7 +127,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
           <span className="block text-[10px] text-zinc-500">
             {version === 'nadi-praveshika-8'
               ? t('Includes Rahu, uses a 29-year Saturn cycle, and calculates Arudhas without the standard exceptions.')
-              : t('Uses seven grahas, a 30-year Saturn cycle, and the standard same-sign / seventh-sign Arudha correction.')}
+              : t('Uses seven grahas, a 30-year Saturn cycle, and shifts any Arudha that falls in a kendra to the 10th from itself.')}
           </span>
         </label>
 
