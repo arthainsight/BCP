@@ -1,5 +1,4 @@
 import type { ChartData } from '@/types';
-import { arudhaSign } from '@/lib/specialSphutas';
 import { SIGN_LORDS, SIGN_NAMES } from '@/lib/signs';
 
 /**
