@@ -122,7 +122,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
             className="w-full rounded-md border border-zinc-200 bg-white px-2 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900"
             aria-label={t('Bhrigu Pada version')}
           >
-            {VERSIONS.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
+            {VERSIONS.map(item => <option key={item.value} value={item.value}>{t(item.label)}</option>)}
           </select>
           <span className="block text-[10px] text-zinc-500">
             {version === 'nadi-praveshika-8'
@@ -189,7 +189,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-2">
           <h3 className="text-xs font-semibold">{t('Progressed grahas')}</h3>
-          <span className="text-[9px] font-mono text-zinc-400">{selectedVersion.label}</span>
+          <span className="text-[9px] font-mono text-zinc-400">{t(selectedVersion.label)}</span>
         </div>
         <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
           <table className="w-full min-w-[620px] border-collapse">
