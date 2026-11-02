@@ -254,7 +254,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
             <span className="text-[9px] text-zinc-400">{t('Current sub-period inside each progressed sign-period')}</span>
           </div>
           <p className="text-[10px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-            {t('Each major sign-period is divided into twelve equal antardashas, beginning from the major-period sign. The current sub-period is shown for every running graha.')}
+            {t('Each major sign-period is divided into twelve equal antardashas, beginning from the major-period sign. The source highlights long periods, especially Jupiter and Rahu; this tool shows the same subdivision for all eight grahas.')}
           </p>
           <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
             <table className="w-full min-w-[730px] border-collapse">
