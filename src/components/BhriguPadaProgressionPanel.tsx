@@ -78,7 +78,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
     () => calculateBhriguPadaActivations(padas, progressions),
     [padas, progressions],
   );
-  const byLord = useMemo(() => new Map(progressions.map(row => [row.body, row])), [progressions]);
+  const byLord = useMemo(() => new Map<string, (typeof progressions)[number]>(progressions.map(row => [row.body, row] as const)), [progressions]);
   const padasByLord = useMemo(() => {
     const result = new Map<string, string[]>();
     for (const pada of padas) {
