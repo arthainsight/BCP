@@ -185,7 +185,7 @@ export function calculateBhriguPadaActivations(
   padas: readonly BhriguPada[],
   progressions: readonly BhriguGrahaProgression[],
 ): BhriguPadaActivation[] {
-  const byLord = new Map(progressions.map(progression => [progression.body, progression]));
+  const byLord = new Map<string, BhriguGrahaProgression>(progressions.map(progression => [progression.body, progression] as const));
   return padas.flatMap(pada => {
     const progression = byLord.get(pada.lord);
     if (!progression) return [];
