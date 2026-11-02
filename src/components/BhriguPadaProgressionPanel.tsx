@@ -109,7 +109,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
   return (
     <section className="min-w-0 space-y-4" aria-label="Bhrigu Pada Progression" data-bhrigu-pada-progression>
       <div className="space-y-1">
-        <h2 className="text-sm font-semibold">Bhṛgu Pada Progression</h2>
+        <h2 className="text-sm font-semibold">{t('Bhṛgu Pada Progression')}</h2>
         <p className="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
           {t('A sign-only age progression of the grahas, read together with the twelve Arudha Padas. It is separate from Paraya and Sudarśana.')}
         </p>
