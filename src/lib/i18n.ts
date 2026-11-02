@@ -191,7 +191,7 @@ export const FI: Record<string, string> = {
   'K. P. Vaani / A. V. Sundaram · 7 grahas': 'K. P. Vaani / A. V. Sundaram · 7 grahaa',
   'Bhrigu Pada version': 'Bhrigu Pada -versio',
   'Includes Rahu, uses a 29-year Saturn cycle, and calculates Arudhas without the standard exceptions.': 'Sisältää Rahun, käyttää Saturnukselle 29 vuoden kiertoa ja laskee Arudhat ilman tavanomaisia poikkeuksia.',
-  'Uses seven grahas, a 30-year Saturn cycle, and the standard same-sign / seventh-sign Arudha correction.': 'Käyttää seitsemää grahaa, Saturnukselle 30 vuoden kiertoa sekä tavanomaista saman merkin / seitsemännen merkin Arudha-korjausta.',
+  'Uses seven grahas, a 30-year Saturn cycle, and shifts any Arudha that falls in a kendra to the 10th from itself.': 'Käyttää seitsemää grahaa ja Saturnukselle 30 vuoden kiertoa; kaikki kendraan päätyvät Arudhat siirretään 10. merkkiin niistä.',
   'Age': 'Ikä',
   'Age in years': 'Ikä vuosina',
   'Progression age': 'Progression ikä',
