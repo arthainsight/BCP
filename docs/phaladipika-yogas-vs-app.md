@@ -1,6 +1,6 @@
 # The Phaladīpikā's chapters 6 and 7 (the yogas) against the yogas of the app
 
-Chapter 6 of the Phaladīpikā of Mantreśvara (rāja-yoga-bheda, 70 verses) and chapter 7 (mahārāja-yoga-bheda, 30 verses) are the book's list of yogas. This is a comparison with the 99 yogas that ANALYSIS → Grahas computes (`src/lib/yogas.ts`, `yogasClassical.ts`, `yogasBphs.ts`).
+Chapter 6 of the Phaladīpikā of Mantreśvara (rāja-yoga-bheda, 70 verses) and chapter 7 (mahārāja-yoga-bheda, 30 verses) are the book's list of yogas. This is a comparison with the 99 yogas that ANALYSIS → Grahas computed at the time of writing (v3.98; 107 since v3.100, see 2.1, 2.3 and 2.4) computes (`src/lib/yogas.ts`, `yogasClassical.ts`, `yogasBphs.ts`).
 
 **How it was done.** The Sanskrit of the verses is in the text layer of a scan (`phaldipika_202310`) with the Hindi commentary of the edition beside it; the definitions below are read from the verses and that commentary (and checked against the Sanskrit lines where the commentary is short). The app's side is read from the rule text and the code of each yoga.
 It is a comparison of *definitions*, not of results: no chart was run against another program. Chapter 7 was read at the level of the commentary's summary of each verse and not verse by verse in the Sanskrit.
@@ -22,6 +22,8 @@ It is a comparison of *definitions*, not of results: no chart was run against an
 | 7.26-30 | Nīcabhaṅga rāja-yoga (several readings of "the lord of its exaltation") | `neecha-bhanga` |
 
 ## 2. In the app, but the app takes it narrower or differently
+
+*Since v3.100 items 2.1 (the Moon's five yogas and their count), 2.4 (Adhi from the lagna) and the lagna half of 2.3 (`vasumat-lagna`) are built; the text below describes the state before.*
 
 1. **The five mahāpuruṣa yogas from the Moon (6.4).** The verse says "of the lagna and of the Moon" (`lagnendvor api yogapañcakam`): the five yogas are read from the Moon too, and the *number* of them tells the rank: one gives fortune, two a king's wealth, three a king, four an emperor, five the lord of the earth. The app reads them from the lagna only and does not count them.
 2. **Śubha and aśubha Vesi, Vāsi and Ubhayacarī (6.8-6.11).** The verse splits each by the grahas in it: benefics (Mercury, Jupiter, Venus) give the good results, malefics the bad; mixed give mixed (6.13). The app's three yogas say only which grahas flank the Sun, without the split.
