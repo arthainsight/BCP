@@ -323,3 +323,25 @@ for (const verse of verses17) {
 // No rule reads chapter 17: all its verses are listed as not judged.
 const left17 = notEvaluatedVerses('phalaHouses').filter(verse => verse.chapter === 17);
 assert.equal(left17.length, 28);
+
+// ── chapter 6: the yogas of the twelve houses (verses 44 to 70) ──
+const verses6 = PHALA_VERSES[6];
+assert.equal(verses6.length, 27);
+assert.deepEqual(verses6.map(verse => verse.verse), Array.from({ length: 27 }, (_, index) => index + 44));
+for (const verse of verses6) {
+  assert.ok(verse.sanskrit.every(line => /[ऀ-ॿ…]/.test(line)), `verse 6.${verse.verse}`);
+  assert.ok(!verse.sanskrit.some(line => /[A-Za-z0-9_$]/.test(line)), `verse 6.${verse.verse} has stray characters`);
+}
+assert.equal(evaluateTopic('phalaHouses', chart(1)).filter(result => result.rule.chapter === 6).length, 24);
+// 6.44-45, Cāmara: a benefic in the lagna and the lagna lord Mars bright, exalted in Capricorn.
+assert.equal(rule(chart(1, { Jupiter: [1], Mars: [10] }), 'p6-camara').outcome.met, true);
+assert.equal(rule(chart(1, { Jupiter: [1] }), 'p6-camara').outcome.met, false);
+assert.equal(rule(chart(1, { Mars: [10] }), 'p6-camara').outcome.met, false);
+// 6.57-58, Ava: the lagna lord Mars in the 6th (Virgo), or a malefic on the lagna.
+assert.equal(rule(chart(1), 'p6-ava').outcome.met, false);
+assert.equal(rule(chart(1, { Mars: [6] }), 'p6-ava').outcome.met, true);
+assert.equal(rule(chart(1, { Saturn: [1] }), 'p6-ava').outcome.met, true);
+// 6.57, 6.63, Harṣa (the 6th): the 6th lord Mercury in its own sign Virgo, the 6th house.
+assert.equal(rule(chart(1, { Mercury: [6] }), 'p6-harsha').outcome.met, true);
+const left6 = notEvaluatedVerses('phalaHouses').filter(verse => verse.chapter === 6).map(verse => verse.verse);
+assert.deepEqual(left6, [70]);
