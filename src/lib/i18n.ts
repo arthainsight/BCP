@@ -222,6 +222,19 @@ export const FI: Record<string, string> = {
   'Sign steps are calculated as floor(age × 12 ÷ graha cycle), counted forward from each graha natal sign, wrapping every twelve signs.': 'Merkkiaskeleet lasketaan kaavalla floor(ikä × 12 ÷ grahan kiertoaika), eteenpäin kunkin grahan syntymämerkistä ja kiertäen 12 merkin jaksoissa.',
   'This is sign-only. The source tables do not supply a continuously progressed longitude or degree, so natal degrees are not advanced.': 'Tämä laskenta toimii vain merkeillä. Lähdetaulukot eivät anna jatkuvasti etenevää pituutta tai astelukua, joten syntymäasteita ei edistetä.',
   'The 2019 and 2008/2014 variants are kept separate because their cycle lengths, graha set and Arudha exception rules differ.': 'Vuoden 2019 ja 2008/2014 versiot pidetään erillään, koska niiden kiertoajat, grahojen määrä ja Arudha-poikkeussäännöt eroavat.',
+  // Bhrigu Pada antardashas
+  'Antardashas': 'Antardaśat',
+  'Current sub-period inside each progressed sign-period': 'Nykyinen alajakso kunkin etenevän merkkijakson sisällä',
+  'Each major sign-period is divided into twelve equal antardashas, beginning from the major-period sign. The current sub-period is shown for every running graha.': 'Kukin pääjakson merkkijakso jaetaan 12 yhtä pitkään antardaśaan, jotka alkavat pääjakson merkistä. Jokaisen käynnissä olevan grahan nykyinen alajakso näytetään.',
+  'Mahadasha sign': 'Mahādaśā-merkki',
+  'Antardasha sign': 'Antardaśā-merkki',
+  'Sub-period': 'Alajakso',
+  'Duration': 'Kesto',
+  'Period dates': 'Jakson päivämäärät',
+  'No antardashas can be calculated for this chart.': 'Tähän karttaan ei voida laskea antardaśoja.',
+  'Antardasha duration is one hundred and forty-fourth of the graha cycle. Dates are calculated from birth using the full sign-periods, irrespective of the natal degree.': 'Antardaśā kestää 1/144 grahan koko kierrosta. Päivämäärät lasketaan syntymästä käyttäen täysiä merkkijaksoja syntymägrahan asteesta riippumatta.',
+  'Antardashas are described in the 2019 Nadi Praveshika version, but not specified in the older seven-graha source. Select the 2019 version to see them.': 'Antardaśat kuvataan vuoden 2019 Nāḍī Praveśikā -versiossa, mutta niitä ei määritellä vanhemmassa seitsemän grahan lähteessä. Valitse vuoden 2019 versio nähdäksesi ne.',
+
   // Paraya beta
   'paraya grahas beta': 'paraya-grahat (beta)',
   'beta': 'beta',
