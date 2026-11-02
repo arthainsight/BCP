@@ -39,7 +39,7 @@ const chart = {
 // The listed position is counted from each graha's own natal sign.
 {
   const age = 57 + 10 / 12;
-  const expected = [
+  const expected: [string, number][] = [
     ['Sun', 1],
     ['Moon', 4],
     ['Mars', 2],
