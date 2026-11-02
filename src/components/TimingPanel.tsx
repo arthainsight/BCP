@@ -7,6 +7,7 @@ import TransitHitsPanel from './TransitHitsPanel';
 import GrahaHitFinder from './GrahaHitFinder';
 import SignChangesPanel from './SignChangesPanel';
 import ParayaProgressionPanel from './ParayaProgressionPanel';
+import BhriguPadaProgressionPanel from './BhriguPadaProgressionPanel';
 import ParayaAspectsPanel from './ParayaAspectsPanel';
 import TimingSummary from './TimingSummary';
 import TithiPravesaPanel from './TithiPravesaPanel';
@@ -22,7 +23,7 @@ import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
-type View = 'daily' | 'dasha' | 'summary' | 'transits' | 'hitFinder' | 'paraya' | 'parayaAspects' | 'signs' | 'muhurta' | 'finder' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
+type View = 'daily' | 'dasha' | 'summary' | 'transits' | 'hitFinder' | 'paraya' | 'bhriguPada' | 'parayaAspects' | 'signs' | 'muhurta' | 'finder' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
 
 const VIEW_GROUPS: { label: string; views: { key: View; label: string }[] }[] = [
   { label: 'Daily reading', views: [{ key: 'daily', label: 'Daily Panchang' }] },
@@ -31,7 +32,7 @@ const VIEW_GROUPS: { label: string; views: { key: View; label: string }[] }[] = 
   ] },
   { label: 'Transits & progressions', views: [
     { key: 'transits', label: 'Transit Hits' }, { key: 'hitFinder', label: 'Graha Hit Finder' },
-    { key: 'paraya', label: 'Paraya' }, { key: 'parayaAspects', label: 'Paraya aspects' }, { key: 'signs', label: 'Sign changes' },
+    { key: 'paraya', label: 'Paraya' }, { key: 'bhriguPada', label: 'Bhrigu Pada' }, { key: 'parayaAspects', label: 'Paraya aspects' }, { key: 'signs', label: 'Sign changes' },
   ] },
   { label: 'Annual & electional', views: [
     { key: 'muhurta', label: 'Muhurta' }, { key: 'finder', label: 'Muhurta Finder' }, { key: 'tithi', label: 'Tithi Praveśa' },
@@ -107,7 +108,7 @@ export default function TimingPanel({
                 <div className="inline-flex min-w-max gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800/50">
                   {group.views.map((item) => (
                     <button key={item.key} type="button" onClick={() => setView(item.key)} className={tabClass(item.key)}>
-                      {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' || item.key === 'muhurta' || item.key === 'finder' || item.key === 'year' ? t(item.label) : item.label}
+                      {item.key === 'dasha' || item.key === 'signs' || item.key === 'summary' || item.key === 'muhurta' || item.key === 'finder' || item.key === 'year' || item.key === 'bhriguPada' ? t(item.label) : item.label}
                     </button>
                   ))}
                 </div>
@@ -181,6 +182,15 @@ export default function TimingPanel({
           birthDatetime={birthDatetime}
           targetDate={targetDate ?? ''}
           calculationSettings={calculationSettings}
+          onSetTarget={onSetTransitDatetime}
+        />
+      )}
+
+      {view === 'bhriguPada' && (
+        <BhriguPadaProgressionPanel
+          chart={chart}
+          birthDatetime={birthDatetime}
+          targetDate={targetDate ?? ''}
           onSetTarget={onSetTransitDatetime}
         />
       )}

@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v3.101',
+    date: '2026-11-02',
+    title: 'The yogas of the twelve houses (Phaladīpikā 6)',
+    changes: [
+      'ANALYSIS → Topic yogas → Phaladīpikā: the houses: the 24 yogas of the twelve houses of chapter 6 of the Phaladīpikā, with their verses (6.44-69). Twelve good ones, for each house from the lagna: Cāmara, Dhenu, Śaurya, Jaladhi, Chatra, Astra, Kāma, Āsura, Bhāgya, Khyāti, Pārijāta and Musala (6.44), when the house is joined or seen by a benefic and its lord is bright and in its own sign, exaltation or a good house.',
+      'And twelve for the houses and their lords in evil houses or afflicted: Ava, Niḥsva, Mṛti, Kuhū, Pāmara, Harṣa, Duṣkṛti, Sarala, Nirbhāgya, Durdoga, Daridra and Vimala (6.57); Harṣa, Sarala and Vimala are the good ones among them, as the viparīta yogas are. The names are those of the Phaladīpikā: the Cāmara, Musala, Pārijāta and Chatra of the yoga table are other yogas.',
+      'Updated the application version to v3.101.',
+    ],
+  },
+  {
     version: 'v3.100',
     date: '2026-11-02',
     title: 'The yogas from the Moon (Phaladīpikā 6)',

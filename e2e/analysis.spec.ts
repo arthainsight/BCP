@@ -234,6 +234,10 @@ test('ANALYSIS Topic yogas judges the rules of BPHS 79, 18, 19, 44, 39 to 42, 17
 
   // The Phaladīpikā's house chapters (10, the 7th house): the rules with the heading of the classic.
   await panel.getByRole('button', { name: 'Phaladīpikā: the houses', exact: true }).click();
+  await panel.locator('[data-topic-filter-key="all"]').click();
+  await expect(panel.locator('[data-topic-chapter="6"]')).toContainText('Phaladīpikā 6');
+  await expect(panel.locator('[data-topic-rule="p6-camara"]')).toBeVisible();
+  await expect(panel.locator('[data-topic-rule="p6-vimala"]')).toBeVisible();
   await expect(panel.locator('[data-topic-chapter="10"]')).toContainText('Phaladīpikā 10');
   await expect(panel.locator('[data-topic-rule="p10-7th-afflicted"]')).toBeVisible();
   expect(await panel.locator('[data-topic-rule]').count()).toBeGreaterThan(15);
