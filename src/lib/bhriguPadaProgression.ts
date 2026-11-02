@@ -61,6 +61,21 @@ export interface BhriguGrahaProgression {
   houseFromLagna: number;
 }
 
+export interface BhriguPadaAntardasha {
+  body: string;
+  /** The current major period's sign. */
+  mahaDashaSign: number;
+  /** The ordinal of the major sign-period since birth, starting at 1. */
+  mahaDashaNumber: number;
+  /** The current antardasha within the major sign-period, 1–12. */
+  antardashaNumber: number;
+  /** The antardasha sign, starting from the current major-period sign. */
+  antardashaSign: number;
+  antardashaDurationYears: number;
+  startAgeYears: number;
+  endAgeYears: number;
+}
+
 export interface BhriguPada {
   /** The natal house whose lord determines this Arudha. */
   house: number;
@@ -132,6 +147,38 @@ export function calculateBhriguProgressions(
       ...progression,
       houseFromLagna: signDistance(chart.ascendant.sign, progression.sign) + 1,
     }];
+  });
+}
+
+/**
+ * Calculates the current Bhrigu Pada antardasha for each running graha progression.
+ * Each major sign-period (cycleYears / 12) is divided into 12 equal sub-periods.
+ * The antardasha signs proceed from the sign currently occupied by the major period.
+ * This subdivision is explicitly described in Nadi Praveshika (2019), especially
+ * for long sign-periods such as Jupiter and Rahu.
+ */
+export function calculateBhriguPadaAntardashas(
+  progressions: readonly BhriguGrahaProgression[],
+  ageYears: number,
+): BhriguPadaAntardasha[] {
+  if (!Number.isFinite(ageYears) || ageYears < 0) return [];
+
+  return progressions.map(progression => {
+    const totalAntardashaSteps = Math.floor((ageYears * 144) / progression.cycleYears + 1e-10);
+    const mahaDashaNumber = Math.floor(totalAntardashaSteps / 12) + 1;
+    const antardashaNumber = (totalAntardashaSteps % 12) + 1;
+    const antardashaDurationYears = progression.cycleYears / 144;
+
+    return {
+      body: progression.body,
+      mahaDashaSign: progression.sign,
+      mahaDashaNumber,
+      antardashaNumber,
+      antardashaSign: wrapSign(progression.sign + antardashaNumber - 1),
+      antardashaDurationYears,
+      startAgeYears: totalAntardashaSteps * antardashaDurationYears,
+      endAgeYears: (totalAntardashaSteps + 1) * antardashaDurationYears,
+    };
   });
 }
 
