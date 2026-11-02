@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.102',
+    date: '2026-11-02',
+    title: 'Bhṛgu Pada pratyantardaśā and date-based progression',
+    changes: [
+      'TIMING → Bhṛgu Pada: the age field and slider are replaced by a date picker tied to the shared target date. The graha progressions now always follow the selected calendar date.',
+      'Nāḍī Praveśikā (2019): each antardaśā is divided into twelve equal pratyantardaśās. The view shows the active MD, AD and PD signs, the PD number, duration and start/end dates. The PD subdivision is explicitly labelled as a derived extension of the equal-part structure, not as a separately stated source rule. The older seven-graha variant remains without AD/PD.',
+      'Tests cover PD progression, sign order, boundaries and resets at AD and MD changes.',
+      'Updated the application version to v3.102.',
+    ],
+  },
+
+  {
     version: 'v3.101',
     date: '2026-11-02',
     title: 'The yogas of the twelve houses (Phaladīpikā 6)',

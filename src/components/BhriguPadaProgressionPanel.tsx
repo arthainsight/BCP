@@ -11,6 +11,7 @@ import { useT } from '@/lib/i18n';
 import {
   calculateBhriguPadaActivations,
   calculateBhriguPadaAntardashas,
+  calculateBhriguPadaPratyantardashas,
   calculateBhriguPadas,
   calculateBhriguProgressions,
   type BhriguPadaVersion,
@@ -74,12 +75,8 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
     ? ((target ?? new Date()).getTime() - birth.getTime()) / JULIAN_YEAR_MS
     : null;
 
-  // Changing the shared target date resets a manually entered age to the date-derived age.
-  const ageKey = birthDatetime + '|' + targetDate;
-  const [ageEdit, setAgeEdit] = useState<{ key: string; value: number | null }>({ key: '', value: null });
-  const ageYears = ageEdit.key === ageKey && ageEdit.value !== null
-    ? ageEdit.value
-    : Math.max(0, ageFromTarget ?? 0);
+  // The progression is always calculated for the shared, explicitly selected target date.
+  const ageYears = Math.max(0, ageFromTarget ?? 0);
   const beforeBirth = ageFromTarget !== null && ageFromTarget < 0;
 
   const progressions = useMemo(
@@ -88,6 +85,10 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
   );
   const antardashas = useMemo(
     () => version === 'nadi-praveshika-8' ? calculateBhriguPadaAntardashas(progressions, ageYears) : [],
+    [progressions, ageYears, version],
+  );
+  const pratyantardashas = useMemo(
+    () => version === 'nadi-praveshika-8' ? calculateBhriguPadaPratyantardashas(progressions, ageYears) : [],
     [progressions, ageYears, version],
   );
   const padas = useMemo(() => calculateBhriguPadas(chart, version), [chart, version]);
@@ -103,19 +104,6 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
     }
     return result;
   }, [padas]);
-
-  const setAge = (value: string) => {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) {
-      setAgeEdit({ key: ageKey, value: Math.min(120, Math.max(0, parsed)) });
-    }
-  };
-
-  const applyAgeToChart = () => {
-    if (!birth || !onSetTarget) return;
-    const eventDate = new Date(birth.getTime() + ageYears * JULIAN_YEAR_MS);
-    onSetTarget(localMomentString(eventDate));
-  };
 
   const selectedVersion = VERSIONS.find(item => item.value === version)!;
   const targetDescription = target
@@ -150,48 +138,25 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
         </label>
 
         <div className="space-y-2">
-          <div className="flex items-end justify-between gap-2">
-            <label className="block space-y-1">
-              <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">{t('Age')}</span>
-              <span className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  max="120"
-                  step="0.01"
-                  value={ageYears.toFixed(4)}
-                  onChange={event => setAge(event.target.value)}
-                  className="w-24 rounded-md border border-zinc-200 bg-white px-2 py-1.5 text-xs tabular-nums dark:border-zinc-700 dark:bg-zinc-900"
-                  aria-label={t('Age in years')}
-                />
-                <span className="text-[10px] text-zinc-500">{ageLabel(ageYears)}</span>
-              </span>
-            </label>
-            <span className="text-right text-[9px] text-zinc-400">{t('Date-derived age')}: {targetDescription}</span>
+          <label className="block space-y-1">
+            <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">{t('Progression date')}</span>
+            <input
+              type="date"
+              value={targetDate}
+              onChange={event => {
+                const selected = parseTargetDateString(event.target.value);
+                if (selected) onSetTarget?.(localMomentString(selected));
+              }}
+              disabled={!onSetTarget}
+              className="w-full rounded-md border border-zinc-200 bg-white px-2 py-2 text-xs tabular-nums disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900"
+              aria-label={t('Progression date')}
+            />
+          </label>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[10px]">
+            <span className="text-zinc-500">{t('Age at selected date')}: <strong className="font-mono text-zinc-700 dark:text-zinc-200">{ageLabel(ageYears)}</strong></span>
+            <span className="text-zinc-400">{targetDescription}</span>
           </div>
-          <input
-            type="range"
-            min="0"
-            max="120"
-            step="0.01"
-            value={ageYears}
-            onChange={event => setAge(event.target.value)}
-            className="w-full accent-emerald-600"
-            aria-label={t('Progression age')}
-          />
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span className="text-[9px] text-zinc-400">{t('One sign-step is one twelfth of each graha cycle.')}</span>
-            {onSetTarget && (
-              <button
-                type="button"
-                onClick={applyAgeToChart}
-                disabled={!birth}
-                className="rounded-md border border-emerald-600 px-2.5 py-1.5 text-[10px] font-mono text-emerald-700 hover:bg-emerald-50 disabled:opacity-40 dark:text-emerald-300 dark:hover:bg-emerald-950"
-              >
-                {t('Set chart date to this age')}
-              </button>
-            )}
-          </div>
+          <p className="text-[9px] text-zinc-400">{t('The progression is calculated for the selected date, not by manually changing the age.')}</p>
         </div>
       </div>
 
@@ -295,6 +260,55 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
         <p className="rounded-md border border-zinc-200 px-3 py-2 text-[10px] leading-relaxed text-zinc-500 dark:border-zinc-800">
           {t('Antardashas are described in the 2019 Nadi Praveshika version, but not specified in the older seven-graha source. Select the 2019 version to see them.')}
         </p>
+      )}
+
+
+      {version === 'nadi-praveshika-8' && (
+        <div className="space-y-2" data-bhrigu-pratyantardashas>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-xs font-semibold">{t('Pratyantardashas')}</h3>
+            <span className="text-[9px] text-zinc-400">{t('Current third-level sub-period inside each antardasha')}</span>
+          </div>
+          <p className="text-[10px] leading-relaxed text-zinc-500 dark:text-zinc-400">
+            {t('Each antardasha is divided into twelve equal pratyantardashas, proceeding from the antardasha sign. This is a derived subdivision of the implemented equal-part structure, not a separately stated rule in the source.')}
+          </p>
+          <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <table className="w-full min-w-[900px] border-collapse">
+              <thead className="bg-zinc-50 dark:bg-zinc-900/60">
+                <tr>
+                  <th className={HEAD}>{t('Graha')}</th>
+                  <th className={HEAD}>{t('Mahadasha sign')}</th>
+                  <th className={HEAD}>{t('Antardasha sign')}</th>
+                  <th className={HEAD}>{t('Pratyantardasha sign')}</th>
+                  <th className={HEAD}>{t('Sub-period')}</th>
+                  <th className={HEAD}>{t('Duration')}</th>
+                  <th className={HEAD}>{t('Period dates')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pratyantardashas.map(item => (
+                  <tr key={item.body} className="border-t border-zinc-100 dark:border-zinc-800" data-bhrigu-pratyantardasha={item.body}>
+                    <td className={CELL + ' font-semibold'}>{name(item.body)}</td>
+                    <td className={CELL}>{SIGN_NAMES[item.mahaDashaSign - 1]}</td>
+                    <td className={CELL}>{SIGN_NAMES[item.antardashaSign - 1]}</td>
+                    <td className={CELL + ' font-semibold text-violet-700 dark:text-violet-300'}>{SIGN_NAMES[item.pratyantardashaSign - 1]}</td>
+                    <td className={CELL}>{item.pratyantardashaNumber}/12</td>
+                    <td className={CELL}>{durationLabel(item.pratyantardashaDurationYears)}</td>
+                    <td className={CELL}>
+                      {periodDateLabel(birth, item.startAgeYears)} – {periodDateLabel(birth, item.endAgeYears)}
+                    </td>
+                  </tr>
+                ))}
+                {pratyantardashas.length === 0 && (
+                  <tr><td className={CELL} colSpan={7}>{t('No pratyantardashas can be calculated for this chart.')}</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-[9px] leading-relaxed text-zinc-400">
+            {t('Pratyantardasha duration is one thousand seven hundred and twenty-eighth of the graha cycle. Dates are calculated from birth using the full sign-periods, irrespective of the natal degree.')}
+          </p>
+        </div>
       )}
 
       <div className="space-y-2">

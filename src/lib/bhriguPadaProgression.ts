@@ -76,6 +76,19 @@ export interface BhriguPadaAntardasha {
   endAgeYears: number;
 }
 
+export interface BhriguPadaPratyantardasha {
+  body: string;
+  mahaDashaSign: number;
+  mahaDashaNumber: number;
+  antardashaSign: number;
+  antardashaNumber: number;
+  pratyantardashaSign: number;
+  pratyantardashaNumber: number;
+  pratyantardashaDurationYears: number;
+  startAgeYears: number;
+  endAgeYears: number;
+}
+
 export interface BhriguPada {
   /** The natal house whose lord determines this Arudha. */
   house: number;
@@ -178,6 +191,42 @@ export function calculateBhriguPadaAntardashas(
       antardashaDurationYears,
       startAgeYears: totalAntardashaSteps * antardashaDurationYears,
       endAgeYears: (totalAntardashaSteps + 1) * antardashaDurationYears,
+    };
+  });
+}
+
+/**
+ * Calculates the current pratyantardasha for each running graha progression.
+ * This extends the existing 12-part major-period → antardasha structure by
+ * dividing every antardasha into twelve equal pratyantardashas (1,728 parts
+ * across a complete graha cycle). This third level is a derived subdivision;
+ * it is not claimed as a separately source-defined rule.
+ */
+export function calculateBhriguPadaPratyantardashas(
+  progressions: readonly BhriguGrahaProgression[],
+  ageYears: number,
+): BhriguPadaPratyantardasha[] {
+  if (!Number.isFinite(ageYears) || ageYears < 0) return [];
+
+  return progressions.map(progression => {
+    const totalPratyantardashaSteps = Math.floor((ageYears * 1728) / progression.cycleYears + 1e-10);
+    const mahaDashaNumber = Math.floor(totalPratyantardashaSteps / 144) + 1;
+    const antardashaNumber = Math.floor((totalPratyantardashaSteps % 144) / 12) + 1;
+    const pratyantardashaNumber = (totalPratyantardashaSteps % 12) + 1;
+    const antardashaSign = wrapSign(progression.sign + antardashaNumber - 1);
+    const pratyantardashaDurationYears = progression.cycleYears / 1728;
+
+    return {
+      body: progression.body,
+      mahaDashaSign: progression.sign,
+      mahaDashaNumber,
+      antardashaSign,
+      antardashaNumber,
+      pratyantardashaSign: wrapSign(antardashaSign + pratyantardashaNumber - 1),
+      pratyantardashaNumber,
+      pratyantardashaDurationYears,
+      startAgeYears: totalPratyantardashaSteps * pratyantardashaDurationYears,
+      endAgeYears: (totalPratyantardashaSteps + 1) * pratyantardashaDurationYears,
     };
   });
 }
