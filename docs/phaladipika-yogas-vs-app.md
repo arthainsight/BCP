@@ -23,7 +23,7 @@ It is a comparison of *definitions*, not of results: no chart was run against an
 
 ## 2. In the app, but the app takes it narrower or differently
 
-*Since v3.100 items 2.1 (the Moon's five yogas and their count), 2.4 (Adhi from the lagna) and the lagna half of 2.3 (`vasumat-lagna`) are built; the text below describes the state before.*
+*Since v3.101 the twelve house yogas of 6.44 and 6.57 are built as a topic ("Phaladīpikā: the houses", chapter 6, 24 rules); the Sanskrit of 6.57 has "the lords in evil houses *or* the houses afflicted", so the app's Harṣa, Sarala and Vimala (2.7) agree with one arm of it and are not looser than the verse. Since v3.100 items 2.1 (the Moon's five yogas and their count), 2.4 (Adhi from the lagna) and the lagna half of 2.3 (`vasumat-lagna`) are built; the text below describes the state before.*
 
 1. **The five mahāpuruṣa yogas from the Moon (6.4).** The verse says "of the lagna and of the Moon" (`lagnendvor api yogapañcakam`): the five yogas are read from the Moon too, and the *number* of them tells the rank: one gives fortune, two a king's wealth, three a king, four an emperor, five the lord of the earth. The app reads them from the lagna only and does not count them.
 2. **Śubha and aśubha Vesi, Vāsi and Ubhayacarī (6.8-6.11).** The verse splits each by the grahas in it: benefics (Mercury, Jupiter, Venus) give the good results, malefics the bad; mixed give mixed (6.13). The app's three yogas say only which grahas flank the Sun, without the split.

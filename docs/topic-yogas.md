@@ -1,4 +1,4 @@
-# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93, its span of life since v3.94, its illness and death since v3.95, the good and bad of the houses since v3.96, the houses together since v3.97, its death by the transits (verses only) since v3.98)
+# Yogas by topic, from the classics (since v3.78; marriage and longevity since v3.79; wealth and poverty since v3.82; illness and ariṣṭa since v3.83; the houses since v3.84, the 9th to 12th since v3.85, the Phaladīpikā's 7th house since v3.90, the woman's chart since v3.91, loss of children since v3.92, the Phaladīpikā's children since v3.93, its span of life since v3.94, its illness and death since v3.95, the good and bad of the houses since v3.96, the houses together since v3.97, its death by the transits (verses only) since v3.98, the yogas of the twelve houses since v3.101)
 
 The view ANALYSIS → Topic yogas judges rules that the classics give for one topic, each with the verses it is read from, in Sanskrit. It is the answer to the topic searches of the Kala software
 (longevity, marriage, illness, spirituality): there, a search over "several thousand yogas from over 30 texts"; here, rule by rule from a named verse, and what cannot be judged says so.
@@ -210,6 +210,15 @@ as the sign, navāṁśa and trines of the 8th lord, the lord of the Khara decan
 * **Why not judged**: a rule of the topic yogas says whether a condition of the chart holds; these verses fix points in the zodiac for a transit. They need the upagrahas and several sums the topic does not carry, and they would be a prediction of the time of death, which the app does not make. If it is wanted, it is a feature of its own (the signs for the transits, shown with the verse) and not a rule of this topic.
 * The Sanskrit has gaps in the scan: 17.26 and 17.27 are lost, the first line of 17.8 and the end of 17.19, and a word in 17.6 and 17.25. Several letters of 17.7 and 17.18 were corrected from a poor scan. The verses say so.
 * With chapter 17 the chapters of the Phaladīpikā on the person and the houses (8 to 18) are all in the app.
+
+## Phaladīpikā 6: the yogas of the twelve houses (since v3.101), verses 44 to 70
+
+Under the same topic ("Phaladīpikā: the houses"), rules `p6-*` in `src/lib/topicPhalaYogaHouses.ts`, verses 6.44-70 in `src/lib/phalaVerses.ts`. The rest of chapter 6 (the yogas of the grahas) is compared with the yoga table in `docs/phaladipika-yogas-vs-app.md`.
+
+* **Judged** (24 rules): the twelve of 6.44, one for each house from the lagna: Cāmara, Dhenu, Śaurya, Jaladhi, Chatra, Astra, Kāma, Āsura, Bhāgya, Khyāti, Pārijāta, Musala (results 6.45-56); and the twelve of 6.57: Ava, Niḥsva, Mṛti, Kuhū, Pāmara, Harṣa, Duṣkṛti, Sarala, Nirbhāgya, Durdoga, Daridra, Vimala (results 6.58-69).
+* **Readings**: for 6.44 the house is joined or seen by a benefic and its lord is bright (not combust) and in its own sign or exaltation or in a kendra or trine (the Hindi says "or"; the English of Subrahmanya Sastri has the good house and the bright own-sign lord as two ways: the rule asks bright and one of the three). For 6.57 the Sanskrit has "the lords in evil houses *or* the houses joined or seen by malefics" (the Hindi has "and"); either holds. A malefic lord of the house counts when it touches the house, as the verse does not exclude it.
+* **Names**: the Cāmara, Musala, Pārijāta and Chatra of the yoga table are other yogas (BPHS and the Nabhasa); these are the Phaladīpikā's.
+* **Not judged**: 6.70 (the lords of the 8th, 6th and 12th strong in kendras and trines, or those of the lagna, 10th, 4th and 9th powerless in the evil houses: the Durdoga; the commentary does not settle its sense).
 
 ## Next topics (not built yet)
 
