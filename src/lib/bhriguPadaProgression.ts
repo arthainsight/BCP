@@ -148,25 +148,27 @@ function rawArudhaSign(houseSign: number, lordSign: number): number {
  * uses the standard Jaimini correction already implemented in arudhaSign.
  */
 export function calculateBhriguPadas(chart: ChartData, version: BhriguPadaVersion): BhriguPada[] {
-  return Array.from({ length: 12 }, (_, index) => {
+  const result: BhriguPada[] = [];
+  for (let index = 0; index < 12; index += 1) {
     const house = index + 1;
     const houseSign = wrapSign(chart.ascendant.sign + index);
     const lord = SIGN_LORDS[houseSign - 1];
     const natalLord = chart.planets.find(planet => planet.name === lord);
-    if (!natalLord) return null;
+    if (!natalLord) continue;
 
     const sign = version === 'nadi-praveshika-8'
       ? rawArudhaSign(houseSign, natalLord.sign)
       : arudhaSign(houseSign, natalLord.sign);
 
-    return {
+    result.push({
       house,
       name: house === 1 ? 'AL' : 'AL' + house,
       houseSign,
       sign,
       lord,
-    };
-  }).filter((pada): pada is BhriguPada => pada !== null);
+    });
+  }
+  return result;
 }
 
 /** The sign counted from fromSign to toSign, inclusive (same sign = 1). */
