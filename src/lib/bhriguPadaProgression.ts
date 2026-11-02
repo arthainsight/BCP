@@ -4,8 +4,8 @@ import { SIGN_LORDS, SIGN_NAMES } from '@/lib/signs';
 /**
  * Documented Bhrigu Pada progression variants.
  *
- * sundaram-7: the seven-graha form published by K. P. Vaani (2008) and
- * presented in A. V. Sundaram's Insights in Nadis (2014).
+ * sundaram-7: the seven-graha form in Dr. K. P. Vaani's Bhrigu Pada Dasa
+ * article, presented under the guidance of A. V. Sundaram.
  *
  * nadi-praveshika-8: the eight-graha form in Nadi Pravesika (2019), which
  * includes Rahu, uses 29 years for Saturn, and constructs Arudhas without
