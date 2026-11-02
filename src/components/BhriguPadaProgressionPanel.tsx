@@ -64,7 +64,6 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
   // Changing the shared target date resets a manually entered age to the date-derived age.
   const ageKey = birthDatetime + '|' + targetDate;
   const [ageEdit, setAgeEdit] = useState<{ key: string; value: number | null }>({ key: '', value: null });
-  if (ageEdit.key !== ageKey) setAgeEdit({ key: ageKey, value: null });
   const ageYears = ageEdit.key === ageKey && ageEdit.value !== null
     ? ageEdit.value
     : Math.max(0, ageFromTarget ?? 0);
