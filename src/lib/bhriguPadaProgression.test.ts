@@ -4,6 +4,7 @@ import {
   BHRIGU_PADA_BODIES,
   BHRIGU_PADA_CYCLES,
   calculateBhriguPadaActivations,
+  calculateBhriguPadaAntardashas,
   calculateBhriguPadas,
   calculateBhriguProgressions,
   progressBhriguGraha,
@@ -133,6 +134,51 @@ assert.equal(BHRIGU_PADA_CYCLES['sundaram-7'].Rahu, undefined);
   const activations = calculateBhriguPadaActivations(padas, progressions);
   assert.equal(activations.length, 12);
   assert.ok(activations.every(item => item.pada.lord === progressions.find(row => row.body === item.pada.lord)?.body));
+}
+
+// Antardashas split each major sign-period into twelve equal sign-based sub-periods.
+{
+  const age = 57 + 10 / 12;
+  const jupiter = progressBhriguGraha({
+    body: 'Jupiter',
+    natalSign: 1,
+    ageYears: age,
+    version: 'nadi-praveshika-8',
+  });
+  assert.ok(jupiter);
+  const current = calculateBhriguPadaAntardashas([jupiter], age)[0];
+  assert.ok(current);
+  assert.equal(current.mahaDashaNumber, 9);
+  assert.equal(current.mahaDashaSign, 9);
+  assert.equal(current.antardashaNumber, 5);
+  assert.equal(current.antardashaSign, 1);
+  assert.equal(current.antardashaDurationYears, 83 / 144);
+  assert.ok(Math.abs(current.startAgeYears - (100 * 83) / 144) < 1e-9);
+  assert.ok(Math.abs(current.endAgeYears - (101 * 83) / 144) < 1e-9);
+
+  const subPeriod = 83 / 144;
+  const beforeBoundary = progressBhriguGraha({ body: 'Jupiter', natalSign: 1, ageYears: subPeriod - 1e-8, version: 'nadi-praveshika-8' });
+  const atBoundary = progressBhriguGraha({ body: 'Jupiter', natalSign: 1, ageYears: subPeriod, version: 'nadi-praveshika-8' });
+  assert.ok(beforeBoundary && atBoundary);
+  assert.equal(calculateBhriguPadaAntardashas([beforeBoundary], subPeriod - 1e-8)[0].antardashaNumber, 1);
+  assert.equal(calculateBhriguPadaAntardashas([atBoundary], subPeriod)[0].antardashaNumber, 2);
+
+  // At a new major sign-period, antardasha numbering resets to 1 and starts
+  // from the new major-period sign.
+  const nextMahaAge = 83 / 12;
+  const nextMaha = progressBhriguGraha({ body: 'Jupiter', natalSign: 1, ageYears: nextMahaAge, version: 'nadi-praveshika-8' });
+  assert.ok(nextMaha);
+  const nextMahaAntardasha = calculateBhriguPadaAntardashas([nextMaha], nextMahaAge)[0];
+  assert.equal(nextMahaAntardasha.mahaDashaNumber, 2);
+  assert.equal(nextMahaAntardasha.antardashaNumber, 1);
+  assert.equal(nextMahaAntardasha.mahaDashaSign, 2);
+  assert.equal(nextMahaAntardasha.antardashaSign, 2);
+
+  const atBirth = progressBhriguGraha({ body: 'Rahu', natalSign: 8, ageYears: 0, version: 'nadi-praveshika-8' });
+  assert.ok(atBirth);
+  const firstRahuAntardasha = calculateBhriguPadaAntardashas([atBirth], 0)[0];
+  assert.equal(firstRahuAntardasha.antardashaNumber, 1);
+  assert.equal(firstRahuAntardasha.antardashaSign, 8);
 }
 
 // Invalid ages and signs do not yield positions.
