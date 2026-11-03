@@ -1,7 +1,7 @@
 import type { ChartData } from '@/types';
 import { RELATION_OFFSET, type HitRelation } from '@/lib/transitHits';
 import { findParayaAgesForPosition, PARAYA_BETA_BODIES, type ParayaBetaNatal, type ParayaBody, type ParayaOptions } from './nadiParaya';
-import { JULIAN_YEAR_MS } from '../time';
+import { dashaYearMsFor, type DashaYearLength } from '../time';
 
 // When the Nāḍī Paraya grahas (Jupiter, Saturn, Rahu and Ketu, and Mars, Mercury and Venus as beta, moved by age
 // through the signs) reach a natal graha: the same degree in its own sign, or
@@ -35,15 +35,18 @@ export function findParayaHits(params: {
   options?: ParayaOptions;
   /** The Paraya grahas to count: the four to begin with; Mars, Mercury and Venus (beta) when they are given. */
   bodies?: readonly ParayaBody[];
+  /** Year length used to turn calendar time into Parāya age. */
+  yearLength?: DashaYearLength;
 }): ParayaHit[] {
   const { chart, birthTime, fromTime, toTime, relations, options, bodies = PARAYA_BODIES } = params;
+  const yearMs = dashaYearMsFor(params.yearLength ?? 'julian');
   const jupiter = chart.planets.find(p => p.name === 'Jupiter');
   const saturn = chart.planets.find(p => p.name === 'Saturn');
   const rahu = chart.planets.find(p => p.name === 'Rahu');
   if (!jupiter || !saturn || !rahu) return [];
 
-  const fromAge = Math.max(0, (fromTime - birthTime) / JULIAN_YEAR_MS);
-  const toAge = (toTime - birthTime) / JULIAN_YEAR_MS;
+  const fromAge = Math.max(0, (fromTime - birthTime) / yearMs);
+  const toAge = (toTime - birthTime) / yearMs;
   if (toAge <= fromAge) return [];
 
   const natal = [
@@ -78,7 +81,7 @@ export function findParayaHits(params: {
         });
         for (const match of matches) {
           if (match.ageYears < fromAge || match.ageYears > toAge) continue;
-          hits.push({ body, natal: point.name, relation, ageYears: match.ageYears, time: birthTime + match.ageYears * JULIAN_YEAR_MS });
+          hits.push({ body, natal: point.name, relation, ageYears: match.ageYears, time: birthTime + match.ageYears * yearMs });
         }
       }
     }
