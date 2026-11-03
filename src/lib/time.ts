@@ -8,6 +8,11 @@ export const JULIAN_YEAR_MS = 365.25 * DAY_MS;
 export const DASHA_YEAR_LENGTHS = { julian: 365.25, sidereal: 365.256364, tropical: 365.2422, savana: 360 } as const;
 export type DashaYearLength = keyof typeof DASHA_YEAR_LENGTHS;
 export const DASHA_YEAR_KEYS = Object.keys(DASHA_YEAR_LENGTHS) as DashaYearLength[];
+
+/** Milliseconds in one selected daśā year. Age-based progressions using the same year convention should use this too. */
+export function dashaYearMsFor(length: DashaYearLength = 'julian'): number {
+  return DASHA_YEAR_LENGTHS[length] * DAY_MS;
+}
 export const isDashaYearLength = (value: unknown): value is DashaYearLength => typeof value === 'string' && value in DASHA_YEAR_LENGTHS;
 
 let current: DashaYearLength = 'julian';
@@ -26,7 +31,7 @@ export function withDashaYear<T>(length: DashaYearLength, run: () => T): T {
 }
 
 /** A year of a daśā in milliseconds. */
-export const dashaYearMs = () => DASHA_YEAR_LENGTHS[current] * DAY_MS;
+export const dashaYearMs = () => dashaYearMsFor(current);
 
 /** The date a number of daśā years (fractions allowed) after another. */
 export function addDashaYears(date: Date, years: number): Date {
