@@ -495,7 +495,7 @@ export default function NorthIndianChart({
                           fill={selectedHere || highlighted ? HIGHLIGHT_COLOR
                             : token.group === 'natal' ? (colorByDignity && tokenName ? dignityColor(tokenName, sign, isDark) : undefined) ?? planetFill
                             : token.group === 'transit' ? TRANSIT_COLOR
-                            : token.group === 'special' ? SPECIAL_LAGNA_COLOR
+                            : token.group === 'special' ? (token.text.endsWith('ᴬᴰ') ? '#0891b2' : token.text.endsWith('ᴾᴰ') ? '#c026d3' : SPECIAL_LAGNA_COLOR)
                             : token.group === 'paraya' ? parayaFill(token.key)
                             : signFill}
                           textDecoration={selectedHere || highlighted ? 'underline' : undefined}
