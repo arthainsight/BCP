@@ -9,7 +9,7 @@ import { calculateCharaKarakas, type CharaKaraka } from '@/lib/karakas';
 import { nakshatraAdjustFor } from '@/lib/nakshatraZodiac';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { GRAHA_DASHA_SYSTEMS, runningGrahaDashaLords, type GrahaDashaSystem } from '@/lib/dashaEvents';
-import { JULIAN_YEAR_MS, type DashaYearLength } from '@/lib/time';
+import { JULIAN_YEAR_MS, dashaYearMsFor, type DashaYearLength } from '@/lib/time';
 
 /** Values worked out from the calculated chart and the target date. */
 export function useChartDerived(
@@ -54,12 +54,19 @@ export function useChartDerived(
   }, [birthDatetime, targetDate]);
 
   const effectiveBnnHouses = useMemo(() => calculateBnnHouses(chartData, bnnAge), [chartData, bnnAge]);
+  // Nāḍī Parāya follows the selected daśā-year convention; the separate BNN progressions keep Julian age.
+  const parayaAge = useMemo(() => {
+    const birth = parseDateTime(birthDatetime);
+    const target = parseTargetDateString(targetDate);
+    if (!birth || !target) return 0;
+    return Math.max(0, (target.getTime() - birth.getTime()) / dashaYearMsFor(yearLength));
+  }, [birthDatetime, targetDate, yearLength]);
   const parayaSaturn = calculationSettings.parayaSaturn ?? 'alternating';
   const parayaRahu = calculationSettings.parayaRahu ?? 'alternating';
   const parayaRetro = calculationSettings.parayaRetro ?? 'previous';
   const effectiveNadiParayaHouses = useMemo(
-    () => calculateParayaHouses(chartData, bnnAge, { saturn: parayaSaturn, rahu: parayaRahu, retro: parayaRetro }, true),
-    [chartData, bnnAge, parayaSaturn, parayaRahu, parayaRetro],
+    () => calculateParayaHouses(chartData, parayaAge, { saturn: parayaSaturn, rahu: parayaRahu, retro: parayaRetro }, true),
+    [chartData, parayaAge, parayaSaturn, parayaRahu, parayaRetro],
   );
 
   // Dasha lords running at the target date, marked on the charts.
