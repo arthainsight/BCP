@@ -35,6 +35,8 @@ export interface ParayaOptions {
   rahu: ParayaSpeed;
   /** Where a graha that was retrograde at birth begins: one sign back (the default) or in its natal sign. Rahu and Ketu have no such shift. */
   retro?: ParayaRetro;
+  /** Equal-bhāva cusp degree (the natal Lagna degree), used as the transition point in every sign. */
+  bhavaCuspDegree?: number;
 }
 
 export const DEFAULT_PARAYA_OPTIONS: ParayaOptions = { saturn: 'alternating', rahu: 'alternating', retro: 'previous' };
@@ -99,16 +101,38 @@ type PeriodParams = {
   retrogradeStartShift?: boolean;
   /** The degree of the sign the walk is at when the age is 0 (the natal degree): the walk begins part of the way through its first stay. */
   startDegree?: number;
+  /** If set, progression periods change at this degree in every sign instead of at 0°. */
+  boundaryDegree?: number;
 };
 
 /**
  * How much of the first stay has already gone at age 0, in years: the part of the stay between the start of the walk in the sign and the start
  * degree (0 when no start degree is given, which is the start of the sign; for a walk backwards, as Rahu's is, the start is the end of the sign).
  */
+function mod30(degree: number): number {
+  return ((degree % 30) + 30) % 30;
+}
+
+/** The current progression interval: a sign interval normally starts at 0°, or at the selected equal-bhāva cusp. */
 function phaseOf(params: PeriodParams): number {
   if (params.startDegree === undefined) return 0;
-  const degree = Math.max(0, Math.min(30, params.startDegree));
+  const degree = mod30(params.startDegree);
+  if (params.boundaryDegree !== undefined) {
+    const cusp = mod30(params.boundaryDegree);
+    const travelled = params.direction === 1 ? mod30(degree - cusp) : mod30(cusp - degree);
+    return (travelled / 30) * params.durations[0];
+  }
   return (params.direction === 1 ? degree / 30 : 1 - degree / 30) * params.durations[0];
+}
+
+/** The sign label currently active. Before crossing this sign's cusp, the preceding sign remains active. */
+function periodStartSign(params: PeriodParams): number {
+  const natalStart = normalizeSign(params.natalSignIndex - (params.retrogradeStartShift ? 1 : 0));
+  if (params.boundaryDegree === undefined || params.startDegree === undefined) return natalStart;
+  const degree = mod30(params.startDegree);
+  const cusp = mod30(params.boundaryDegree);
+  const hasCrossedCusp = params.direction === 1 ? degree >= cusp : degree <= cusp;
+  return hasCrossedCusp ? natalStart : normalizeSign(natalStart - params.direction);
 }
 
 /** The length of a round, in years: the stays in the twelve signs added up. */
@@ -118,13 +142,13 @@ function cycleLengthOf(durations: readonly number[]): number {
 
 /** One period: the stay of `step` (0–11) in the round `completedCycles` (from 0), with the Paraya graha `progress` (0–1) of the way through it. */
 function makePeriod(params: PeriodParams, completedCycles: number, step: number, startAgeInCycle: number, progress: number): ParayaPeriod {
-  const startSign = normalizeSign(params.natalSignIndex - (params.retrogradeStartShift ? 1 : 0));
+  const startSign = periodStartSign(params);
   const durationYears = params.durations[step % params.durations.length];
   const cycleLength = cycleLengthOf(params.durations);
   const signIndex = normalizeSign(startSign + params.direction * step);
-  const degree = params.direction === 1
-    ? progress * 30
-    : Math.min(29.999999, (1 - progress) * 30);
+  const degree = params.boundaryDegree === undefined
+    ? (params.direction === 1 ? progress * 30 : Math.min(29.999999, (1 - progress) * 30))
+    : mod30(params.boundaryDegree + params.direction * progress * 30);
   return {
     body: params.body,
     signIndex,
@@ -180,6 +204,7 @@ export function calculateNadiParaya(params: {
     direction: 1,
     retrogradeStartShift: params.jupiterRetrograde && shiftsBack(params.options),
     startDegree: params.natalJupiterDegree,
+    boundaryDegree: params.options?.bhavaCuspDegree,
   });
   const saturn = periodAtAge({
     body: 'Saturn',
@@ -189,6 +214,7 @@ export function calculateNadiParaya(params: {
     direction: 1,
     retrogradeStartShift: params.saturnRetrograde && shiftsBack(params.options),
     startDegree: params.natalSaturnDegree,
+    boundaryDegree: params.options?.bhavaCuspDegree,
   });
   const rahu = periodAtAge({
     body: 'Rahu',
@@ -197,6 +223,7 @@ export function calculateNadiParaya(params: {
     durations: parayaDurations('Rahu', params.options),
     direction: -1,
     startDegree: params.natalRahuDegree,
+    boundaryDegree: params.options?.bhavaCuspDegree,
   });
   const ketuSignIndex = normalizeSign(rahu.signIndex + 6);
   const ketu: ParayaPeriod = {
@@ -223,6 +250,7 @@ export function calculateBetaParaya(params: { ageYears: number; natal: ParayaBet
       direction: 1,
       retrogradeStartShift: natal.retrograde && shiftsBack(params.options),
       startDegree: natal.degree,
+      boundaryDegree: params.options?.bhavaCuspDegree,
     })];
   });
 }
@@ -243,6 +271,7 @@ export function buildParayaTimeline(params: {
     direction: params.body === 'Rahu' ? -1 : 1,
     retrogradeStartShift: params.body !== 'Rahu' && params.retrograde && shiftsBack(params.options),
     startDegree: params.startDegree,
+    boundaryDegree: params.options?.bhavaCuspDegree,
   };
   // The periods are laid out round by round, each from the sum of the ones before it, and not found again from the age at which the one before
   // ended: a stay of a twelfth of a year does not add up to exactly a year in floating point, and an age that falls a hair short of a boundary
@@ -311,7 +340,10 @@ export function findParayaAgesForPosition(params: {
   return timeline
     .filter(period => period.signIndex === sourceTargetSign)
     .map(period => {
-      const progress = backward ? (30 - degree) / 30 : degree / 30;
+      const boundary = params.options?.bhavaCuspDegree;
+      const progress = boundary === undefined
+        ? (backward ? (30 - degree) / 30 : degree / 30)
+        : (backward ? mod30(boundary - degree) : mod30(degree - boundary)) / 30;
       return {
         body: params.body,
         ageYears: period.startAge + progress * period.durationYears,
