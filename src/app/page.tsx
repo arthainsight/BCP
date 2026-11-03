@@ -545,6 +545,7 @@ export default function Home() {
     onResetEdits: resetChartEdits,
     transitPlanets,
     chartDisplaySettings,
+    yearLength: dashaSettings.yearLength ?? 'julian',
     karakaByPlanet,
     transitLoading,
     nakshatraAdjust,
