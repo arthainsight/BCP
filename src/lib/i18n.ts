@@ -14,6 +14,10 @@ export const LANGUAGES: { value: Language; label: string }[] = [
 ];
 
 export const FI: Record<string, string> = {
+  "Antardasha (AD) progressions": "Antardaśā-progressiot",
+  "AD position of lord": "Hallitsijan AD-sijainti",
+  "No pratyantardashas can be calculated for this chart.": "Tälle kartalle ei voida laskea pratyantardaśā-jaksoja.",
+  "The relation column compares each Pada with the AD sign of its own lord. Same sign, Kendra and Trikona are shown as reference relationships, not as an automatic event prediction.": "Suhdesarake vertaa kutakin Padaa sen hallitsijan AD-merkkiin. Sama merkki, Kendra ja Trikona näytetään vertailusuhteina, ei automaattisina tapahtumaennusteina.",
   "MD–AD–PD": "MD–AD–PD",
   "MD is fixed at the natal sign": "MD pysyy syntymäkartan merkissä",
   "Mahadasha (natal) sign": "Mahādaśā (syntymämerkki)",
