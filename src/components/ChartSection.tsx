@@ -377,8 +377,8 @@ export default function ChartSection({
                     <>
                       <div className="border-t border-zinc-200 dark:border-zinc-700" />
                       <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Bhṛgu Pada</div>
-                      <ChartDisplayToggle label="AD" value={chartDisplaySettings.showBhriguPadaAD} onToggle={() => onToggleChartDisplay?.('showBhriguPadaAD')} activeClass="bg-cyan-600 border-cyan-600 text-white dark:bg-cyan-500 dark:border-cyan-500" />
-                      <ChartDisplayToggle label="PD" value={chartDisplaySettings.showBhriguPadaPD} onToggle={() => onToggleChartDisplay?.('showBhriguPadaPD')} activeClass="bg-fuchsia-600 border-fuchsia-600 text-white dark:bg-fuchsia-500 dark:border-fuchsia-500" />
+                      <ChartDisplayToggle label="AD" value={chartDisplaySettings.showBhriguPadaAD} onToggle={() => onUpdateChartDisplay({ showBhriguPadaAD: !chartDisplaySettings.showBhriguPadaAD })} activeClass="bg-cyan-600 border-cyan-600 text-white dark:bg-cyan-500 dark:border-cyan-500" />
+                      <ChartDisplayToggle label="PD" value={chartDisplaySettings.showBhriguPadaPD} onToggle={() => onUpdateChartDisplay({ showBhriguPadaPD: !chartDisplaySettings.showBhriguPadaPD })} activeClass="bg-fuchsia-600 border-fuchsia-600 text-white dark:bg-fuchsia-500 dark:border-fuchsia-500" />
                     </>
                   )}
                   {onUpdateChartDisplay && nadiParayaHousesFromParent.length > 0 && (
