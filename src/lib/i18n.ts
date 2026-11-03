@@ -14,15 +14,22 @@ export const LANGUAGES: { value: Language; label: string }[] = [
 ];
 
 export const FI: Record<string, string> = {
+  "Antardasha (AD) progressions": "Antardaśā-progressiot",
+  "AD position of lord": "Hallitsijan AD-sijainti",
+  "No pratyantardashas can be calculated for this chart.": "Tälle kartalle ei voida laskea pratyantardaśā-jaksoja.",
+  "The relation column compares each Pada with the AD sign of its own lord. Same sign, Kendra and Trikona are shown as reference relationships, not as an automatic event prediction.": "Suhdesarake vertaa kutakin Padaa sen hallitsijan AD-merkkiin. Sama merkki, Kendra ja Trikona näytetään vertailusuhteina, ei automaattisina tapahtumaennusteina.",
+  "MD–AD–PD": "MD–AD–PD",
+  "MD is fixed at the natal sign": "MD pysyy syntymäkartan merkissä",
+  "Mahadasha (natal) sign": "Mahādaśā (syntymämerkki)",
+  "Antardasha (AD) sign": "Antardaśā (AD-merkki)",
+  "Pratyantardasha (PD) sign": "Pratyantardaśā (PD-merkki)",
+  "PD sub-period": "PD-jakso",
+  "MD stays in the graha’s natal sign. AD is the current progressed sign. PD is the active 12-part sub-period within AD, counted forward from the AD sign.": "MD pysyy grahan syntymämerkissä. AD on nykyinen progressiomerkki. PD on AD:n sisäinen aktiivinen 12-osainen alajakso, joka lasketaan eteenpäin AD-merkistä.",
+  "PD duration is one one-hundred-and-forty-fourth of the graha cycle. Dates are calculated from birth using the full sign-periods, irrespective of the natal degree.": "PD-jakson kesto on 1/144 grahan kierrosta. Päivät lasketaan syntymästä täysien merkkijaksojen perusteella syntymäasteesta riippumatta.",
+  "The MD–AD–PD subdivision is available in the 2019 Nadi Praveshika version; the older seven-graha source does not specify it. Select the 2019 version to see it.": "MD–AD–PD-jako on käytettävissä vuoden 2019 Nāḍī Praveśikā -versiossa; vanhempi seitsemän grahan lähde ei määrittele sitä. Valitse vuoden 2019 versio nähdäksesi sen.",
   "Progression date": "Progression päivämäärä",
   "Age at selected date": "Ikä valittuna päivänä",
   "The progression is calculated for the selected date, not by manually changing the age.": "Progressio lasketaan valitulle päivämäärälle, ei ikää käsin muuttamalla.",
-  "Pratyantardashas": "Pratyantardaśāt",
-  "Current third-level sub-period inside each antardasha": "Kunkin antardaśān kolmannen tason alajakso",
-  "Pratyantardasha sign": "Pratyantardaśān merkki",
-  "Each antardasha is divided into twelve equal pratyantardashas, proceeding from the antardasha sign. This is a derived subdivision of the implemented equal-part structure, not a separately stated rule in the source.": "Jokainen antardaśā jaetaan kahteentoista yhtä suureen pratyantardaśāan, jotka alkavat antardaśān merkistä. Tämä on toteutetusta tasajaosta johdettu alajako, ei lähteessä erikseen annettu sääntö.",
-  "No pratyantardashas can be calculated for this chart.": "Tälle kartalle ei voida laskea pratyantardaśā-jaksoja.",
-  "Pratyantardasha duration is one thousand seven hundred and twenty-eighth of the graha cycle. Dates are calculated from birth using the full sign-periods, irrespective of the natal degree.": "Pratyantardaśān kesto on 1/1728 grahan kierrosta. Päivät lasketaan syntymästä merkkijaksojen perusteella syntymäasteesta riippumatta.",
   // Navigation
   'CHART': 'KARTTA',
   'TIMING': 'AJANKOHTA',

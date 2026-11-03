@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v3.103',
+    date: '2026-11-03',
+    title: 'Correct Bhṛgu Pada MD–AD–PD levels',
+    changes: [
+      'TIMING → Bhṛgu Pada: MD is now correctly kept at the graha’s natal sign, AD is the moving progressed sign, and PD is the 12-part sub-period within AD. This corrects the v3.102 display, which treated the moving AD as MD and added an unsupported extra level below PD.',
+      'The date picker remains tied to the shared target date. The MD–AD–PD table shows the fixed natal MD sign, moving AD sign, current PD sign, PD number, duration and dates.',
+      'Tests verify that MD remains fixed through PD and AD boundaries, AD advances from the natal sign, and PD restarts from the new AD sign.',
+      'Updated the application version to v3.103.',
+    ],
+  },
+
+  {
     version: 'v3.102',
     date: '2026-11-02',
     title: 'Bhṛgu Pada pratyantardaśā and date-based progression',

@@ -10,7 +10,6 @@ import { useGrahaNames } from '@/lib/grahaNames';
 import { useT } from '@/lib/i18n';
 import {
   calculateBhriguPadaActivations,
-  calculateBhriguPadaAntardashas,
   calculateBhriguPadaPratyantardashas,
   calculateBhriguPadas,
   calculateBhriguProgressions,
@@ -82,10 +81,6 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
   const progressions = useMemo(
     () => calculateBhriguProgressions(chart, ageYears, version),
     [chart, ageYears, version],
-  );
-  const antardashas = useMemo(
-    () => version === 'nadi-praveshika-8' ? calculateBhriguPadaAntardashas(progressions, ageYears) : [],
-    [progressions, ageYears, version],
   );
   const pratyantardashas = useMemo(
     () => version === 'nadi-praveshika-8' ? calculateBhriguPadaPratyantardashas(progressions, ageYears) : [],
@@ -171,7 +166,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
 
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-2">
-          <h3 className="text-xs font-semibold">{t('Progressed grahas')}</h3>
+          <h3 className="text-xs font-semibold">{t('Antardasha (AD) progressions')}</h3>
           <span className="text-[9px] font-mono text-zinc-400">{t(selectedVersion.label)}</span>
         </div>
         <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
@@ -181,7 +176,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
                 <th className={HEAD}>{t('Graha')}</th>
                 <th className={HEAD}>{t('Cycle')}</th>
                 <th className={HEAD}>{t('From natal sign')}</th>
-                <th className={HEAD}>{t('Progressed sign')}</th>
+                <th className={HEAD}>{t('Antardasha (AD) sign')}</th>
                 <th className={HEAD}>{t('House from Lagna')}</th>
                 <th className={HEAD}>{t('Padas ruled')}</th>
               </tr>
@@ -213,74 +208,23 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
       </div>
 
       {version === 'nadi-praveshika-8' ? (
-        <div className="space-y-2" data-bhrigu-antardashas>
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-xs font-semibold">{t('Antardashas')}</h3>
-            <span className="text-[9px] text-zinc-400">{t('Current sub-period inside each progressed sign-period')}</span>
-          </div>
-          <p className="text-[10px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-            {t('Each major sign-period is divided into twelve equal antardashas, beginning from the major-period sign. The source highlights long periods, especially Jupiter and Rahu; this tool shows the same subdivision for all eight grahas.')}
-          </p>
-          <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
-            <table className="w-full min-w-[730px] border-collapse">
-              <thead className="bg-zinc-50 dark:bg-zinc-900/60">
-                <tr>
-                  <th className={HEAD}>{t('Graha')}</th>
-                  <th className={HEAD}>{t('Mahadasha sign')}</th>
-                  <th className={HEAD}>{t('Antardasha sign')}</th>
-                  <th className={HEAD}>{t('Sub-period')}</th>
-                  <th className={HEAD}>{t('Duration')}</th>
-                  <th className={HEAD}>{t('Period dates')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {antardashas.map(item => (
-                  <tr key={item.body} className="border-t border-zinc-100 dark:border-zinc-800" data-bhrigu-antardasha={item.body}>
-                    <td className={CELL + ' font-semibold'}>{name(item.body)}</td>
-                    <td className={CELL}>{SIGN_NAMES[item.mahaDashaSign - 1]}</td>
-                    <td className={CELL + ' font-semibold text-emerald-700 dark:text-emerald-300'}>{SIGN_NAMES[item.antardashaSign - 1]}</td>
-                    <td className={CELL}>{item.antardashaNumber}/12</td>
-                    <td className={CELL}>{durationLabel(item.antardashaDurationYears)}</td>
-                    <td className={CELL}>
-                      {periodDateLabel(birth, item.startAgeYears)} – {periodDateLabel(birth, item.endAgeYears)}
-                    </td>
-                  </tr>
-                ))}
-                {antardashas.length === 0 && (
-                  <tr><td className={CELL} colSpan={6}>{t('No antardashas can be calculated for this chart.')}</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <p className="text-[9px] leading-relaxed text-zinc-400">
-            {t('Antardasha duration is one hundred and forty-fourth of the graha cycle. Dates are calculated from birth using the full sign-periods, irrespective of the natal degree.')}
-          </p>
-        </div>
-      ) : (
-        <p className="rounded-md border border-zinc-200 px-3 py-2 text-[10px] leading-relaxed text-zinc-500 dark:border-zinc-800">
-          {t('Antardashas are described in the 2019 Nadi Praveshika version, but not specified in the older seven-graha source. Select the 2019 version to see them.')}
-        </p>
-      )}
-
-
-      {version === 'nadi-praveshika-8' && (
         <div className="space-y-2" data-bhrigu-pratyantardashas>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-xs font-semibold">{t('Pratyantardashas')}</h3>
-            <span className="text-[9px] text-zinc-400">{t('Current third-level sub-period inside each antardasha')}</span>
+            <h3 className="text-xs font-semibold">{t('MD–AD–PD')}</h3>
+            <span className="text-[9px] text-zinc-400">{t('MD is fixed at the natal sign')}</span>
           </div>
           <p className="text-[10px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-            {t('Each antardasha is divided into twelve equal pratyantardashas, proceeding from the antardasha sign. This is a derived subdivision of the implemented equal-part structure, not a separately stated rule in the source.')}
+            {t('MD stays in the graha’s natal sign. AD is the current progressed sign. PD is the active 12-part sub-period within AD, counted forward from the AD sign.')}
           </p>
           <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
             <table className="w-full min-w-[900px] border-collapse">
               <thead className="bg-zinc-50 dark:bg-zinc-900/60">
                 <tr>
                   <th className={HEAD}>{t('Graha')}</th>
-                  <th className={HEAD}>{t('Mahadasha sign')}</th>
-                  <th className={HEAD}>{t('Antardasha sign')}</th>
-                  <th className={HEAD}>{t('Pratyantardasha sign')}</th>
-                  <th className={HEAD}>{t('Sub-period')}</th>
+                  <th className={HEAD}>{t('Mahadasha (natal) sign')}</th>
+                  <th className={HEAD}>{t('Antardasha (AD) sign')}</th>
+                  <th className={HEAD}>{t('Pratyantardasha (PD) sign')}</th>
+                  <th className={HEAD}>{t('PD sub-period')}</th>
                   <th className={HEAD}>{t('Duration')}</th>
                   <th className={HEAD}>{t('Period dates')}</th>
                 </tr>
@@ -306,9 +250,13 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
             </table>
           </div>
           <p className="text-[9px] leading-relaxed text-zinc-400">
-            {t('Pratyantardasha duration is one thousand seven hundred and twenty-eighth of the graha cycle. Dates are calculated from birth using the full sign-periods, irrespective of the natal degree.')}
+            {t('PD duration is one one-hundred-and-forty-fourth of the graha cycle. Dates are calculated from birth using the full sign-periods, irrespective of the natal degree.')}
           </p>
         </div>
+      ) : (
+        <p className="rounded-md border border-zinc-200 px-3 py-2 text-[10px] leading-relaxed text-zinc-500 dark:border-zinc-800">
+          {t('The MD–AD–PD subdivision is available in the 2019 Nadi Praveshika version; the older seven-graha source does not specify it. Select the 2019 version to see it.')}
+        </p>
       )}
 
       <div className="space-y-2">
@@ -324,7 +272,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
                 <th className={HEAD}>{t('Natal house')}</th>
                 <th className={HEAD}>{t('Arudha sign')}</th>
                 <th className={HEAD}>{t('Pada lord')}</th>
-                <th className={HEAD}>{t('Progressed lord')}</th>
+                <th className={HEAD}>{t('AD position of lord')}</th>
                 <th className={HEAD}>{t('Relation from Pada')}</th>
               </tr>
             </thead>
@@ -353,7 +301,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
           </table>
         </div>
         <p className="text-[9px] leading-relaxed text-zinc-400">
-          {t('The relation column compares each Pada with the progressed position of its own lord. Same sign, Kendra and Trikona are shown as reference relationships, not as an automatic event prediction.')}
+          {t('The relation column compares each Pada with the AD sign of its own lord. Same sign, Kendra and Trikona are shown as reference relationships, not as an automatic event prediction.')}
         </p>
       </div>
 

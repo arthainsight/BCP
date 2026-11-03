@@ -4,7 +4,6 @@ import {
   BHRIGU_PADA_BODIES,
   BHRIGU_PADA_CYCLES,
   calculateBhriguPadaActivations,
-  calculateBhriguPadaAntardashas,
   calculateBhriguPadaPratyantardashas,
   calculateBhriguPadas,
   calculateBhriguProgressions,
@@ -137,7 +136,7 @@ assert.equal(BHRIGU_PADA_CYCLES['sundaram-7'].Rahu, undefined);
   assert.ok(activations.every(item => item.pada.lord === progressions.find(row => row.body === item.pada.lord)?.body));
 }
 
-// Antardashas split each major sign-period into twelve equal sign-based sub-periods.
+// MD remains the fixed natal sign; AD progresses through signs, and PD subdivides each AD.
 {
   const age = 57 + 10 / 12;
   const jupiter = progressBhriguGraha({
@@ -147,104 +146,57 @@ assert.equal(BHRIGU_PADA_CYCLES['sundaram-7'].Rahu, undefined);
     version: 'nadi-praveshika-8',
   });
   assert.ok(jupiter);
-  const current = calculateBhriguPadaAntardashas([jupiter], age)[0];
+  assert.equal(jupiter.natalSign, 1, 'MD stays in the natal sign');
+  assert.equal(jupiter.sign, 9, 'AD is the current progressed sign');
+  const current = calculateBhriguPadaPratyantardashas([jupiter], age)[0];
   assert.ok(current);
-  assert.equal(current.mahaDashaNumber, 9);
-  assert.equal(current.mahaDashaSign, 9);
-  assert.equal(current.antardashaNumber, 5);
-  assert.equal(current.antardashaSign, 1);
-  assert.equal(current.antardashaDurationYears, 83 / 144);
+  assert.equal(current.mahaDashaSign, 1, 'MD does not change');
+  assert.equal(current.antardashaSign, 9, 'AD equals the current progressed sign');
+  assert.equal(current.pratyantardashaNumber, 5);
+  assert.equal(current.pratyantardashaSign, 1);
+  assert.equal(current.pratyantardashaDurationYears, 83 / 144);
   assert.ok(Math.abs(current.startAgeYears - (100 * 83) / 144) < 1e-9);
   assert.ok(Math.abs(current.endAgeYears - (101 * 83) / 144) < 1e-9);
 
-  const subPeriod = 83 / 144;
-  const beforeBoundary = progressBhriguGraha({ body: 'Jupiter', natalSign: 1, ageYears: subPeriod - 1e-8, version: 'nadi-praveshika-8' });
-  const atBoundary = progressBhriguGraha({ body: 'Jupiter', natalSign: 1, ageYears: subPeriod, version: 'nadi-praveshika-8' });
-  assert.ok(beforeBoundary && atBoundary);
-  assert.equal(calculateBhriguPadaAntardashas([beforeBoundary], subPeriod - 1e-8)[0].antardashaNumber, 1);
-  assert.equal(calculateBhriguPadaAntardashas([atBoundary], subPeriod)[0].antardashaNumber, 2);
-
-  // At a new major sign-period, antardasha numbering resets to 1 and starts
-  // from the new major-period sign.
-  const nextMahaAge = 83 / 12;
-  const nextMaha = progressBhriguGraha({ body: 'Jupiter', natalSign: 1, ageYears: nextMahaAge, version: 'nadi-praveshika-8' });
-  assert.ok(nextMaha);
-  const nextMahaAntardasha = calculateBhriguPadaAntardashas([nextMaha], nextMahaAge)[0];
-  assert.equal(nextMahaAntardasha.mahaDashaNumber, 2);
-  assert.equal(nextMahaAntardasha.antardashaNumber, 1);
-  assert.equal(nextMahaAntardasha.mahaDashaSign, 2);
-  assert.equal(nextMahaAntardasha.antardashaSign, 2);
-
-  const allGrahaProgressions = calculateBhriguProgressions(chart, age, 'nadi-praveshika-8');
-  const allGrahaAntardashas = calculateBhriguPadaAntardashas(allGrahaProgressions, age);
-  assert.equal(allGrahaAntardashas.length, 8);
-  assert.deepEqual(allGrahaAntardashas.map(item => item.body), BHRIGU_PADA_BODIES['nadi-praveshika-8']);
-
-  const atBirth = progressBhriguGraha({ body: 'Rahu', natalSign: 8, ageYears: 0, version: 'nadi-praveshika-8' });
-  assert.ok(atBirth);
-  const firstRahuAntardasha = calculateBhriguPadaAntardashas([atBirth], 0)[0];
-  assert.equal(firstRahuAntardasha.antardashaNumber, 1);
-  assert.equal(firstRahuAntardasha.antardashaSign, 8);
-}
-
-// Pratyantardashas divide every antardasha into twelve equal parts.
-{
-  const age = 57 + 10 / 12;
-  const jupiter = progressBhriguGraha({
-    body: 'Jupiter',
-    natalSign: 1,
-    ageYears: age,
-    version: 'nadi-praveshika-8',
+  const pdDuration = 83 / 144;
+  const beforeBoundary = progressBhriguGraha({
+    body: 'Jupiter', natalSign: 1, ageYears: pdDuration - 1e-8, version: 'nadi-praveshika-8',
   });
-  assert.ok(jupiter);
-  const current = calculateBhriguPadaPratyantardashas([jupiter], age)[0];
-  assert.ok(current);
-  assert.equal(current.mahaDashaSign, jupiter.sign);
-  assert.equal(current.mahaDashaNumber, Math.floor((age * 1728) / 83 / 144) + 1);
-  assert.equal(current.pratyantardashaDurationYears, 83 / 1728);
-  assert.ok(current.pratyantardashaSign >= 1 && current.pratyantardashaSign <= 12);
-  assert.ok(current.startAgeYears <= age + 1e-9);
-  assert.ok(current.endAgeYears > age);
-
-  const pdDuration = 83 / 1728;
-  const atBirth = progressBhriguGraha({ body: 'Jupiter', natalSign: 1, ageYears: 0, version: 'nadi-praveshika-8' });
-  assert.ok(atBirth);
-  const firstPd = calculateBhriguPadaPratyantardashas([atBirth], 0)[0];
-  assert.equal(firstPd.pratyantardashaNumber, 1);
-  assert.equal(firstPd.pratyantardashaSign, 1);
-
-  const afterFirstPd = progressBhriguGraha({
+  const atBoundary = progressBhriguGraha({
     body: 'Jupiter', natalSign: 1, ageYears: pdDuration, version: 'nadi-praveshika-8',
   });
-  assert.ok(afterFirstPd);
-  const secondPd = calculateBhriguPadaPratyantardashas([afterFirstPd], pdDuration)[0];
-  assert.equal(secondPd.pratyantardashaNumber, 2);
-  assert.equal(secondPd.pratyantardashaSign, 2);
+  assert.ok(beforeBoundary && atBoundary);
+  const beforePd = calculateBhriguPadaPratyantardashas([beforeBoundary], pdDuration - 1e-8)[0];
+  const nextPd = calculateBhriguPadaPratyantardashas([atBoundary], pdDuration)[0];
+  assert.equal(beforePd.pratyantardashaNumber, 1);
+  assert.equal(nextPd.pratyantardashaNumber, 2);
+  assert.equal(nextPd.mahaDashaSign, 1, 'MD remains natal Aries across PD boundaries');
 
-  // At an antardasha boundary, the AD advances and PD resets to its first sign.
-  const adBoundaryAge = 83 / 144;
+  // At an AD boundary the moving AD advances, PD restarts from that new AD sign, MD stays natal.
+  const adBoundaryAge = 83 / 12;
   const atAdBoundary = progressBhriguGraha({
     body: 'Jupiter', natalSign: 1, ageYears: adBoundaryAge, version: 'nadi-praveshika-8',
   });
   assert.ok(atAdBoundary);
   const firstPdOfNextAd = calculateBhriguPadaPratyantardashas([atAdBoundary], adBoundaryAge)[0];
-  assert.equal(firstPdOfNextAd.antardashaNumber, 2);
+  assert.equal(atAdBoundary.sign, 2, 'AD advances from Aries to Taurus');
+  assert.equal(firstPdOfNextAd.mahaDashaSign, 1, 'MD remains natal Aries');
+  assert.equal(firstPdOfNextAd.antardashaSign, 2, 'AD is Taurus');
   assert.equal(firstPdOfNextAd.pratyantardashaNumber, 1);
-  assert.equal(
-    firstPdOfNextAd.pratyantardashaSign,
-    firstPdOfNextAd.antardashaSign,
-  );
+  assert.equal(firstPdOfNextAd.pratyantardashaSign, 2, 'PD restarts from AD Taurus');
 
-  // At a new mahadasha, both lower levels restart from the new MD sign.
-  const mdBoundaryAge = 83 / 12;
-  const atMdBoundary = progressBhriguGraha({
-    body: 'Jupiter', natalSign: 1, ageYears: mdBoundaryAge, version: 'nadi-praveshika-8',
-  });
-  assert.ok(atMdBoundary);
-  const firstPdOfNextMd = calculateBhriguPadaPratyantardashas([atMdBoundary], mdBoundaryAge)[0];
-  assert.equal(firstPdOfNextMd.antardashaNumber, 1);
-  assert.equal(firstPdOfNextMd.pratyantardashaNumber, 1);
-  assert.equal(firstPdOfNextMd.pratyantardashaSign, atMdBoundary.sign);
+  const allGrahaProgressions = calculateBhriguProgressions(chart, age, 'nadi-praveshika-8');
+  const allGrahaPds = calculateBhriguPadaPratyantardashas(allGrahaProgressions, age);
+  assert.equal(allGrahaPds.length, 8);
+  assert.deepEqual(allGrahaPds.map(item => item.body), BHRIGU_PADA_BODIES['nadi-praveshika-8']);
+
+  const atBirth = progressBhriguGraha({ body: 'Rahu', natalSign: 8, ageYears: 0, version: 'nadi-praveshika-8' });
+  assert.ok(atBirth);
+  const firstRahuPd = calculateBhriguPadaPratyantardashas([atBirth], 0)[0];
+  assert.equal(firstRahuPd.mahaDashaSign, 8);
+  assert.equal(firstRahuPd.antardashaSign, 8);
+  assert.equal(firstRahuPd.pratyantardashaNumber, 1);
+  assert.equal(firstRahuPd.pratyantardashaSign, 8);
 }
 
 // Invalid ages and signs do not yield positions.
