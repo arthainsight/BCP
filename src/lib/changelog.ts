@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.05',
+    date: '2026-11-03',
+    title: 'Bhṛgu Pada AD and PD chart overlays',
+    changes: [
+      'SETTINGS → Display → Chart overlays: added independent switches for Bhṛgu Pada AD and PD. The chart marks each graha in its progressed sign while keeping the natal positions visible.',
+      'Added a shared Bhṛgu Pada source selector for Nāḍī Praveśikā (2019) · 8 grahas and K. P. Vaani / A. V. Sundaram · 7 grahas. The choice is shared by the chart overlays and the TIMING → Bhṛgu Pada panel.',
+      'The overlays follow the shared target date and update when the target date changes.',
+      'Updated the application version to v4.05.',
+    ],
+  },
+
+  {
     version: 'v4.04',
     date: '2026-11-03',
     title: 'Bhṛgu Pada period finder and MD–AD–PD navigation',
