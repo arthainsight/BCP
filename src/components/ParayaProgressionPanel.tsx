@@ -234,6 +234,11 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
         <Heading command="paraya.progressions">
           {t('The progressing grahas (Paraya), moved by age: where they stand at the target moment, and when each reaches a natal graha or the ascendant — the same degree in the 1st, 5th, 7th and 9th sign from it. Mars, Mercury and Venus are in beta.')}
         </Heading>
+        {calculationSettings?.parayaUseBhavaCusp && (
+          <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+            {t('Equal Bhāva cusp mode')}: {formatDegree(chart.ascendant.degree, 'minute')} · {t('the prior house/sign stays active until the progression crosses this degree; displayed signs are bhāva-progressed labels.')}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-1" role="group" aria-label={t('range')}>
