@@ -157,7 +157,7 @@ function PlanetSpan({ token, highlightPlanet, onPlanetClick, selectedPlanet, onP
   const style = selectedByName || highlighted ? undefined
     : dignity ? { color: dignity }
     : token.group === 'transit' ? { color: TRANSIT_COLOR }
-    : token.group === 'special' ? { color: SPECIAL_LAGNA_COLOR, opacity: 0.85 }
+    : token.group === 'special' ? { color: token.text.endsWith('ᴬᴰ') ? '#0891b2' : token.text.endsWith('ᴾᴰ') ? '#c026d3' : SPECIAL_LAGNA_COLOR, opacity: 0.9 }
     : undefined;
   const handleClick = () => {
     if (!tokenName) return;
