@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v4.08',
+    date: '2026-11-03',
+    title: 'Bhāva-cusp and original-placement Parāya modes',
+    changes: [
+      'SETTINGS → Calculations → Parāya: added Use Bhāva Cusp. It uses the equal-bhāva cusp degree (the natal Lagna degree, repeated in each sign) as the progression boundary instead of 0°.',
+      'Added Use Original Placement for retrograde Jupiter, Saturn, Mars, Mercury and Venus. On, a retrograde graha remains in its natal sign at its natal degree; off, the existing previous-sign start is kept. Rāhu and Ketu are not shifted.',
+      'The same options drive chart overlays, current Parāya positions, Parāya hit dates and Parāya-aspect timelines.',
+      'Added regression tests for Jupiter reaching a 24°30′ cusp after 273 sāvana days and Saturn reaching it after 42 sāvana days at the 2.5-year speed.',
+      'Updated the application version to v4.08.',
+    ],
+  },
+
+  {
     version: 'v4.07',
     date: '2026-11-03',
     title: 'Shared daśā-year length for Bhṛgu Pada and Parāya',
