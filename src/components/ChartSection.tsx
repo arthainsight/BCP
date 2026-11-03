@@ -66,7 +66,7 @@ const EDIT_BODIES: { name: string; short: string }[] = [
   { name: 'Jupiter', short: 'Ju' }, { name: 'Venus', short: 'Ve' }, { name: 'Saturn', short: 'Sa' }, { name: 'Rahu', short: 'Ra/Ke' },
 ];
 
-function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: boolean; onToggle: () => void }) {
+function ChartDisplayToggle({ label, value, onToggle, activeClass }: { label: string; value: boolean; onToggle: () => void; activeClass?: string }) {
   const t = useT();
   return (
     <div className="flex items-center justify-between gap-2">
@@ -78,7 +78,7 @@ function ChartDisplayToggle({ label, value, onToggle }: { label: string; value: 
         aria-label={label}
         className={`rounded-sm border px-2.5 py-1.5 text-[10px] font-mono sm:px-1.5 sm:py-0.5 sm:text-[9px] ${
           value
-            ? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white'
+            ? (activeClass ?? 'bg-emerald-500 dark:bg-green-600 border-emerald-500 dark:border-green-600 text-white')
             : 'bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400'
         }`}
       >
@@ -373,6 +373,14 @@ export default function ChartSection({
                   {(layerControls ?? []).map((control) => (
                     <ChartDisplayToggle key={control.key} label={t(CHART_LAYER_LABELS[control.key])} value={control.on} onToggle={control.onToggle} />
                   ))}
+                  {onUpdateChartDisplay && (
+                    <>
+                      <div className="border-t border-zinc-200 dark:border-zinc-700" />
+                      <div className="text-[9px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Bhṛgu Pada</div>
+                      <ChartDisplayToggle label="AD" value={chartDisplaySettings.showBhriguPadaAD} onToggle={() => onToggleChartDisplay?.('showBhriguPadaAD')} activeClass="bg-cyan-600 border-cyan-600 text-white dark:bg-cyan-500 dark:border-cyan-500" />
+                      <ChartDisplayToggle label="PD" value={chartDisplaySettings.showBhriguPadaPD} onToggle={() => onToggleChartDisplay?.('showBhriguPadaPD')} activeClass="bg-fuchsia-600 border-fuchsia-600 text-white dark:bg-fuchsia-500 dark:border-fuchsia-500" />
+                    </>
+                  )}
                   {onUpdateChartDisplay && nadiParayaHousesFromParent.length > 0 && (
                     <ParayaChips bodies={parayaBodies} onChange={chooseParaya} />
                   )}
