@@ -5,6 +5,7 @@ import { ALL_PARAYA_BODIES, calculateBetaParaya, calculateNadiParaya } from './n
 import { RELATION_OFFSET } from '@/lib/transitHits';
 
 const YEAR = 365.25 * 24 * 60 * 60 * 1000;
+const SAVANA_YEAR = 360 * 24 * 60 * 60 * 1000;
 const planet = (name: string, sign: number, degree: number, isRetrograde = false): PlanetData => ({
   name, sign, degree, longitude: (sign - 1) * 30 + degree, house: 1, isRetrograde,
 });
@@ -77,6 +78,16 @@ for (const options of optionSets) for (const retro of [false, true]) {
     assert.ok(Math.abs(period.degree - point.degree) < 0.05, `${hit.body} → ${hit.natal} (${hit.relation}) is at the natal degree`);
   }
 }
+
+// --- The selected daśā-year length changes real Parāya hit dates -----------------------------------------------
+const savanaJupiterHits = findParayaHits({
+  chart, birthTime: birth, fromTime: birth, toTime: birth + 10 * SAVANA_YEAR,
+  relations: [1, 5, 9], yearLength: 'savana',
+}).filter(hit => hit.body === 'Jupiter' && hit.natal === 'Sun');
+assert.deepEqual(savanaJupiterHits.map(hit => Math.round(hit.ageYears * 100) / 100), [0.33, 4.33, 8.33]);
+assert.ok(Math.abs(savanaJupiterHits[0].time - (birth + (10 / 30) * SAVANA_YEAR)) < 1000, 'the first hit is dated in a 360-day year');
+assert.ok(Math.abs(savanaJupiterHits[2].time - (birth + (250 / 30) * SAVANA_YEAR)) < 1000, 'the later hit is dated in a 360-day year');
+assert.notEqual(savanaJupiterHits[0].time, jupiterToSun[0].time, 'a different year length changes the calendar date');
 
 // --- The choice changes the dates: Saturn (from 10° Virgo) leaves its first sign at 2 years, or at 1⅔ --------------
 const saturnToSun = (saturn: 'alternating' | 'even') => findParayaHits({ ...window(12), relations: [1, 5, 9], options: { saturn, rahu: 'alternating' } })
