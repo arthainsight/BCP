@@ -220,6 +220,8 @@ export interface CalculationSettings {
   parayaRahu: ParayaSpeed;
   /** Paraya Jupiter, Saturn, Mars, Mercury and Venus that were retrograde at birth: begin in the previous sign (the default), or in the same sign. */
   parayaRetro: ParayaRetro;
+  /** Use the equal-bhāva cusp (Lagna degree in each sign) as the Parāya sign/house transition boundary. */
+  parayaUseBhavaCusp?: boolean;
   /** The sunrise the special lagnas count from: true (the default), or mean-time (true sunrise plus the equation of time). */
   sunriseMode: 'true' | 'mean';
   /** A sunrise typed in (HH:MM:SS, for example the one another program shows); it replaces the calculated sunrise when it is a time of day. */
@@ -236,6 +238,7 @@ export const DEFAULT_CALCULATION_SETTINGS: CalculationSettings = {
   parayaSaturn: 'alternating',
   parayaRahu: 'alternating',
   parayaRetro: 'previous',
+  parayaUseBhavaCusp: false,
   sunriseMode: 'true',
   sunriseManual: '',
 };
