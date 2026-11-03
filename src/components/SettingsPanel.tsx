@@ -45,6 +45,8 @@ const BASIC_TOGGLES: { key: keyof ChartDisplaySettings; label: string }[] = [
   { key: 'showOuterPlanets', label: 'outer planets' },
   { key: 'showSpecialLagnas', label: 'special lagnas' },
   { key: 'showTargetBar', label: 'target date bar' },
+  { key: 'showBhriguPadaAD', label: 'Bhṛgu Pada AD' },
+  { key: 'showBhriguPadaPD', label: 'Bhṛgu Pada PD' },
 ];
 
 // The coloured layers listed in the chart legend.
@@ -408,6 +410,13 @@ export default function SettingsPanel(props: Props) {
             </div>
             <div className="mt-2">
               <DegreePrecisionPicker value={chartDisplaySettings.degreePrecision} onChange={degreePrecision => onUpdateChartDisplay?.({ degreePrecision })} />
+              <label className="mt-2 block text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                {t('Bhṛgu Pada source')}
+                <select className={`${SELECT} mt-1`} value={chartDisplaySettings.bhriguPadaVersion ?? 'nadi-praveshika-8'} onChange={e => onUpdateChartDisplay?.({ bhriguPadaVersion: e.target.value as ChartDisplaySettings['bhriguPadaVersion'] })}>
+                  <option value="nadi-praveshika-8">Nāḍī Praveśikā (2019) · 8 grahas</option>
+                  <option value="sundaram-7">K. P. Vaani / A. V. Sundaram · 7 grahas</option>
+                </select>
+              </label>
             </div>
           </SubSection>
 
