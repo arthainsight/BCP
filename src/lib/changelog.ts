@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.06',
+    date: '2026-11-03',
+    title: 'Bhṛgu Pada controls in Chart Layers',
+    changes: [
+      'Moved the independent Bhṛgu Pada AD and PD visibility controls into the chart display menu under a dedicated Bhṛgu Pada section.',
+      'AD progression labels use cyan and PD progression labels use magenta in both North Indian and South Indian chart layouts; other special-lagna labels retain their existing colour.',
+      'The AD and PD switches update the shared chart display settings.',
+      'Updated the application version to v4.06.',
+    ],
+  },
+
+  {
     version: 'v4.05',
     date: '2026-11-03',
     title: 'Bhṛgu Pada AD and PD chart overlays',
