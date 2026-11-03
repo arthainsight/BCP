@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { parseTargetDateString } from '@/lib/dateInput';
@@ -23,6 +23,8 @@ type Props = {
   birthDatetime: string;
   targetDate: string;
   onSetTarget?: (value: string) => void;
+  version?: BhriguPadaVersion;
+  onVersionChange?: (version: BhriguPadaVersion) => void;
 };
 
 const VERSIONS: { value: BhriguPadaVersion; label: string }[] = [
@@ -65,10 +67,9 @@ function localMomentString(date: Date): string {
     + ' 12.00.00';
 }
 
-export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targetDate, onSetTarget }: Props) {
+export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targetDate, onSetTarget, version = 'nadi-praveshika-8', onVersionChange }: Props) {
   const t = useT();
   const { name } = useGrahaNames();
-  const [version, setVersion] = useState<BhriguPadaVersion>('nadi-praveshika-8');
 
   const birth = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const target = useMemo(() => parseTargetDateString(targetDate), [targetDate]);
@@ -121,7 +122,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
           <span className="text-[9px] font-mono uppercase tracking-widest text-zinc-400">{t('Source / rule set')}</span>
           <select
             value={version}
-            onChange={event => setVersion(event.target.value as BhriguPadaVersion)}
+            onChange={event => onVersionChange?.(event.target.value as BhriguPadaVersion)}
             className="w-full rounded-md border border-zinc-200 bg-white px-2 py-2 text-xs dark:border-zinc-700 dark:bg-zinc-900"
             aria-label={t('Bhrigu Pada version')}
           >
