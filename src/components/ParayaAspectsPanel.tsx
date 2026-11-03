@@ -22,7 +22,7 @@ import { ordinal } from '@/lib/ordinal';
 import { useLanguage, useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { pad2 } from '@/lib/dateFormat';
-import { JULIAN_YEAR_MS } from '@/lib/time';
+import { JULIAN_YEAR_MS, dashaYearMsFor, type DashaYearLength } from '@/lib/time';
 import { transitSeriesUrl } from '@/lib/apiParams';
 import { useDebouncedJson } from '@/hooks/useDebouncedJson';
 import { BODY_CELL, Heading, NAME_CELL, ROW, ScrollTable, VALUE_CELL } from './balaShared';
@@ -33,6 +33,7 @@ type Props = {
   birthDatetime: string;
   targetDate: string;
   calculationSettings?: CalculationSettings;
+  yearLength?: DashaYearLength;
   /** Which of Utpanna, Kṣema and Ādhāna the variant Vimśottarī starts from. */
   variantChoice?: VimshottariVariantChoice;
   /** Moves the target moment (DD.MM.YYYY HH.MM.SS). */
@@ -70,7 +71,7 @@ interface RowData {
 }
 
 /** The aspect view: which grahas aspect a natal point by sign, for the progressing (Paraya) grahas or for the transits. */
-export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, calculationSettings, variantChoice, onSetTarget }: Props) {
+export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, calculationSettings, variantChoice, yearLength = 'julian', onSetTarget }: Props) {
   const t = useT();
   const language = useLanguage();
   const { code } = useGrahaNames();
@@ -100,9 +101,10 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
 
   const birth = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const from = useMemo(() => parseTargetDateString(targetDate), [targetDate]);
-  const nowAge = birth && from ? Math.max(0, (from.getTime() - birth.getTime()) / JULIAN_YEAR_MS) : 0;
+  const ageYearMs = progression ? dashaYearMsFor(yearLength) : JULIAN_YEAR_MS;
+  const nowAge = birth && from ? Math.max(0, (from.getTime() - birth.getTime()) / ageYearMs) : 0;
   const toAge = nowAge + years;
-  const timeOf = (age: number) => (birth ? birth.getTime() + Math.max(0, age) * JULIAN_YEAR_MS : 0);
+  const timeOf = (age: number) => (birth ? birth.getTime() + Math.max(0, age) * ageYearMs : 0);
 
   // The natal points with the sign each is in.
   const natal = useMemo(() => PROGRESSION_NATAL.flatMap(name => {
@@ -163,7 +165,7 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
   const exactHits = useMemo<ExactHit[]>(() => {
     if (!birth || !from) return [];
     if (progression) {
-      return findParayaHits({ chart, birthTime: birth.getTime(), fromTime: from.getTime(), toTime: timeOf(toAge), relations, options, bodies: bodies as ParayaBody[] })
+      return findParayaHits({ chart, birthTime: birth.getTime(), fromTime: from.getTime(), toTime: timeOf(toAge), relations, options, bodies: bodies as ParayaBody[], yearLength })
         .map(hit => ({ body: hit.body, natal: hit.natal, relation: hit.relation, time: hit.time }));
     }
     const points = [
@@ -173,7 +175,7 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
     const chosen = Object.fromEntries(Object.entries(transitSeries).filter(([body]) => bodies.includes(body)));
     return findTransitHits(chosen, points, relationsOf).map(hit => ({ body: hit.transit, natal: hit.natal, relation: hit.relation, time: hit.time, retrograde: hit.retrograde }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chart, birth, from, toAge, relations, relationsOf, options, bodies, progression, transitSeries]);
+  }, [chart, birth, from, toAge, relations, relationsOf, options, bodies, progression, transitSeries, yearLength, ageYearMs]);
 
   // The daśā lords through each stretch.
   const dashaTable = useMemo(
