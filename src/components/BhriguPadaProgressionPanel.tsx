@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import type { ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { parseTargetDateString } from '@/lib/dateInput';
-import { JULIAN_YEAR_MS } from '@/lib/time';
+import { dashaYearMsFor, type DashaYearLength } from '@/lib/time';
 import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
 import { useGrahaNames } from '@/lib/grahaNames';
 import BhriguPeriodExplorer from '@/components/BhriguPeriodExplorer';
@@ -24,6 +24,7 @@ type Props = {
   targetDate: string;
   onSetTarget?: (value: string) => void;
   version?: BhriguPadaVersion;
+  yearLength?: DashaYearLength;
   onVersionChange?: (version: BhriguPadaVersion) => void;
 };
 
@@ -41,9 +42,9 @@ function ageLabel(age: number): string {
   return years + ' y ' + months + ' m';
 }
 
-function periodDateLabel(birth: Date | null, ageYears: number): string {
+function periodDateLabel(birth: Date | null, ageYears: number, yearLength: DashaYearLength): string {
   if (!birth) return ageLabel(ageYears);
-  const date = new Date(birth.getTime() + ageYears * JULIAN_YEAR_MS);
+  const date = new Date(birth.getTime() + ageYears * dashaYearMsFor(yearLength));
   return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
@@ -67,14 +68,14 @@ function localMomentString(date: Date): string {
     + ' 12.00.00';
 }
 
-export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targetDate, onSetTarget, version = 'nadi-praveshika-8', onVersionChange }: Props) {
+export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targetDate, onSetTarget, version = 'nadi-praveshika-8', yearLength = 'julian', onVersionChange }: Props) {
   const t = useT();
   const { name } = useGrahaNames();
 
   const birth = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const target = useMemo(() => parseTargetDateString(targetDate), [targetDate]);
   const ageFromTarget = birth
-    ? ((target ?? new Date()).getTime() - birth.getTime()) / JULIAN_YEAR_MS
+    ? ((target ?? new Date()).getTime() - birth.getTime()) / dashaYearMsFor(yearLength)
     : null;
 
   // The progression is always calculated for the shared, explicitly selected target date.
@@ -167,7 +168,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
         <p className="text-xs text-amber-700 dark:text-amber-300">{t('Birth date is unavailable; check the birth data.')}</p>
       )}
 
-      <BhriguPeriodExplorer chart={chart} birthDatetime={birthDatetime} version={version} />
+      <BhriguPeriodExplorer chart={chart} birthDatetime={birthDatetime} version={version} yearLength={yearLength} />
 
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-2">
@@ -244,7 +245,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
                     <td className={CELL}>{item.pratyantardashaNumber}/12</td>
                     <td className={CELL}>{durationLabel(item.pratyantardashaDurationYears)}</td>
                     <td className={CELL}>
-                      {periodDateLabel(birth, item.startAgeYears)} – {periodDateLabel(birth, item.endAgeYears)}
+                      {periodDateLabel(birth, item.startAgeYears, yearLength)} – {periodDateLabel(birth, item.endAgeYears, yearLength)}
                     </td>
                   </tr>
                 ))}
@@ -264,7 +265,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
         </p>
       )}
 
-      <BhriguDashaTree chart={chart} birth={birth} version={version} />
+      <BhriguDashaTree chart={chart} birth={birth} version={version} yearLength={yearLength} />
 
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-2">
