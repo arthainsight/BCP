@@ -91,6 +91,7 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
   const saturn = calculationSettings?.parayaSaturn ?? 'alternating';
   const rahu = calculationSettings?.parayaRahu ?? 'alternating';
   const retro = calculationSettings?.parayaRetro ?? 'previous';
+  const bhavaCuspDegree = calculationSettings?.parayaUseBhavaCusp ? chart.ascendant.degree : undefined;
   const progression = source === 'paraya';
   const allBodies: readonly string[] = progression ? ALL_PARAYA_BODIES : TRANSIT_BODIES;
   const bodies = selected[source];
@@ -133,7 +134,7 @@ export default function ParayaAspectsPanel({ chart, birthDatetime, targetDate, c
   const loadError = progression ? '' : slowSeries.error || (fastWanted ? fastSeries.error : '');
 
   // The stays of every graha in the signs up to the end of the range, and from them the aspect periods of each natal point.
-  const options = useMemo(() => ({ saturn, rahu, retro }), [saturn, rahu, retro]);
+  const options = useMemo(() => ({ saturn, rahu, retro, bhavaCuspDegree }), [saturn, rahu, retro, bhavaCuspDegree]);
   const stays = useMemo(() => {
     const result: Record<string, Stay[]> = {};
     if (!birth) return result;
