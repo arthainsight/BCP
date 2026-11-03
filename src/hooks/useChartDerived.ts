@@ -64,9 +64,14 @@ export function useChartDerived(
   const parayaSaturn = calculationSettings.parayaSaturn ?? 'alternating';
   const parayaRahu = calculationSettings.parayaRahu ?? 'alternating';
   const parayaRetro = calculationSettings.parayaRetro ?? 'previous';
+  const parayaBhavaCusp = calculationSettings.parayaUseBhavaCusp ? chartData?.ascendant.degree : undefined;
+  const parayaOptions = useMemo(
+    () => ({ saturn: parayaSaturn, rahu: parayaRahu, retro: parayaRetro, bhavaCuspDegree: parayaBhavaCusp }),
+    [parayaSaturn, parayaRahu, parayaRetro, parayaBhavaCusp],
+  );
   const effectiveNadiParayaHouses = useMemo(
-    () => calculateParayaHouses(chartData, parayaAge, { saturn: parayaSaturn, rahu: parayaRahu, retro: parayaRetro }, true),
-    [chartData, parayaAge, parayaSaturn, parayaRahu, parayaRetro],
+    () => calculateParayaHouses(chartData, parayaAge, parayaOptions, true),
+    [chartData, parayaAge, parayaOptions],
   );
 
   // Dasha lords running at the target date, marked on the charts.
