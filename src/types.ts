@@ -149,6 +149,12 @@ export interface ChartDisplaySettings {
   showDashaLords: boolean;
   /** Coloured borders on the houses of the running mahadasha and antardasha lords. */
   showDashaHouses: boolean;
+  /** Show the Bhṛgu Pada antardaśā sign of each graha in the chart. */
+  showBhriguPadaAD: boolean;
+  /** Show the Bhṛgu Pada pratyantardaśā sign of each graha in the chart. */
+  showBhriguPadaPD: boolean;
+  /** Source variant used for Bhṛgu Pada chart overlays and the Timing panel. */
+  bhriguPadaVersion: 'nadi-praveshika-8' | 'sundaram-7';
   /** Which graha-based dasha system the marks follow. */
   dashaMarkSystem: 'vimshottari' | 'vimshottariVariant' | 'vds' | 'yogini' | 'ashtottari' | 'naisargika';
   /** Interface language. */
@@ -180,6 +186,9 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showYogiMarks: false,
   showDashaLords: false,
   showDashaHouses: false,
+  showBhriguPadaAD: false,
+  showBhriguPadaPD: false,
+  bhriguPadaVersion: 'nadi-praveshika-8',
   dashaMarkSystem: 'vimshottari',
   language: 'en',
   grahaNames: 'english',
