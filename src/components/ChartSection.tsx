@@ -26,6 +26,10 @@ import { ChartFillContext } from './chartFill';
 import type { NadiParayaHouseActivation } from '@/lib/bnn/nadiParaya';
 import { editCount, movedSigns, type ChartEdits } from '@/lib/chartEdit';
 import { SIGN_NAMES } from '@/lib/signs';
+import { parseDateTime } from '@/lib/bcp';
+import { parseTargetDateString } from '@/lib/dateInput';
+import { JULIAN_YEAR_MS } from '@/lib/time';
+import { calculateBhriguPadaPratyantardashas, calculateBhriguProgressions } from '@/lib/bhriguPadaProgression';
 import { useT } from '@/lib/i18n';
 
 export interface ChartSectionProps {
@@ -37,6 +41,7 @@ export interface ChartSectionProps {
   transitLoading: boolean;
   nakshatraAdjust?: number;
   targetDate?: string;
+  birthDatetime?: string;
   onTargetDateChange?: (value: string) => void;
   /** Time of the target moment, HH:MM; the transits are calculated for it. */
   targetTime?: string;
@@ -101,6 +106,7 @@ export default function ChartSection({
   transitLoading = false,
   nakshatraAdjust = 0,
   targetDate,
+  birthDatetime,
   onTargetDateChange,
   targetTime,
   onTargetTimeChange,
@@ -197,8 +203,28 @@ export default function ChartSection({
     ? calculateArudhaPadas(chart.ascendant.sign, chart.planets).filter(pada => arudhaPadas.includes(pada.house))
     : [];
   const pointMarks = selectedChartPoints(chart, points, atmakarakaOf(karakaByPlanet));
-  const d1SpecialLagnas = [...(chartDisplaySettings.showSpecialLagnas ? chart.specialLagnas ?? [] : []), ...arudhaMarks, ...pointMarks];
-  const d1ShowSpecialLagnas = chartDisplaySettings.showSpecialLagnas || arudhaMarks.length > 0 || pointMarks.length > 0;
+  const birthMoment = birthDatetime ? parseDateTime(birthDatetime) : null;
+  const progressionMoment = targetDate ? parseTargetDateString(targetDate) : null;
+  const progressionAge = birthMoment && progressionMoment
+    ? Math.max(0, (progressionMoment.getTime() - birthMoment.getTime()) / JULIAN_YEAR_MS)
+    : null;
+  const bhriguProgressions = progressionAge === null
+    ? []
+    : calculateBhriguProgressions(chart, progressionAge, chartDisplaySettings.bhriguPadaVersion ?? 'nadi-praveshika-8');
+  const bhriguPd = progressionAge === null
+    ? []
+    : calculateBhriguPadaPratyantardashas(bhriguProgressions, progressionAge);
+  const shortGraha: Record<string, string> = { Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra' };
+  const bhriguMarks = [
+    ...(chartDisplaySettings.showBhriguPadaAD ? bhriguProgressions.map(row => ({
+      name: `${shortGraha[row.body] ?? row.body}ᴬᴰ`, longitude: 0, sign: row.sign, degree: 0,
+    })) : []),
+    ...(chartDisplaySettings.showBhriguPadaPD ? bhriguPd.map(row => ({
+      name: `${shortGraha[row.body] ?? row.body}ᴾᴰ`, longitude: 0, sign: row.pratyantardashaSign, degree: 0,
+    })) : []),
+  ];
+  const d1SpecialLagnas = [...(chartDisplaySettings.showSpecialLagnas ? chart.specialLagnas ?? [] : []), ...arudhaMarks, ...pointMarks, ...bhriguMarks];
+  const d1ShowSpecialLagnas = chartDisplaySettings.showSpecialLagnas || arudhaMarks.length > 0 || pointMarks.length > 0 || bhriguMarks.length > 0;
   const showBcp = chartDisplaySettings.showBcpHighlight === true;
   const dashaLords = withDashaLayers(dashaLordsFromParent, chartDisplaySettings);
   const outerDivision = chartDisplaySettings.mixedOuterDivision;
