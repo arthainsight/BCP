@@ -159,6 +159,11 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
   const saturn = calculationSettings?.parayaSaturn ?? 'alternating';
   const rahu = calculationSettings?.parayaRahu ?? 'alternating';
   const retro = calculationSettings?.parayaRetro ?? 'previous';
+  const bhavaCuspDegree = calculationSettings?.parayaUseBhavaCusp ? chart.ascendant.degree : undefined;
+  const options = useMemo(
+    () => ({ saturn, rahu, retro, bhavaCuspDegree }),
+    [saturn, rahu, retro, bhavaCuspDegree],
+  );
   const selectedYearMs = dashaYearMsFor(yearLength);
 
   const birth = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
@@ -174,10 +179,10 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
       toTime: from.getTime() + years * selectedYearMs,
       yearLength,
       relations: PROGRESSION_RELATIONS,
-      options: { saturn, rahu, retro },
+      options,
       bodies: ALL_PARAYA_BODIES,
     });
-  }, [chart, birth, from, years, saturn, rahu, retro, yearLength, selectedYearMs]);
+  }, [chart, birth, from, years, options, yearLength, selectedYearMs]);
 
   const chosen = useMemo(() => filterHits(hits, { bodies, relations }), [hits, bodies, relations]);
   const listed = useMemo(() => (focus ? filterHits(chosen, { bodies, relations, body: focus.body, natal: focus.natal }) : chosen), [chosen, focus, bodies, relations]);
@@ -189,8 +194,8 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
   const now = useMemo(() => {
     if (!birth || !from) return [];
     const age = Math.max(0, (from.getTime() - birth.getTime()) / selectedYearMs);
-    return parayaPeriodsOf(chart, age, { saturn, rahu, retro }, true);
-  }, [chart, birth, from, saturn, rahu, retro, selectedYearMs]);
+    return parayaPeriodsOf(chart, age, options, true);
+  }, [chart, birth, from, options, selectedYearMs]);
 
   // The natal points: the sign and degree of each, for the sign a hit puts the progressing graha in.
   const natalAt = useMemo(() => {
