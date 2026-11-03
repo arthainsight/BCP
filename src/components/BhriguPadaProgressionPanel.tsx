@@ -8,6 +8,7 @@ import { JULIAN_YEAR_MS } from '@/lib/time';
 import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
 import { useGrahaNames } from '@/lib/grahaNames';
 import BhriguPeriodExplorer from '@/components/BhriguPeriodExplorer';
+import BhriguDashaTree from '@/components/BhriguDashaTree';
 import { useT } from '@/lib/i18n';
 import {
   calculateBhriguPadaActivations,
@@ -261,6 +262,8 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
           {t('The MD–AD–PD subdivision is available in the 2019 Nadi Praveshika version; the older seven-graha source does not specify it. Select the 2019 version to see it.')}
         </p>
       )}
+
+      <BhriguDashaTree chart={chart} birth={birth} version={version} />
 
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-2">
