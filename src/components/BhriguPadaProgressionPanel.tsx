@@ -7,6 +7,7 @@ import { parseTargetDateString } from '@/lib/dateInput';
 import { JULIAN_YEAR_MS } from '@/lib/time';
 import { SIGN_ABBR, SIGN_NAMES } from '@/lib/signs';
 import { useGrahaNames } from '@/lib/grahaNames';
+import BhriguPeriodExplorer from '@/components/BhriguPeriodExplorer';
 import { useT } from '@/lib/i18n';
 import {
   calculateBhriguPadaActivations,
@@ -163,6 +164,8 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
       {!birth && (
         <p className="text-xs text-amber-700 dark:text-amber-300">{t('Birth date is unavailable; check the birth data.')}</p>
       )}
+
+      <BhriguPeriodExplorer chart={chart} birthDatetime={birthDatetime} version={version} />
 
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-2">
