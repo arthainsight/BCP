@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.07',
+    date: '2026-11-03',
+    title: 'Shared daśā-year length for Bhṛgu Pada and Parāya',
+    changes: [
+      'The Year of a dasha setting now determines the day length used to convert calendar age into Bhṛgu Pada progression age, including chart overlays, the period finder and the MD–AD–PD date tree.',
+      'Nāḍī Parāya now uses the selected year length for current positions, chart overlays, progression hit dates and Parāya-aspect timelines. Julian, sidereal, tropical and sāvana year choices are shared.',
+      'BNN Jupiterian/minor progressions and ephemeris-based transit calculations keep their existing time conventions.',
+      'Updated the application version to v4.07.',
+    ],
+  },
+
+  {
     version: 'v4.06',
     date: '2026-11-03',
     title: 'Bhṛgu Pada controls in Chart Layers',
