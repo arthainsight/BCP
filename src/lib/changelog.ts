@@ -1,5 +1,16 @@
 export const CHANGELOG = [
   {
+    version: 'v4.09',
+    date: '2026-11-03',
+    title: 'Clarify and verify Bhāva-cusp Parāya progression',
+    changes: [
+      'The Parāya progression panel now identifies the active equal-bhāva cusp degree and explains that the prior house/sign remains active until the progression crosses it.',
+      'Fixed the regression-test helper order and assert that the exact Jupiter cusp hit is returned.',
+      'Updated the application version to v4.09.',
+    ],
+  },
+
+  {
     version: 'v4.08',
     date: '2026-11-03',
     title: 'Bhāva-cusp and original-placement Parāya modes',
