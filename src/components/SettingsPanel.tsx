@@ -305,18 +305,28 @@ export default function SettingsPanel(props: Props) {
                 {t('How long the Paraya graha stays in each sign. Either way a round takes 30 years for Saturn and 18 for Rahu; the chart and the Paraya tab follow the choice.')}
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('paraya retrograde')}</label>
-              <select
-                className={SELECT}
-                value={calculationSettings.parayaRetro ?? 'previous'}
-                onChange={(e) => onUpdateCalculationSettings({ parayaRetro: e.target.value as 'previous' | 'same' })}
-              >
-                <option value="previous">{t('one sign back')}</option>
-                <option value="same">{t('the natal sign')}</option>
-              </select>
-              <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-                {t('Where a Paraya Jupiter, Saturn, Mars, Mercury or Venus that was retrograde at birth begins: in the sign before its natal sign, or in the natal sign itself, at its natal degree either way. Rahu and Ketu are not moved.')}
+            <div className="space-y-1.5" data-setting="paraya-bhava-cusp">
+              <div className="flex items-center justify-between gap-3">
+                <label className="text-xs font-mono text-zinc-500 dark:text-zinc-400">{t('use bhava cusp')}</label>
+                <MiniToggle
+                  value={Boolean(calculationSettings.parayaUseBhavaCusp)}
+                  onToggle={() => onUpdateCalculationSettings({ parayaUseBhavaCusp: !calculationSettings.parayaUseBhavaCusp })}
+                />
+              </div>
+              <div className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                {t('Use the Lagna degree as the equal-bhāva cusp in every sign. Progression changes sign/house when it reaches that degree; off, it changes at 0°.')}
+              </div>
+            </div>
+            <div className="space-y-1.5" data-setting="paraya-original-placement">
+              <div className="flex items-center justify-between gap-3">
+                <label className="text-xs font-mono text-zinc-500 dark:text-zinc-400">{t('use original placement')}</label>
+                <MiniToggle
+                  value={(calculationSettings.parayaRetro ?? 'previous') === 'same'}
+                  onToggle={() => onUpdateCalculationSettings({ parayaRetro: (calculationSettings.parayaRetro ?? 'previous') === 'same' ? 'previous' : 'same' })}
+                />
+              </div>
+              <div className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                {t('On: retrograde Jupiter, Saturn, Mars, Mercury and Venus begin in their natal sign at their natal degree. Off: they begin one sign back. Direct planets are unchanged; Rahu and Ketu are not shifted.')}
               </div>
             </div>
             <div>
