@@ -93,6 +93,7 @@ export default function TimingPanel({
 }: Props) {
   const t = useT();
   const chartStyle = chartDisplaySettings.chartStyle ?? 'north';
+  const yearLength = dashaSettings.yearLength ?? 'julian';
   const [view, setView] = useState<View>('dasha');
   const [annualPlace, setAnnualPlace] = useState<AnnualPlace>(null);
 
@@ -184,6 +185,7 @@ export default function TimingPanel({
           birthDatetime={birthDatetime}
           targetDate={targetDate ?? ''}
           calculationSettings={calculationSettings}
+          yearLength={yearLength}
           onSetTarget={onSetTransitDatetime}
         />
       )}
@@ -194,6 +196,7 @@ export default function TimingPanel({
           birthDatetime={birthDatetime}
           targetDate={targetDate ?? ''}
           version={chartDisplaySettings.bhriguPadaVersion ?? 'nadi-praveshika-8'}
+          yearLength={yearLength}
           onVersionChange={version => onUpdateChartDisplay?.({ bhriguPadaVersion: version })}
           onSetTarget={onSetTransitDatetime}
         />
@@ -206,6 +209,7 @@ export default function TimingPanel({
           targetDate={targetDate ?? ''}
           calculationSettings={calculationSettings}
           variantChoice={dashaSettings.variantChoice}
+          yearLength={yearLength}
           onSetTarget={onSetTransitDatetime}
         />
       )}
