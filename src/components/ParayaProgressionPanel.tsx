@@ -15,7 +15,7 @@ import { ordinal } from '@/lib/ordinal';
 import { useLanguage, useT } from '@/lib/i18n';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { pad2 } from '@/lib/dateFormat';
-import { JULIAN_YEAR_MS } from '@/lib/time';
+import { dashaYearMsFor, type DashaYearLength } from '@/lib/time';
 import { BODY_CELL, Heading, NAME_CELL, ROW, ScrollTable, VALUE_CELL } from './balaShared';
 
 type Props = {
@@ -23,6 +23,7 @@ type Props = {
   birthDatetime: string;
   targetDate: string;
   calculationSettings?: CalculationSettings;
+  yearLength?: DashaYearLength;
   /** Moves the target moment (DD.MM.YYYY HH.MM.SS). */
   onSetTarget?: (value: string) => void;
 };
@@ -145,7 +146,7 @@ function BhriguChakra({ chart, now, relations, code }: {
   );
 }
 
-export default function ParayaProgressionPanel({ chart, birthDatetime, targetDate, calculationSettings, onSetTarget }: Props) {
+export default function ParayaProgressionPanel({ chart, birthDatetime, targetDate, calculationSettings, yearLength = 'julian', onSetTarget }: Props) {
   const t = useT();
   const language = useLanguage();
   const { code } = useGrahaNames();
@@ -158,6 +159,7 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
   const saturn = calculationSettings?.parayaSaturn ?? 'alternating';
   const rahu = calculationSettings?.parayaRahu ?? 'alternating';
   const retro = calculationSettings?.parayaRetro ?? 'previous';
+  const selectedYearMs = dashaYearMsFor(yearLength);
 
   const birth = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const from = useMemo(() => parseTargetDateString(targetDate), [targetDate]);
@@ -169,12 +171,13 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
       chart,
       birthTime: birth.getTime(),
       fromTime: from.getTime(),
-      toTime: from.getTime() + years * JULIAN_YEAR_MS,
+      toTime: from.getTime() + years * selectedYearMs,
+      yearLength,
       relations: PROGRESSION_RELATIONS,
       options: { saturn, rahu, retro },
       bodies: ALL_PARAYA_BODIES,
     });
-  }, [chart, birth, from, years, saturn, rahu, retro]);
+  }, [chart, birth, from, years, saturn, rahu, retro, yearLength, selectedYearMs]);
 
   const chosen = useMemo(() => filterHits(hits, { bodies, relations }), [hits, bodies, relations]);
   const listed = useMemo(() => (focus ? filterHits(chosen, { bodies, relations, body: focus.body, natal: focus.natal }) : chosen), [chosen, focus, bodies, relations]);
@@ -185,9 +188,9 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
   // Where the progressing grahas stand at the target moment.
   const now = useMemo(() => {
     if (!birth || !from) return [];
-    const age = Math.max(0, (from.getTime() - birth.getTime()) / JULIAN_YEAR_MS);
+    const age = Math.max(0, (from.getTime() - birth.getTime()) / selectedYearMs);
     return parayaPeriodsOf(chart, age, { saturn, rahu, retro }, true);
-  }, [chart, birth, from, saturn, rahu, retro]);
+  }, [chart, birth, from, saturn, rahu, retro, selectedYearMs]);
 
   // The natal points: the sign and degree of each, for the sign a hit puts the progressing graha in.
   const natalAt = useMemo(() => {
