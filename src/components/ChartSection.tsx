@@ -28,7 +28,7 @@ import { editCount, movedSigns, type ChartEdits } from '@/lib/chartEdit';
 import { SIGN_NAMES } from '@/lib/signs';
 import { parseDateTime } from '@/lib/bcp';
 import { parseTargetDateString } from '@/lib/dateInput';
-import { JULIAN_YEAR_MS } from '@/lib/time';
+import { dashaYearMsFor, type DashaYearLength } from '@/lib/time';
 import { calculateBhriguPadaPratyantardashas, calculateBhriguProgressions } from '@/lib/bhriguPadaProgression';
 import { useT } from '@/lib/i18n';
 
@@ -39,6 +39,8 @@ export interface ChartSectionProps {
   chartDisplaySettings: ChartDisplaySettings;
   karakaByPlanet: Record<string, string>;
   transitLoading: boolean;
+  /** Shared year convention for daśās and age-based progressions. */
+  yearLength?: DashaYearLength;
   nakshatraAdjust?: number;
   targetDate?: string;
   birthDatetime?: string;
@@ -104,6 +106,7 @@ export default function ChartSection({
   chartDisplaySettings,
   karakaByPlanet,
   transitLoading = false,
+  yearLength = 'julian',
   nakshatraAdjust = 0,
   targetDate,
   birthDatetime,
@@ -206,7 +209,7 @@ export default function ChartSection({
   const birthMoment = birthDatetime ? parseDateTime(birthDatetime) : null;
   const progressionMoment = targetDate ? parseTargetDateString(targetDate) : null;
   const progressionAge = birthMoment && progressionMoment
-    ? Math.max(0, (progressionMoment.getTime() - birthMoment.getTime()) / JULIAN_YEAR_MS)
+    ? Math.max(0, (progressionMoment.getTime() - birthMoment.getTime()) / dashaYearMsFor(yearLength))
     : null;
   const bhriguProgressions = progressionAge === null
     ? []
