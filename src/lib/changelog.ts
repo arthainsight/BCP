@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.04',
+    date: '2026-11-03',
+    title: 'Bhṛgu Pada period finder and MD–AD–PD navigation',
+    changes: [
+      'TIMING → Bhṛgu Pada: added a date-range finder for AD- and PD-level sign periods. Filter by sign and select one or more grahas to find their matching periods.',
+      'The finder can identify overlapping date ranges in which the selected grahas meet the chosen sign condition at the same time.',
+      'Added an expandable MD → AD → PD tree: open a graha’s fixed natal-sign MD to inspect its twelve AD signs, then open an AD to inspect its twelve PD subdivisions.',
+      'Updated the application version to v4.04.',
+    ],
+  },
+
+  {
     version: 'v3.103',
     date: '2026-11-03',
     title: 'Correct Bhṛgu Pada MD–AD–PD levels',
