@@ -56,6 +56,7 @@ interface Props {
   onOpenVargaMatrix?: () => void;
   calculationSettings?: CalculationSettings;
   chartDisplaySettings: ChartDisplaySettings;
+  onUpdateChartDisplay?: (update: Partial<ChartDisplaySettings>) => void;
   nakshatraAdjust?: number;
   ianaTimezone?: string;
   /** Natal place and time zone, for the transits of an event's day. */
@@ -83,6 +84,7 @@ export default function TimingPanel({
   onOpenVargaMatrix,
   calculationSettings,
   chartDisplaySettings,
+  onUpdateChartDisplay,
   nakshatraAdjust = 0,
   ianaTimezone,
   transitLocation,
@@ -191,6 +193,8 @@ export default function TimingPanel({
           chart={chart}
           birthDatetime={birthDatetime}
           targetDate={targetDate ?? ''}
+          version={chartDisplaySettings.bhriguPadaVersion ?? 'nadi-praveshika-8'}
+          onVersionChange={version => onUpdateChartDisplay?.({ bhriguPadaVersion: version })}
           onSetTarget={onSetTransitDatetime}
         />
       )}
