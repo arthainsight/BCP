@@ -166,7 +166,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
 
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-2">
-          <h3 className="text-xs font-semibold">{t('Progressed grahas')}</h3>
+          <h3 className="text-xs font-semibold">{t('Antardasha (AD) progressions')}</h3>
           <span className="text-[9px] font-mono text-zinc-400">{t(selectedVersion.label)}</span>
         </div>
         <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
@@ -272,7 +272,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
                 <th className={HEAD}>{t('Natal house')}</th>
                 <th className={HEAD}>{t('Arudha sign')}</th>
                 <th className={HEAD}>{t('Pada lord')}</th>
-                <th className={HEAD}>{t('Progressed lord')}</th>
+                <th className={HEAD}>{t('AD position of lord')}</th>
                 <th className={HEAD}>{t('Relation from Pada')}</th>
               </tr>
             </thead>
@@ -301,7 +301,7 @@ export default function BhriguPadaProgressionPanel({ chart, birthDatetime, targe
           </table>
         </div>
         <p className="text-[9px] leading-relaxed text-zinc-400">
-          {t('The relation column compares each Pada with the progressed position of its own lord. Same sign, Kendra and Trikona are shown as reference relationships, not as an automatic event prediction.')}
+          {t('The relation column compares each Pada with the AD sign of its own lord. Same sign, Kendra and Trikona are shown as reference relationships, not as an automatic event prediction.')}
         </p>
       </div>
 
