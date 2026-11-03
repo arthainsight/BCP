@@ -3,29 +3,29 @@
 import { useMemo, useState } from 'react';
 import type { ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
-import { JULIAN_YEAR_MS } from '@/lib/time';
+import { dashaYearMsFor, type DashaYearLength } from '@/lib/time';
 import { SIGN_NAMES } from '@/lib/signs';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { BHRIGU_PADA_CYCLES, BHRIGU_PADA_BODIES, type BhriguPadaVersion } from '@/lib/bhriguPadaProgression';
 
-type Props = { chart: ChartData; birthDatetime: string; version: BhriguPadaVersion };
+type Props = { chart: ChartData; birthDatetime: string; version: BhriguPadaVersion; yearLength: DashaYearLength };
 type Period = { body: string; sign: number; start: Date; end: Date; label: string };
 const wrap = (n: number) => ((n - 1) % 12 + 12) % 12 + 1;
-const addYears = (birth: Date, years: number) => new Date(birth.getTime() + years * JULIAN_YEAR_MS);
+const addYears = (birth: Date, years: number, yearLength: DashaYearLength) => new Date(birth.getTime() + years * dashaYearMsFor(yearLength));
 const fmt = (date: Date) => date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 const inputDate = (date: Date) => { const d = new Date(date.getTime() - date.getTimezoneOffset() * 60000); return d.toISOString().slice(0, 10); };
 
-function makePeriods(body: string, natalSign: number, cycle: number, birth: Date, level: 'AD' | 'PD'): Period[] {
+function makePeriods(body: string, natalSign: number, cycle: number, birth: Date, level: 'AD' | 'PD', yearLength: DashaYearLength): Period[] {
   const count = level === 'AD' ? 12 : 144;
   const duration = cycle / count;
   return Array.from({ length: count }, (_, i) => ({
     body, sign: level === 'AD' ? wrap(natalSign + i) : wrap(natalSign + Math.floor(i / 12) + (i % 12)),
-    start: addYears(birth, i * duration), end: addYears(birth, (i + 1) * duration),
+    start: addYears(birth, i * duration, yearLength), end: addYears(birth, (i + 1) * duration, yearLength),
     label: level === 'AD' ? 'AD ' + (i + 1) + '/12' : 'PD ' + (i + 1) + '/144',
   }));
 }
 
-export default function BhriguPeriodExplorer({ chart, birthDatetime, version }: Props) {
+export default function BhriguPeriodExplorer({ chart, birthDatetime, version, yearLength }: Props) {
   const birth = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const { name } = useGrahaNames();
   const bodies = BHRIGU_PADA_BODIES[version];
@@ -45,7 +45,7 @@ export default function BhriguPeriodExplorer({ chart, birthDatetime, version }: 
       const natal = chart.planets.find(p => p.name === body);
       const cycle = BHRIGU_PADA_CYCLES[version][body];
       if (!natal || !cycle) return [];
-      return makePeriods(body, natal.sign, cycle, birth, level).filter(p => p.sign === sign && p.end > fromDate && p.start <= toDate);
+      return makePeriods(body, natal.sign, cycle, birth, level, yearLength).filter(p => p.sign === sign && p.end > fromDate && p.start <= toDate);
     });
     const rows = lists.flat().sort((a, b) => a.start.getTime() - b.start.getTime());
     let overlaps: { start: Date; end: Date }[] = [];
@@ -62,7 +62,7 @@ export default function BhriguPeriodExplorer({ chart, birthDatetime, version }: 
       overlaps = overlaps.map(p => ({ start: p.start < fromDate ? fromDate : p.start, end: p.end > toDate ? toDate : p.end }));
     }
     return { results: rows, common: overlaps };
-  }, [birth, chart, from, to, level, searched, selected, sign, version]);
+  }, [birth, chart, from, to, level, searched, selected, sign, version, yearLength]);
 
   return <section className="space-y-3 rounded-xl border border-zinc-200 p-3 dark:border-zinc-800" data-bhrigu-period-explorer>
     <div><h3 className="text-xs font-semibold">AD / PD -ajanjaksohaku</h3><p className="text-[10px] text-zinc-500">Etsi, milloin yksi tai useampi graha on valitussa merkissä AD- tai PD-tasolla.</p></div>
