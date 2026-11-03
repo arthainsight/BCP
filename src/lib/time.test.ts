@@ -1,6 +1,6 @@
 // The year the daśās count in: a choice, the Julian year at the start, put back after a reference worked out in another.
 import assert from 'node:assert/strict';
-import { DASHA_YEAR_LENGTHS, DAY_MS, addDashaYears, dashaYearMs, getDashaYearLength, isDashaYearLength, setDashaYearLength, withDashaYear } from './time';
+import { DASHA_YEAR_LENGTHS, DAY_MS, addDashaYears, dashaYearMs, dashaYearMsFor, getDashaYearLength, isDashaYearLength, setDashaYearLength, withDashaYear } from './time';
 import { calculateVimshottari } from './vimshottari';
 import { calculateKalachakra, calculateKalachakraSubDashas } from './kalachakra';
 import { calculateRasiDasha } from './rasiDashas';
@@ -10,6 +10,10 @@ import { DEFAULT_DASHA_SETTINGS } from '@/types';
 assert.deepEqual(DASHA_YEAR_LENGTHS, { julian: 365.25, sidereal: 365.256364, tropical: 365.2422, savana: 360 });
 assert.equal(getDashaYearLength(), 'julian', 'the start');
 assert.equal(dashaYearMs(), 365.25 * DAY_MS);
+assert.equal(dashaYearMsFor('julian'), 365.25 * DAY_MS);
+assert.equal(dashaYearMsFor('sidereal'), 365.256364 * DAY_MS);
+assert.equal(dashaYearMsFor('tropical'), 365.2422 * DAY_MS);
+assert.equal(dashaYearMsFor('savana'), 360 * DAY_MS);
 assert.ok(isDashaYearLength('savana') && !isDashaYearLength('lunar') && !isDashaYearLength(3));
 
 const birth = new Date(Date.UTC(2000, 0, 1));
