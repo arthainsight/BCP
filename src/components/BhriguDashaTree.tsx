@@ -1,17 +1,17 @@
 'use client';
 
 import type { ChartData } from '@/types';
-import { JULIAN_YEAR_MS } from '@/lib/time';
+import { dashaYearMsFor, type DashaYearLength } from '@/lib/time';
 import { SIGN_NAMES } from '@/lib/signs';
 import { useGrahaNames } from '@/lib/grahaNames';
 import { BHRIGU_PADA_CYCLES, BHRIGU_PADA_BODIES, type BhriguPadaVersion } from '@/lib/bhriguPadaProgression';
 
-type Props = { chart: ChartData; birth: Date | null; version: BhriguPadaVersion };
+type Props = { chart: ChartData; birth: Date | null; version: BhriguPadaVersion; yearLength: DashaYearLength };
 const wrap = (n: number) => ((n - 1) % 12 + 12) % 12 + 1;
-const dateAt = (birth: Date, age: number) => new Date(birth.getTime() + age * JULIAN_YEAR_MS);
+const dateAt = (birth: Date, age: number, yearLength: DashaYearLength) => new Date(birth.getTime() + age * dashaYearMsFor(yearLength));
 const label = (date: Date) => date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
-export default function BhriguDashaTree({ chart, birth, version }: Props) {
+export default function BhriguDashaTree({ chart, birth, version, yearLength }: Props) {
   const { name } = useGrahaNames();
   if (version !== 'nadi-praveshika-8' || !birth) return null;
   return <section className="space-y-2" data-bhrigu-dasha-tree>
@@ -29,7 +29,7 @@ export default function BhriguDashaTree({ chart, birth, version }: Props) {
               const adEndAge = (ad + 1) * cycle / 12;
               const adSign = wrap(natal.sign + ad);
               return <details key={ad} className="ml-2 rounded border border-zinc-100 dark:border-zinc-800">
-                <summary className="cursor-pointer px-2 py-2 text-[10px]">AD {ad + 1}/12 · <strong>{SIGN_NAMES[adSign - 1]}</strong><span className="ml-2 text-zinc-400">{label(dateAt(birth, adStartAge))} – {label(dateAt(birth, adEndAge))}</span></summary>
+                <summary className="cursor-pointer px-2 py-2 text-[10px]">AD {ad + 1}/12 · <strong>{SIGN_NAMES[adSign - 1]}</strong><span className="ml-2 text-zinc-400">{label(dateAt(birth, adStartAge, yearLength))} – {label(dateAt(birth, adEndAge, yearLength))}</span></summary>
                 <div className="space-y-1 border-t px-2 py-2 dark:border-zinc-800">
                   {Array.from({ length: 12 }, (_, pd) => {
                     const index = ad * 12 + pd;
@@ -37,7 +37,7 @@ export default function BhriguDashaTree({ chart, birth, version }: Props) {
                     const endAge = (index + 1) * cycle / 144;
                     const pdSign = wrap(adSign + pd);
                     return <div key={pd} className="grid grid-cols-[75px_minmax(70px,1fr)_minmax(150px,2fr)] gap-2 border-b border-zinc-100 py-1 text-[9px] last:border-0 dark:border-zinc-800">
-                      <span className="font-mono text-zinc-500">PD {pd + 1}/12</span><span className="font-medium">{SIGN_NAMES[pdSign - 1]}</span><span className="text-zinc-400">{label(dateAt(birth, startAge))} – {label(dateAt(birth, endAge))}</span>
+                      <span className="font-mono text-zinc-500">PD {pd + 1}/12</span><span className="font-medium">{SIGN_NAMES[pdSign - 1]}</span><span className="text-zinc-400">{label(dateAt(birth, startAge, yearLength))} – {label(dateAt(birth, endAge, yearLength))}</span>
                     </div>;
                   })}
                 </div>
