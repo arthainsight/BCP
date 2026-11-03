@@ -89,6 +89,7 @@ assert.deepEqual(ketuMatches.map(match => match.ageYears), [1, 19]);
 
 // --- Equal-bhāva cusp progression: the Lagna degree is the transition point in every sign -----------------------
 {
+  const nearCusp = (a: number, b: number, message: string) => assert.ok(Math.abs(a - b) < 1e-6, `${message}: ${a} ≈ ${b}`);
   const cusp = 24.5;
   const options = { ...DEFAULT_PARAYA_OPTIONS, retro: 'same' as const, bhavaCuspDegree: cusp };
   const jupiterDegree = 1.75;
@@ -98,15 +99,15 @@ assert.deepEqual(ketuMatches.map(match => match.ageYears), [1, 19]);
     natalJupiterDegree: jupiterDegree, jupiterRetrograde: true, options,
   }).jupiter;
   assert.equal(jupiterBefore.signIndex, 11, 'before the Aries cusp, the previous sign remains active');
-  near(jupiterBefore.degree, jupiterDegree, 'Jupiter retains its original degree at birth');
+  nearCusp(jupiterBefore.degree, jupiterDegree, 'Jupiter retains its original degree at birth');
   const jupiterAtCusp = calculateNadiParaya({
     ageYears: jupiterCuspAge, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     natalJupiterDegree: jupiterDegree, jupiterRetrograde: true, options,
   }).jupiter;
   assert.equal(jupiterAtCusp.signIndex, 0, 'the cusp activates Aries');
-  near(jupiterAtCusp.degree, cusp, 'Jupiter reaches the selected cusp');
-  near(jupiterAtCusp.startAge, jupiterCuspAge, 'the Aries interval begins at the cusp');
-  near(jupiterCuspAge * 360, 273, 'Jupiter reaches the 24°30′ cusp after 273 sāvana days');
+  nearCusp(jupiterAtCusp.degree, cusp, 'Jupiter reaches the selected cusp');
+  nearCusp(jupiterAtCusp.startAge, jupiterCuspAge, 'the Aries interval begins at the cusp');
+  nearCusp(jupiterCuspAge * 360, 273, 'Jupiter reaches the 24°30′ cusp after 273 sāvana days');
 
   const saturnDegree = 23.1;
   const saturnCuspAge = ((cusp - saturnDegree) / 30) * 2.5;
@@ -120,15 +121,16 @@ assert.deepEqual(ketuMatches.map(match => match.ageYears), [1, 19]);
     natalSaturnDegree: saturnDegree, options: { ...options, saturn: 'even' },
   }).saturn;
   assert.equal(saturnAtCusp.signIndex, 7, 'the cusp activates Scorpio');
-  near(saturnAtCusp.degree, cusp, 'Saturn reaches the same cusp degree');
-  near(saturnCuspAge * 360, 42, 'Saturn reaches a cusp 1°24′ ahead in 42 sāvana days');
+  nearCusp(saturnAtCusp.degree, cusp, 'Saturn reaches the same cusp degree');
+  nearCusp(saturnCuspAge * 360, 42, 'Saturn reaches a cusp 1°24′ ahead in 42 sāvana days');
   
   const cuspHits = findParayaAgesForPosition({
     body: 'Jupiter', targetSignIndex: 0, degree: cusp,
     natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     jupiterRetrograde: true, natalDegrees: { Jupiter: jupiterDegree }, maxAge: 3, options,
   });
-  near(cuspHits[0].ageYears, jupiterCuspAge, 'exact Parāya hits use the same cusp-based timeline');
+  assert.ok(cuspHits.length > 0, 'the cusp-aligned Jupiter hit is found');
+  nearCusp(cuspHits[0].ageYears, jupiterCuspAge, 'exact Parāya hits use the same cusp-based timeline');
 }
 
 // --- The beta grahas: Mars two months, Mercury and Venus a month in each sign --------------------------------------------
