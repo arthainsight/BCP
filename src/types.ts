@@ -139,7 +139,7 @@ export interface ChartDisplaySettings {
   showBnnMinorHighlight: boolean;
   showTransitOverlay: boolean;
   showNadiParaya: boolean;
-  /** Which of Jupiter, Saturn, Rahu and Ketu the Paraya layer draws. */
+  /** Which of Jupiter, Saturn, Rahu, Ketu, Moon and Sun the Parāya layer draws. */
   parayaBodies: ParayaBody[];
   /** BCP running year and month houses; off by default since v1.80 removed them from the chart. */
   showBcpHighlight: boolean;
