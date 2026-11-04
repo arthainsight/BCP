@@ -39,15 +39,13 @@ const FIRST_ROWS = 40;
 const isBeta = (body: ParayaBody) => (PARAYA_BETA_BODIES as readonly ParayaBody[]).includes(body);
 
 /**
- * The Paraya tab: the seven progressing grahas (Jupiter, Saturn, Rahu and Ketu, and Mars, Mercury and Venus in beta) where they stand now
- * and when each of them next reaches a natal point or the ascendant, an overview of the seven against the ten natal points, and every hit
- * in the order of time: the same degree in the 1st, 5th, 7th and 9th sign from the natal point. Worked out in the browser from the age.
+ * The Parāya tab: the six standard progressing grahas (Jupiter, Saturn, Rahu, Ketu, Moon and Sun) and three optional beta grahas, with their current positions and future hits against natal points and the ascendant.
  */
 
-const CHAKRA_BODIES: readonly ParayaBody[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Mercury', 'Venus', 'Mars'];
+const CHAKRA_BODIES: readonly ParayaBody[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun', 'Mercury', 'Venus', 'Mars'];
 const CHAKRA_COLORS: Record<ParayaBody, string> = {
   Jupiter: '#f59e0b', Saturn: '#60a5fa', Rahu: '#a78bfa', Ketu: '#cbd5e1',
-  Mercury: '#4ade80', Venus: '#f472b6', Mars: '#f87171',
+  Moon: '#38bdf8', Sun: '#facc15', Mercury: '#4ade80', Venus: '#f472b6', Mars: '#f87171',
 };
 const CHAKRA_GLYPHS: Record<string, string> = {
   Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me', Jupiter: 'Ju',
@@ -84,7 +82,7 @@ function BhriguChakra({ chart, now, relations, code }: {
       </div>
       <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_190px]">
         <div className="mx-auto w-full max-w-[720px]">
-          <svg viewBox="0 0 720 720" role="img" aria-label="Natal chart with seven separate progression rings" className="h-auto w-full">
+          <svg viewBox="0 0 720 720" role="img" aria-label="Natal chart with nine separate progression rings" className="h-auto w-full">
             {Array.from({ length: 12 }, (_, i) => {
               const a = CHAKRA_POINT(outer, i * 30);
               const label = CHAKRA_POINT(outer + 16, i * 30 + 15);
