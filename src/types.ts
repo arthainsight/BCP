@@ -199,7 +199,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
 /** How the grahas are named on screen: English (Sun, Moon …) or Sanskrit (Sūrya, Candra …). */
 export type GrahaNameStyle = 'english' | 'sanskrit';
 
-/** How the Nāḍī Paraya walks a graha through the signs: alternating long and short stays (Saturn 3 / 2 years, Rahu 2 / 1) or the same stay in every sign (2.5 and 1.5 years). */
+/** How the Nāḍī Paraya walks Saturn through the signs: alternating 3 / 2 years or 2.5 years in every sign. */
 export type ParayaSpeed = 'alternating' | 'even';
 
 /** Where a Paraya graha that was retrograde at birth begins: one sign before its natal sign, or in the natal sign itself. */
@@ -216,7 +216,7 @@ export interface CalculationSettings {
   charaKarakaCount: 7 | 8;
   /** Paraya Saturn: 3 / 2 years alternating, or 2.5 years in every sign. */
   parayaSaturn: ParayaSpeed;
-  /** Paraya Rahu and Ketu: 2 / 1 years alternating, or 1.5 years in every sign. */
+  /** @deprecated Legacy saved preference; Rāhu/Ketu now use a fixed table-derived stay. */
   parayaRahu: ParayaSpeed;
   /** Paraya Jupiter, Saturn, Mars, Mercury and Venus that were retrograde at birth: begin in the previous sign (the default), or in the same sign. */
   parayaRetro: ParayaRetro;
