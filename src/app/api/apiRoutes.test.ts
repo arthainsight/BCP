@@ -58,7 +58,9 @@ async function main() {
   const series = await call(transitSeries, `start=2024-01-01&days=60&bodies=${Array(500).fill('Saturn').join(',')}`);
   assert.equal(series.status, 200);
   assert.deepEqual(Object.keys(series.body.series as object), ['Saturn']);
-  assert.equal((await call(transitSeries, 'start=2024-01-01&bodies=Moon')).status, 400, 'the Moon is left out of the transits');
+  const moonDaily = await call(transitSeries, 'start=2024-01-01&days=31&step=1&bodies=Moon');
+  assert.equal(moonDaily.status, 200, 'daily transit calendars can include the Moon');
+  assert.ok(((moonDaily.body.series as Record<string, { longitudes: number[] }>).Moon.longitudes.length) >= 31, 'Moon series contains daily samples');
   assert.equal((await call(transitSeries, 'start=2024-01-01&days=99999&step=2')).status, 400, 'every graha every two days for 140 years is too much');
   assert.equal((await call(transitSeries, 'start=2024-01-01&days=60&ayanamsaOffset=NaN')).status, 400);
   assert.equal((await call(transitHits, 'start=2024-01-01&days=abc')).status, 200, 'days that is not a number is the usual length');
