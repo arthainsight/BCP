@@ -3,17 +3,15 @@ import type { ParayaRetro } from '@/types';
 import { runStudy, testFeature, type FeatureTest, type StudyChart, type StudyOptions } from './eventStudy';
 import { adjustedQValues } from './stats';
 
-// Which setting of the Paraya progressions fits the events best? The progressions can begin one sign back or in the natal sign for a graha that was retrograde at birth,
-// and Saturn and Rahu can stay by turns or evenly. The same study is run under each of the eight combinations, and the strength of what it finds is set side by side.
-// The p-values here are the exact ones (each event has the chance its own chart gives it), which keep telling a strong result from a stronger one where a permutation
-// test runs out of resolution. Trying eight settings and keeping the strongest is itself a choice among several, so the best p-value of the best setting is shown
-// corrected for the eight.
+// Which setting of the Parāya progressions fits the events best? A retrograde planet can begin one sign back or in its natal sign, and Saturn can alternate
+// between three and two years or stay 2.5 years in every sign. Rāhu/Ketu now use their fixed table-derived rate, so they are not settings in this comparison.
+// The study runs under each of the four combinations. Exact p-values distinguish strong from stronger results; the selected-best p-value is corrected for four tests.
 
 const RETRO: readonly ParayaRetro[] = ['previous', 'same'];
-const STAYS = ['alternating', 'even'] as const;
+const SATURN_STAYS = ['alternating', 'even'] as const;
 
-/** The eight combinations of the Paraya settings. */
-export const PARAYA_SETTING_COMBINATIONS: readonly ParayaOptions[] = RETRO.flatMap(retro => STAYS.flatMap(saturn => STAYS.map(rahu => ({ saturn, rahu, retro }))));
+/** The four combinations of retrograde start and Saturn speed. */
+export const PARAYA_SETTING_COMBINATIONS: readonly ParayaOptions[] = RETRO.flatMap(retro => SATURN_STAYS.map(saturn => ({ saturn, retro })));
 
 export interface SettingsRow {
   options: ParayaOptions;
@@ -25,7 +23,7 @@ export interface SettingsRow {
   best: FeatureTest | null;
   /** The strength of the top of the table: the mean of −log10 p of the five features with the smallest p (0 when there are none). */
   score: number;
-  /** The smallest p corrected for the eight settings tried (the smaller of one and p times eight). */
+  /** The smallest p corrected for the four settings tried (the smaller of one and p times four). */
   correctedBestP: number | null;
   /** What the study found, as one text: rows with the same one found exactly the same, so the setting made no difference to these events. */
   fingerprint: string;
