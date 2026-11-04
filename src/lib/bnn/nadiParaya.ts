@@ -4,15 +4,15 @@ import type { ParayaRetro, ParayaSpeed } from '@/types';
 /** The Paraya grahas that are tried out (beta): Mars, Mercury and Venus, moved by age like the four. */
 export type ParayaBetaBody = 'Mars' | 'Mercury' | 'Venus';
 
-export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu' | ParayaBetaBody;
+export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu' | 'Moon' | 'Sun' | ParayaBetaBody;
 
-/** The four Paraya grahas, in the order they are listed. */
-export const PARAYA_BODIES: readonly ParayaBody[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
+/** The six standard Paraya grahas, in the order used by the app. */
+export const PARAYA_BODIES: readonly ParayaBody[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun'];
 
 /** The beta Paraya grahas, which are off until they are chosen. */
 export const PARAYA_BETA_BODIES: readonly ParayaBetaBody[] = ['Mars', 'Mercury', 'Venus'];
 
-/** All seven, the four first. */
+/** All nine: the six standard grahas followed by the three beta grahas. */
 export const ALL_PARAYA_BODIES: readonly ParayaBody[] = [...PARAYA_BODIES, ...PARAYA_BETA_BODIES];
 
 /**
@@ -50,7 +50,7 @@ const shiftsBack = (options?: ParayaOptions) => (options?.retro ?? 'previous') =
  * round takes 12, 30 and 18 years.
  */
 export function parayaDurations(body: Exclude<ParayaBody, 'Ketu'>, options: ParayaOptions = DEFAULT_PARAYA_OPTIONS): readonly number[] {
-  if (body === 'Jupiter') return [1];
+  if (body === 'Jupiter' || body === 'Moon' || body === 'Sun') return [1];
   if (body === 'Mars' || body === 'Mercury' || body === 'Venus') return [PARAYA_BETA_YEARS[body]];
   if (body === 'Saturn') return options.saturn === 'even' ? [2.5] : [3, 2];
   return options.rahu === 'even' ? [1.5] : [2, 1];
@@ -79,6 +79,8 @@ export type NadiParayaResult = {
   saturn: ParayaPeriod;
   rahu: ParayaPeriod;
   ketu: ParayaPeriod;
+  moon?: ParayaPeriod;
+  sun?: ParayaPeriod;
 };
 
 export type ParayaPositionMatch = {
@@ -191,6 +193,10 @@ export function calculateNadiParaya(params: {
   natalJupiterDegree?: number;
   natalSaturnDegree?: number;
   natalRahuDegree?: number;
+  natalMoonSignIndex?: number;
+  natalSunSignIndex?: number;
+  natalMoonDegree?: number;
+  natalSunDegree?: number;
   jupiterRetrograde?: boolean;
   saturnRetrograde?: boolean;
   options?: ParayaOptions;
@@ -225,6 +231,16 @@ export function calculateNadiParaya(params: {
     startDegree: params.natalRahuDegree,
     boundaryDegree: params.options?.bhavaCuspDegree,
   });
+  const moon = params.natalMoonSignIndex === undefined ? undefined : periodAtAge({
+    body: 'Moon', natalSignIndex: params.natalMoonSignIndex, ageYears,
+    durations: parayaDurations('Moon', params.options), direction: 1,
+    startDegree: params.natalMoonDegree, boundaryDegree: params.options?.bhavaCuspDegree,
+  });
+  const sun = params.natalSunSignIndex === undefined ? undefined : periodAtAge({
+    body: 'Sun', natalSignIndex: params.natalSunSignIndex, ageYears,
+    durations: parayaDurations('Sun', params.options), direction: 1,
+    startDegree: params.natalSunDegree, boundaryDegree: params.options?.bhavaCuspDegree,
+  });
   const ketuSignIndex = normalizeSign(rahu.signIndex + 6);
   const ketu: ParayaPeriod = {
     ...rahu,
@@ -233,7 +249,7 @@ export function calculateNadiParaya(params: {
     signName: SIGN_NAMES[ketuSignIndex],
   };
 
-  return { ageYears, jupiter, saturn, rahu, ketu };
+  return { ageYears, jupiter, saturn, rahu, ketu, ...(moon ? { moon } : {}), ...(sun ? { sun } : {}) };
 }
 
 /** The beta Paraya grahas at an age: Mars, Mercury and Venus, in that order, for those that are given. */
@@ -303,6 +319,8 @@ export function findParayaAgesForPosition(params: {
   natalDegrees?: Partial<Record<'Jupiter' | 'Saturn' | 'Rahu', number>>;
   /** The natal signs of Mars, Mercury and Venus, which the beta grahas need. */
   natalBeta?: ParayaBetaNatal;
+  /** The natal Sun and Moon positions, which may also be progressed as Parāya grahas. */
+  natalPositions?: Partial<Record<'Sun' | 'Moon', { signIndex: number; degree: number }>>;
   maxAge?: number;
   options?: ParayaOptions;
 }): ParayaPositionMatch[] {
@@ -313,13 +331,17 @@ export function findParayaAgesForPosition(params: {
   const sourceTargetSign = params.body === 'Ketu' ? normalizeSign(targetSignIndex - 6) : targetSignIndex;
   const beta = (PARAYA_BETA_BODIES as readonly ParayaBody[]).includes(sourceBody) ? params.natalBeta?.[sourceBody as ParayaBetaBody] : undefined;
   if ((PARAYA_BETA_BODIES as readonly ParayaBody[]).includes(sourceBody) && !beta) return [];
+  const solarLunar = sourceBody === 'Sun' || sourceBody === 'Moon' ? params.natalPositions?.[sourceBody] : undefined;
+  if ((sourceBody === 'Sun' || sourceBody === 'Moon') && !solarLunar) return [];
   const natalSignIndex = beta
     ? beta.signIndex
-    : sourceBody === 'Jupiter'
-      ? params.natalJupiterSignIndex
-      : sourceBody === 'Saturn'
-        ? params.natalSaturnSignIndex
-        : params.natalRahuSignIndex;
+    : solarLunar
+      ? solarLunar.signIndex
+      : sourceBody === 'Jupiter'
+        ? params.natalJupiterSignIndex
+        : sourceBody === 'Saturn'
+          ? params.natalSaturnSignIndex
+          : params.natalRahuSignIndex;
   const retrograde = beta
     ? beta.retrograde
     : sourceBody === 'Jupiter'
@@ -330,7 +352,7 @@ export function findParayaAgesForPosition(params: {
   const timeline = buildParayaTimeline({
     body: sourceBody,
     natalSignIndex,
-    startDegree: beta ? beta.degree : params.natalDegrees?.[sourceBody as 'Jupiter' | 'Saturn' | 'Rahu'],
+    startDegree: beta ? beta.degree : solarLunar?.degree ?? params.natalDegrees?.[sourceBody as 'Jupiter' | 'Saturn' | 'Rahu'],
     maxAge,
     retrograde,
     options: params.options,
