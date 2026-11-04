@@ -3,9 +3,9 @@
 import { ALL_PARAYA_BODIES, PARAYA_BETA_BODIES, PARAYA_BODIES, type ParayaBody } from '@/lib/bnn/nadiParaya';
 import { useT } from '@/lib/i18n';
 
-const CODES: Record<ParayaBody, string> = { Jupiter: 'Ju', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Mars: 'Ma', Mercury: 'Me', Venus: 'Ve' };
+const CODES: Record<ParayaBody, string> = { Jupiter: 'Ju', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke', Moon: 'Mo', Sun: 'Su', Mars: 'Ma', Mercury: 'Me', Venus: 'Ve' };
 // The colours the charts draw each Paraya graha in.
-const COLORS: Record<ParayaBody, string> = { Jupiter: '#92400e', Saturn: '#1d4ed8', Rahu: '#6d28d9', Ketu: '#c2410c', Mars: '#be123c', Mercury: '#0f766e', Venus: '#4d7c0f' };
+const COLORS: Record<ParayaBody, string> = { Jupiter: '#92400e', Saturn: '#1d4ed8', Rahu: '#6d28d9', Ketu: '#c2410c', Moon: '#0284c7', Sun: '#ca8a04', Mars: '#be123c', Mercury: '#0f766e', Venus: '#4d7c0f' };
 
 type Props = {
   /** The grahas that are drawn. */
@@ -13,7 +13,7 @@ type Props = {
   onChange: (next: ParayaBody[]) => void;
 };
 
-/** Chips to draw the Paraya grahas one at a time, with all (the four) and none; Mars, Mercury and Venus are a second row, in beta. */
+/** Chips to draw the six standard Parāya grahas and the three beta grahas separately. */
 export default function ParayaChips({ bodies, onChange }: Props) {
   const t = useT();
   const isAll = bodies.length === PARAYA_BODIES.length && PARAYA_BODIES.every(body => bodies.includes(body));
