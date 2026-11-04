@@ -224,6 +224,7 @@ export function calculateNadiParaya(params: {
     retrogradeStartShift: params.saturnRetrograde && shiftsBack(params.options),
     startDegree: params.natalSaturnDegree,
     boundaryDegree: params.options?.bhavaCuspDegree,
+    ascendantSignIndex: params.options?.bhavaAscendantSignIndex,
   });
   const rahu = periodAtAge({
     body: 'Rahu',
@@ -233,6 +234,7 @@ export function calculateNadiParaya(params: {
     direction: -1,
     startDegree: params.natalRahuDegree,
     boundaryDegree: params.options?.bhavaCuspDegree,
+    ascendantSignIndex: params.options?.bhavaAscendantSignIndex,
   });
   const moon = params.natalMoonSignIndex === undefined ? undefined : periodAtAge({
     body: 'Moon', natalSignIndex: params.natalMoonSignIndex, ageYears,
@@ -270,6 +272,7 @@ export function calculateBetaParaya(params: { ageYears: number; natal: ParayaBet
       retrogradeStartShift: natal.retrograde && shiftsBack(params.options),
       startDegree: natal.degree,
       boundaryDegree: params.options?.bhavaCuspDegree,
+    ascendantSignIndex: params.options?.bhavaAscendantSignIndex,
     })];
   });
 }
@@ -291,6 +294,7 @@ export function buildParayaTimeline(params: {
     retrogradeStartShift: params.body !== 'Rahu' && params.retrograde && shiftsBack(params.options),
     startDegree: params.startDegree,
     boundaryDegree: params.options?.bhavaCuspDegree,
+    ascendantSignIndex: params.options?.bhavaAscendantSignIndex,
   };
   // The periods are laid out round by round, each from the sum of the ones before it, and not found again from the age at which the one before
   // ended: a stay of a twelfth of a year does not add up to exactly a year in floating point, and an age that falls a hair short of a boundary
