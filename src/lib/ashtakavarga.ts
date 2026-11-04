@@ -217,7 +217,7 @@ export function mapAshtakavargaHousesToSigns(houses: number[], ascendantSign: nu
 
 /** The two published Rasimana multiplier tables used for Rāśi Piṇḍa. */
 export type RasimanaOption = 'pvr' | 'alternate';
-export const RASIMANA_MULTIPLIERS: Record<RasimānaOption, readonly number[]> = {
+export const RASIMANA_MULTIPLIERS: Record<RasimanaOption, readonly number[]> = {
   pvr:       [7, 10, 8, 4, 10, 6, 7, 8, 9, 5, 11, 12],
   alternate: [7, 10, 8, 4, 10, 5, 7, 8, 9, 5, 11, 12],
 };
