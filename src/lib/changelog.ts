@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.13',
+    date: '2026-11-04',
+    title: 'Complete Parāya chart overlays and update research setting comparisons',
+    changes: [
+      'Added Moon and Sun colors and abbreviations to the North Indian and South Indian chart Parāya overlays so the two new standard grahas are type-safe and visible.',
+      'Updated the Parāya settings research comparison to the four meaningful combinations: retrograde starting placement × Saturn duration. Rāhu/Ketu use their fixed table-derived speed and are no longer counted as an experimental setting.',
+      'Updated corrected-p calculations and Finnish/English report descriptions from eight settings to four.',
+      'Fixed TypeScript errors found by the production build.',
+      'Updated the application version to v4.13.',
+    ],
+  },
+  {
     version: 'v4.12',
     date: '2026-11-04',
     title: 'Correct Parāya progression timeline regression expectation',
