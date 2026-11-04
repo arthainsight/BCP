@@ -13,7 +13,7 @@ const planet = (name: string, sign: number, degree: number, isRetrograde = false
 // Natal Jupiter in Aries, Saturn in Virgo, Rahu in Cancer; the Sun at 15° Aries.
 const chart = {
   ascendant: { sign: 1, degree: 2, longitude: 2 },
-  planets: [planet('Jupiter', 1, 5), planet('Saturn', 6, 10), planet('Rahu', 4, 20), planet('Sun', 1, 15)],
+  planets: [planet('Jupiter', 1, 5), planet('Saturn', 6, 10), planet('Rahu', 4, 20), planet('Sun', 1, 15), planet('Moon', 9, 27.5)],
 } as unknown as ChartData;
 const birth = Date.UTC(2000, 0, 1);
 const window = (years: number) => ({ chart, birthTime: birth, fromTime: birth, toTime: birth + years * YEAR });
@@ -41,7 +41,7 @@ assert.deepEqual(second.map(hit => Math.round(hit.ageYears * 10) / 10), [0.3, 12
 
 // --- Every Paraya graha is covered and the hits come out in time order --------------------
 const all = findParayaHits({ ...window(30), relations: [1, 5, 9] });
-assert.deepEqual([...new Set(all.map(hit => hit.body))].sort(), ['Jupiter', 'Ketu', 'Rahu', 'Saturn']);
+assert.deepEqual([...new Set(all.map(hit => hit.body))].sort(), ['Jupiter', 'Ketu', 'Moon', 'Rahu', 'Saturn', 'Sun']);
 assert.ok(all.every((hit, i) => i === 0 || all[i - 1].time <= hit.time));
 assert.ok(all.some(hit => hit.natal === 'Asc'), 'the ascendant counts as a natal point');
 
@@ -70,9 +70,11 @@ for (const options of optionSets) for (const retro of [false, true]) {
       ageYears: hit.ageYears,
       natalJupiterSignIndex: 0, natalSaturnSignIndex: 5, natalRahuSignIndex: 3,
       natalJupiterDegree: 5, natalSaturnDegree: 10, natalRahuDegree: 20,
+      natalSunSignIndex: 0, natalSunDegree: 15, natalMoonSignIndex: 8, natalMoonDegree: 27.5,
       jupiterRetrograde: retro, saturnRetrograde: retro, options,
     });
-    const period = { Jupiter: paraya.jupiter, Saturn: paraya.saturn, Rahu: paraya.rahu, Ketu: paraya.ketu }[hit.body as 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu'];
+    const period = { Jupiter: paraya.jupiter, Saturn: paraya.saturn, Rahu: paraya.rahu, Ketu: paraya.ketu, Moon: paraya.moon, Sun: paraya.sun }[hit.body];
+    assert.ok(period, `a current Parāya position exists for ${hit.body}`);
     const wantedSign = (point.sign - 1 + RELATION_OFFSET[hit.relation] / 30) % 12;
     assert.equal(period.signIndex, wantedSign, `${hit.body} → ${hit.natal} (${hit.relation}) is in the wanted sign (${options.saturn}/${options.rahu})`);
     assert.ok(Math.abs(period.degree - point.degree) < 0.05, `${hit.body} → ${hit.natal} (${hit.relation}) is at the natal degree`);
@@ -96,7 +98,7 @@ assert.notDeepEqual(saturnToSun('alternating'), saturnToSun('even'));
 
 
 // --- The beta grahas (Mars, Mercury, Venus) are counted when they are asked for --------------------------------------------
-assert.deepEqual([...new Set(findParayaHits({ ...window(30), relations: [1, 5, 9] }).map(hit => hit.body))].sort(), ['Jupiter', 'Ketu', 'Rahu', 'Saturn'], 'the beta grahas are not counted by default');
+assert.deepEqual([...new Set(findParayaHits({ ...window(30), relations: [1, 5, 9] }).map(hit => hit.body))].sort(), ['Jupiter', 'Ketu', 'Moon', 'Rahu', 'Saturn', 'Sun'], 'the six standard grahas are counted by default; beta remains optional');
 const betaChart = {
   ascendant: { sign: 1, degree: 2, longitude: 2 },
   planets: [planet('Jupiter', 1, 5), planet('Saturn', 6, 10), planet('Rahu', 4, 20), planet('Sun', 1, 15), planet('Mars', 1, 5), planet('Mercury', 3, 10), planet('Venus', 2, 20)],
