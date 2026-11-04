@@ -78,7 +78,7 @@ export function calculateVargaMatrix(longitude: number): VargaRow {
 const CALC_BY_DIVISION: Record<number, (lon: number) => number> = {
   1: calcD1, 2: calcD2, 3: calcD3, 4: calcD4, 5: calcD5,
   6: calcD6, 7: calcD7, 8: calcD8, 9: calcD9, 10: calcD10, 11: calcD11, 12: calcD12,
-  20: calcD20, 24: calcD24, 27: calcD27, 30: calcD30,
+  16: calcD16, 20: calcD20, 24: calcD24, 27: calcD27, 30: calcD30,
   40: calcD40, 45: calcD45, 60: calcD60,
 };
 
