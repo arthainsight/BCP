@@ -32,10 +32,17 @@ The sthāna of the 2nd house of the Moon's chart is *kujāryau* (Mars and Jupite
 
 The app now follows the verses. If you hold another printed table for the Moon, the three entries above are where it will differ.
 
-## What is not in the app
+## Reductions and Piṇḍas added to bhrigu.code
 
-The reductions (*trikoṇa śodhana*, 67; *ekādhipatya śodhana*, 68), the multiplication into the Piṇḍas (69), the effects (70) and the longevity from the Aṣṭakavarga (71) are not calculated: the app shows the BAV and the SAV only.
+The application now calculates the two reductions and the three Piṇḍas:
 
+1. **Trikoṇa Śodhana** (BPHS 67): for each fire/earth/air/water trine, no reduction is made if any member is zero; equal non-zero values are all set to zero; otherwise the minimum is subtracted from all three.
+2. **Ekādhipatya Śodhana** (BPHS 68): the five pairs of signs jointly owned by Mars, Venus, Mercury, Jupiter and Saturn are reduced after Trikoṇa. Occupancy is read from the natal rāśi chart. The equal-value case for one occupied and one empty sign is not explicit in the printed rule; the app uses the secondary-reference convention (the empty sign becomes zero), as documented in PyJHora 4.8.9.
+3. **Piṇḍas** (BPHS 69): Rāśi Piṇḍa is the reduced BAV multiplied by the twelve rāśi-māna values; Graha Piṇḍa is the sum of the reduced bindu count in each contributing graha's sign multiplied by its graha-māna; Śodhya Piṇḍa is their sum.
+
+The Piṇḍa view exposes the raw BAV, the values after each reduction, and the per-graha Piṇḍa totals. The user can choose either of the two published rāśi-māna tables: the P. V. R. Narasimha Rao table (Virgo = 6) or the alternative table used by Horosoft/AstroVastuTips (Virgo = 5). The choice matters: the same reduced BAV can yield different Rāśi and Śodhya Piṇḍas. Graha-māna multipliers are Sun 5, Moon 5, Mars 8, Mercury 5, Jupiter 10, Venus 7 and Saturn 5.
+
+The app does not yet calculate the interpretive results of BPHS 70 or the longevity methods of BPHS 71. The Piṇḍas are displayed as intermediate calculations, not as standalone predictions of lifespan.
 
 ## Varāhamihira: Bṛhajjātaka, chapter 9
 
