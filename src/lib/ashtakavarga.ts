@@ -235,6 +235,8 @@ export interface AshtakavargaPindaRow {
   rasiPinda: number;
   grahaPinda: number;
   shodhyaPinda: number;
+  /** Yoga Piṇḍa: Rāśi Piṇḍa + Graha Piṇḍa (BPHS 70). */
+  yogaPinda: number;
 }
 export interface AshtakavargaShodhanaResult {
   raw: AshtakavargaSignRow[];
@@ -321,7 +323,8 @@ export function calculateShodhyaPinda(
       ? sum + GRAHAMANA_MULTIPLIERS[graha] * reducedSigns[sign]
       : sum;
   }, 0);
-  return { rasiPinda, grahaPinda, shodhyaPinda: rasiPinda + grahaPinda };
+  const yogaPinda = rasiPinda + grahaPinda;
+  return { rasiPinda, grahaPinda, shodhyaPinda: yogaPinda, yogaPinda };
 }
 
 /** Full reduction and Piṇḍa workflow, keeping every intermediate BAV visible. */
