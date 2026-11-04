@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import type { ChartData } from '@/types';
-import { buildAshtakavarga, mapAshtakavargaHousesToSigns } from '@/lib/ashtakavarga';
-import type { AshtakavargaPlanet, AshtakavargaSystem } from '@/lib/ashtakavarga';
+import { buildAshtakavarga, buildAshtakavargaShodhana, mapAshtakavargaHousesToSigns } from '@/lib/ashtakavarga';
+import type { AshtakavargaPlanet, AshtakavargaSystem, RasimanaOption } from '@/lib/ashtakavarga';
 import { SIGN_ABBR } from '@/lib/signs';
 
 import { useT } from '@/lib/i18n';
@@ -73,10 +73,16 @@ function NorthIndianAvChart({ houses, ascendantSign, label, isSav }: { houses: n
 export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
   const t = useT();
   const ascendantSign = chart.ascendant.sign;
-  const [view, setView] = useState<'table' | 'north'>('table');
+  const [view, setView] = useState<'table' | 'north' | 'pinda'>('table');
+  const [rasimana, setRasimana] = useState<RasimanaOption>('pvr');
+  const [pindaPlanet, setPindaPlanet] = useState<AshtakavargaPlanet>('Sun');
+  const [pindaStage, setPindaStage] = useState<'raw' | 'trikona' | 'ekadhipatya'>('ekadhipatya');
   const [selection, setSelection] = useState<AvSelection>('SAV');
   const [system, setSystem] = useState<AshtakavargaSystem>('Parashara');
   const { bav, sav } = buildAshtakavarga(chart, system);
+  const shodhana = buildAshtakavargaShodhana(chart, system, rasimana);
+  const detailRows = pindaStage === 'raw' ? shodhana?.raw : pindaStage === 'trikona' ? shodhana?.afterTrikona : shodhana?.afterEkadhipatya;
+  const detailValues = detailRows?.find(row => row.planet === pindaPlanet)?.signs ?? [];
   const selectedRow = selection === 'SAV' ? null : bav.find((row) => row.planet === selection);
   const selectedHouses = selectedRow?.houses ?? sav.houses;
 
@@ -90,6 +96,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
         <div className="flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
           <button type="button" onClick={() => setView('table')} className={`rounded px-2.5 py-1 text-[10px] font-mono ${view === 'table' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>{t('Table')}</button>
           <button type="button" onClick={() => setView('north')} className={`rounded px-2.5 py-1 text-[10px] font-mono ${view === 'north' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>{t('North Indian')}</button>
+          <button type="button" onClick={() => setView('pinda')} className={`rounded px-2.5 py-1 text-[10px] font-mono ${view === 'pinda' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>{t('Piṇḍas')}</button>
         </div>
       </div>
 
@@ -103,7 +110,63 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
         </label>
       </div>
 
-      {view === 'north' ? (
+      {view === 'pinda' ? (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+              {t('Rasimana')}
+              <select value={rasimana} onChange={event => setRasimana(event.target.value as RasimanaOption)} className="ml-2 rounded border border-zinc-300 bg-white px-2 py-1.5 text-xs normal-case tracking-normal text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200">
+                <option value="pvr">P. V. R. Narasimha Rao / book table · Virgo 6</option>
+                <option value="alternate">Alternative table · Virgo 5</option>
+              </select>
+            </label>
+          </div>
+          <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">
+            {t('BAV → Trikoṇa Śodhana → Ekādhipatya Śodhana → Rāśi Piṇḍa + Graha Piṇḍa = Śodhya Piṇḍa. The equal-value case for one occupied and one empty co-owned sign follows the explicit secondary-reference convention; the original verse does not state that case.')}
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[520px] border-collapse text-center font-mono text-xs">
+              <thead><tr className="text-zinc-500 dark:text-zinc-400">
+                <th className="border border-zinc-200 px-2 py-2 text-left dark:border-zinc-700">{t('Graha')}</th>
+                <th className="border border-zinc-200 px-2 py-2 dark:border-zinc-700">{t('Rāśi Piṇḍa')}</th>
+                <th className="border border-zinc-200 px-2 py-2 dark:border-zinc-700">{t('Graha Piṇḍa')}</th>
+                <th className="border border-zinc-200 px-2 py-2 dark:border-zinc-700">{t('Śodhya Piṇḍa')}</th>
+              </tr></thead>
+              <tbody>
+                {shodhana?.pindas.map(row => (
+                  <tr key={row.planet} className="text-zinc-700 dark:text-zinc-200">
+                    <th className="border border-zinc-200 px-2 py-2 text-left dark:border-zinc-700">{PLANET_ABBR[row.planet]}</th>
+                    <td className="border border-zinc-200 px-2 py-2 tabular-nums dark:border-zinc-700">{row.rasiPinda}</td>
+                    <td className="border border-zinc-200 px-2 py-2 tabular-nums dark:border-zinc-700">{row.grahaPinda}</td>
+                    <td className="border border-zinc-200 px-2 py-2 font-semibold tabular-nums dark:border-zinc-700">{row.shodhyaPinda}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <label className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                {t('BAV detail')}
+                <select value={pindaPlanet} onChange={event => setPindaPlanet(event.target.value as AshtakavargaPlanet)} className="ml-2 rounded border border-zinc-300 bg-white px-2 py-1.5 text-xs normal-case tracking-normal text-zinc-700 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200">
+                  {bav.map(row => <option key={row.planet} value={row.planet}>{row.planet}</option>)}
+                </select>
+              </label>
+              {(['raw', 'trikona', 'ekadhipatya'] as const).map(stage => (
+                <button key={stage} type="button" onClick={() => setPindaStage(stage)} className={`rounded border px-2 py-1 text-[10px] font-mono ${pindaStage === stage ? 'border-emerald-500 text-emerald-700 dark:text-green-400' : 'border-zinc-200 text-zinc-500 dark:border-zinc-700'}`}>
+                  {stage === 'raw' ? t('Raw BAV') : stage === 'trikona' ? t('After Trikoṇa') : t('After Ekādhipatya')}
+                </button>
+              ))}
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[640px] border-collapse text-center font-mono text-xs">
+                <thead><tr><th className="sticky left-0 bg-white px-2 py-2 text-left dark:bg-zinc-900">{PLANET_ABBR[pindaPlanet]}</th>{SIGN_ABBR.map(sign => <th key={sign} className="border border-zinc-200 px-2 py-2 dark:border-zinc-700">{sign}</th>)}</tr></thead>
+                <tbody><tr><th className="sticky left-0 bg-white px-2 py-2 text-left dark:bg-zinc-900">{t('Bindus')}</th>{detailValues.map((value,index)=><td key={SIGN_ABBR[index]} className={`border border-zinc-200 px-2 py-2 tabular-nums dark:border-zinc-700 ${numberColor(value,false)}`}>{value}</td>)}</tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ) : view === 'north' ? (
         <div>
           <label className="mb-3 block text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
             {t('Points')}
