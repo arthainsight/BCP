@@ -130,7 +130,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
                 <th className="border border-zinc-200 px-2 py-2 text-left dark:border-zinc-700">{t('Graha')}</th>
                 <th className="border border-zinc-200 px-2 py-2 dark:border-zinc-700">{t('Rāśi Piṇḍa')}</th>
                 <th className="border border-zinc-200 px-2 py-2 dark:border-zinc-700">{t('Graha Piṇḍa')}</th>
-                <th className="border border-zinc-200 px-2 py-2 dark:border-zinc-700">{t('Śodhya Piṇḍa')}</th>
+                <th className="border border-zinc-200 px-2 py-2 dark:border-zinc-700">{t('Yoga / Śodhya Piṇḍa')}</th>
               </tr></thead>
               <tbody>
                 {shodhana?.pindas.map(row => (
@@ -138,7 +138,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
                     <th className="border border-zinc-200 px-2 py-2 text-left dark:border-zinc-700">{PLANET_ABBR[row.planet]}</th>
                     <td className="border border-zinc-200 px-2 py-2 tabular-nums dark:border-zinc-700">{row.rasiPinda}</td>
                     <td className="border border-zinc-200 px-2 py-2 tabular-nums dark:border-zinc-700">{row.grahaPinda}</td>
-                    <td className="border border-zinc-200 px-2 py-2 font-semibold tabular-nums dark:border-zinc-700">{row.shodhyaPinda}</td>
+                    <td className="border border-zinc-200 px-2 py-2 font-semibold tabular-nums dark:border-zinc-700">{row.yogaPinda}</td>
                   </tr>
                 ))}
               </tbody>
