@@ -74,6 +74,7 @@ for (let lon = 0; lon < 360; lon += 7.3) {
   const harshaDay = calculateHarshaBala(annual, true);
   assert.deepEqual(harshaDay.map(row => row.total), [15, 15, 20, 15, 20, 10, 10],
     'Harsha Bala adds four independent five-point conditions');
+  assert.deepEqual(harshaDay.map(row => row.grade), ['poorna-bali', 'poorna-bali', 'extraordinary', 'poorna-bali', 'extraordinary', 'madhya-bali', 'madhya-bali'], 'Harsha grades follow Charak’s thresholds');
   assert.deepEqual(calculateHarshaBala(annual, false).map(row => row.total), [10, 20, 15, 20, 15, 15, 15],
     'day/night condition swaps male and female planets');
   const twelve = calculateDwadashavargiyaBala(annual);
