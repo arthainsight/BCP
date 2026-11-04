@@ -23,8 +23,14 @@ export function migrateChartDisplaySettings(stored: unknown): ChartDisplaySettin
   if (!['north', 'south', 'both', 'mixedNorth', 'mixedSouth'].includes(result.chartStyle as string)) result.chartStyle = DEFAULT_CHART_DISPLAY.chartStyle;
   // The outer chart of the mixed style is one of the vargas there are.
   if (!(VARGA_DIVISIONS as readonly number[]).includes(result.mixedOuterDivision as number)) result.mixedOuterDivision = DEFAULT_CHART_DISPLAY.mixedOuterDivision;
-  // The Paraya grahas that are drawn: only the known ones (the four and the three of the beta) are kept, in their order.
-  if (Array.isArray(parsed.parayaBodies)) result.parayaBodies = ALL_PARAYA_BODIES.filter(body => (parsed.parayaBodies as unknown[]).includes(body));
+  // Keep the user's old selection. If the full original four were selected, add the newly supported Moon and Sun too.
+  if (Array.isArray(parsed.parayaBodies)) {
+    const selected = parsed.parayaBodies as unknown[];
+    const hadAllOriginalGrahas = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'].every(body => selected.includes(body));
+    result.parayaBodies = ALL_PARAYA_BODIES.filter(body =>
+      selected.includes(body) || (hadAllOriginalGrahas && (body === 'Moon' || body === 'Sun')),
+    );
+  }
   // Settings from before degreePrecision only had an on/off degrees switch.
   if (!parsed.degreePrecision && parsed.showDegrees === true) result.degreePrecision = 'degree';
   return result as unknown as ChartDisplaySettings;
