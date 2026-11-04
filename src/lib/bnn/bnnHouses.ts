@@ -39,12 +39,14 @@ export function calculateBnnHouses(chart: ChartData | null, ageYears: number): B
   };
 }
 
-/** The Paraya graha periods at an age (the four, and Mars, Mercury and Venus with `beta`), in the order Jupiter, Saturn, Rahu, Ketu, Mars, Mercury, Venus. */
+/** The Paraya graha periods at an age (Jupiter, Saturn, Rahu, Ketu, Moon and Sun; with Mars, Mercury and Venus when `beta` is on). */
 export function parayaPeriodsOf(chart: ChartData | null, ageYears: number, options?: ParayaOptions, beta = false): ParayaPeriod[] {
   if (!chart) return [];
   const jupiter = chart.planets.find(p => p.name === 'Jupiter');
   const saturn = chart.planets.find(p => p.name === 'Saturn');
   const rahu = chart.planets.find(p => p.name === 'Rahu');
+  const moon = chart.planets.find(p => p.name === 'Moon');
+  const sun = chart.planets.find(p => p.name === 'Sun');
   if (!jupiter || !saturn || !rahu) return [];
   const paraya = calculateNadiParaya({
     ageYears,
@@ -54,11 +56,13 @@ export function parayaPeriodsOf(chart: ChartData | null, ageYears: number, optio
     natalJupiterDegree: jupiter.degree,
     natalSaturnDegree: saturn.degree,
     natalRahuDegree: rahu.degree,
+    ...(moon ? { natalMoonSignIndex: moon.sign - 1, natalMoonDegree: moon.degree } : {}),
+    ...(sun ? { natalSunSignIndex: sun.sign - 1, natalSunDegree: sun.degree } : {}),
     jupiterRetrograde: Boolean(jupiter.isRetrograde),
     saturnRetrograde: Boolean(saturn.isRetrograde),
     options,
   });
-  const periods = [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu];
+  const periods = [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu, ...(paraya.moon ? [paraya.moon] : []), ...(paraya.sun ? [paraya.sun] : [])];
   if (beta) {
     const natal: ParayaBetaNatal = {};
     for (const body of PARAYA_BETA_BODIES) {
@@ -82,8 +86,7 @@ export function calculateParayaHouses(chart: ChartData | null, ageYears: number,
 }
 
 /**
- * Every stay of a Paraya graha in a sign up to an age, in order: the natal sign it begins in at its natal degree (the first stay begins before birth),
- * and so on. Ketu is Rahu six signs on. Empty when the chart has not the graha.
+ * Every stay of a Paraya graha in a sign up to an age, from the natal longitude. Ketu is Rahu six signs on. Empty when the chart has not the graha.
  */
 export function parayaTimelineOf(chart: ChartData | null, body: ParayaBody, maxAge: number, options?: ParayaOptions): ParayaPeriod[] {
   if (!chart) return [];
