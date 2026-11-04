@@ -31,10 +31,10 @@ for (const age of [0, 5.5, 23, 47.9]) {
       minor: house(minor.minorSignIndex),
     });
 
-    const paraya = calculateNadiParaya({ ageYears: age, natalJupiterSignIndex: 1, natalSaturnSignIndex: 7, natalRahuSignIndex: 11, natalJupiterDegree: 4.3, natalSaturnDegree: 10, natalRahuDegree: 10 });
+    const paraya = calculateNadiParaya({ ageYears: age, natalJupiterSignIndex: 1, natalSaturnSignIndex: 7, natalRahuSignIndex: 11, natalJupiterDegree: 4.3, natalSaturnDegree: 10, natalRahuDegree: 10, natalSunSignIndex: 0, natalSunDegree: 10, natalMoonSignIndex: 3, natalMoonDegree: 10 });
     assert.deepEqual(
       calculateParayaHouses(c, age),
-      [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu].map(p => ({ body: p.body, house: house(p.signIndex), degree: p.degree })),
+      [paraya.jupiter, paraya.saturn, paraya.rahu, paraya.ketu, paraya.moon!, paraya.sun!].map(p => ({ body: p.body, house: house(p.signIndex), degree: p.degree })),
     );
   }
 }
@@ -57,14 +57,14 @@ const rahuHouse = (age: number, rahu: 'alternating' | 'even') =>
 assert.equal(rahuHouse(0.6, 'alternating'), 12, 'alternating: still in the natal sign at 0.6');
 assert.equal(rahuHouse(0.6, 'even'), 11, 'even: has gone back a sign at 0.6');
 
-// The beta grahas follow the four when they are asked for, in the houses of their own signs.
+// The beta grahas follow the six standard grahas when they are asked for.
 {
   const c = { ...chart(1), planets: [...chart(1).planets, planet('Mars', 3, 8), planet('Mercury', 1, 2, true), planet('Venus', 12, 25)] };
-  assert.equal(calculateParayaHouses(c, 5).length, 4, 'four to begin with');
+  assert.equal(calculateParayaHouses(c, 5).length, 6, 'six standard grahas to begin with');
   const withBeta = calculateParayaHouses(c, 1.3, undefined, true);
-  assert.deepEqual(withBeta.map(activation => activation.body), ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Mars', 'Mercury', 'Venus']);
+  assert.deepEqual(withBeta.map(activation => activation.body), ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun', 'Mars', 'Mercury', 'Venus']);
   const expected = calculateBetaParaya({ ageYears: 1.3, natal: { Mars: { signIndex: 2, degree: 8 }, Mercury: { signIndex: 0, degree: 2, retrograde: true }, Venus: { signIndex: 11, degree: 25 } } });
   assert.deepEqual(withBeta.slice(4), expected.map(period => ({ body: period.body, house: ((period.signIndex - 0 + 12) % 12) + 1, degree: period.degree })));
   // A chart without the three has just the four, whatever is asked.
-  assert.equal(calculateParayaHouses(chart(1), 5, undefined, true).length, 4);
+  assert.equal(calculateParayaHouses(chart(1), 5, undefined, true).length, 6);
 }
