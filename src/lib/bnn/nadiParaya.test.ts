@@ -87,27 +87,28 @@ const ketuMatches = findParayaAgesForPosition({
 assert.deepEqual(ketuMatches.map(match => match.ageYears), [1, 19]);
 
 
-// --- Equal-bhāva cusp progression: the Lagna degree is the transition point in every sign -----------------------
+// --- Equal-bhāva cusp progression: keep Rāśi separate from the changing bhāva house -------------------------------
 {
   const nearCusp = (a: number, b: number, message: string) => assert.ok(Math.abs(a - b) < 1e-6, `${message}: ${a} ≈ ${b}`);
   const cusp = 24.5;
-  const options = { ...DEFAULT_PARAYA_OPTIONS, retro: 'same' as const, bhavaCuspDegree: cusp };
+  const options = { ...DEFAULT_PARAYA_OPTIONS, retro: 'same' as const, bhavaCuspDegree: cusp, bhavaAscendantSignIndex: 3 };
   const jupiterDegree = 1.75;
-  const jupiterCuspAge = (cusp - jupiterDegree) / 30; // one year per 30°: 273 days in a 360-day year
+  const jupiterCuspAge = (cusp - jupiterDegree) / 30;
   const jupiterBefore = calculateNadiParaya({
     ageYears: 0, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     natalJupiterDegree: jupiterDegree, jupiterRetrograde: true, options,
   }).jupiter;
-  assert.equal(jupiterBefore.signIndex, 11, 'before the Aries cusp, the previous sign remains active');
-  nearCusp(jupiterBefore.degree, jupiterDegree, 'Jupiter retains its original degree at birth');
+  assert.equal(jupiterBefore.signIndex, 0, 'Jupiter remains in its physical natal Rāśi, Aries');
+  assert.equal(jupiterBefore.house, 9, 'before the Aries cusp Jupiter is still in bhāva 9');
+  nearCusp(jupiterBefore.degree, jupiterDegree, 'Jupiter retains its natal degree');
   const jupiterAtCusp = calculateNadiParaya({
     ageYears: jupiterCuspAge, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     natalJupiterDegree: jupiterDegree, jupiterRetrograde: true, options,
   }).jupiter;
-  assert.equal(jupiterAtCusp.signIndex, 0, 'the cusp activates Aries');
-  nearCusp(jupiterAtCusp.degree, cusp, 'Jupiter reaches the selected cusp');
-  nearCusp(jupiterAtCusp.startAge, jupiterCuspAge, 'the Aries interval begins at the cusp');
-  nearCusp(jupiterCuspAge * 360, 273, 'Jupiter reaches the 24°30′ cusp after 273 sāvana days');
+  assert.equal(jupiterAtCusp.signIndex, 0, 'the Rāśi is still Aries at the bhāva cusp');
+  assert.equal(jupiterAtCusp.house, 10, 'crossing Aries 24°30′ moves Jupiter into bhāva 10');
+  nearCusp(jupiterAtCusp.degree, cusp, 'Jupiter reaches the equal-bhāva cusp');
+  nearCusp(jupiterCuspAge * 360, 273, 'Jupiter reaches the cusp after 273 sāvana days');
 
   const saturnDegree = 23.1;
   const saturnCuspAge = ((cusp - saturnDegree) / 30) * 2.5;
@@ -115,62 +116,80 @@ assert.deepEqual(ketuMatches.map(match => match.ageYears), [1, 19]);
     ageYears: 0, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     natalSaturnDegree: saturnDegree, options: { ...options, saturn: 'even' },
   }).saturn;
-  assert.equal(saturnAtBirth.signIndex, 6, 'before the Scorpio cusp, the previous sign remains active');
+  assert.equal(saturnAtBirth.signIndex, 7, 'Saturn remains in its physical natal Rāśi, Scorpio');
+  assert.equal(saturnAtBirth.house, 4, 'before Scorpio 24°30′ Saturn is still in bhāva 4');
   const saturnAtCusp = calculateNadiParaya({
     ageYears: saturnCuspAge, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     natalSaturnDegree: saturnDegree, options: { ...options, saturn: 'even' },
   }).saturn;
-  assert.equal(saturnAtCusp.signIndex, 7, 'the cusp activates Scorpio');
+  assert.equal(saturnAtCusp.signIndex, 7, 'the Rāśi remains Scorpio at the bhāva cusp');
+  assert.equal(saturnAtCusp.house, 5, 'crossing Scorpio 24°30′ moves Saturn into bhāva 5');
   nearCusp(saturnAtCusp.degree, cusp, 'Saturn reaches the same cusp degree');
-  nearCusp(saturnCuspAge * 360, 42, 'Saturn reaches a cusp 1°24′ ahead in 42 sāvana days');
-  
+  nearCusp(saturnCuspAge * 360, 42, 'Saturn reaches the cusp after 42 sāvana days');
+
   const cuspHits = findParayaAgesForPosition({
     body: 'Jupiter', targetSignIndex: 0, degree: cusp,
     natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     jupiterRetrograde: true, natalDegrees: { Jupiter: jupiterDegree }, maxAge: 3, options,
   });
-  assert.ok(cuspHits.length > 0, 'the cusp-aligned Jupiter hit is found');
-  nearCusp(cuspHits[0].ageYears, jupiterCuspAge, 'exact Parāya hits use the same cusp-based timeline');
+  assert.ok(cuspHits.length > 0, 'the cusp-degree Jupiter hit is found');
+  nearCusp(cuspHits[0].ageYears, jupiterCuspAge, 'exact Parāya hits keep using the Rāśi degree timeline');
 }
 
-// --- Moon and Sun: direct one-sign-per-year progressions from their own natal longitude -------------------------
+// --- Moon and Sun: direct one-sign-per-year progressions and house-cusp dates ----------------------------------------
 {
   const cusp = 24.5;
   const nearSolarLunar = (a: number, b: number, message: string) => assert.ok(Math.abs(a - b) < 1e-6, `${message}: ${a} ≈ ${b}`);
-  const options = { ...DEFAULT_PARAYA_OPTIONS, bhavaCuspDegree: cusp };
-  const moonDegree = 5;
-  const moonCuspAge = (cusp - moonDegree) / 30;
-  const moonBefore = calculateNadiParaya({
+  const options = { ...DEFAULT_PARAYA_OPTIONS, bhavaCuspDegree: cusp, bhavaAscendantSignIndex: 3 };
+
+  // These natal degrees are the ones implied by the supplied example rows at a 24°30′ equal-bhāva cusp.
+  const moonDegree = cusp - 233 / 12;
+  const moonAge = 233 / 360;
+  const moonAtBirth = calculateNadiParaya({
     ageYears: 0, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     natalMoonSignIndex: 2, natalMoonDegree: moonDegree, options,
   }).moon!;
-  assert.equal(moonBefore.signIndex, 1, 'Moon below the cusp initially retains the previous sign label');
-  nearSolarLunar(moonBefore.degree, moonDegree, 'Moon starts at its own natal degree');
+  assert.equal(moonAtBirth.signIndex, 2, 'Moon stays in Gemini from birth');
+  assert.equal(moonAtBirth.house, 11, 'before Gemini 24°30′ Moon is in bhāva 11');
   const moonAtCusp = calculateNadiParaya({
-    ageYears: moonCuspAge, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+    ageYears: moonAge, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     natalMoonSignIndex: 2, natalMoonDegree: moonDegree, options,
   }).moon!;
-  assert.equal(moonAtCusp.signIndex, 2, 'Moon activates Gemini when it crosses the cusp');
-  nearSolarLunar(moonAtCusp.degree, cusp, 'Moon reaches the cusp');
-  nearSolarLunar(moonCuspAge * 360, 234, 'Moon reaches 24°30′ after 234 sāvana days from 5° Gemini');
+  assert.equal(moonAtCusp.signIndex, 2, 'Moon is still in Gemini when it enters bhāva 12');
+  assert.equal(moonAtCusp.house, 12);
+  nearSolarLunar(moonAtCusp.degree, cusp, 'Moon reaches the 12th-house cusp on the supplied date');
+  nearSolarLunar(moonAge * 360, 233, 'Moon reaches the Gemini cusp after 233 sāvana days');
+  const moonNext = calculateNadiParaya({
+    ageYears: moonAge + 1, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+    natalMoonSignIndex: 2, natalMoonDegree: moonDegree, options,
+  }).moon!;
+  assert.equal(moonNext.signIndex, 3, 'one year later Moon is in Cancer');
+  assert.equal(moonNext.house, 1, 'Cancer 24°30′ is the 1st-house cusp');
 
-  const sunDegree = 25;
-  const sunCuspAge = (30 - sunDegree + cusp) / 30;
+  const sunDegree = 30 + cusp - 350 / 12;
+  const sunAge = 350 / 360;
   const sunAtBirth = calculateNadiParaya({
     ageYears: 0, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     natalSunSignIndex: 5, natalSunDegree: sunDegree, options,
   }).sun!;
-  assert.equal(sunAtBirth.signIndex, 5, 'Sun already beyond the cusp remains in its natal sign');
-  nearSolarLunar(sunAtBirth.degree, sunDegree, 'Sun starts at its own natal degree');
-  const sunAtNextCusp = calculateNadiParaya({
-    ageYears: sunCuspAge, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+  assert.equal(sunAtBirth.signIndex, 5, 'Sun stays in Virgo at birth');
+  assert.equal(sunAtBirth.house, 3, 'Sun is still in bhāva 3 before Libra 24°30′');
+  const sunAtCusp = calculateNadiParaya({
+    ageYears: sunAge, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
     natalSunSignIndex: 5, natalSunDegree: sunDegree, options,
   }).sun!;
-  assert.equal(sunAtNextCusp.signIndex, 6, 'Sun activates Libra/next sign at the following cusp');
-  nearSolarLunar(sunAtNextCusp.degree, cusp, 'Sun reaches the cusp');
-  nearSolarLunar(sunCuspAge * 360, 354, 'Sun reaches the next 24°30′ cusp after 354 sāvana days');
+  assert.equal(sunAtCusp.signIndex, 6, 'Sun is in Libra when it enters bhāva 4');
+  assert.equal(sunAtCusp.house, 4);
+  nearSolarLunar(sunAtCusp.degree, cusp, 'Sun reaches the 4th-house cusp on the supplied date');
+  nearSolarLunar(sunAge * 360, 350, 'Sun reaches Libra cusp after 350 sāvana days');
+  const sunNext = calculateNadiParaya({
+    ageYears: sunAge + 1, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+    natalSunSignIndex: 5, natalSunDegree: sunDegree, options,
+  }).sun!;
+  assert.equal(sunNext.signIndex, 7, 'one year later Sun is in Scorpio');
+  assert.equal(sunNext.house, 5, 'Scorpio 24°30′ is the 5th-house cusp');
 }
- 
+
 // --- The beta grahas: Mars two months, Mercury and Venus a month in each sign --------------------------------------------
 assert.deepEqual(PARAYA_BODIES, ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun'], 'the six standard Parāya grahas');
 assert.deepEqual(PARAYA_BETA_BODIES, ['Mars', 'Mercury', 'Venus']);
