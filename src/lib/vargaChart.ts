@@ -24,6 +24,7 @@ export const VARGA_NAMES: Record<number, string> = {
   6: 'Ṣaṣṭhāṁśa', 7: 'Saptāṁśa', 8: 'Aṣṭāṁśa', 9: 'Navāṁśa', 10: 'Daśāṁśa', 11: 'Ekādaśāṁśa · Rudrāṁśa', 12: 'Dvādaśāṁśa', 16: 'Ṣoḍaśāṁśa',
   20: 'Viṁśāṁśa', 24: 'Chaturviṁśāṁśa', 27: 'Bhāṁśa', 30: 'Triṁśāṁśa',
   40: 'Khavedāṁśa', 45: 'Akṣavedāṁśa', 60: 'Ṣaṣṭyāṁśa',
+  110: 'Parivṛtta Daśāṁśa',
 };
 
 /** What each divisional chart is traditionally read for. */
@@ -33,9 +34,12 @@ export const VARGA_SIGNIFICATIONS: Record<number, string> = {
   3: 'Siblings, courage and initiative',
   4: 'Property, home and fortune',
   5: 'Fame, authority and merit',
+  6: 'Health, illness and adversity',
   7: 'Children and progeny',
+  8: 'Longevity and obstacles',
   9: 'Marriage, dharma and inner strength',
   10: 'Career and action in the world',
+  11: 'Rudrāṁśa; interpretation varies by lineage',
   12: 'Parents and ancestry',
   16: 'Vehicles, comforts and pleasures',
   20: 'Spiritual practice and worship',
