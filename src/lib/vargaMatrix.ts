@@ -4,8 +4,9 @@ import { getDignity, SCORE_PLANETS, type Dignity, type RasiSigns } from '@/lib/s
 import { DEFAULT_BALA_OPTIONS, type BalaOptions } from '@/lib/balaOptions';
 import { vimsopakaViswa } from '@/lib/vimsopaka';
 import { SIGN_ABBR } from '@/lib/signs';
+import { vargaCode } from './vargaChart';
 
-export const DEFAULT_DIVISIONS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
+export const DEFAULT_DIVISIONS = [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 16, 20, 24, 27, 30, 40, 45, 60, 110];
 export const ROW_ORDER = ['Lagna', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 export const DIGNITY_LABELS: Record<Dignity, string> = { exalted: 'Ex', moolatrikona: 'MT', own: 'Own', friend: 'Fr', neutral: 'Neu', enemy: 'En', debilitated: 'Deb', none: '—' };
 export const VIMSOPAKA_SCHEMES = {
@@ -33,11 +34,11 @@ export function buildVargaMatrix(planets: Record<string, number>, lagna: number 
     for (const division of divisions) {
       const longitude = source[name];
       if (typeof longitude !== 'number') {
-        matrix[name][`D${division}`] = DASH_CELL;
+        matrix[name][vargaCode(division)] = DASH_CELL;
         continue;
       }
       const signIndex = getVargaSignIndex(longitude, division);
-      matrix[name][`D${division}`] = { sign: SIGN_ABBR[signIndex], signIndex, dignity: getDignity(name, signIndex) };
+      matrix[name][vargaCode(division)] = { sign: SIGN_ABBR[signIndex], signIndex, dignity: getDignity(name, signIndex) };
     }
   }
   return matrix;
