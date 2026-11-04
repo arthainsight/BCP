@@ -50,12 +50,12 @@ test('an event shows the progressions (Paraya) of its day, for its first and las
   await visible(page, page.getByLabel('Event date')).fill('2015-06-15');
   await visible(page, page.getByRole('button', { name: 'Add', exact: true })).click();
 
-  // The card names the four progressing grahas of the day: where each stood, its house, and the natal points it aspected by sign.
+  // The card names the six standard progressing grahas of the day: where each stood, its house, and the natal points it aspected by sign.
   const card = visible(page, page.locator('details').filter({ hasText: 'Moved house' }));
   const progressions = card.locator('[data-event-progressions="2015-06-15"]');
   await expect(progressions).toBeVisible();
-  for (const body of ['Jupiter', 'Saturn', 'Rahu', 'Ketu']) await expect(progressions.locator(`[data-event-progression="${body}"]`)).toContainText(/H\d+/);
-  await expect(progressions.locator('[data-event-progression]')).toHaveCount(4);
+  for (const body of ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun']) await expect(progressions.locator(`[data-event-progression="${body}"]`)).toContainText(/H\d+/);
+  await expect(progressions.locator('[data-event-progression]')).toHaveCount(6);
   await expect(progressions.locator('[data-aspect]').first()).toBeVisible();
   for (const aspect of await progressions.locator('[data-aspect]').all()) await expect(aspect).toHaveAttribute('data-aspect', /^(Sun|Moon|Mars|Mercury|Jupiter|Venus|Saturn|Rahu|Ketu|Asc)\|[1579]$/);
 
