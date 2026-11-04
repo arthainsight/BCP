@@ -62,8 +62,13 @@ export default function TransitCalendarPanel({
   const days = monthDays(monthKey);
   const [year, month] = monthKey.split('-').map(Number);
   const start = `${monthKey}-01`;
+  // Sun is required as an invisible reference series when Mercury or Venus
+  // combustion changes are requested, even if the user has hidden the Sun.
+  const requestBodies = selectedBodies.some(body => body === 'Mercury' || body === 'Venus')
+    ? [...new Set([...selectedBodies, 'Sun'])]
+    : selectedBodies;
   const { data, error, loading } = useDebouncedJson<Loaded>(
-    selectedBodies.length ? transitSeriesUrl(start, days, selectedBodies, calculationSettings, 1) : null,
+    requestBodies.length ? transitSeriesUrl(start, days, requestBodies, calculationSettings, 1) : null,
   );
   const tables = useMemo(() => gocharaTables(chart), [chart]);
 
@@ -73,7 +78,7 @@ export default function TransitCalendarPanel({
     for (const [body, item] of Object.entries(data.series)) {
       series[body] = { start: data.start, step: item.step, longitudes: item.longitudes };
     }
-    const events = collectTimingEvents(series, selectedBodies, true);
+    const events = collectTimingEvents(series, requestBodies, true).filter(event => selectedBodies.includes(event.body));
     const byDay = new Map<string, TimingEvent[]>();
     for (const event of events) {
       const key = new Date(event.time).toISOString().slice(0, 10);
@@ -82,7 +87,7 @@ export default function TransitCalendarPanel({
     return Array.from({ length: days }, (_, index) => {
       const day = index + 1;
       const key = dateKey(year, month, day);
-      const positions = BODIES.flatMap(body => {
+      const positions = selectedBodies.flatMap(body => {
         const values = series[body]?.longitudes;
         const longitude = values?.[index];
         return typeof longitude === 'number' ? [{ body, sign: Math.floor(longitude / 30) + 1 }] : [];
@@ -95,7 +100,7 @@ export default function TransitCalendarPanel({
         blocked: rows.reduce((sum, row) => sum + row.blockedBy.length, 0),
       };
     });
-  }, [data, days, month, selectedBodies, tables, year]);
+  }, [data, days, month, requestBodies, selectedBodies, tables, year]);
 
   const offset = (new Date(Date.UTC(year, month - 1, 1)).getUTCDay() + 6) % 7;
   const cells: (CalendarDay | null)[] = [...Array.from({ length: offset }, () => null), ...calendar];
