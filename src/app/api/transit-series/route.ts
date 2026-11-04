@@ -3,7 +3,7 @@ import { calculateSignChangeSeries, SIGN_CHANGE_STEP_HOURS, type SignChangeBody 
 import { AYANAMSA_OFFSET_RANGE, readBodies, readClampedInt, readNumbers } from '@/lib/apiValidation';
 
 const MAX_DAYS = 31 * 366;
-// With a coarser step (a day count of 2 to 7) a table can run to a long life, as the research needs it.
+// Daily (step=1) and coarser (step=2…7) tables can cover long spans for calendar and research use.
 const MAX_DAYS_COARSE = 140 * 366;
 // What one request may sample: Jupiter, Saturn, Rahu and Ketu for thirty years, or the four faster grahas for ten, take a second or two.
 const MAX_SAMPLES = 160_000;
