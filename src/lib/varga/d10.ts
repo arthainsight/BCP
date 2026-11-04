@@ -13,7 +13,7 @@ export function calcD10(longitude: number): number {
 }
 
 
-/** D10 Parivṛtti Daśāṁśa — cyclic method (Ojha).
+/** D10 Parivṛtti Daśāṁśa — continuous / Varanasi method.
  * The portions run continuously through the zodiac: the first slice of Aries
  * maps to Aries, and each following 3° slice advances one sign. The sequence
  * continues across rāśi boundaries rather than restarting in each sign.
