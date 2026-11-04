@@ -21,7 +21,7 @@ assert.equal(DEFAULT_VARGA_GRID.preset, 'shadvarga');
 assert.deepEqual(vargaGridDivisions(DEFAULT_VARGA_GRID), [1, 2, 3, 9, 12, 30]);
 assert.deepEqual(vargaGridDivisions({ preset: 'custom', custom: [1, 9, 10, 60] }), [1, 9, 10, 60]);
 
-// Custom selections stay between four and eight, in order.
+// Custom selections stay between four and sixteen, in order.
 assert.deepEqual(toggleCustomDivision([1, 9, 12, 30], 10), [1, 9, 10, 12, 30]);
 assert.deepEqual(toggleCustomDivision([1, 9, 10, 12, 30], 10), [1, 9, 12, 30]);
 assert.deepEqual(toggleCustomDivision([1, 9, 12, 30], 9), [1, 9, 12, 30], 'no fewer than four');
