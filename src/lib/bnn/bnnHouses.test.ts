@@ -53,9 +53,12 @@ assert.equal(saturnHouse(1.8, 'even'), 9, 'even: already in the next sign at 1.8
 assert.equal(saturnHouse(1.8, 'alternating'), calculateParayaHouses(chart(1), 1.8).find(h => h.body === 'Saturn')?.house, 'alternating is the default');
 const rahuHouse = (age: number, rahu: 'alternating' | 'even') =>
   calculateParayaHouses(chart(1), age, { saturn: 'alternating', rahu }).find(h => h.body === 'Rahu')?.house;
-// Rahu (10° of its sign, so two thirds of the first stay gone) leaves its natal sign at 0.67 years alternating (a stay of 2) and at 0.5 years at 1.5 per sign.
-assert.equal(rahuHouse(0.6, 'alternating'), 12, 'alternating: still in the natal sign at 0.6');
-assert.equal(rahuHouse(0.6, 'even'), 11, 'even: has gone back a sign at 0.6');
+// Rahu moves backwards from 10° toward 0°, so it leaves the natal sign after one third of its fixed 522.5-day stay.
+// The legacy Rahu speed option is ignored; both choices use the same table-derived duration.
+assert.equal(rahuHouse(0.4, 'alternating'), 12, 'still in the natal sign before the 10° remaining arc is traversed');
+assert.equal(rahuHouse(0.4, 'even'), 12, 'the legacy speed choice does not alter Rahu');
+assert.equal(rahuHouse(0.6, 'alternating'), 11, 'has gone back one sign after crossing 0°');
+assert.equal(rahuHouse(0.6, 'even'), 11, 'the legacy speed choice does not alter Rahu');
 
 // The beta grahas follow the six standard grahas when they are asked for.
 {
