@@ -1,14 +1,12 @@
 import type { ChartData } from '@/types';
 import { RELATION_OFFSET, type HitRelation } from '@/lib/transitHits';
-import { findParayaAgesForPosition, PARAYA_BETA_BODIES, type ParayaBetaNatal, type ParayaBody, type ParayaOptions } from './nadiParaya';
+import { findParayaAgesForPosition, PARAYA_BETA_BODIES, PARAYA_BODIES as STANDARD_PARAYA_BODIES, type ParayaBetaNatal, type ParayaBody, type ParayaOptions } from './nadiParaya';
 import { dashaYearMsFor, type DashaYearLength } from '../time';
 
-// When the Nāḍī Paraya grahas (Jupiter, Saturn, Rahu and Ketu, and Mars, Mercury and Venus as beta, moved by age
-// through the signs) reach a natal graha: the same degree in its own sign, or
-// in its 5th or 9th sign. The Paraya positions follow the age, not the sky, so
-// these dates are worked out from the age rather than from the ephemeris.
+// Parāya progresses the standard six (Jupiter, Saturn, Rāhu, Ketu, Moon and Sun),
+// and optionally the three beta grahas. Hit dates are derived from age, not ephemerides.
 
-export const PARAYA_BODIES: ParayaBody[] = ['Jupiter', 'Saturn', 'Rahu', 'Ketu'];
+export const PARAYA_BODIES: ParayaBody[] = [...STANDARD_PARAYA_BODIES];
 
 /** The grahas whose natal positions the Paraya hits are counted to. */
 const NATAL_GRAHAS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
@@ -73,6 +71,7 @@ export function findParayaHits(params: {
           natalSaturnSignIndex: saturn.sign - 1,
           natalRahuSignIndex: rahu.sign - 1,
           natalDegrees: { Jupiter: jupiter.degree, Saturn: saturn.degree, Rahu: rahu.degree },
+          natalPositions: Object.fromEntries(chart.planets.filter(p => p.name === 'Sun' || p.name === 'Moon').map(p => [p.name, { signIndex: p.sign - 1, degree: p.degree }])) as Partial<Record<'Sun' | 'Moon', { signIndex: number; degree: number }>>,
           jupiterRetrograde: Boolean(jupiter.isRetrograde),
           saturnRetrograde: Boolean(saturn.isRetrograde),
           natalBeta,
