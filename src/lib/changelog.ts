@@ -1,10 +1,23 @@
 export const CHANGELOG = [
   {
+    version: 'v4.10',
+    date: '2026-11-04',
+    title: 'Sun and Moon added to Parāya; Rāśi and Bhāva separated',
+    changes: [
+      'Nāḍī Parāya now includes the Moon and Sun as standard progressing grahas, each moving one sign per selected daśā year from its own natal sign and degree. They appear in the chart layer, Parāya panel, Parāya Chakra, aspect timelines and exact-hit date calculations.',
+      'Use Bhāva Cusp now preserves the physical Rāśi sign and degree. The cusp changes only the assigned equal-bhāva house, using the natal Lagna degree in each sign. This corrects the earlier implementation that relabelled the planet as the previous sign before the cusp.',
+      'Old chart settings that had all four original Parāya grahas selected migrate automatically to include Moon and Sun. Partial user selections remain unchanged.',
+      'Regression tests cover the Moon and Sun date examples, the Jupiter 273-day cusp and Saturn 42-day cusp, and keep exact-degree hit calculations on the physical Rāśi positions.',
+      'Updated the application version to v4.10.',
+    ],
+  },
+
+  {
     version: 'v4.09',
     date: '2026-11-03',
     title: 'Clarify and verify Bhāva-cusp Parāya progression',
     changes: [
-      'The Parāya progression panel now identifies the active equal-bhāva cusp degree and explains that the prior house/sign remains active until the progression crosses it.',
+      'The Parāya progression panel identifies the equal-bhāva cusp degree. (The later v4.10 change clarifies that the Rāśi sign remains physical and only the assigned bhāva changes at the cusp.)',
       'Fixed the regression-test helper order and assert that the exact Jupiter cusp hit is returned.',
       'Updated the application version to v4.09.',
     ],
