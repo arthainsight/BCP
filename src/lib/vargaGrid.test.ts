@@ -14,7 +14,7 @@ assert.deepEqual(VARGA_GRID_PRESETS.saptavarga.divisions, [1, 2, 3, 7, 9, 12, 30
 assert.deepEqual(VARGA_GRID_PRESETS.dashavarga.divisions, [1, 2, 3, 7, 9, 10, 12, 16, 30, 60]);
 assert.equal(VARGA_GRID_PRESETS.shodashavarga.divisions.length, 16);
 assert.deepEqual(VARGA_GRID_PRESETS.shodashavarga.divisions, [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60], 'all sixteen BPHS vargas (D5 is not one of them)');
-assert.ok([6, 8, 11, 110].every(d => VARGA_DIVISIONS.includes(d)), 'extended D6, D8, D11 and D10 Parivritti are available in custom selection');
+assert.ok([6, 8, 11, 110].every(d => (VARGA_DIVISIONS as readonly number[]).includes(d)), 'extended D6, D8, D11 and D10 Parivritti are available in custom selection');
 
 // Ṣaḍvarga is the default.
 assert.equal(DEFAULT_VARGA_GRID.preset, 'shadvarga');
