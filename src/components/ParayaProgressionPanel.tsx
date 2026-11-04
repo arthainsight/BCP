@@ -158,16 +158,17 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
   const rahu = calculationSettings?.parayaRahu ?? 'alternating';
   const retro = calculationSettings?.parayaRetro ?? 'previous';
   const bhavaCuspDegree = calculationSettings?.parayaUseBhavaCusp ? chart.ascendant.degree : undefined;
+  const bhavaAscendantSignIndex = calculationSettings?.parayaUseBhavaCusp ? chart.ascendant.sign - 1 : undefined;
   const options = useMemo(
-    () => ({ saturn, rahu, retro, bhavaCuspDegree }),
-    [saturn, rahu, retro, bhavaCuspDegree],
+    () => ({ saturn, rahu, retro, bhavaCuspDegree, bhavaAscendantSignIndex }),
+    [saturn, rahu, retro, bhavaCuspDegree, bhavaAscendantSignIndex],
   );
   const selectedYearMs = dashaYearMsFor(yearLength);
 
   const birth = useMemo(() => parseDateTime(birthDatetime), [birthDatetime]);
   const from = useMemo(() => parseTargetDateString(targetDate), [targetDate]);
 
-  // Every hit of the seven in the range; the chips and the overview only choose among them.
+  // Every hit of the nine in the range; the chips and the overview only choose among them.
   const hits = useMemo(() => {
     if (!birth || !from) return [];
     return findParayaHits({
@@ -274,7 +275,7 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
             <tr key={body} className={ROW} data-progressing={body}>
               <td className={NAME_CELL}>{code(body)}{isBeta(body) && <span className="ml-1 text-[9px] font-normal text-zinc-400">β</span>}</td>
               <td className={`${VALUE_CELL} whitespace-nowrap`}>{period ? `${SIGN_NAMES[period.signIndex]} ${formatDegree(period.degree, 'minute')}` : '—'}</td>
-              <td className={VALUE_CELL}>{period ? `H${((period.signIndex - asc + 12) % 12) + 1}` : '—'}</td>
+              <td className={VALUE_CELL}>{period ? `H${period.house ?? ((period.signIndex - asc + 12) % 12) + 1}` : '—'}</td>
               <td className={`${BODY_CELL} text-zinc-700 dark:text-zinc-300`}>
                 {hit
                   ? <><span className="whitespace-nowrap font-bold">{formatHitDay(hit.time)}</span> {relationText(hit.relation)} <span className="font-bold">{code(hit.natal)}</span> <span className="text-zinc-400 dark:text-zinc-500">· {t('age')} {hit.ageYears.toFixed(1)}</span></>
@@ -285,7 +286,7 @@ export default function ParayaProgressionPanel({ chart, birthDatetime, targetDat
         })}
       </ScrollTable>
 
-      {/* The seven against the ten natal points: the first hit of each pair in the range */}
+      {/* The nine against the ten natal points: the first hit of each pair in the range */}
       <div className="space-y-1">
         <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">{t('first hit of each pair')}</div>
         <ScrollTable minWidth="min-w-[760px]" headers={['', ...PROGRESSION_NATAL.map(point => code(point))]}>
