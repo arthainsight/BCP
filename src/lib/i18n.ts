@@ -418,6 +418,7 @@ export const FI: Record<string, string> = {
   '5th from natal': '5. natalista',
   'paraya Saturn': 'paraya Saturn',
   'paraya Rahu / Ketu': 'paraya Rahu / Ketu',
+  'Rahu and Ketu move backwards and stay 1.4513889 selected dasha years per sign (522.5 days with a Sāvana year). Ketu remains opposite Rahu; the old speed choice is retained only for saved-setting compatibility.': 'Rahu ja Ketu kulkevat taaksepäin ja viipyvät 1,4513889 valittua daśā-vuotta kussakin merkissä (522,5 päivää Sāvana-vuodella). Ketu pysyy aina Rahun vastakkaisessa merkissä. Vanha nopeusasetus säilyy vain tallennettujen asetusten yhteensopivuuden vuoksi.',
   '3 / 2 years alternating': '3 / 2 vuotta vuorotellen',
   '2.5 years per sign': '2,5 vuotta per merkki',
   '2 / 1 years alternating': '2 / 1 vuotta vuorotellen',
