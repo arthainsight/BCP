@@ -35,7 +35,7 @@ function dateKey(year: number, month: number, day: number): string {
 function formatEvent(event: TimingEvent, code: (body: string) => string, t: (value: string) => string): string {
   if (event.kind === 'sign') return `${code(event.body)} → ${SIGN_ABBR[event.to - 1]}${event.retrograde ? ' ℞' : ''}`;
   if (event.kind === 'station') return `${code(event.body)} ${event.turnsTo === 'retrograde' ? '℞' : 'D'}`;
-  return `${code(event.body)} ${event.combust ? t('combust') : t('direct')}`;
+  return `${code(event.body)} ${event.combust ? t('becomes combust') : t('leaves combustion')}`;
 }
 
 /** A daily transit calendar: daily sidereal positions, sign ingresses, stations,
@@ -87,7 +87,8 @@ export default function TransitCalendarPanel({
         const longitude = values?.[index];
         return typeof longitude === 'number' ? [{ body, sign: Math.floor(longitude / 30) + 1 }] : [];
       });
-      const rows = positions.map(position => gocharaRowOf(tables, position.body as typeof GOCHARA_PLANETS[number], position.sign, positions as { planet: typeof GOCHARA_PLANETS[number]; sign: number }[]));
+      const others = positions.map(position => ({ planet: position.body as typeof GOCHARA_PLANETS[number], sign: position.sign }));
+      const rows = others.map(position => gocharaRowOf(tables, position.planet, position.sign, others));
       return {
         day, dateKey: key, positions, events: byDay.get(key) ?? [],
         favourableStrong: rows.filter(row => row.favourable && row.strength === 'strong' && row.blockedBy.length === 0).length,
