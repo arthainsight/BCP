@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { ChartData, ChartDisplaySettings, ChartStyle } from '@/types';
-import { VARGA_DIVISIONS, VARGA_NAMES, VARGA_SIGNIFICATIONS, buildVargaChart } from '@/lib/vargaChart';
+import { VARGA_DIVISIONS, VARGA_NAMES, VARGA_SIGNIFICATIONS, buildVargaChart, vargaCode } from '@/lib/vargaChart';
 import { vargaChartProps } from '@/lib/vargaChartProps';
 import { useArudhaPadas } from '@/hooks/useArudhaPadas';
 import { useChartPoints } from '@/hooks/useChartPoints';
@@ -151,7 +151,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
               <span
                 key={place.division}
                 title={[
-                  fill(t('{planet} in {sign} in D{division}'), { planet: highlight, sign: SIGN_ABBR[place.sign - 1], division: place.division }),
+                  fill(t('{planet} in {sign} in D{division}'), { planet: highlight, sign: SIGN_ABBR[place.sign - 1], division: vargaCode(place.division) }),
                   place.dignity && t(place.dignity === 'own' ? 'own sign' : place.dignity),
                   place.sameAsRasi && t('same sign as in D1'),
                 ].filter(Boolean).join(' · ')}
@@ -161,7 +161,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
                   : place.dignity === 'debilitated' ? 'border-rose-400 text-rose-700 dark:border-rose-800 dark:text-rose-400'
                   : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400'}`}
               >
-                D{place.division} {SIGN_ABBR[place.sign - 1]}{place.dignity === 'exalted' ? ' ↑' : place.dignity === 'debilitated' ? ' ↓' : place.dignity === 'own' ? ' ◆' : ''}
+                {vargaCode(place.division)} {SIGN_ABBR[place.sign - 1]}{place.dignity === 'exalted' ? ' ↑' : place.dignity === 'debilitated' ? ' ↓' : place.dignity === 'own' ? ' ◆' : ''}
               </span>
             ))}
           </div>
@@ -175,11 +175,11 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
         <div className="rounded-lg border border-zinc-200 p-2 dark:border-zinc-700">
           <div className="mb-2 flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">D{expanded} {VARGA_NAMES[expanded]}</div>
+              <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">{vargaCode(expanded)} {VARGA_NAMES[expanded]}</div>
               <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
                 {fill(t('{significance}. Houses are counted from the D{division} ascendant ({sign}).'), {
                   significance: t(VARGA_SIGNIFICATIONS[expanded]),
-                  division: expanded,
+                  division: vargaCode(expanded),
                   sign: SIGN_ABBR[buildVargaChart(chart, expanded).ascendantSign - 1],
                 })}
                 {expanded !== 1 && t(' Degrees show the position within the divisional sign.')}
@@ -190,7 +190,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
             </button>
           </div>
           <div ref={expandedRef} className="space-y-2">
-            <ChartExportButtons targetRef={expandedRef} fileName={`chart-d${expanded}`} />
+            <ChartExportButtons targetRef={expandedRef} fileName={`chart-${vargaCode(expanded).toLowerCase()}`} />
             {renderChart(expanded, false)}
           </div>
         </div>
