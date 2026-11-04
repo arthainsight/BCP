@@ -133,10 +133,49 @@ assert.deepEqual(ketuMatches.map(match => match.ageYears), [1, 19]);
   nearCusp(cuspHits[0].ageYears, jupiterCuspAge, 'exact Parāya hits use the same cusp-based timeline');
 }
 
+// --- Moon and Sun: direct one-sign-per-year progressions from their own natal longitude -------------------------
+{
+  const cusp = 24.5;
+  const nearSolarLunar = (a: number, b: number, message: string) => assert.ok(Math.abs(a - b) < 1e-6, `${message}: ${a} ≈ ${b}`);
+  const options = { ...DEFAULT_PARAYA_OPTIONS, bhavaCuspDegree: cusp };
+  const moonDegree = 5;
+  const moonCuspAge = (cusp - moonDegree) / 30;
+  const moonBefore = calculateNadiParaya({
+    ageYears: 0, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+    natalMoonSignIndex: 2, natalMoonDegree: moonDegree, options,
+  }).moon!;
+  assert.equal(moonBefore.signIndex, 1, 'Moon below the cusp initially retains the previous sign label');
+  nearSolarLunar(moonBefore.degree, moonDegree, 'Moon starts at its own natal degree');
+  const moonAtCusp = calculateNadiParaya({
+    ageYears: moonCuspAge, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+    natalMoonSignIndex: 2, natalMoonDegree: moonDegree, options,
+  }).moon!;
+  assert.equal(moonAtCusp.signIndex, 2, 'Moon activates Gemini when it crosses the cusp');
+  nearSolarLunar(moonAtCusp.degree, cusp, 'Moon reaches the cusp');
+  nearSolarLunar(moonCuspAge * 360, 234, 'Moon reaches 24°30′ after 234 sāvana days from 5° Gemini');
+
+  const sunDegree = 25;
+  const sunCuspAge = (30 - sunDegree + cusp) / 30;
+  const sunAtBirth = calculateNadiParaya({
+    ageYears: 0, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+    natalSunSignIndex: 5, natalSunDegree: sunDegree, options,
+  }).sun!;
+  assert.equal(sunAtBirth.signIndex, 5, 'Sun already beyond the cusp remains in its natal sign');
+  nearSolarLunar(sunAtBirth.degree, sunDegree, 'Sun starts at its own natal degree');
+  const sunAtNextCusp = calculateNadiParaya({
+    ageYears: sunCuspAge, natalJupiterSignIndex: 0, natalSaturnSignIndex: 7, natalRahuSignIndex: 11,
+    natalSunSignIndex: 5, natalSunDegree: sunDegree, options,
+  }).sun!;
+  assert.equal(sunAtNextCusp.signIndex, 6, 'Sun activates Libra/next sign at the following cusp');
+  nearSolarLunar(sunAtNextCusp.degree, cusp, 'Sun reaches the cusp');
+  nearSolarLunar(sunCuspAge * 360, 354, 'Sun reaches the next 24°30′ cusp after 354 sāvana days');
+}
+ 
 // --- The beta grahas: Mars two months, Mercury and Venus a month in each sign --------------------------------------------
-assert.deepEqual(PARAYA_BODIES, ['Jupiter', 'Saturn', 'Rahu', 'Ketu'], 'the four are what there is to begin with');
+assert.deepEqual(PARAYA_BODIES, ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun'], 'the six standard Parāya grahas');
 assert.deepEqual(PARAYA_BETA_BODIES, ['Mars', 'Mercury', 'Venus']);
-assert.deepEqual(ALL_PARAYA_BODIES, ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Mars', 'Mercury', 'Venus']);
+assert.deepEqual(ALL_PARAYA_BODIES, ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun', 'Mars', 'Mercury', 'Venus']);
+assert.deepEqual([parayaDurations('Moon'), parayaDurations('Sun')], [[1], [1]], 'Moon and Sun each progress one sign per year');
 assert.deepEqual([parayaDurations('Mars'), parayaDurations('Mercury'), parayaDurations('Venus')], [[1 / 6], [1 / 12], [1 / 12]]);
 
 const near = (a: number, b: number, message: string) => assert.ok(Math.abs(a - b) < 1e-6, `${message}: ${a} ≈ ${b}`);
