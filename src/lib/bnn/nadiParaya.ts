@@ -122,10 +122,6 @@ function phaseOf(params: PeriodParams): number {
   return (params.direction === 1 ? degree / 30 : 1 - degree / 30) * params.durations[0];
 }
 
-function mod30(degree: number): number {
-  return ((degree % 30) + 30) % 30;
-}
-
 /** Retrograde placement may shift the initial sign; cusp mode does not alter the physical Rāśi. */
 function periodStartSign(params: PeriodParams): number {
   return normalizeSign(params.natalSignIndex - (params.retrogradeStartShift ? 1 : 0));
@@ -240,11 +236,13 @@ export function calculateNadiParaya(params: {
     body: 'Moon', natalSignIndex: params.natalMoonSignIndex, ageYears,
     durations: parayaDurations('Moon', params.options), direction: 1,
     startDegree: params.natalMoonDegree, boundaryDegree: params.options?.bhavaCuspDegree,
+    ascendantSignIndex: params.options?.bhavaAscendantSignIndex,
   });
   const sun = params.natalSunSignIndex === undefined ? undefined : periodAtAge({
     body: 'Sun', natalSignIndex: params.natalSunSignIndex, ageYears,
     durations: parayaDurations('Sun', params.options), direction: 1,
     startDegree: params.natalSunDegree, boundaryDegree: params.options?.bhavaCuspDegree,
+    ascendantSignIndex: params.options?.bhavaAscendantSignIndex,
   });
   const ketuSignIndex = normalizeSign(rahu.signIndex + 6);
   const ketu: ParayaPeriod = {
