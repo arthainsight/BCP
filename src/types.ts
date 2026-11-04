@@ -181,7 +181,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   showBnnMinorHighlight: false,
   showTransitOverlay: false,
   showNadiParaya: false,
-  parayaBodies: ['Jupiter', 'Saturn', 'Rahu', 'Ketu'],
+  parayaBodies: ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun'],
   showBcpHighlight: false,
   showYogiMarks: false,
   showDashaLords: false,
