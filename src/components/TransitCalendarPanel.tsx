@@ -65,10 +65,12 @@ export default function TransitCalendarPanel({
   // Sun is required as an invisible reference series when Mercury or Venus
   // combustion changes are requested, even if the user has hidden the Sun.
   const requestBodies = useMemo(
-    () => selectedBodies.some(body => body === 'Mercury' || body === 'Venus')
-      ? [...new Set([...selectedBodies, 'Sun'])]
-      : selectedBodies,
-    [selectedBodies],
+    () => showGochara
+      ? [...BODIES]
+      : selectedBodies.some(body => body === 'Mercury' || body === 'Venus')
+        ? [...new Set([...selectedBodies, 'Sun'])]
+        : selectedBodies,
+    [selectedBodies, showGochara],
   );
   const { data, error, loading } = useDebouncedJson<Loaded>(
     requestBodies.length ? transitSeriesUrl(start, days, requestBodies, calculationSettings, 1) : null,
@@ -95,7 +97,14 @@ export default function TransitCalendarPanel({
         const longitude = values?.[index];
         return typeof longitude === 'number' ? [{ body, sign: Math.floor(longitude / 30) + 1 }] : [];
       });
-      const others = positions.map(position => ({ planet: position.body as typeof GOCHARA_PLANETS[number], sign: position.sign }));
+      // Gochara/Vedha depends on all transiting grahas, including those hidden
+      // by the visual filter. The selected bodies affect display, not the calculation.
+      const others = BODIES.flatMap(body => {
+        const longitude = series[body]?.longitudes[index];
+        return typeof longitude === 'number'
+          ? [{ planet: body, sign: Math.floor(longitude / 30) + 1 }]
+          : [];
+      });
       const rows = others.map(position => gocharaRowOf(tables, position.planet, position.sign, others));
       return {
         day, dateKey: key, positions, events: byDay.get(key) ?? [],
