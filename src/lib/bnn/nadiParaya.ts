@@ -245,11 +245,18 @@ export function calculateNadiParaya(params: {
     ascendantSignIndex: params.options?.bhavaAscendantSignIndex,
   });
   const ketuSignIndex = normalizeSign(rahu.signIndex + 6);
+  const ketuRasiHouse = params.options?.bhavaAscendantSignIndex === undefined
+    ? undefined
+    : ((ketuSignIndex - params.options.bhavaAscendantSignIndex + 12) % 12) + 1;
+  const ketuHouse = ketuRasiHouse === undefined || params.options?.bhavaCuspDegree === undefined
+    ? undefined
+    : rahu.degree >= params.options.bhavaCuspDegree ? ketuRasiHouse : ((ketuRasiHouse + 10) % 12) + 1;
   const ketu: ParayaPeriod = {
     ...rahu,
     body: 'Ketu',
     signIndex: ketuSignIndex,
     signName: SIGN_NAMES[ketuSignIndex],
+    house: ketuHouse,
   };
 
   return { ageYears, jupiter, saturn, rahu, ketu, ...(moon ? { moon } : {}), ...(sun ? { sun } : {}) };
