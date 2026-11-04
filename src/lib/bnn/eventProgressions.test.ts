@@ -19,9 +19,9 @@ assert.equal(progressionsAt({ chart, birthTime: birth, time: birth - 1, bodies: 
 // --- At birth every graha stands at its natal degree, and the houses are counted from the ascendant ------------------------------------------
 {
   const rows = progressionsAt({ chart, birthTime: birth, time: birth, bodies: PARAYA_BODIES })!;
-  assert.deepEqual(rows.map(row => row.body), ['Jupiter', 'Saturn', 'Rahu', 'Ketu']);
-  assert.deepEqual(rows.map(row => [row.signIndex, Math.round(row.degree)]), [[0, 5], [5, 10], [3, 20], [9, 20]]);
-  assert.deepEqual(rows.map(row => row.house), [1, 6, 4, 10], 'houses from the Aries ascendant');
+  assert.deepEqual(rows.map(row => row.body), ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun']);
+  assert.deepEqual(rows.map(row => [row.signIndex, Math.round(row.degree)]), [[0, 5], [5, 10], [3, 20], [9, 20], [8, 27], [0, 15]]);
+  assert.deepEqual(rows.map(row => row.house), [1, 6, 4, 10, 9, 1], 'houses from the Aries ascendant');
   // Jupiter in Aries: over the Sun, itself and the ascendant (the 1st); Aries is the 5th sign from the Moon in Sagittarius.
   const jupiter = rows[0].aspects.map(aspect => [aspect.natal, aspect.relation]);
   assert.deepEqual(jupiter, [['Sun', 1], ['Moon', 5], ['Jupiter', 1], ['Asc', 1]], 'Jupiter in Aries: the 1st of the Sun, Jupiter and the ascendant, the 5th of the Moon');
