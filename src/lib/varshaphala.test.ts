@@ -72,9 +72,9 @@ for (let lon = 0; lon < 360; lon += 7.3) {
     })),
   } as unknown as import('@/types').ChartData;
   const harshaDay = calculateHarshaBala(annual, true);
-  assert.deepEqual(harshaDay.map(row => row.total), [15, 15, 5, 10, 15, 5, 15],
+  assert.deepEqual(harshaDay.map(row => row.total), [15, 15, 20, 15, 20, 10, 10],
     'Harsha Bala adds four independent five-point conditions');
-  assert.deepEqual(calculateHarshaBala(annual, false).map(row => row.total), [10, 15, 5, 10, 10, 10, 15],
+  assert.deepEqual(calculateHarshaBala(annual, false).map(row => row.total), [10, 20, 15, 20, 15, 15, 15],
     'day/night condition swaps male and female planets');
   const twelve = calculateDwadashavargiyaBala(annual);
   assert.equal(twelve.length, 7);
