@@ -314,7 +314,7 @@ export default function SettingsPanel(props: Props) {
                 />
               </div>
               <div className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-                {t('Use the Lagna degree as the equal-bhāva cusp in every sign. Progression changes sign/house when it reaches that degree; off, it changes at 0°.')}
+                {t('Use the Lagna degree as the equal-bhāva cusp in every sign. The Rāśi sign and degree remain physical; only the assigned bhāva changes when the degree crosses this cusp.')}
               </div>
             </div>
             <div className="space-y-1.5" data-setting="paraya-original-placement">
