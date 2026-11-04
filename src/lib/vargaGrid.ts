@@ -9,12 +9,13 @@ export type VargaGridPreset = 'shadvarga' | 'saptavarga' | 'dashavarga' | 'shoda
 
 export const VARGA_GRID_MIN = 4;
 export const VARGA_GRID_MAX = 16;
+const CLASSICAL_SHODASHAVARGA = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60] as const;
 
 export const VARGA_GRID_PRESETS: Record<Exclude<VargaGridPreset, 'custom'>, { label: string; divisions: number[] }> = {
   shadvarga: { label: 'Ṣaḍvarga', divisions: [1, 2, 3, 9, 12, 30] },
   saptavarga: { label: 'Saptavarga', divisions: [1, 2, 3, 7, 9, 12, 30] },
   dashavarga: { label: 'Daśavarga', divisions: [1, 2, 3, 7, 9, 10, 12, 16, 30, 60] },
-  shodashavarga: { label: 'Ṣoḍaśavarga', divisions: [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60] },
+  shodashavarga: { label: 'Ṣoḍaśavarga', divisions: [...CLASSICAL_SHODASHAVARGA] },
 };
 
 export const VARGA_GRID_PRESET_ORDER: VargaGridPreset[] = ['shadvarga', 'saptavarga', 'dashavarga', 'shodashavarga', 'custom'];
