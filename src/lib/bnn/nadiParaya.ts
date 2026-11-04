@@ -15,24 +15,27 @@ export const PARAYA_BETA_BODIES: readonly ParayaBetaBody[] = ['Mars', 'Mercury',
 /** All nine: the six standard grahas followed by the three beta grahas. */
 export const ALL_PARAYA_BODIES: readonly ParayaBody[] = [...PARAYA_BODIES, ...PARAYA_BETA_BODIES];
 
-/**
- * Years spent in each sign by the beta grahas: what the graha takes in the sky on average, alongside the six standard grahas (Jupiter and Moon/Sun a year, Saturn
- * 2½, Rahu 1½). Mars takes two months, which is two years round the zodiac; Mercury and Venus keep the pace of the Sun, a month a sign and
- * a year a round.
- */
-export const PARAYA_BETA_YEARS: Record<ParayaBetaBody, number> = { Mars: 1 / 6, Mercury: 1 / 12, Venus: 1 / 12 };
+/** Table-derived stay used by Mars and the Rāhu/Ketu axis: 522.5 sāvana days per sign. */
+export const PARAYA_TABLE_SIGN_YEARS = 522.5 / 360;
 
 /**
- * The natal sign (0–11) of a beta graha and the degree it stood at in it (0–30; 0 when not given), and whether it was going backwards, which
- * starts its walk one sign back as for Jupiter and Saturn. The beta grahas begin at their natal degree: Mercury at 7° and Venus at 18° of Libra
- * are in different places on their way round, and reach the same degree of another sign at different times.
+ * Years spent in each sign by the optional beta grahas. The supplied table gives
+ * Mars 522.5 sāvana days per sign, and Mercury and Venus 360 days per sign.
+ */
+export const PARAYA_BETA_YEARS: Record<ParayaBetaBody, number> = { Mars: PARAYA_TABLE_SIGN_YEARS, Mercury: 1, Venus: 1 };
+
+/**
+ * The natal sign (0–11) and degree (0–30) of a beta graha, and whether it was retrograde,
+ * which can shift its starting sign back as for Jupiter and Saturn. Progression starts at
+ * the natal degree, so different degrees reach the same point at different times.
  */
 export type ParayaBetaNatal = Partial<Record<ParayaBetaBody, { signIndex: number; degree?: number; retrograde?: boolean }>>;
 
-/** The choices for how Saturn and Rahu (and so Ketu) stay in each sign. */
+/** Saturn's stay pattern is configurable. Rāhu/Ketu use the table-derived fixed stay below. */
 export interface ParayaOptions {
   saturn: ParayaSpeed;
-  rahu: ParayaSpeed;
+  /** @deprecated Legacy Rahu-speed selector; ignored in favour of the table-derived fixed duration. */
+  rahu?: ParayaSpeed;
   /** Where a graha that was retrograde at birth begins: one sign back (the default) or in its natal sign. Rahu and Ketu have no such shift. */
   retro?: ParayaRetro;
   /** Equal-bhāva cusp degree (the natal Lagna degree), used to assign a Rāśi position to a bhāva. */
@@ -47,15 +50,15 @@ export const DEFAULT_PARAYA_OPTIONS: ParayaOptions = { saturn: 'alternating', ra
 const shiftsBack = (options?: ParayaOptions) => (options?.retro ?? 'previous') === 'previous';
 
 /**
- * Years spent in each sign in turn. Jupiter stays a year; Saturn alternates 3
- * and 2 years or stays 2.5; Rahu alternates 2 and 1 or stays 1.5. Either way a
- * round takes 12, 30 and 18 years.
+ * Years spent in each sign. Jupiter, Moon, Sun, Mercury and Venus stay one
+ * year; Saturn alternates 3 and 2 years or stays 2.5; Mars and Rāhu/Ketu use
+ * the table-derived 522.5 sāvana-day stay. Rāhu and Ketu move backwards.
  */
 export function parayaDurations(body: Exclude<ParayaBody, 'Ketu'>, options: ParayaOptions = DEFAULT_PARAYA_OPTIONS): readonly number[] {
   if (body === 'Jupiter' || body === 'Moon' || body === 'Sun') return [1];
   if (body === 'Mars' || body === 'Mercury' || body === 'Venus') return [PARAYA_BETA_YEARS[body]];
   if (body === 'Saturn') return options.saturn === 'even' ? [2.5] : [3, 2];
-  return options.rahu === 'even' ? [1.5] : [2, 1];
+  return [PARAYA_TABLE_SIGN_YEARS];
 }
 
 export type NadiParayaHouseActivation = {
