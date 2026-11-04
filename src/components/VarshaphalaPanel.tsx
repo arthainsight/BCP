@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { CalculationSettings, ChartData, ChartDisplaySettings, ChartStyle } from '@/types';
 // Types only: the route does the ephemeris work.
 import type { OfficeBearer, PanchaVargiyaBala } from '@/lib/varshaphala';
+import type { DwadashavargiyaRow, HarshaBalaRow } from '@/lib/varshaphalaStrength';
 import { formatDegree } from '@/lib/formatDegree';
 import StyledChart from './StyledChart';
 import {
@@ -39,6 +40,8 @@ type VpResponse = {
   yearLord: string;
   reason: string;
   bala: PanchaVargiyaBala[];
+  harshaBala: HarshaBalaRow[];
+  dwadashavargiyaBala: DwadashavargiyaRow[];
   dasha: LocalMahadasha[];
   patyamshi: LocalMahadasha[];
   next: { year: number; local: LocalParts; tzOffset: number };
@@ -182,6 +185,69 @@ export default function VarshaphalaPanel({
                 ))}
               </tbody>
             </table>
+          </div>
+
+          <div className="overflow-x-auto">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600 mb-1">Harṣa Bala · Charak</div>
+            <table className="w-full min-w-[620px] text-[11px] font-mono">
+              <thead><tr className="text-left text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                <th className="py-1 pr-2 font-normal">graha</th>
+                <th className="py-1 pr-2 font-normal">{t('position')}</th>
+                <th className="py-1 pr-2 font-normal">{t('own / exalted')}</th>
+                <th className="py-1 pr-2 font-normal">{t('gender')}</th>
+                <th className="py-1 pr-2 font-normal">{t('day / night')}</th>
+                <th className="py-1 font-normal">{t('total')} / 20</th>
+              </tr></thead>
+              <tbody className="tabular-nums text-zinc-700 dark:text-zinc-300">
+                {shown.harshaBala.map(row => (
+                  <tr key={row.planet} className="border-t border-zinc-100 dark:border-zinc-800">
+                    <td className="py-1 pr-2">{row.planet}</td>
+                    <td className="py-1 pr-2">{row.positional}</td>
+                    <td className="py-1 pr-2">{row.ownOrExalted}</td>
+                    <td className="py-1 pr-2">{row.gender}</td>
+                    <td className="py-1 pr-2">{row.dayNight}</td>
+                    <td className="py-1 font-semibold">{row.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('Four independent conditions; each contributes five points. Male planets: Sun, Mars, Jupiter. Female planets: Moon, Mercury, Venus, Saturn.')}</p>
+          </div>
+
+          <div className="space-y-2">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Dvādaśavargīya Bala · Charak</div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[540px] text-[11px] font-mono">
+                <thead><tr className="text-left text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-600">
+                  <th className="py-1 pr-2 font-normal">graha</th><th className="py-1 pr-2 font-normal">B</th>
+                  <th className="py-1 pr-2 font-normal">M</th><th className="py-1 pr-2 font-normal">N</th>
+                  <th className="py-1 pr-2 font-normal">{t('net')}</th><th className="py-1 font-normal">{t('result')}</th>
+                </tr></thead>
+                <tbody className="text-zinc-700 dark:text-zinc-300">
+                  {shown.dwadashavargiyaBala.map(row => (
+                    <tr key={row.planet} className="border-t border-zinc-100 dark:border-zinc-800">
+                      <td className="py-1 pr-2">{row.planet}</td><td className="py-1 pr-2 tabular-nums">{row.benefic}</td>
+                      <td className="py-1 pr-2 tabular-nums">{row.malefic}</td><td className="py-1 pr-2 tabular-nums">{row.neutral}</td>
+                      <td className="py-1 pr-2 tabular-nums">{row.net > 0 ? '+' : ''}{row.net}</td>
+                      <td className={`py-1 font-semibold ${row.result === 'benefic' ? 'text-emerald-700 dark:text-green-400' : row.result === 'malefic' ? 'text-rose-600 dark:text-rose-400' : ''}`}>{t(row.result)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="space-y-1">
+              {shown.dwadashavargiyaBala.map(row => (
+                <details key={row.planet} className="border-t border-zinc-100 pt-1 dark:border-zinc-800">
+                  <summary className="cursor-pointer text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{row.planet} · {row.benefic} B / {row.malefic} M / {row.neutral} N</summary>
+                  <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 text-[9px] font-mono sm:grid-cols-3">
+                    {row.factors.map(factor => <div key={factor.division} className="text-zinc-500 dark:text-zinc-400">
+                      **{factor.name}** · {factor.lord} · {t(factor.disposition)} <span className="text-zinc-400">({factor.reason})</span>
+                    </div>)}
+                  </div>
+                </details>
+              ))}
+            </div>
+            <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">{t('B = benefic, M = malefic, N = neutral. Own, exaltation and debilitation override the Tājika relationship. D5 uses Charak’s planet-lord sequence; the other vargas use the twelve-division chart mapping.')}</p>
           </div>
 
           <AnnualDashaList
