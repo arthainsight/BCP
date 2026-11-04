@@ -241,7 +241,7 @@ export default function VarshaphalaPanel({
                   <summary className="cursor-pointer text-[10px] font-mono text-zinc-500 dark:text-zinc-400">{row.planet} · {row.benefic} B / {row.malefic} M / {row.neutral} N</summary>
                   <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 text-[9px] font-mono sm:grid-cols-3">
                     {row.factors.map(factor => <div key={factor.division} className="text-zinc-500 dark:text-zinc-400">
-                      **{factor.name}** · {factor.lord} · {t(factor.disposition)} <span className="text-zinc-400">({factor.reason})</span>
+                      <strong>{factor.name}</strong> · {factor.lord} · {t(factor.disposition)} <span className="text-zinc-400">({factor.reason})</span>
                     </div>)}
                   </div>
                 </details>
