@@ -31,7 +31,7 @@ export function findParayaHits(params: {
   toTime: number;
   relations: readonly HitRelation[];
   options?: ParayaOptions;
-  /** The Paraya grahas to count: the four to begin with; Mars, Mercury and Venus (beta) when they are given. */
+  /** The Parāya grahas to count: the six standard grahas; Mars, Mercury and Venus are optional beta grahas. */
   bodies?: readonly ParayaBody[];
   /** Year length used to turn calendar time into Parāya age. */
   yearLength?: DashaYearLength;
