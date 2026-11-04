@@ -323,7 +323,7 @@ console.log('Aṣṭakavarga tests passed');
   const reduced = Array(12).fill(0); reduced[0] = 2; reduced[5] = 1;
   const signs = Object.fromEntries(PLANET_NAMES.map(name => [name, 0])) as Record<typeof PLANET_NAMES[number], number>;
   const pvr = calculateShodhyaPinda(reduced, signs, 'pvr');
-  assert.deepEqual(pvr, { rasiPinda: 20, grahaPinda: 90, shodhyaPinda: 110 }, 'PVR Rāśi and Graha Piṇḍa multipliers');
+  assert.deepEqual(pvr, { rasiPinda: 20, grahaPinda: 90, shodhyaPinda: 110, yogaPinda: 110 }, 'PVR Rāśi and Graha Piṇḍa multipliers');
   const alternative = calculateShodhyaPinda(reduced, signs, 'alternate');
   assert.equal(alternative.rasiPinda, 19, 'alternative Rasimana uses five for Virgo rather than six');
 }
