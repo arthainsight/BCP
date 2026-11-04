@@ -110,20 +110,28 @@ const betaChart = {
   planets: [planet('Jupiter', 1, 5), planet('Saturn', 6, 10), planet('Rahu', 4, 20), planet('Sun', 1, 15), planet('Mars', 1, 5), planet('Mercury', 3, 10), planet('Venus', 2, 20)],
 } as unknown as ChartData;
 const betaWindow = (years: number, bodies: readonly (typeof ALL_PARAYA_BODIES)[number][]) => ({ chart: betaChart, birthTime: birth, fromTime: birth, toTime: birth + years * YEAR, bodies });
-// Mars starts at its natal degree (5° Aries) and stays two months in a sign: it is at 15° Aries (the Sun) when it has gone 10° of its first stay, at age
-// 10/30 * 1/6 = 0.056, at 15° Leo (the 5th) at 4 stays and 10° on, 0.722, at 15° Sagittarius (the 9th) at 1.389, and again every two years.
-const marsToSun = findParayaHits({ ...betaWindow(3, ['Mars']), relations: [1, 5, 9] }).filter(hit => hit.natal === 'Sun');
+// Mars moves one sign per 522.5 sāvana days. The natal Sun at 15° Aries is reached first,
+// then in Leo and Sagittarius, with the 12-sign round repeating every 17.4167 selected years.
+const marsToSun = findParayaHits({ ...betaWindow(25, ['Mars']), relations: [1, 5, 9] }).filter(hit => hit.natal === 'Sun');
 assert.deepEqual(marsToSun.map(hit => hit.relation), [1, 5, 9, 1, 5]);
-assert.deepEqual(marsToSun.map(hit => Math.round(hit.ageYears * 1000) / 1000), [0.056, 0.722, 1.389, 2.056, 2.722]);
-// Every hit of Mars, Mercury and Venus: the Paraya calculation puts the graha in the wanted sign at the natal degree, direct or retrograde at birth (they start from
-// their own natal degrees, which differ here: 5°, 10° and 20°).
+assert.deepEqual(marsToSun.map(hit => Math.round(hit.ageYears * 1000) / 1000), [0.484, 6.289, 12.095, 17.9, 23.706]);
+// With a Sāvana daśā year, Mars reaches the Sun 10° ahead after one third of 522.5 days.
+const marsSavanaFirst = findParayaHits({
+  chart: betaChart, birthTime: birth, fromTime: birth, toTime: birth + SAVANA_YEAR,
+  relations: [1], yearLength: 'savana', bodies: ['Mars'],
+}).find(hit => hit.natal === 'Sun');
+assert.ok(marsSavanaFirst);
+assert.ok(Math.abs(marsSavanaFirst.time - (birth + (522.5 / 3) * 24 * 60 * 60 * 1000)) < 1000);
+
+// Every hit of Mars, Mercury and Venus: the Paraya calculation puts the graha in the wanted sign at the natal degree, direct or retrograde at birth.
+// At one year per sign, Mercury and Venus complete a twelve-year round; the window spans more than two rounds.
 for (const retro of [false, true]) {
   const chartAt = {
     ...betaChart,
     planets: betaChart.planets.map(p => (['Mars', 'Mercury', 'Venus'].includes(p.name) ? { ...p, isRetrograde: retro } : p)),
   } as unknown as ChartData;
-  const hits = findParayaHits({ chart: chartAt, birthTime: birth, fromTime: birth, toTime: birth + 6 * YEAR, relations: [1, 5, 9], bodies: ['Mars', 'Mercury', 'Venus'] });
-  assert.ok(hits.length > 200, 'Mercury and Venus hit every natal point every year');
+  const hits = findParayaHits({ chart: chartAt, birthTime: birth, fromTime: birth, toTime: birth + 50 * YEAR, relations: [1, 5, 9], bodies: ['Mars', 'Mercury', 'Venus'] });
+  assert.ok(hits.length > 200, 'the three beta grahas produce hits across the extended window');
   assert.deepEqual([...new Set(hits.map(hit => hit.body))].sort(), ['Mars', 'Mercury', 'Venus']);
   for (const hit of hits) {
     const point = chartAt.planets.find(p => p.name === hit.natal) ?? { sign: 1, degree: 2 };
