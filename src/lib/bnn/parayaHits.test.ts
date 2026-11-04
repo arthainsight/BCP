@@ -73,7 +73,13 @@ for (const options of optionSets) for (const retro of [false, true]) {
       natalSunSignIndex: 0, natalSunDegree: 15, natalMoonSignIndex: 8, natalMoonDegree: 27.5,
       jupiterRetrograde: retro, saturnRetrograde: retro, options,
     });
-    const period = { Jupiter: paraya.jupiter, Saturn: paraya.saturn, Rahu: paraya.rahu, Ketu: paraya.ketu, Moon: paraya.moon, Sun: paraya.sun }[hit.body];
+    const period = hit.body === 'Jupiter' ? paraya.jupiter
+      : hit.body === 'Saturn' ? paraya.saturn
+        : hit.body === 'Rahu' ? paraya.rahu
+          : hit.body === 'Ketu' ? paraya.ketu
+            : hit.body === 'Moon' ? paraya.moon
+              : hit.body === 'Sun' ? paraya.sun
+                : undefined;
     assert.ok(period, `a current Parāya position exists for ${hit.body}`);
     const wantedSign = (point.sign - 1 + RELATION_OFFSET[hit.relation] / 30) % 12;
     assert.equal(period.signIndex, wantedSign, `${hit.body} → ${hit.natal} (${hit.relation}) is in the wanted sign (${options.saturn}/${options.rahu})`);
