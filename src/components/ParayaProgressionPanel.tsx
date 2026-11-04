@@ -66,7 +66,7 @@ function BhriguChakra({ chart, now, relations, code }: {
 }) {
   const cx = CHAKRA_CENTER;
   const outer = 306;
-  const ringWidth = 29;
+  const ringWidth = 21;
   const natalRadius = 72;
   const ringBodies = CHAKRA_BODIES.filter(body => now.some(position => position.body === body));
   const natal = chart.planets.filter(planet => CHAKRA_GLYPHS[planet.name]);
