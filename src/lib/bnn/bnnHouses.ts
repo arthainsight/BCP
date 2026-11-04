@@ -80,7 +80,7 @@ export function calculateParayaHouses(chart: ChartData | null, ageYears: number,
   const asc = chart.ascendant.sign;
   return parayaPeriodsOf(chart, ageYears, options, beta).map(period => ({
     body: period.body,
-    house: houseOf(period.signIndex, asc),
+    house: period.house ?? houseOf(period.signIndex, asc),
     degree: period.degree,
   }));
 }
