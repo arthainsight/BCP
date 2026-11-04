@@ -151,7 +151,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
               <span
                 key={place.division}
                 title={[
-                  fill(t('{planet} in {sign} in D{division}'), { planet: highlight, sign: SIGN_ABBR[place.sign - 1], division: vargaCode(place.division) }),
+                  fill(t('{planet} in {sign} in {division}'), { planet: highlight, sign: SIGN_ABBR[place.sign - 1], division: vargaCode(place.division) }),
                   place.dignity && t(place.dignity === 'own' ? 'own sign' : place.dignity),
                   place.sameAsRasi && t('same sign as in D1'),
                 ].filter(Boolean).join(' · ')}
@@ -177,7 +177,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
             <div className="min-w-0">
               <div className="text-xs font-mono font-semibold text-zinc-700 dark:text-zinc-300">{vargaCode(expanded)} {VARGA_NAMES[expanded]}</div>
               <div className="text-[10px] font-mono text-zinc-400 dark:text-zinc-600">
-                {fill(t('{significance}. Houses are counted from the D{division} ascendant ({sign}).'), {
+                {fill(t('{significance}. Houses are counted from the {division} ascendant ({sign}).'), {
                   significance: t(VARGA_SIGNIFICATIONS[expanded]),
                   division: vargaCode(expanded),
                   sign: SIGN_ABBR[buildVargaChart(chart, expanded).ascendantSign - 1],
