@@ -116,7 +116,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
                     ? 'border-emerald-500 bg-emerald-50 text-emerald-700 dark:border-green-600 dark:bg-green-950/30 dark:text-green-400'
                     : 'border-zinc-200 text-zinc-500 dark:border-zinc-700 dark:text-zinc-400'}`}
                 >
-                  D{division}
+                  {vargaCode(division)}
                 </button>
               );
             })}
