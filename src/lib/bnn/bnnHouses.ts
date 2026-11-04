@@ -101,5 +101,18 @@ export function parayaTimelineOf(chart: ChartData | null, body: ParayaBody, maxA
     retrograde: Boolean(planet.isRetrograde),
     options,
   });
-  return body === 'Ketu' ? periods.map(period => ({ ...period, body: 'Ketu' as const, signIndex: (period.signIndex + 6) % 12, signName: SIGN_NAMES[(period.signIndex + 6) % 12] })) : periods;
+  return body === 'Ketu' ? periods.map(period => {
+    const signIndex = (period.signIndex + 6) % 12;
+    const rasiHouse = houseOf(signIndex, chart.ascendant.sign);
+    const house = options?.bhavaCuspDegree === undefined
+      ? undefined
+      : period.degree >= options.bhavaCuspDegree ? rasiHouse : ((rasiHouse + 10) % 12) + 1;
+    return {
+      ...period,
+      body: 'Ketu' as const,
+      signIndex,
+      signName: SIGN_NAMES[signIndex],
+      ...(house !== undefined ? { house } : {}),
+    };
+  }) : periods;
 }
