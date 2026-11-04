@@ -64,9 +64,12 @@ export default function TransitCalendarPanel({
   const start = `${monthKey}-01`;
   // Sun is required as an invisible reference series when Mercury or Venus
   // combustion changes are requested, even if the user has hidden the Sun.
-  const requestBodies = selectedBodies.some(body => body === 'Mercury' || body === 'Venus')
-    ? [...new Set([...selectedBodies, 'Sun'])]
-    : selectedBodies;
+  const requestBodies = useMemo(
+    () => selectedBodies.some(body => body === 'Mercury' || body === 'Venus')
+      ? [...new Set([...selectedBodies, 'Sun'])]
+      : selectedBodies,
+    [selectedBodies],
+  );
   const { data, error, loading } = useDebouncedJson<Loaded>(
     requestBodies.length ? transitSeriesUrl(start, days, requestBodies, calculationSettings, 1) : null,
   );
