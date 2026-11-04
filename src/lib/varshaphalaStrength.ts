@@ -3,7 +3,10 @@ import { getVargaSignIndex } from '@/lib/varga';
 import { SIGN_LORDS } from '@/lib/signs';
 import type { SevenPlanet } from '@/lib/varshaphala';
 
+export type HarshaGrade = 'nirbala' | 'alpabali' | 'madhya-bali' | 'poorna-bali' | 'extraordinary';
+
 export type HarshaBalaRow = {
+  grade: HarshaGrade;
   planet: SevenPlanet;
   positional: number;
   ownOrExalted: number;
@@ -29,19 +32,29 @@ const OWN_SIGNS: Record<SevenPlanet, readonly number[]> = {
   Jupiter: [9, 12], Venus: [2, 7], Saturn: [10, 11],
 };
 
+/** Charak's qualitative reading of the five-point Harṣa Bala total. */
+export function harshaGrade(total: number): HarshaGrade {
+  if (total <= 0) return 'nirbala';
+  if (total <= 5) return 'alpabali';
+  if (total <= 10) return 'madhya-bali';
+  if (total <= 15) return 'poorna-bali';
+  return 'extraordinary';
+}
+
 /** K. S. Charak, A Textbook of Varshaphala, chapter VI: four components × five points. */
 export function calculateHarshaBala(annual: ChartData, dayYear: boolean): HarshaBalaRow[] {
   return (Object.keys(HARSA_HOUSES) as SevenPlanet[]).map(planet => {
     const body = annual.planets.find(item => item.name === planet);
     if (!body) {
-      return { planet, positional: 0, ownOrExalted: 0, gender: 0, dayNight: 0, total: 0 };
+      return { planet, positional: 0, ownOrExalted: 0, gender: 0, dayNight: 0, total: 0, grade: 'nirbala' };
     }
     const positional = body.house === HARSA_HOUSES[planet] ? 5 : 0;
     const ownOrExalted = OWN_SIGNS[planet].includes(body.sign) || body.sign === EXALTATION_SIGNS[planet] ? 5 : 0;
     const house = body.house ?? (((body.sign - annual.ascendant.sign + 12) % 12) + 1);
     const gender = (MALE_PLANETS.has(planet) ? !FEMININE_HOUSES.has(house) : FEMININE_HOUSES.has(house)) ? 5 : 0;
     const dayNight = (MALE_PLANETS.has(planet) && dayYear) || (FEMALE_PLANETS.has(planet) && !dayYear) ? 5 : 0;
-    return { planet, positional, ownOrExalted, gender, dayNight, total: positional + ownOrExalted + gender + dayNight };
+    const total = positional + ownOrExalted + gender + dayNight;
+    return { planet, positional, ownOrExalted, gender, dayNight, total, grade: harshaGrade(total) };
   });
 }
 
