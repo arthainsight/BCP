@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import type { ChartStyle } from '@/types';
-import { VARGA_NAMES, VARGA_SIGNIFICATIONS } from '@/lib/vargaChart';
+import { VARGA_NAMES, VARGA_SIGNIFICATIONS, vargaCode } from '@/lib/vargaChart';
 import { useT } from '@/lib/i18n';
 
 /** How many charts fit in a row: one on its own, beside other panels, or across the whole width. */
@@ -50,7 +50,7 @@ export default function VargaChartGrid({ divisions, chartStyle, width, active = 
               title={t(VARGA_SIGNIFICATIONS[division])}
               className="mb-1 flex w-full min-w-0 items-baseline gap-1 text-left font-mono"
             >
-              <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-200">D{division}</span>
+              <span className="text-[11px] font-bold text-zinc-700 dark:text-zinc-200">{vargaCode(division)}</span>
               <span className="truncate text-[9px] text-zinc-400 dark:text-zinc-500">{VARGA_NAMES[division]}</span>
             </button>
             {renderChart(division)}
