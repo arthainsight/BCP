@@ -1,5 +1,14 @@
 export const CHANGELOG = [
   {
+    version: 'v4.12',
+    date: '2026-11-04',
+    title: 'Correct Parāya progression timeline regression expectation',
+    changes: [
+      'Corrected the Mercury one-year-per-sign timeline test: the first year touches its natal sign and the following sign, not thirteen periods.',
+      'Updated the application version to v4.12.',
+    ],
+  },
+  {
     version: 'v4.11',
     date: '2026-11-04',
     title: 'Parāya speeds updated from the supplied progression tables',
