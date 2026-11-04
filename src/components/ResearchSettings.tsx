@@ -20,10 +20,9 @@ export interface SettingsOutcome {
 const SETTING_NAMES = {
   retro: { previous: 'retrograde: the sign before', same: 'retrograde: the natal sign' },
   saturn: { alternating: 'Saturn alternating', even: 'Saturn even' },
-  rahu: { alternating: 'Rahu alternating', even: 'Rahu even' },
 } as const;
 
-/** The same study under each of the eight settings of the progressions, side by side: how strong the pattern is under each, and the strongest feature of each. */
+/** The same study under each of the four meaningful Parāya setting combinations, side by side. */
 export default function ResearchSettings({ outcome }: { outcome: SettingsOutcome }) {
   const t = useT();
   const { rows, failed } = outcome;
@@ -46,15 +45,15 @@ export default function ResearchSettings({ outcome }: { outcome: SettingsOutcome
                   <th className={HEAD_CELL} title={t('features that hold up at q of 0.1')}>{t('holding')}</th>
                   <th className={HEAD_CELL}>{t('features tested')}</th>
                   <th className={HEAD_CELL}>{t('strongest feature')}</th>
-                  <th className={HEAD_CELL} title={t('the exact p of the strongest feature times the eight settings tried')}>{t('corrected p')}</th>
+                  <th className={HEAD_CELL} title={t('the exact p of the strongest feature times the four settings tried')}>{t('corrected p')}</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row, index) => (
-                  <tr key={`${row.options.retro}|${row.options.saturn}|${row.options.rahu}`} className={ROW} data-setting={`${row.options.retro}|${row.options.saturn}|${row.options.rahu}`} data-rank={index + 1}>
+                  <tr key={`${row.options.retro}|${row.options.saturn}`} className={ROW} data-setting={`${row.options.retro}|${row.options.saturn}`} data-rank={index + 1}>
                     <td className={BODY_CELL}>
                       <span className="block">{t(SETTING_NAMES.retro[row.options.retro ?? 'previous'])}</span>
-                      <span className="block text-zinc-400">{t(SETTING_NAMES.saturn[row.options.saturn])} · {t(SETTING_NAMES.rahu[row.options.rahu])}</span>
+                      <span className="block text-zinc-400">{t(SETTING_NAMES.saturn[row.options.saturn])}</span>
                     </td>
                     <td className={`${BODY_CELL} ${index === 0 && matter ? 'font-bold text-emerald-700 dark:text-green-400' : ''}`}>{row.score.toFixed(2)}</td>
                     <td className={BODY_CELL}>{row.significant}</td>
@@ -74,7 +73,7 @@ export default function ResearchSettings({ outcome }: { outcome: SettingsOutcome
             </table>
           </div>
           <p className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-            {t('Strength is the mean of −log10 p (the exact p of each feature) of the five strongest features: the higher, the clearer the pattern under that setting. Picking the best of eight settings is itself a choice among several, so the corrected p multiplies the best p by eight. A setting that comes first only by a little, with few events, is no proof that it is the right one.')}
+            {t('Strength is the mean of −log10 p (the exact p of each feature) of the five strongest features: the higher, the clearer the pattern under that setting. Picking the best of four settings is itself a choice among several, so the corrected p multiplies the best p by four. A setting that comes first only by a little, with few events, is no proof that it is the right one.')}
           </p>
         </>
       )}
