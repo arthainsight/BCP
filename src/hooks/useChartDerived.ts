@@ -65,9 +65,10 @@ export function useChartDerived(
   const parayaRahu = calculationSettings.parayaRahu ?? 'alternating';
   const parayaRetro = calculationSettings.parayaRetro ?? 'previous';
   const parayaBhavaCusp = calculationSettings.parayaUseBhavaCusp ? chartData?.ascendant.degree : undefined;
+  const parayaBhavaAscendant = calculationSettings.parayaUseBhavaCusp && chartData ? chartData.ascendant.sign - 1 : undefined;
   const parayaOptions = useMemo(
-    () => ({ saturn: parayaSaturn, rahu: parayaRahu, retro: parayaRetro, bhavaCuspDegree: parayaBhavaCusp }),
-    [parayaSaturn, parayaRahu, parayaRetro, parayaBhavaCusp],
+    () => ({ saturn: parayaSaturn, rahu: parayaRahu, retro: parayaRetro, bhavaCuspDegree: parayaBhavaCusp, bhavaAscendantSignIndex: parayaBhavaAscendant }),
+    [parayaSaturn, parayaRahu, parayaRetro, parayaBhavaCusp, parayaBhavaAscendant],
   );
   const effectiveNadiParayaHouses = useMemo(
     () => calculateParayaHouses(chartData, parayaAge, parayaOptions, true),
