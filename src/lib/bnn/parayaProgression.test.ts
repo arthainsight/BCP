@@ -23,7 +23,7 @@ assert.equal(RELATION_OFFSET[7], 180, 'the 7th sign is half a circle on');
 assert.deepEqual(PROGRESSION_NATAL, ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu', 'Asc']);
 
 // --- The filter -----------------------------------------------------------------------------------------------------------
-const all = { bodies: ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Mars', 'Mercury', 'Venus'] as const, relations: [1, 5, 7, 9] as const };
+const all = { bodies: ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun', 'Mars', 'Mercury', 'Venus'] as const, relations: [1, 5, 7, 9] as const };
 assert.equal(filterHits(hits, all).length, 6);
 assert.equal(filterHits(hits, { ...all, bodies: ['Jupiter', 'Saturn'] }).length, 3, 'the grahas that are chosen');
 assert.equal(filterHits(hits, { ...all, relations: [7] }).length, 2, 'only the 7th');
