@@ -15,9 +15,9 @@ const untilTime = Date.UTC(2030, 0, 1);
 const para = (...families: ('house' | 'aspectHouse' | 'aspectNatal' | 'exact')[]) => families.map(family => ({ source: 'paraya' as const, family }));
 const event = (id: string, time: number) => ({ id, name: id, time, category: 'home', tags: [] as string[] });
 
-// --- The eight combinations ------------------------------------------------------------------------------------------------------------------------------------
-assert.equal(PARAYA_SETTING_COMBINATIONS.length, 8);
-assert.equal(new Set(PARAYA_SETTING_COMBINATIONS.map(setting => `${setting.retro}|${setting.saturn}|${setting.rahu}`)).size, 8);
+// --- The four combinations: retrograde start × Saturn speed ----------------------------------------------------------------------------------------------
+assert.equal(PARAYA_SETTING_COMBINATIONS.length, 4);
+assert.equal(new Set(PARAYA_SETTING_COMBINATIONS.map(setting => `${setting.retro}|${setting.saturn}`)).size, 4);
 
 // --- The strength of a result: the mean of −log10 p of the best five ---------------------------------------------------------------------------------------
 assert.equal(strengthOf([]), 0);
@@ -34,18 +34,18 @@ async function main() {
     const charts: StudyChart[] = Array.from({ length: 4 }, (_, i) => ({ id: `c${i}`, name: `C${i}`, chart: natal(i % 2 === 1), birthTime: birth, events: [0, 1, 2, 3].map(n => event(`e${i}${n}`, at(n, i % 2 === 1))) }));
     const steps: [number, number][] = [];
     const rows = await compareParayaSettings(charts, { bodies: ['Jupiter'], kinds: para('house'), untilTime, baselineSamples: 150 }, (done, total) => { steps.push([done, total]); });
-    assert.equal(rows.length, 8);
-    assert.deepEqual(steps.map(step => step[0]), [0, 1, 2, 3, 4, 5, 6, 7]);
-    assert.ok(steps.every(step => step[1] === 8));
-    assert.ok(rows.slice(0, 4).every(row => row.options.retro === 'previous'), 'one sign back is the strongest four');
-    assert.ok(rows.slice(4).every(row => row.options.retro === 'same'));
+    assert.equal(rows.length, 4);
+    assert.deepEqual(steps.map(step => step[0]), [0, 1, 2, 3]);
+    assert.ok(steps.every(step => step[1] === 4));
+    assert.ok(rows.slice(0, 2).every(row => row.options.retro === 'previous'), 'one sign back is the strongest two');
+    assert.ok(rows.slice(2).every(row => row.options.retro === 'same'));
     assert.ok(rows[0].score > rows[7].score + 0.3, `a clear difference (${rows[0].score} against ${rows[7].score})`);
     assert.ok(rows[0].best!.observed === 16 && rows[7].best!.observed < 16, 'every event in one house against the events split between two');
     assert.ok(rows[0].best!.p < rows[7].best!.p, 'a smaller p, told apart even though a permutation test would stop at the same floor');
-    assert.ok(Math.abs(rows[0].correctedBestP! - Math.min(1, rows[0].best!.p * 8)) < 1e-12);
+    assert.ok(Math.abs(rows[0].correctedBestP! - Math.min(1, rows[0].best!.p * 4)) < 1e-12);
     // Only Jupiter is looked at, so Saturn and Rahu make no difference: within one retro choice the four rows found exactly the same.
-    assert.equal(new Set(rows.slice(0, 4).map(row => row.fingerprint)).size, 1);
-    assert.equal(new Set(rows.slice(4).map(row => row.fingerprint)).size, 1);
+    assert.equal(new Set(rows.slice(0, 2).map(row => row.fingerprint)).size, 1);
+    assert.equal(new Set(rows.slice(2).map(row => row.fingerprint)).size, 1);
     assert.equal(settingsMatter(rows), true);
   }
 
