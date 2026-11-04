@@ -45,7 +45,7 @@ assert.deepEqual(migrateChartDisplaySettings({}).parayaBodies, ['Jupiter', 'Satu
 assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: ['Ketu', 'Saturn'] }).parayaBodies, ['Saturn', 'Ketu'], 'kept, in the usual order');
 assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: ['Jupiter', 'Saturn', 'Rahu', 'Ketu'] }).parayaBodies, ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun'], 'the previous full default gains the newly added Sun and Moon');
 assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: [] }).parayaBodies, [], 'none is a choice too');
-assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: ['Mars', 'Rahu', 7, 'Pluto'] }).parayaBodies, ['Rahu', 'Mars'], 'only the known ones (the four and the three of the beta), the four first');
+assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: ['Mars', 'Rahu', 7, 'Pluto'] }).parayaBodies, ['Rahu', 'Mars'], 'only the known ones (the six standard and three beta), standard first');
 assert.deepEqual(DEFAULT_CHART_DISPLAY.parayaBodies, ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun'], 'the beta grahas are off to begin with');
 assert.deepEqual(migrateChartDisplaySettings({ parayaBodies: 'Jupiter' }).parayaBodies, ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun'], 'a value of the wrong type is ignored');
 
