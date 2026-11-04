@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.11',
+    date: '2026-11-04',
+    title: 'Parāya speeds updated from the supplied progression tables',
+    changes: [
+      'Mars and Rāhu/Ketu now use 522.5 sāvana days per sign (1.4513889 years in a 360-day year). Rāhu and Ketu continue to progress backwards and remain opposite each other.',
+      'Mercury and Venus now each progress one sign per daśā year, matching the supplied tables. The retrograde-at-birth placement option remains unchanged for the beta grahas.',
+      'Removed the obsolete alternating/even Rahu speed selector from Settings. The saved parayaRahu value is retained for compatibility but no longer affects calculations.',
+      'Updated regression tests for the sign durations, progression direction, full-cycle lengths and hit-date round trips.',
+      'Updated the application version to v4.11.',
+    ],
+  },
+  {
     version: 'v4.10',
     date: '2026-11-04',
     title: 'Sun and Moon added to Parāya; Rāśi and Bhāva separated',
