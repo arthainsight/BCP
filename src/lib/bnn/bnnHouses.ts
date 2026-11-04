@@ -74,7 +74,7 @@ export function parayaPeriodsOf(chart: ChartData | null, ageYears: number, optio
   return periods;
 }
 
-/** The houses of the Paraya grahas at an age; with `beta` Mars, Mercury and Venus follow the four. */
+/** The houses of the Paraya grahas at an age; with `beta` Mars, Mercury and Venus are included too. */
 export function calculateParayaHouses(chart: ChartData | null, ageYears: number, options?: ParayaOptions, beta = false): NadiParayaHouseActivation[] {
   if (!chart) return [];
   const asc = chart.ascendant.sign;
