@@ -196,7 +196,7 @@ export default function VarshaphalaPanel({
                 <th className="py-1 pr-2 font-normal">{t('own / exalted')}</th>
                 <th className="py-1 pr-2 font-normal">{t('gender')}</th>
                 <th className="py-1 pr-2 font-normal">{t('day / night')}</th>
-                <th className="py-1 font-normal">{t('total')} / 20</th>
+                <th className="py-1 pr-2 font-normal">{t('total')} / 20</th><th className="py-1 font-normal">{t('grade')}</th>
               </tr></thead>
               <tbody className="tabular-nums text-zinc-700 dark:text-zinc-300">
                 {shown.harshaBala.map(row => (
@@ -206,7 +206,7 @@ export default function VarshaphalaPanel({
                     <td className="py-1 pr-2">{row.ownOrExalted}</td>
                     <td className="py-1 pr-2">{row.gender}</td>
                     <td className="py-1 pr-2">{row.dayNight}</td>
-                    <td className="py-1 font-semibold">{row.total}</td>
+                    <td className="py-1 pr-2 font-semibold">{row.total}</td><td className="py-1">{t(row.grade)}</td>
                   </tr>
                 ))}
               </tbody>
