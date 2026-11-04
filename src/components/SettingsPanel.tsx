@@ -293,16 +293,8 @@ export default function SettingsPanel(props: Props) {
             </div>
             <div>
               <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1">{t('paraya Rahu / Ketu')}</label>
-              <select
-                className={SELECT}
-                value={calculationSettings.parayaRahu ?? 'alternating'}
-                onChange={(e) => onUpdateCalculationSettings({ parayaRahu: e.target.value as 'alternating' | 'even' })}
-              >
-                <option value="alternating">{t('2 / 1 years alternating')}</option>
-                <option value="even">{t('1.5 years per sign')}</option>
-              </select>
-              <div className="mt-1 text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
-                {t('How long the Paraya graha stays in each sign. Either way a round takes 30 years for Saturn and 18 for Rahu; the chart and the Paraya tab follow the choice.')}
+              <div className="text-[9px] font-mono text-zinc-400 dark:text-zinc-600">
+                {t('Rahu and Ketu move backwards and stay 1.4513889 selected dasha years per sign (522.5 days with a Sāvana year). Ketu remains opposite Rahu; the old speed choice is retained only for saved-setting compatibility.')}
               </div>
             </div>
             <div className="space-y-1.5" data-setting="paraya-bhava-cusp">
