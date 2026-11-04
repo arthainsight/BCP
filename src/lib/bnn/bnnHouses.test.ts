@@ -64,7 +64,7 @@ assert.equal(rahuHouse(0.6, 'even'), 11, 'even: has gone back a sign at 0.6');
   const withBeta = calculateParayaHouses(c, 1.3, undefined, true);
   assert.deepEqual(withBeta.map(activation => activation.body), ['Jupiter', 'Saturn', 'Rahu', 'Ketu', 'Moon', 'Sun', 'Mars', 'Mercury', 'Venus']);
   const expected = calculateBetaParaya({ ageYears: 1.3, natal: { Mars: { signIndex: 2, degree: 8 }, Mercury: { signIndex: 0, degree: 2, retrograde: true }, Venus: { signIndex: 11, degree: 25 } } });
-  assert.deepEqual(withBeta.slice(4), expected.map(period => ({ body: period.body, house: ((period.signIndex - 0 + 12) % 12) + 1, degree: period.degree })));
-  // A chart without the three has just the four, whatever is asked.
+  assert.deepEqual(withBeta.slice(6), expected.map(period => ({ body: period.body, house: ((period.signIndex - 0 + 12) % 12) + 1, degree: period.degree })));
+  // A chart without the three beta grahas still has the six standard grahas.
   assert.equal(calculateParayaHouses(chart(1), 5, undefined, true).length, 6);
 }
