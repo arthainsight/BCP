@@ -6,6 +6,7 @@ import { MUDDA_CYCLE, buildAnnualDasha, muddaFirstLord } from "@/lib/annualDasha
 import { SEVEN, munthaSign, panchaVargiyaBala, yearLord } from "@/lib/varshaphala";
 import { normalizeDegrees } from "@/lib/angles";
 import { patyamshaDasha } from "@/lib/patyamsha";
+import { calculateDwadashavargiyaBala, calculateHarshaBala } from "@/lib/varshaphalaStrength";
 
 // Tājika Varṣaphala: the chart for the Sun's sidereal return in the year in
 // force at `target` (or for `tpYear`), with Muntha, the five office bearers,
@@ -41,6 +42,8 @@ export async function GET(request: NextRequest) {
     const muntha = munthaSign(natal.ascendant.sign, completedAge);
     const lord = yearLord(chart, natal.ascendant.sign, completedAge, dayYear);
     const bala = SEVEN.map((planet) => panchaVargiyaBala(planet, chart.planets.find((p) => p.name === planet)!.longitude));
+    const harshaBala = calculateHarshaBala(chart, dayYear);
+    const dwadashavargiyaBala = calculateDwadashavargiyaBala(chart);
 
     const moon = natal.planets.find((p) => p.name === "Moon")!;
     const nakWidth = 360 / 27;
@@ -78,6 +81,8 @@ export async function GET(request: NextRequest) {
       muntha: { sign: muntha, house: ((muntha - chart.ascendant.sign + 12) % 12) + 1 },
       ...lord,
       bala,
+      harshaBala,
+      dwadashavargiyaBala,
       dasha: localizePeriods(req, dasha),
       patyamshi: localizePeriods(req, patyamshi),
       next: { year: next.year, jd: next.jd, local: localPartsFromJd(next.jd, nextTz), tzOffset: nextTz },
