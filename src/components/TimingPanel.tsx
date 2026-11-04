@@ -18,12 +18,13 @@ import SudarshanaPanel from './SudarshanaPanel';
 import MuhurtaPanel from './MuhurtaPanel';
 import MuhurtaFinderPanel from './MuhurtaFinderPanel';
 import DailyPanchangPanel from './DailyPanchangPanel';
+import TransitCalendarPanel from './TransitCalendarPanel';
 import type { AnnualPlace } from './annualShared';
 import FullWidthToggle from './FullWidthToggle';
 import { useT } from '@/lib/i18n';
 import type { TransitLocation } from '@/hooks/useEventTransits';
 
-type View = 'daily' | 'dasha' | 'summary' | 'transits' | 'hitFinder' | 'paraya' | 'bhriguPada' | 'parayaAspects' | 'signs' | 'muhurta' | 'finder' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
+type View = 'daily' | 'dasha' | 'summary' | 'transits' | 'transitCalendar' | 'hitFinder' | 'paraya' | 'bhriguPada' | 'parayaAspects' | 'signs' | 'muhurta' | 'finder' | 'tithi' | 'nakshatra' | 'yoga' | 'varsha' | 'year' | 'sudarshana';
 
 const VIEW_GROUPS: { label: string; views: { key: View; label: string }[] }[] = [
   { label: 'Daily reading', views: [{ key: 'daily', label: 'Daily Panchang' }] },
@@ -31,7 +32,7 @@ const VIEW_GROUPS: { label: string; views: { key: View; label: string }[] }[] = 
     { key: 'dasha', label: 'Dasha' }, { key: 'summary', label: 'Summary' },
   ] },
   { label: 'Transits & progressions', views: [
-    { key: 'transits', label: 'Transit Hits' }, { key: 'hitFinder', label: 'Graha Hit Finder' },
+    { key: 'transits', label: 'Transit Hits' }, { key: 'transitCalendar', label: 'Transit Calendar' }, { key: 'hitFinder', label: 'Graha Hit Finder' },
     { key: 'paraya', label: 'Paraya' }, { key: 'bhriguPada', label: 'Bhrigu Pada' }, { key: 'parayaAspects', label: 'Paraya aspects' }, { key: 'signs', label: 'Sign changes' },
   ] },
   { label: 'Annual & electional', views: [
@@ -168,6 +169,10 @@ export default function TimingPanel({
           calculationSettings={calculationSettings}
           onSetTransit={onSetTransitDatetime}
         />
+      )}
+
+      {view === 'transitCalendar' && (
+        <TransitCalendarPanel chart={chart} calculationSettings={calculationSettings} onSetTransit={onSetTransitDatetime} />
       )}
 
       {view === 'hitFinder' && (
