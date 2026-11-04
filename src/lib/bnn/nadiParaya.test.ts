@@ -287,7 +287,7 @@ assert.deepEqual(venusAt, [5.9, 17.9, 29.9]);
 const timeline = buildParayaTimeline({ body: 'Mercury', natalSignIndex: 6, startDegree: 7, maxAge: 1 });
 near(timeline[0].startAge, -7 / 30, 'the first one-year stay began 7° before birth');
 assert.ok(timeline[0].endAge > 0);
-assert.equal(timeline.length, 13, 'the stay of birth, eleven whole ones and the stay that the year ends in: thirteen touch the first year');
+assert.equal(timeline.length, 2, 'the birth Libra stay and the following Scorpio stay touch the first year');
 
 // --- Jupiter, Saturn, Rahu and Ketu begin at their natal degrees too, and a graha that was retrograde at birth can begin in its own sign ---------------
 const at = (ageYears: number, options?: Parameters<typeof calculateNadiParaya>[0]['options'], retro = false) => calculateNadiParaya({
