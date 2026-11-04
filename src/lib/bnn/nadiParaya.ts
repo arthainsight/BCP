@@ -1,7 +1,7 @@
 import { SIGN_NAMES } from '@/lib/signs';
 import type { ParayaRetro, ParayaSpeed } from '@/types';
 
-/** The Paraya grahas that are tried out (beta): Mars, Mercury and Venus, moved by age like the four. */
+/** The Paraya grahas that are tried out (beta): Mars, Mercury and Venus, moved by age like the six standard grahas. */
 export type ParayaBetaBody = 'Mars' | 'Mercury' | 'Venus';
 
 export type ParayaBody = 'Jupiter' | 'Saturn' | 'Rahu' | 'Ketu' | 'Moon' | 'Sun' | ParayaBetaBody;
@@ -16,7 +16,7 @@ export const PARAYA_BETA_BODIES: readonly ParayaBetaBody[] = ['Mars', 'Mercury',
 export const ALL_PARAYA_BODIES: readonly ParayaBody[] = [...PARAYA_BODIES, ...PARAYA_BETA_BODIES];
 
 /**
- * Years spent in each sign by the beta grahas: what the graha takes in the sky on average, as the four take theirs (Jupiter a year, Saturn
+ * Years spent in each sign by the beta grahas: what the graha takes in the sky on average, alongside the six standard grahas (Jupiter and Moon/Sun a year, Saturn
  * 2½, Rahu 1½). Mars takes two months, which is two years round the zodiac; Mercury and Venus keep the pace of the Sun, a month a sign and
  * a year a round.
  */
