@@ -110,9 +110,9 @@ export function buildReport(body: ReportBody, context: ReportContext, t: (text: 
     }
   } else if (body.mode === 'settings') {
     const { rows } = body.outcome;
-    method.push(t('The same study was run under each of the eight settings of the progressions. Strength is the mean of −log10 p (the exact p of each feature) of the five strongest features; the corrected p multiplies the best p by the eight settings tried.'));
+    method.push(t('The same study was run under each of the four settings of the progressions. Strength is the mean of −log10 p (the exact p of each feature) of the five strongest features; the corrected p multiplies the best p by the four settings tried.'));
     results.push(table(head(t('Setting'), t('strength'), t('holding'), t('features tested'), t('strongest feature'), t('corrected p')), rows.map(row =>
-      `${cell(`${row.options.retro ?? 'previous'} · Saturn ${row.options.saturn} · Rahu ${row.options.rahu}`)}${cell(row.score.toFixed(2))}${cell(String(row.significant))}${cell(String(row.tested))}${cell(row.best ? `${label(row.best.id)} ${row.best.observed}/${row.best.total} p ${formatP(row.best.p)}` : '—')}${cell(row.correctedBestP === null ? '—' : formatP(row.correctedBestP))}`)));
+      `${cell(`${row.options.retro ?? 'previous'} · Saturn ${row.options.saturn}`)}${cell(row.score.toFixed(2))}${cell(String(row.significant))}${cell(String(row.tested))}${cell(row.best ? `${label(row.best.id)} ${row.best.observed}/${row.best.total} p ${formatP(row.best.p)}` : '—')}${cell(row.correctedBestP === null ? '—' : formatP(row.correctedBestP))}`)));
   } else if (body.mode === 'combine') {
     const { result, spec } = body.outcome;
     method.push(t('A combination is there when both of its parts are there at the same time. Its chance level is how often both are there at random moments of the same chart, and p is exact; q corrects for the number of combinations looked at. A combination is of interest only if it is more unusual than each of its parts.'));
