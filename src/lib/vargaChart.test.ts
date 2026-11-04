@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type { ChartData } from '@/types';
 import { getVargaSignIndex } from './varga';
-import { VARGA_DIVISIONS, VARGA_NAMES, VARGA_SIGNIFICATIONS, buildVargaChart } from './vargaChart';
+import { VARGA_DIVISIONS, VARGA_NAMES, VARGA_SIGNIFICATIONS, buildVargaChart, vargaCode } from './vargaChart';
 
 const PLANET_NAMES = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 
@@ -60,7 +60,7 @@ for (let index = 0; index < PLANET_NAMES.length; index += 1) {
 // ---------------------------------------------------------------------------
 for (const division of VARGA_DIVISIONS) {
   const varga = buildVargaChart(chart, division);
-  const label = `D${division}`;
+  const label = vargaCode(division);
 
   assert.equal(varga.division, division, `${label} reports its division`);
   assert.equal(varga.planets.length, PLANET_NAMES.length, `${label} keeps every body`);
@@ -152,5 +152,17 @@ const before = JSON.stringify(chart);
 buildVargaChart(chart, 9);
 buildVargaChart(chart, 60);
 assert.equal(JSON.stringify(chart), before, 'building a varga chart leaves the rāśi untouched');
+
+// Spot checks against the Parāśara and Parivṛtti mappings used by PyJHora.
+assert.equal(getVargaSignIndex(0, 6), 0, 'D6 Aries first part starts in Aries');
+assert.equal(getVargaSignIndex(30, 6), 6, 'D6 Taurus first part starts in Libra');
+assert.equal(getVargaSignIndex(0, 8), 0, 'D8 movable sign starts from Aries');
+assert.equal(getVargaSignIndex(30, 8), 8, 'D8 fixed sign starts from Sagittarius');
+assert.equal(getVargaSignIndex(60, 8), 4, 'D8 dual sign starts from Leo');
+assert.equal(getVargaSignIndex(0, 11), 0, 'D11 Aries first part starts in Aries');
+assert.equal(getVargaSignIndex(30, 11), 11, 'D11 Taurus first part starts in Pisces');
+assert.equal(getVargaSignIndex(3, 110), 1, 'D10 Parivritti advances by one sign for each 3° part');
+assert.equal(getVargaSignIndex(30, 110), 10, 'D10 Parivritti continues the cycle across sign boundaries');
+assert.equal(vargaCode(110), 'D10P', 'alternate D10 has its own UI label');
 
 console.log('Varga chart tests passed');
