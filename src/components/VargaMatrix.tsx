@@ -3,6 +3,7 @@ import { buildVargaMatrix, DEFAULT_DIVISIONS, DIGNITY_LABELS, mapPlanetLongitude
 import type { Dignity } from '@/lib/shadbala';
 import { useT } from '@/lib/i18n';
 import { Heading, HEAD_CELL, ROW } from './balaShared';
+import { vargaCode } from '@/lib/vargaChart';
 
 function dignityCellClass(dignity: Dignity): string {
   switch (dignity) {
@@ -31,7 +32,7 @@ export default function VargaMatrix({ chart }: { chart: ChartData | null | undef
   const planets = mapPlanetLongitudes(chart);
   const lagna = typeof chart.ascendant?.longitude === 'number' ? chart.ascendant.longitude : undefined;
   const matrix = buildVargaMatrix(planets, lagna, divisions);
-  const divisionList = divisions.map((division) => `D${division}`).join(', ');
+  const divisionList = divisions.map(vargaCode).join(', ');
 
   return (
     <div className="space-y-5">
@@ -41,7 +42,7 @@ export default function VargaMatrix({ chart }: { chart: ChartData | null | undef
           <thead>
             <tr className="bg-zinc-100 dark:bg-zinc-800">
               <th className={`sticky left-0 z-10 bg-zinc-100 dark:bg-zinc-800 ${HEAD_CELL}`}>{t('Body')}</th>
-              {divisions.map((division) => <th key={division} className={HEAD_CELL}>D{division}</th>)}
+              {divisions.map((division) => <th key={division} className={HEAD_CELL}>{vargaCode(division)}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -49,7 +50,7 @@ export default function VargaMatrix({ chart }: { chart: ChartData | null | undef
               <tr key={name} className={ROW}>
                 <td className="sticky left-0 z-10 bg-white dark:bg-zinc-900 p-2 border border-zinc-100 dark:border-zinc-800 font-bold text-emerald-700 dark:text-green-400">{name}</td>
                 {divisions.map((division) => {
-                  const cell = matrix[name][`D${division}`];
+                  const cell = matrix[name][vargaCode(division)];
                   return (
                     <td key={division} className={`p-2 border whitespace-nowrap ${dignityCellClass(cell.dignity)}`} title={DIGNITY_LABELS[cell.dignity]}>
                       <span className="font-bold">{cell.sign}</span>
