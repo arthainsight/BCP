@@ -1185,7 +1185,7 @@ test('LIBRARY Research compares the progressions at events across saved charts, 
   await expect(matrix.locator('tbody tr')).toHaveCount(6);
   await expect(matrix.locator('thead th')).toHaveCount(13);
   const counts = await matrix.locator('[data-cell]').evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-count'))));
-  expect(counts).toHaveLength(48);
+  expect(counts).toHaveLength(72);
   // Each graha stands in one house at each event, so a row adds up to the eight events.
   for (let row = 0; row < 6; row++) expect(counts.slice(row * 12, row * 12 + 12).reduce((sum, n) => sum + n, 0)).toBe(8);
 
