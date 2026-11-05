@@ -41,7 +41,6 @@ export default function IncomeYearAnalysis({ incomeRows, annualProgressions, key
   const goodYears = analysis.filter(row => row.status === 'excellent' || row.status === 'good');
   const badYears = analysis.filter(row => row.status === 'weak' || row.status === 'very-weak');
   const maxIncome = Math.max(1, ...analysis.map(row => row.amount));
-  const maxRate = Math.max(1, goodYears.length, badYears.length);
   const visiblePatterns = showAllPatterns ? patterns : patterns.slice(0, 12);
 
   if (analysis.length === 0) return null;
