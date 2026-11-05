@@ -3,6 +3,7 @@ import { calculateChart } from './ephemeris';
 import { jdFromLocal, localPartsFromJd, solarReturnJd } from './lunisolar';
 import { MUDDA_CYCLE, muddaFirstLord } from './annualDasha';
 import { haddaLord, munthaSign, panchaVargiyaBala, tajikaAspect, yearLord } from './varshaphala';
+import { calculateDwadashavargiyaBala, calculateHarshaBala } from './varshaphalaStrength';
 
 const close = (a: number, b: number, tolerance: number, label: string) =>
   assert.ok(Math.abs(a - b) <= tolerance, `${label}: expected ${b}, got ${a}`);
@@ -54,6 +55,36 @@ close(panchaVargiyaBala('Sun', 190).uchcha, 0, 1e-9, 'deep debilitation');
 for (let lon = 0; lon < 360; lon += 7.3) {
   const b = panchaVargiyaBala('Mercury', lon);
   assert.ok(b.total >= 0 && b.total <= 20, `total stays within 0–20 at ${lon}`);
+}
+
+// --- Charak's Harsha and Dwadashavargiya Bala -------------------------------
+{
+  const names = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn'];
+  const annual = {
+    ascendant: { sign: 1, degree: 0, longitude: 0 },
+    planets: names.map((name, index) => ({
+      name,
+      sign: [5, 4, 1, 3, 9, 7, 10][index],
+      degree: 15,
+      longitude: ([5, 4, 1, 3, 9, 7, 10][index] - 1) * 30 + 15,
+      house: [9, 3, 6, 1, 11, 5, 12][index],
+      speed: 1,
+    })),
+  } as unknown as import('@/types').ChartData;
+  const harshaDay = calculateHarshaBala(annual, true);
+  assert.deepEqual(harshaDay.map(row => row.total), [15, 15, 20, 15, 20, 10, 10],
+    'Harsha Bala adds four independent five-point conditions');
+  assert.deepEqual(harshaDay.map(row => row.grade), ['poorna-bali', 'poorna-bali', 'extraordinary', 'poorna-bali', 'extraordinary', 'madhya-bali', 'madhya-bali'], 'Harsha grades follow Charak’s thresholds');
+  assert.deepEqual(calculateHarshaBala(annual, false).map(row => row.total), [10, 20, 15, 20, 15, 15, 15],
+    'day/night condition swaps male and female planets');
+  const twelve = calculateDwadashavargiyaBala(annual);
+  assert.equal(twelve.length, 7);
+  for (const row of twelve) {
+    assert.equal(row.benefic + row.malefic + row.neutral, 12, row.planet + ' has twelve varga judgements');
+    assert.equal(row.factors.length, 12, row.planet + ' exposes the twelve explanations');
+  }
+  assert.ok(twelve.some(row => row.result === 'benefic'));
+  assert.ok(twelve.some(row => row.result === 'malefic'));
 }
 
 async function main() {

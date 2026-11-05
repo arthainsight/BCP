@@ -9,7 +9,7 @@ import { DASHA_REGISTRY, DashaKey } from '@/lib/dashaRegistry';
 import { PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
 import ParayaChips from './ParayaChips';
 import { ChartFontScaleField, DashaMarkSelect, DegreePrecisionPicker } from './ChartDisplayControls';
-import { VARGA_DIVISIONS, VARGA_NAMES } from '@/lib/vargaChart';
+import { VARGA_DIVISIONS, VARGA_NAMES, vargaCode } from '@/lib/vargaChart';
 import type { VimshottariVariantChoice } from '@/lib/vimshottariVariants';
 import { DASHA_YEAR_KEYS, DASHA_YEAR_LENGTHS, type DashaYearLength } from '@/lib/time';
 import { AYANAMSA_OPTIONS, normalizeAyanamsaOffset } from '@/lib/ayanamsas';
@@ -385,7 +385,7 @@ export default function SettingsPanel(props: Props) {
                   value={chartDisplaySettings.mixedOuterDivision}
                   onChange={(e) => onUpdateChartDisplay?.({ mixedOuterDivision: Number(e.target.value) })}
                 >
-                  {VARGA_DIVISIONS.map(division => <option key={division} value={division}>D{division} {VARGA_NAMES[division]}</option>)}
+                  {VARGA_DIVISIONS.map(division => <option key={division} value={division}>{vargaCode(division)} {VARGA_NAMES[division]}</option>)}
                 </select>
                 <span className="mt-1 block text-[9px] text-zinc-400 dark:text-zinc-600">{t('The D1 chart is drawn in the inner part of every house, and this varga chart in the outer part.')}</span>
               </label>

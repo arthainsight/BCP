@@ -13,14 +13,15 @@ assert.deepEqual(VARGA_GRID_PRESETS.shadvarga.divisions, [1, 2, 3, 9, 12, 30]);
 assert.deepEqual(VARGA_GRID_PRESETS.saptavarga.divisions, [1, 2, 3, 7, 9, 12, 30]);
 assert.deepEqual(VARGA_GRID_PRESETS.dashavarga.divisions, [1, 2, 3, 7, 9, 10, 12, 16, 30, 60]);
 assert.equal(VARGA_GRID_PRESETS.shodashavarga.divisions.length, 16);
-assert.deepEqual(VARGA_GRID_PRESETS.shodashavarga.divisions, VARGA_DIVISIONS.filter(d => d !== 5), 'all sixteen BPHS vargas (D5 is not one of them)');
+assert.deepEqual(VARGA_GRID_PRESETS.shodashavarga.divisions, [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60], 'all sixteen BPHS vargas (D5 is not one of them)');
+assert.ok([6, 8, 11, 110].every(d => (VARGA_DIVISIONS as readonly number[]).includes(d)), 'extended D6, D8, D11 and D10 Parivritti are available in custom selection');
 
 // Ṣaḍvarga is the default.
 assert.equal(DEFAULT_VARGA_GRID.preset, 'shadvarga');
 assert.deepEqual(vargaGridDivisions(DEFAULT_VARGA_GRID), [1, 2, 3, 9, 12, 30]);
 assert.deepEqual(vargaGridDivisions({ preset: 'custom', custom: [1, 9, 10, 60] }), [1, 9, 10, 60]);
 
-// Custom selections stay between four and eight, in order.
+// Custom selections stay between four and sixteen, in order.
 assert.deepEqual(toggleCustomDivision([1, 9, 12, 30], 10), [1, 9, 10, 12, 30]);
 assert.deepEqual(toggleCustomDivision([1, 9, 10, 12, 30], 10), [1, 9, 12, 30]);
 assert.deepEqual(toggleCustomDivision([1, 9, 12, 30], 9), [1, 9, 12, 30], 'no fewer than four');

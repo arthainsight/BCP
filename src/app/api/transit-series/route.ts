@@ -3,13 +3,13 @@ import { calculateSignChangeSeries, SIGN_CHANGE_STEP_HOURS, type SignChangeBody 
 import { AYANAMSA_OFFSET_RANGE, readBodies, readClampedInt, readNumbers } from '@/lib/apiValidation';
 
 const MAX_DAYS = 31 * 366;
-// With a coarser step (a day count of 2 to 7) a table can run to a long life, as the research needs it.
+// Daily (step=1) and coarser (step=2…7) tables can cover long spans for calendar and research use.
 const MAX_DAYS_COARSE = 140 * 366;
 // What one request may sample: Jupiter, Saturn, Rahu and Ketu for thirty years, or the four faster grahas for ten, take a second or two.
 const MAX_SAMPLES = 160_000;
-// The Moon changes sign every two or three days and would be hundreds of stays a year.
-type TransitBody = Exclude<SignChangeBody, 'Moon'>;
-const BODIES = (Object.keys(SIGN_CHANGE_STEP_HOURS) as SignChangeBody[]).filter((body): body is TransitBody => body !== 'Moon');
+// The Moon is included for daily calendar views; default sign-change sampling still uses its three-hour interval.
+type TransitBody = SignChangeBody;
+const BODIES = Object.keys(SIGN_CHANGE_STEP_HOURS) as TransitBody[];
 
 // Sidereal longitudes of the chosen grahas for years from a start date, for the aspect view of the transits: the stays in the signs and the exact
 // crossings are found in the browser, so this stays a position table, sampled at the step that suits each graha (see SIGN_CHANGE_STEP_HOURS).

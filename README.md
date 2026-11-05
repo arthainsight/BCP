@@ -39,14 +39,14 @@ This is not meant to replace traditional study — it's meant to **accelerate it
 * North and South Indian styles
 * BCP (Bhṛgu Chakra Paddhati) year/month highlighting
 * Special lagnas and chara karakas
-* Ashtakavarga tables (SAV and per-planet BAV)
-* Mixed charts (the D1 chart inside, any varga outside, in the same houses)
+* Ashtakavarga tables (SAV and per-planet BAV), Trikoṇa and Ekādhipatya Śodhana, and Rāśi/Graha/Śodhya Piṇḍas
+* Mixed charts (the D1 chart inside, any varga outside, in the same houses); D6, D8, D11 and a separate cyclic Parivṛtta D10 (D10P) are available in the Varga workspace
 * Selectable ayanamsa, including a signed custom offset from Lahiri
-* Transits with automatic recalculation
+* Transits with automatic recalculation and a monthly calendar of daily positions, ingresses, stations and Gochara/BAV/Vedha context
 * Tithi Praveśa annual chart with Tithi Aṣṭottarī daśā
 * Nakṣatra Praveśa and Yoga Praveśa annual charts (the Moon's return to its natal longitude, and the return of the Sun-and-Moon sum), with two rules for the year's start and a Vimśottarī daśā of the year
 * Year at a glance: the four annual charts on one time axis
-* Tājika Varṣaphala: Muntha, year lord, Pañcavargīya Bala and Mudda daśā
+* Tājika Varṣaphala: Muntha, year lord, Pañcavargīya, Harṣa and Dvādaśavargīya Bala, and Mudda daśā
 * Sudarśana Chakra: the chart counted from the Lagna, the Moon and the Sun in three rings, and the Sudarśana daśā: the house each year of age makes active in all three, with the twelve months and twelve days of the year
 
 ### Daśā

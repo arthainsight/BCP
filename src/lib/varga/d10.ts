@@ -11,3 +11,15 @@ export function calcD10(longitude: number): number {
   const startSign = isOddSign(signIndex) ? signIndex : (signIndex + 8) % 12;
   return (startSign + partIndex) % 12;
 }
+
+
+/** D10 Parivṛtti Daśāṁśa — continuous / Varanasi method.
+ * The portions run continuously through the zodiac: the first slice of Aries
+ * maps to Aries, and each following 3° slice advances one sign. The sequence
+ * continues across rāśi boundaries rather than restarting in each sign.
+ */
+export function calcD10Parivritti(longitude: number): number {
+  const signIndex = getSignIndex(longitude);
+  const partIndex = Math.min(Math.floor(getDegreesInSign(longitude) / 3), 9);
+  return (signIndex * 10 + partIndex) % 12;
+}

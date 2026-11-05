@@ -133,7 +133,9 @@ function periodStartSign(params: PeriodParams): number {
 /** Equal-bhāva assignment: each house cusp is the Lagna degree in its own sign. */
 function bhavaHouseOf(signIndex: number, degree: number, ascendantSignIndex: number, cuspDegree: number): number {
   const rasiHouse = ((signIndex - ascendantSignIndex + 12) % 12) + 1;
-  return degree >= cuspDegree ? rasiHouse : ((rasiHouse + 10) % 12) + 1;
+  // A position calculated at an exact cusp can differ by a few floating-point ulps.
+  // Treat that boundary as entered, rather than incorrectly leaving the graha in the prior bhāva.
+  return degree + 1e-9 >= cuspDegree ? rasiHouse : ((rasiHouse + 10) % 12) + 1;
 }
 
 /** The length of a round, in years: the stays in the twelve signs added up. */

@@ -12,13 +12,19 @@
 import type { ChartData, PlanetData, SpecialLagna } from '@/types';
 import { getVargaSignIndex, getDegreesInSign } from './varga';
 
-export const VARGA_DIVISIONS = [1, 2, 3, 4, 5, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60] as const;
+export const VARGA_DIVISIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20, 24, 27, 30, 40, 45, 60, 110] as const;
+
+/** Display code for a chart; 110 is the internal id of the separate D10 Parivṛtti method. */
+export function vargaCode(division: number): string {
+  return division === 110 ? 'D10P' : `D${division}`;
+}
 /** Traditional names, shown next to the Dn label. */
 export const VARGA_NAMES: Record<number, string> = {
   1: 'Rāśi', 2: 'Horā', 3: 'Drekkāṇa', 4: 'Chaturthāṁśa', 5: 'Pañchāṁśa',
-  7: 'Saptāṁśa', 9: 'Navāṁśa', 10: 'Daśāṁśa', 12: 'Dvādaśāṁśa', 16: 'Ṣoḍaśāṁśa',
+  6: 'Ṣaṣṭhāṁśa', 7: 'Saptāṁśa', 8: 'Aṣṭāṁśa', 9: 'Navāṁśa', 10: 'Daśāṁśa', 11: 'Ekādaśāṁśa · Rudrāṁśa', 12: 'Dvādaśāṁśa', 16: 'Ṣoḍaśāṁśa',
   20: 'Viṁśāṁśa', 24: 'Chaturviṁśāṁśa', 27: 'Bhāṁśa', 30: 'Triṁśāṁśa',
   40: 'Khavedāṁśa', 45: 'Akṣavedāṁśa', 60: 'Ṣaṣṭyāṁśa',
+  110: 'Parivṛtta Daśāṁśa',
 };
 
 /** What each divisional chart is traditionally read for. */
@@ -28,9 +34,12 @@ export const VARGA_SIGNIFICATIONS: Record<number, string> = {
   3: 'Siblings, courage and initiative',
   4: 'Property, home and fortune',
   5: 'Fame, authority and merit',
+  6: 'Health, illness and adversity',
   7: 'Children and progeny',
+  8: 'Longevity and obstacles',
   9: 'Marriage, dharma and inner strength',
   10: 'Career and action in the world',
+  11: 'Rudrāṁśa; interpretation varies by lineage',
   12: 'Parents and ancestry',
   16: 'Vehicles, comforts and pleasures',
   20: 'Spiritual practice and worship',
@@ -40,6 +49,7 @@ export const VARGA_SIGNIFICATIONS: Record<number, string> = {
   40: 'Matrilineal inheritance',
   45: 'Patrilineal inheritance',
   60: 'The sum of past deeds; a fine sieve',
+  110: 'Career and action in the world · cyclic Parivṛtti method',
 };
 
 export type VargaChart = {
@@ -55,7 +65,8 @@ export type VargaChart = {
  */
 function vargaDegree(longitude: number, division: number): number {
   if (division <= 1) return getDegreesInSign(longitude);
-  const partSize = 30 / division;
+  const factor = division === 110 ? 10 : division;
+  const partSize = 30 / factor;
   const withinPart = getDegreesInSign(longitude) % partSize;
   return (withinPart / partSize) * 30;
 }

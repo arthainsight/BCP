@@ -3,9 +3,12 @@ import { calcD2 }  from './d2';
 import { calcD3 }  from './d3';
 import { calcD4 }  from './d4';
 import { calcD5 }  from './d5';
+import { calcD6 }  from './d6';
 import { calcD7 }  from './d7';
+import { calcD8 }  from './d8';
 import { calcD9 }  from './d9';
-import { calcD10 } from './d10';
+import { calcD10, calcD10Parivritti } from './d10';
+import { calcD11 } from './d11';
 import { calcD12 } from './d12';
 import { calcD16 } from './d16';
 import { calcD20 } from './d20';
@@ -17,7 +20,7 @@ import { calcD45 } from './d45';
 import { calcD60 } from './d60';
 
 export { getSignIndex, getDegreesInSign } from './utils';
-export { calcD1, calcD2, calcD3, calcD4, calcD5, calcD7, calcD9, calcD10,
+export { calcD1, calcD2, calcD3, calcD4, calcD5, calcD6, calcD7, calcD8, calcD9, calcD10, calcD10Parivritti, calcD11,
          calcD12, calcD16, calcD20, calcD24, calcD27, calcD30, calcD40, calcD45, calcD60 };
 
 
@@ -28,9 +31,12 @@ export interface VargaRow {
   D4:  number;
   /** UNCERTAIN — verify D5 sequences against JHora output */
   D5:  number;
+  D6:  number;
   D7:  number;
+  D8:  number;
   D9:  number;
   D10: number;
+  D11: number;
   D12: number;
   D16: number;
   D20: number;
@@ -50,9 +56,12 @@ export function calculateVargaMatrix(longitude: number): VargaRow {
     D3:  calcD3(longitude),
     D4:  calcD4(longitude),
     D5:  calcD5(longitude),
+    D6:  calcD6(longitude),
     D7:  calcD7(longitude),
+    D8:  calcD8(longitude),
     D9:  calcD9(longitude),
     D10: calcD10(longitude),
+    D11: calcD11(longitude),
     D12: calcD12(longitude),
     D16: calcD16(longitude),
     D20: calcD20(longitude),
@@ -68,8 +77,8 @@ export function calculateVargaMatrix(longitude: number): VargaRow {
 // Dispatch table — for dynamic lookup by division number
 const CALC_BY_DIVISION: Record<number, (lon: number) => number> = {
   1: calcD1, 2: calcD2, 3: calcD3, 4: calcD4, 5: calcD5,
-  7: calcD7, 9: calcD9, 10: calcD10, 12: calcD12, 16: calcD16,
-  20: calcD20, 24: calcD24, 27: calcD27, 30: calcD30,
+  6: calcD6, 7: calcD7, 8: calcD8, 9: calcD9, 10: calcD10, 11: calcD11, 12: calcD12,
+  16: calcD16, 20: calcD20, 24: calcD24, 27: calcD27, 30: calcD30,
   40: calcD40, 45: calcD45, 60: calcD60,
 };
 
@@ -78,5 +87,6 @@ const CALC_BY_DIVISION: Record<number, (lon: number) => number> = {
  * Falls back to D1 (Rasi) if the division is not supported.
  */
 export function getVargaSignIndex(longitude: number, division: number): number {
+  if (division === 110) return calcD10Parivritti(longitude);
   return (CALC_BY_DIVISION[division] ?? calcD1)(longitude);
 }

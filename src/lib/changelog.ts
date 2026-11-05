@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.14',
+    date: '2026-11-04',
+    title: 'Extend divisional charts, annual strengths, Aṣṭakavarga and transit timing',
+    changes: [
+      'Added D6 Ṣaṣṭhāṁśa, D8 Aṣṭāṁśa and D11 Ekādaśāṁśa, plus a separate cyclic Parivṛtta D10 (D10P); exposed them in custom Varga charts, mixed charts and the Varga matrix without replacing the standard D10 or canonical Ṣoḍaśavarga preset.',
+      'Added Trikoṇa Śodhana and Ekādhipatya Śodhana with visible intermediate BAV values, plus Rāśi Piṇḍa, Graha Piṇḍa and Śodhya Piṇḍa with selectable PVR and alternative rāśi-māna multipliers.',
+      'Added Charak Harṣa Bala and Dvādaśavargīya Bala to Varṣaphala, including all twelve varga judgements and their reasons.',
+      'Added a monthly transit calendar with daily sidereal sign positions, ingresses, stations, Mercury/Venus combustion changes and natal Gochara/BAV/Vedha context; the daily transit-series endpoint can include the Moon.',
+      'Updated the application version to v4.14.',
+    ],
+  },
+  {
     version: 'v4.13',
     date: '2026-11-04',
     title: 'Complete Parāya chart overlays and update research setting comparisons',

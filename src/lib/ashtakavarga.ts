@@ -213,3 +213,154 @@ export function mapAshtakavargaHousesToSigns(houses: number[], ascendantSign: nu
     return houses[house - 1] ?? 0;
   });
 }
+
+
+/** The two published Rasimana multiplier tables used for Rāśi Piṇḍa. */
+export type RasimanaOption = 'pvr' | 'alternate';
+export const RASIMANA_MULTIPLIERS: Record<RasimanaOption, readonly number[]> = {
+  pvr:       [7, 10, 8, 4, 10, 6, 7, 8, 9, 5, 11, 12],
+  alternate: [7, 10, 8, 4, 10, 5, 7, 8, 9, 5, 11, 12],
+};
+export const GRAHAMANA_MULTIPLIERS: Record<AshtakavargaPlanet, number> = {
+  Sun: 5, Moon: 5, Mars: 8, Mercury: 5, Jupiter: 10, Venus: 7, Saturn: 5,
+};
+
+export interface AshtakavargaSignRow {
+  planet: AshtakavargaPlanet;
+  /** BAV values in fixed zodiac order: Aries through Pisces. */
+  signs: number[];
+}
+export interface AshtakavargaPindaRow {
+  planet: AshtakavargaPlanet;
+  rasiPinda: number;
+  grahaPinda: number;
+  shodhyaPinda: number;
+  /** Yoga Piṇḍa: Rāśi Piṇḍa + Graha Piṇḍa (BPHS 70). */
+  yogaPinda: number;
+}
+export interface AshtakavargaShodhanaResult {
+  raw: AshtakavargaSignRow[];
+  afterTrikona: AshtakavargaSignRow[];
+  afterEkadhipatya: AshtakavargaSignRow[];
+  pindas: AshtakavargaPindaRow[];
+  rasimana: RasimanaOption;
+}
+
+const EKADHIPATYA_PAIRS: readonly (readonly [number, number])[] = [
+  [0, 7], // Aries–Scorpio, Mars
+  [1, 6], // Taurus–Libra, Venus
+  [2, 5], // Gemini–Virgo, Mercury
+  [8, 11], // Sagittarius–Pisces, Jupiter
+  [9, 10], // Capricorn–Aquarius, Saturn
+];
+
+/** Trikoṇa Śodhana (BPHS 67): reduce each fire/earth/air/water trine together. */
+export function trikonaShodhana(signValues: readonly number[]): number[] {
+  if (signValues.length !== 12) throw new RangeError('Trikoṇa Śodhana requires twelve sign values');
+  const result = [...signValues];
+  for (let start = 0; start < 4; start += 1) {
+    const indices = [start, start + 4, start + 8];
+    const values = indices.map(index => result[index]);
+    if (values.some(value => value === 0)) continue;
+    if (values[0] === values[1] && values[1] === values[2]) {
+      for (const index of indices) result[index] = 0;
+      continue;
+    }
+    const minimum = Math.min(...values);
+    for (const index of indices) result[index] -= minimum;
+  }
+  return result;
+}
+
+/**
+ * Ekādhipatya Śodhana (BPHS 68), after Trikoṇa Śodhana.
+ * occupiedSigns is indexed Aries..Pisces. Where the printed rule leaves the
+ * equal-value case unstated, an empty sign with the same value as its occupied
+ * counterpart is reduced to zero (the explicit PyJHora / secondary-reference
+ * convention). The UI labels this choice so it is not mistaken for an explicit
+ * Sanskrit instruction.
+ */
+export function ekadhipatyaShodhana(signValues: readonly number[], occupiedSigns: readonly boolean[]): number[] {
+  if (signValues.length !== 12 || occupiedSigns.length !== 12) {
+    throw new RangeError('Ekādhipatya Śodhana requires twelve bindu and occupancy values');
+  }
+  const result = [...signValues];
+  for (const [first, second] of EKADHIPATYA_PAIRS) {
+    const a = result[first];
+    const b = result[second];
+    if (a === 0 || b === 0 || (occupiedSigns[first] && occupiedSigns[second])) continue;
+
+    if (!occupiedSigns[first] && !occupiedSigns[second]) {
+      if (a === b) {
+        result[first] = 0;
+        result[second] = 0;
+      } else {
+        const minimum = Math.min(a, b);
+        result[first] = minimum;
+        result[second] = minimum;
+      }
+    } else if (occupiedSigns[first]) {
+      result[second] = b <= a ? 0 : a;
+    } else {
+      result[first] = a <= b ? 0 : b;
+    }
+  }
+  return result;
+}
+
+/** Rāśi Piṇḍa, Graha Piṇḍa and Śodhya Piṇḍa for one planet's reduced BAV. */
+export function calculateShodhyaPinda(
+  reducedSigns: readonly number[],
+  grahaSigns: Partial<Record<AshtakavargaPlanet, number>>,
+  rasimana: RasimanaOption = 'pvr',
+): Omit<AshtakavargaPindaRow, 'planet'> {
+  if (reducedSigns.length !== 12) throw new RangeError('Piṇḍa calculation requires twelve reduced sign values');
+  const rasiPinda = reducedSigns.reduce((sum, bindus, signIndex) =>
+    sum + bindus * RASIMANA_MULTIPLIERS[rasimana][signIndex], 0);
+  const grahaPinda = PLANETS.reduce((sum, graha) => {
+    const sign = grahaSigns[graha];
+    return typeof sign === 'number' && sign >= 0 && sign < 12
+      ? sum + GRAHAMANA_MULTIPLIERS[graha] * reducedSigns[sign]
+      : sum;
+  }, 0);
+  const yogaPinda = rasiPinda + grahaPinda;
+  return { rasiPinda, grahaPinda, shodhyaPinda: yogaPinda, yogaPinda };
+}
+
+/** Full reduction and Piṇḍa workflow, keeping every intermediate BAV visible. */
+export function buildAshtakavargaShodhana(
+  chart: AshtakavargaChartLike,
+  system: AshtakavargaSystem = 'Parashara',
+  rasimana: RasimanaOption = 'pvr',
+): AshtakavargaShodhanaResult | null {
+  const ascendantSign = chart.ascendant?.sign;
+  if (typeof ascendantSign !== 'number' || ascendantSign < 1 || ascendantSign > 12) return null;
+
+  const { bav } = buildAshtakavarga(chart, system);
+  const raw = bav.map(row => ({
+    planet: row.planet,
+    signs: mapAshtakavargaHousesToSigns(row.houses, ascendantSign),
+  }));
+  const afterTrikona = raw.map(row => ({ ...row, signs: trikonaShodhana(row.signs) }));
+
+  const occupiedSigns = Array.from({ length: 12 }, () => false);
+  const grahaSigns: Partial<Record<AshtakavargaPlanet, number>> = {};
+  for (const body of chart.planets ?? []) {
+    if (!Number.isInteger(body.sign) || body.sign! < 1 || body.sign! > 12) continue;
+    if (body.name in GRAHAMANA_MULTIPLIERS) {
+      grahaSigns[body.name as AshtakavargaPlanet] = body.sign! - 1;
+      occupiedSigns[body.sign! - 1] = true;
+    } else if (body.name === 'Rahu' || body.name === 'Ketu') {
+      occupiedSigns[body.sign! - 1] = true;
+    }
+  }
+  const afterEkadhipatya = afterTrikona.map(row => ({
+    ...row,
+    signs: ekadhipatyaShodhana(row.signs, occupiedSigns),
+  }));
+  const pindas = afterEkadhipatya.map(row => ({
+    planet: row.planet,
+    ...calculateShodhyaPinda(row.signs, grahaSigns, rasimana),
+  }));
+  return { raw, afterTrikona, afterEkadhipatya, pindas, rasimana };
+}

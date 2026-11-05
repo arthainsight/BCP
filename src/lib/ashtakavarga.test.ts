@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { PARASHARA_AV, VARAHAMIHIRA_AV, buildAshtakavarga, buildBhinnaAshtakavarga, mapAshtakavargaHousesToSigns } from './ashtakavarga';
+import { PARASHARA_AV, VARAHAMIHIRA_AV, buildAshtakavarga, buildBhinnaAshtakavarga, mapAshtakavargaHousesToSigns, trikonaShodhana, ekadhipatyaShodhana, calculateShodhyaPinda } from './ashtakavarga';
 
 // ---------------------------------------------------------------------------
 // Golden vectors — BPHS Ashtakavarga
@@ -281,3 +281,49 @@ assert.deepEqual(
 );
 
 console.log('Aṣṭakavarga tests passed');
+
+
+// ---------------------------------------------------------------------------
+// Trikoṇa / Ekādhipatya Śodhana and Piṇḍa calculations.
+// ---------------------------------------------------------------------------
+{
+  const trines = Array(12).fill(0);
+  trines[0] = 4; trines[4] = 6; trines[8] = 2;
+  trines[1] = 3; trines[5] = 0; trines[9] = 5;
+  const reduced = trikonaShodhana(trines);
+  assert.deepEqual([reduced[0], reduced[4], reduced[8]], [2, 4, 0], 'subtract the lowest bindu count from a non-zero trine');
+  assert.deepEqual([reduced[1], reduced[5], reduced[9]], [3, 0, 5], 'a zero in a trine prevents reduction');
+  const equal = Array(12).fill(0); equal[0] = 3; equal[4] = 3; equal[8] = 3;
+  const equalReduced = trikonaShodhana(equal);
+  assert.deepEqual([equalReduced[0], equalReduced[4], equalReduced[8]], [0, 0, 0], 'equal non-zero trines are all zeroed');
+}
+{
+  const occupied = Array(12).fill(false);
+  const values = Array(12).fill(0);
+  values[0] = 5; values[7] = 3;
+  assert.deepEqual(
+    [ekadhipatyaShodhana(values, occupied)[0], ekadhipatyaShodhana(values, occupied)[7]],
+    [3, 3],
+    'two empty co-owned signs are reduced to the lower value',
+  );
+  values[0] = 4; values[7] = 4;
+  const equal = ekadhipatyaShodhana(values, occupied);
+  assert.deepEqual([equal[0], equal[7]], [0, 0], 'equal empty co-owned signs are both zeroed');
+  occupied[0] = true; values[0] = 5; values[7] = 3;
+  const occupiedHigh = ekadhipatyaShodhana(values, occupied);
+  assert.equal(occupiedHigh[7], 0, 'the empty co-owned sign is zeroed when weaker than the occupied sign');
+  values[7] = 8;
+  const emptyHigh = ekadhipatyaShodhana(values, occupied);
+  assert.equal(emptyHigh[7], 5, 'the empty co-owned sign is reduced to the occupied sign value');
+  occupied[7] = true;
+  const bothOccupied = ekadhipatyaShodhana(values, occupied);
+  assert.deepEqual([bothOccupied[0], bothOccupied[7]], [5, 8], 'two occupied co-owned signs are not reduced');
+}
+{
+  const reduced = Array(12).fill(0); reduced[0] = 2; reduced[5] = 1;
+  const signs = Object.fromEntries(PLANET_NAMES.map(name => [name, 0])) as Record<typeof PLANET_NAMES[number], number>;
+  const pvr = calculateShodhyaPinda(reduced, signs, 'pvr');
+  assert.deepEqual(pvr, { rasiPinda: 20, grahaPinda: 90, shodhyaPinda: 110, yogaPinda: 110 }, 'PVR Rāśi and Graha Piṇḍa multipliers');
+  const alternative = calculateShodhyaPinda(reduced, signs, 'alternate');
+  assert.equal(alternative.rasiPinda, 19, 'alternative Rasimana uses five for Virgo rather than six');
+}
