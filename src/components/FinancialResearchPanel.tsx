@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { SIGN_LORDS, SIGN_NAMES } from '@/lib/signs';
+import { NADI_PRAVESIKA_FINANCIAL_DICTUMS, applicableFinancialDictums } from '@/lib/nadiPraveshikaDictums';
 import {
   calculateBhriguPadas,
   calculateBhriguProgressions,
@@ -120,6 +121,24 @@ export default function FinancialResearchPanel({ chart, birthDatetime }: { chart
     return [...unique.values()].sort((a, b) => a.age - b.age || a.body.localeCompare(b.body));
   }, [progressionRows, house2Sign, house11Sign, a2, a11, keyLords]);
 
+  const annualProgressions = useMemo(() => {
+    if (!birth) return [];
+    const startYear = birth.getFullYear();
+    const endYear = ageToYear(birth, range);
+    const rows: { year: number; age: number; body: string; sign: number; house: number; houseFromNatal: number; dictums: number[] }[] = [];
+    for (let year = startYear; year <= endYear; year += 1) {
+      // Reproducible annual snapshot: 31 December at local chart time.
+      const snapshot = new Date(year, 11, 31, 23, 59, 59);
+      if (snapshot < birth) continue;
+      const age = (snapshot.getTime() - birth.getTime()) / (365.2425 * 86400000);
+      if (age > range) continue;
+      for (const progression of calculateBhriguProgressions(chart, age, VERSION)) {
+        rows.push({ year, age, body: progression.body, sign: progression.sign, house: progression.houseFromLagna, houseFromNatal: progression.houseFromNatal, dictums: applicableFinancialDictums(progression, age, padas) });
+      }
+    }
+    return rows;
+  }, [birth, chart, range, padas]);
+
   const maxIncome = Math.max(1, ...incomeRows.map(row => row.amount));
   const addIncome = () => {
     const year = Number(newYear);
@@ -209,7 +228,21 @@ export default function FinancialResearchPanel({ chart, birthDatetime }: { chart
         <p className="text-[10px] text-zinc-500">* Lord of the 2nd house, 11th house, A2 or A11. Vertical axis = house from Lagna; horizontal axis = age. The 2nd and 11th house bands are highlighted.</p>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-annual-financial-analysis>
+        <div><h3 className="text-xs font-semibold">Annual progression analysis</h3>
+          <p className="text-[10px] text-zinc-500">One snapshot on 31 December of each calendar year. Dictum matches are rule flags, not proof of a financial event.</p></div>
+        <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-[10px]">
+          <thead className="bg-zinc-50 text-[9px] uppercase text-zinc-400 dark:bg-zinc-900/60"><tr><th className="px-2 py-2">Year</th><th className="px-2 py-2">Age</th><th className="px-2 py-2">Graha</th><th className="px-2 py-2">Sign</th><th className="px-2 py-2">House from Lagna</th><th className="px-2 py-2">House from natal</th><th className="px-2 py-2">Dictums</th></tr></thead>
+          <tbody>{annualProgressions.map(row => <tr key={row.year + '-' + row.body} className="border-t border-zinc-100 dark:border-zinc-800">
+            <td className="px-2 py-1.5 font-mono">{row.year}</td><td className="px-2 py-1.5 font-mono">{row.age.toFixed(2)}</td><td className="px-2 py-1.5">{row.body}</td>
+            <td className="px-2 py-1.5">{SIGN_NAMES[row.sign - 1]}</td><td className="px-2 py-1.5">{row.house}</td><td className="px-2 py-1.5">{row.houseFromNatal}</td>
+            <td className="px-2 py-1.5">{row.dictums.length ? row.dictums.map(n => 'D' + n).join(', ') : '—'}{row.dictums.includes(23) ? ' *' : ''}</td>
+          </tr>)}{annualProgressions.length === 0 && <tr><td colSpan={7} className="px-2 py-4 text-center text-zinc-500">No annual snapshots available.</td></tr>}</tbody>
+        </table></div>
+        <p className="text-[10px] text-zinc-500">* D23 is provisional: retrograde status during progression and harmful argala are not yet verified.</p>
+      </div>
+
+<div className="space-y-2">
         <h3 className="text-xs font-semibold">Financial activation events</h3>
         <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
           <table className="w-full min-w-[560px] text-left text-[11px]">
@@ -231,7 +264,17 @@ export default function FinancialResearchPanel({ chart, birthDatetime }: { chart
         {events.length > 100 && <p className="text-[10px] text-zinc-500">Showing first 100 of {events.length} activation events.</p>}
       </div>
 
-      <div className="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+      <details className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800" data-nadi-financial-dictums>
+        <summary className="cursor-pointer text-xs font-semibold">Nāḍī Praveśikā — 23 financial and progression dictums</summary>
+        <p className="mt-2 text-[10px] leading-relaxed text-zinc-500">Finnish summaries, not verbatim quotations. Source: Nāḍī Praveśikā (2019), “Rules for Prediction”, pp. 217–221. Rules requiring unavailable calculations are marked manual or partial.</p>
+        <ol className="mt-3 space-y-2">{NADI_PRAVESIKA_FINANCIAL_DICTUMS.map(rule => <li key={rule.number} className="border-t border-zinc-100 pt-2 dark:border-zinc-800">
+          <div className="flex items-start justify-between gap-3"><span className="text-[10px] font-semibold">Dictum {rule.number} <span className="font-normal text-zinc-400">· p. {rule.page}</span></span>
+            <span className="shrink-0 rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] text-zinc-500 dark:bg-zinc-800">{rule.automation === 'automatic' ? 'Automated' : rule.automation === 'partial' ? 'Partial' : 'Manual'}</span></div>
+          <p className="mt-1 text-[11px] leading-relaxed">{rule.summaryFi}</p>
+        </li>)}</ol>
+      </details>
+
+<div className="space-y-3 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
         <div>
           <h3 className="text-xs font-semibold">Historical income data</h3>
           <p className="text-[10px] text-zinc-500">Enter annual gross income. Data is stored only in this browser on this device; it is not uploaded.</p>
