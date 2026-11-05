@@ -16,8 +16,20 @@ const STORAGE_KEY = 'brighu-financial-research-income-v1';
 const VERSION: BhriguPadaVersion = 'nadi-praveshika-8';
 const BODY_COLORS = ['#0d9488', '#2563eb', '#9333ea', '#d97706', '#dc2626', '#64748b', '#0891b2', '#65a30d'];
 
-function houseFromAsc(ascendantSign: number, sign: number): number {
-  return ((sign - ascendantSign + 12) % 12) + 1;
+function readStoredIncome(): IncomeRow[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (!stored) return [];
+    const parsed: unknown = JSON.parse(stored);
+    return Array.isArray(parsed)
+      ? parsed.filter((row): row is IncomeRow =>
+          row && Number.isInteger(row.year) && Number.isFinite(row.amount) && row.amount >= 0,
+        ).sort((a, b) => a.year - b.year)
+      : [];
+  } catch {
+    return [];
+  }
 }
 function signFromHouse(ascendantSign: number, house: number): number {
   return ((ascendantSign - 1 + house - 1) % 12) + 1;
@@ -31,23 +43,11 @@ function ageToYear(birth: Date, age: number): number {
 }
 
 export default function FinancialResearchPanel({ chart, birthDatetime }: { chart: ChartData; birthDatetime: string }) {
-  const [incomeRows, setIncomeRows] = useState<IncomeRow[]>([]);
+  const [incomeRows, setIncomeRows] = useState<IncomeRow[]>(readStoredIncome);
   const [range, setRange] = useState(80);
   const [newYear, setNewYear] = useState(String(new Date().getFullYear()));
   const [newAmount, setNewAmount] = useState('');
   const [newNote, setNewNote] = useState('');
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed: unknown = JSON.parse(stored);
-        if (Array.isArray(parsed)) setIncomeRows(parsed.filter((row): row is IncomeRow =>
-          row && Number.isInteger(row.year) && Number.isFinite(row.amount) && row.amount >= 0,
-        ).sort((a, b) => a.year - b.year));
-      }
-    } catch { /* Ignore malformed local research data. */ }
-  }, []);
 
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(incomeRows)); } catch { /* Storage may be unavailable. */ }
@@ -70,7 +70,7 @@ export default function FinancialResearchPanel({ chart, birthDatetime }: { chart
     const map = new Map<string, string[]>();
     for (const item of entries) map.set(item.body, [...(map.get(item.body) ?? []), item.role]);
     return map;
-  }, [house2Sign, house11Sign, a2?.sign, a11?.sign]);
+  }, [house2Sign, house11Sign, a2, a11]);
 
   const tracks: Track[] = useMemo(() => {
     const bodies = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu'];
@@ -117,7 +117,7 @@ export default function FinancialResearchPanel({ chart, birthDatetime }: { chart
     const unique = new Map<string, typeof found[number]>();
     for (const event of found) unique.set([event.age.toFixed(4), event.body, event.target, event.role].join('|'), event);
     return [...unique.values()].sort((a, b) => a.age - b.age || a.body.localeCompare(b.body));
-  }, [progressionRows, house2Sign, house11Sign, a2?.sign, a11?.sign, keyLords]);
+  }, [progressionRows, house2Sign, house11Sign, a2, a11, keyLords]);
 
   const maxIncome = Math.max(1, ...incomeRows.map(row => row.amount));
   const addIncome = () => {
