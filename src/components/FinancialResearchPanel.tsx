@@ -5,6 +5,7 @@ import type { ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { SIGN_LORDS, SIGN_NAMES } from '@/lib/signs';
 import IncomeYearAnalysis from '@/components/IncomeYearAnalysis';
+import BhriguIncomePeriods from '@/components/BhriguIncomePeriods';
 import { NADI_PRAVESIKA_FINANCIAL_DICTUMS, applicableFinancialDictums } from '@/lib/nadiPraveshikaDictums';
 import {
   calculateBhriguPadas,
@@ -188,6 +189,8 @@ export default function FinancialResearchPanel({ chart, birthDatetime }: { chart
         </label>
         <span className="text-[10px] text-zinc-500">Rule set: Nāḍī Praveśikā (8 grahas)</span>
       </div>
+
+      {birth && <BhriguIncomePeriods chart={chart} birthDatetime={birthDatetime} maxAge={range} />}
 
       <div className="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
         <div className="flex flex-wrap items-center justify-between gap-2">
