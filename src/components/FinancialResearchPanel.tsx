@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChartData } from '@/types';
 import { parseDateTime } from '@/lib/bcp';
 import { SIGN_LORDS, SIGN_NAMES } from '@/lib/signs';
+import IncomeYearAnalysis from '@/components/IncomeYearAnalysis';
 import { NADI_PRAVESIKA_FINANCIAL_DICTUMS, applicableFinancialDictums } from '@/lib/nadiPraveshikaDictums';
 import {
   calculateBhriguPadas,
@@ -11,7 +12,7 @@ import {
   type BhriguPadaVersion,
 } from '@/lib/bhriguPadaProgression';
 
-type IncomeRow = { year: number; amount: number; note?: string };
+type IncomeRow = { year: number; amount: number; note?: string; isPartial?: boolean };
 type Track = { body: string; role: string; isKeyLord: boolean };
 const STORAGE_KEY = 'brighu-financial-research-income-v1';
 const VERSION: BhriguPadaVersion = 'nadi-praveshika-8';
@@ -149,6 +150,7 @@ export default function FinancialResearchPanel({ chart, birthDatetime }: { chart
     setNewNote('');
   };
   const removeIncome = (year: number) => setIncomeRows(current => current.filter(row => row.year !== year));
+  const setIncomePartial = (year: number, isPartial: boolean) => setIncomeRows(current => current.map(row => row.year === year ? { ...row, isPartial } : row));
 
   return (
     <section className="min-w-0 space-y-4" data-financial-research>
@@ -294,17 +296,24 @@ export default function FinancialResearchPanel({ chart, birthDatetime }: { chart
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[420px] text-left text-[11px]">
-              <thead className="text-[9px] uppercase text-zinc-400"><tr><th className="py-1">Year</th><th className="py-1">Gross income</th><th className="py-1">Note</th><th /></tr></thead>
+              <thead className="text-[9px] uppercase text-zinc-400"><tr><th className="py-1">Year</th><th className="py-1">Gross income</th><th className="py-1">Note</th><th className="py-1">Partial</th><th /></tr></thead>
               <tbody>{incomeRows.map(row => <tr key={row.year} className="border-t border-zinc-100 dark:border-zinc-800">
                 <td className="py-1.5 font-mono">{row.year}</td>
                 <td className="py-1.5 font-mono">{row.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} €</td>
                 <td className="py-1.5 text-zinc-500">{row.note ?? '—'}</td>
+                <td className="py-1.5"><input aria-label={row.year + ' is a partial year'} type="checkbox" checked={Boolean(row.isPartial)} onChange={event => setIncomePartial(row.year, event.target.checked)} /></td>
                 <td className="py-1.5 text-right"><button type="button" onClick={() => removeIncome(row.year)} className="text-rose-600 hover:underline">Remove</button></td>
               </tr>)}</tbody>
             </table>
           </div>
         </> : <p className="rounded-md bg-zinc-50 px-3 py-4 text-center text-[11px] text-zinc-500 dark:bg-zinc-900">No income years entered yet.</p>}
       </div>
+
+      <IncomeYearAnalysis
+        incomeRows={incomeRows}
+        annualProgressions={annualProgressions}
+        keyLordRoles={Object.fromEntries(keyLords.entries())}
+      />
     </section>
   );
 }
