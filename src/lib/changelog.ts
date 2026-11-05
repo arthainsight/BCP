@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.14',
+    date: '2026-11-05',
+    title: 'Historical income year and astrology pattern analysis',
+    changes: [
+      'Added an income timeline with relative good, normal and weak year classifications against the median of the preceding five calendar years; at least three complete prior years are required.',
+      'Added explicit partial-year marking so incomplete years are excluded from the baseline and good/bad comparisons.',
+      'Added a good-versus-bad income year comparison and descriptive Bhṛgu Pada / Nāḍī Praveśikā feature frequency analysis across the classified years.',
+      'Added regression tests for income classification and progression pattern comparisons.',
+      'Updated the application version to v4.14.',
+    ],
+  },
+  {
     version: 'v4.13',
     date: '2026-11-04',
     title: 'Complete Parāya chart overlays and update research setting comparisons',
