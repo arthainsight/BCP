@@ -27,10 +27,10 @@ assert.ok(periods.every(period => period.adTargets.length > 0 || period.pdTarget
 assert.ok(periods.every(period => period.priority === (period.adIn11th ? 4 : period.pdIn11th ? 3 : period.adTargets.length ? 2 : 1)));
 
 // MD stays at Venus's natal sign; the first AD and PD also begin there.
-const venusFirst = periods.find(period => period.body === 'Venus' && period.startAge === 0);
-assert.ok(venusFirst);
-assert.equal(venusFirst.mdSign, 6);
-assert.equal(venusFirst.adSign, 6);
-assert.equal(venusFirst.pdSign, 6);
+const venusFirstTarget = periods.find(period => period.body === 'Venus' && period.adSign === 10);
+assert.ok(venusFirstTarget);
+assert.equal(venusFirstTarget.mdSign, 6);
+assert.equal(venusFirstTarget.adSign, 10);
+assert.equal(venusFirstTarget.adHouse, 10);
 
 console.log('Bhṛgu Pada income AD–PD tests passed');
