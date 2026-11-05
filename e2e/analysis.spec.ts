@@ -1586,7 +1586,7 @@ test('LIBRARY Research compares the four current settings of the Paraya progress
   await expect(rows).toHaveCount(4);
   // All four current combinations (retrograde start × Saturn speed), once each, the strongest first.
   const settings = await rows.evaluateAll(all => all.map(row => row.getAttribute('data-setting') ?? ''));
-  expect(new Set(settings).size).toBe(8);
+  expect(new Set(settings).size).toBe(4);
   expect(settings.every(setting => /^(previous|same)\|(alternating|even)$/.test(setting))).toBe(true);
   const scores = await rows.evaluateAll(all => all.map(row => Number(row.querySelectorAll('td')[1].textContent)));
   expect(scores).toEqual([...scores].sort((a, b) => b - a));
