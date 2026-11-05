@@ -133,7 +133,7 @@ function periodStartSign(params: PeriodParams): number {
 /** Equal-bhāva assignment: each house cusp is the Lagna degree in its own sign. */
 function bhavaHouseOf(signIndex: number, degree: number, ascendantSignIndex: number, cuspDegree: number): number {
   const rasiHouse = ((signIndex - ascendantSignIndex + 12) % 12) + 1;
-  return degree >= cuspDegree ? rasiHouse : ((rasiHouse + 10) % 12) + 1;
+  return degree + 1e-9 >= cuspDegree ? rasiHouse : ((rasiHouse + 10) % 12) + 1;
 }
 
 /** The length of a round, in years: the stays in the twelve signs added up. */
@@ -253,7 +253,7 @@ export function calculateNadiParaya(params: {
     : ((ketuSignIndex - params.options.bhavaAscendantSignIndex + 12) % 12) + 1;
   const ketuHouse = ketuRasiHouse === undefined || params.options?.bhavaCuspDegree === undefined
     ? undefined
-    : rahu.degree >= params.options.bhavaCuspDegree ? ketuRasiHouse : ((ketuRasiHouse + 10) % 12) + 1;
+    : rahu.degree + 1e-9 >= params.options.bhavaCuspDegree ? ketuRasiHouse : ((ketuRasiHouse + 10) % 12) + 1;
   const ketu: ParayaPeriod = {
     ...rahu,
     body: 'Ketu',

@@ -106,7 +106,7 @@ export function parayaTimelineOf(chart: ChartData | null, body: ParayaBody, maxA
     const rasiHouse = houseOf(signIndex, chart.ascendant.sign);
     const house = options?.bhavaCuspDegree === undefined
       ? undefined
-      : period.degree >= options.bhavaCuspDegree ? rasiHouse : ((rasiHouse + 10) % 12) + 1;
+      : period.degree + 1e-9 >= options.bhavaCuspDegree ? rasiHouse : ((rasiHouse + 10) % 12) + 1;
     return {
       ...period,
       body: 'Ketu' as const,

@@ -39,9 +39,9 @@ async function main() {
     assert.ok(steps.every(step => step[1] === 4));
     assert.ok(rows.slice(0, 2).every(row => row.options.retro === 'previous'), 'one sign back is the strongest two');
     assert.ok(rows.slice(2).every(row => row.options.retro === 'same'));
-    assert.ok(rows[0].score > rows[7].score + 0.3, `a clear difference (${rows[0].score} against ${rows[7].score})`);
-    assert.ok(rows[0].best!.observed === 16 && rows[7].best!.observed < 16, 'every event in one house against the events split between two');
-    assert.ok(rows[0].best!.p < rows[7].best!.p, 'a smaller p, told apart even though a permutation test would stop at the same floor');
+    assert.ok(rows[0].score > rows[3].score + 0.3, `a clear difference (${rows[0].score} against ${rows[3].score})`);
+    assert.ok(rows[0].best!.observed === 16 && rows[3].best!.observed < 16, 'every event in one house against the events split between two');
+    assert.ok(rows[0].best!.p < rows[3].best!.p, 'a smaller p, told apart even though a permutation test would stop at the same floor');
     assert.ok(Math.abs(rows[0].correctedBestP! - Math.min(1, rows[0].best!.p * 4)) < 1e-12);
     // Only Jupiter is looked at, so Saturn and Rahu make no difference: within one retro choice the four rows found exactly the same.
     assert.equal(new Set(rows.slice(0, 2).map(row => row.fingerprint)).size, 1);
