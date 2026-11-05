@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v4.15',
+    date: '2026-11-05',
+    title: 'Bhṛgu Pada financial MD–AD–PD analysis',
+    changes: [
+      'Added a default financial period analysis based only on Bhṛgu Pada progression: fixed natal-sign MD, progressed AD and nested PD.',
+      'Enumerates dated AD–PD periods for the natal lords of the 2nd house, 11th house, A2 and A11.',
+      'Highlights entry of those financial lords into the 11th house, with AD entry ranked above PD entry.',
+      'Shows the MD natal sign and house, AD and PD signs and houses, exact period dates, lord roles and activated financial targets.',
+      'Added regression tests for the financial activation period engine.',
+      'Updated the application version to v4.15.',
+    ],
+  },
+  {
     version: 'v4.14',
     date: '2026-11-05',
     title: 'Historical income year and astrology pattern analysis',
