@@ -243,9 +243,10 @@ test('a graha that was retrograde at birth begins one sign back, or in its natal
   const before = { Jupiter: await stands('Jupiter'), Saturn: await stands('Saturn'), Rahu: await stands('Rahu') };
 
   await selectWorkspace(page, '⚙');
-  const choice = visible(page, page.locator('select').filter({ has: page.locator('option', { hasText: 'the natal sign' }) }));
-  await expect(choice).toHaveValue('previous');
-  await choice.selectOption('same');
+  await visible(page, page.getByRole('button', { name: /dasha methods/i })).click();
+  const choice = visible(page, page.locator('[data-setting="paraya-original-placement"] [role="switch"]'));
+  await expect(choice).toHaveAttribute('aria-checked', 'false');
+  await choice.click();
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('calculationSettings') ?? '{}').parayaRetro)).toBe('same');
 
   // Jupiter and Saturn stand in another sign; Rahu, which is not moved, stands where it did.
@@ -271,10 +272,10 @@ test('the Paraya options in Settings change the Paraya hits', async ({ page }) =
   };
   const before = await hitsText();
 
-  // Saturn 2.5 years in every sign, and Rahu / Ketu 1.5.
+  // Saturn can use 2.5 years per sign. Rāhu/Ketu use a fixed table-derived stay and have no speed selector.
   await selectWorkspace(page, '⚙');
+  await visible(page, page.getByRole('button', { name: /dasha methods/i })).click();
   await visible(page, page.locator('select').filter({ has: page.locator('option', { hasText: '2.5 years per sign' }) })).selectOption('even');
-  await visible(page, page.locator('select').filter({ has: page.locator('option', { hasText: '1.5 years per sign' }) })).selectOption('even');
   const after = await hitsText();
 
   expect(after).not.toEqual(before);

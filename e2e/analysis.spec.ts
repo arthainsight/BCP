@@ -1182,12 +1182,12 @@ test('LIBRARY Research compares the progressions at events across saved charts, 
   // The matrix: a row for each progressing graha and a column for each house, with the number of events in each cell.
   const matrix = panel.locator('[data-research-matrix="house"]');
   await expect(matrix).toBeVisible();
-  await expect(matrix.locator('tbody tr')).toHaveCount(4);
+  await expect(matrix.locator('tbody tr')).toHaveCount(6);
   await expect(matrix.locator('thead th')).toHaveCount(13);
   const counts = await matrix.locator('[data-cell]').evaluateAll(cells => cells.map(cell => Number(cell.getAttribute('data-count'))));
-  expect(counts).toHaveLength(48);
+  expect(counts).toHaveLength(72);
   // Each graha stands in one house at each event, so a row adds up to the eight events.
-  for (let row = 0; row < 4; row++) expect(counts.slice(row * 12, row * 12 + 12).reduce((sum, n) => sum + n, 0)).toBe(8);
+  for (let row = 0; row < 6; row++) expect(counts.slice(row * 12, row * 12 + 12).reduce((sum, n) => sum + n, 0)).toBe(8);
 
   // A cell lists its events.
   const cell = matrix.locator('button[data-cell]').first();
@@ -1568,7 +1568,7 @@ test('LIBRARY Research finds features in one part of the data and tests them in 
   expect(errors).toEqual([]);
 });
 
-test('LIBRARY Research compares the eight settings of the Paraya progressions', async ({ page }) => {
+test('LIBRARY Research compares the four settings of the Paraya progressions', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
@@ -1581,13 +1581,13 @@ test('LIBRARY Research compares the eight settings of the Paraya progressions', 
   await panel.getByRole('button', { name: 'Run the comparison' }).click();
 
   const result = panel.locator('[data-research-settings]');
-  await expect(result.locator('[data-research-summary]')).toContainText('8 events · 8 settings', { timeout: 120_000 });
+  await expect(result.locator('[data-research-summary]')).toContainText('8 events · 4 settings', { timeout: 120_000 });
   const rows = result.locator('tr[data-setting]');
-  await expect(rows).toHaveCount(8);
-  // All eight combinations, once each, the strongest first.
+  await expect(rows).toHaveCount(4);
+  // All four combinations of retrograde start and Saturn speed, once each, strongest first.
   const settings = await rows.evaluateAll(all => all.map(row => row.getAttribute('data-setting') ?? ''));
-  expect(new Set(settings).size).toBe(8);
-  expect(settings.every(setting => /^(previous|same)\|(alternating|even)\|(alternating|even)$/.test(setting))).toBe(true);
+  expect(new Set(settings).size).toBe(4);
+  expect(settings.every(setting => /^(previous|same)\|(alternating|even)$/.test(setting))).toBe(true);
   const scores = await rows.evaluateAll(all => all.map(row => Number(row.querySelectorAll('td')[1].textContent)));
   expect(scores).toEqual([...scores].sort((a, b) => b - a));
   // The strongest feature of each setting is named, with its corrected p.
