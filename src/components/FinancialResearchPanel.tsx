@@ -105,11 +105,12 @@ export default function FinancialResearchPanel({ chart, birthDatetime }: { chart
       if (previousSign !== point.sign) {
         for (const target of targets) {
           if (point.sign === target.sign) {
-            found.push({ age: point.age, body: point.body, target: target.label, role: target.kind });
+            const entersAsKeyLord = target.kind === 'income-house' && point.house === 11 && keyLords.has(point.body);
+            const role = entersAsKeyLord
+              ? (keyLords.get(point.body) ?? []).join(' · ') + ' enters 11th'
+              : target.kind;
+            found.push({ age: point.age, body: point.body, target: target.label, role });
           }
-        }
-        if (point.house === 11 && keyLords.has(point.body)) {
-          found.push({ age: point.age, body: point.body, target: '11th house', role: (keyLords.get(point.body) ?? []).join(' · ') + ' enters 11th' });
         }
       }
       previousByBody.set(point.body, point.sign);
