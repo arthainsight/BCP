@@ -85,6 +85,8 @@ export interface SpecialSphutaTiming {
   /** The sunrise the app calculated (true or mean-time, as chosen), in local decimal hours. */
   sunriseCalculated: number;
   source: 'true' | 'mean' | 'manual';
+  /** True when the Sun does not rise on the day at this latitude (polar day or night) and 06:00 stands in for sunrise. */
+  sunriseFallback?: boolean;
 }
 
 export interface SpecialLagna {

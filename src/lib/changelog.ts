@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.16',
+    date: '2026-11-06',
+    title: 'Antardaśās of the balance daśā, and stricter chart requests',
+    changes: [
+      'Corrected the antardaśās and pratyantardaśās of the first daśā of every nakṣatra daśā (Vimśottarī and its Utpanna/Kṣema/Ādhāna variant, Vimśottarī Original, Yoginī, Aṣṭottarī and the conditional nakṣatra daśās). The first daśā is only the balance at birth: its antardaśās are now those of the whole daśā, counted from where the whole would have begun, and the ones over before birth are left out (the one running at birth is cut at birth). Before, the nine antardaśās were squeezed into the balance and began at birth, so the lords and dates differed from PyJHora for the first years of life. Later daśās were not affected, nor were Kālachakra and the rāśi daśās.',
+      'Added the antardaśās of the first daśā to the PyJHora comparison of all thirteen charts, and replaced the test that required the squeezed result.',
+      'A chart request for a day that does not exist (the 31st of February, the 29th of February of a year that is not a leap year) is now refused instead of giving the chart of the next month, and a year before 100, which JavaScript reads as 19xx, is refused.',
+      'Where the Sun does not rise or set (polar day or night) the special lagnas count from 06:00 as before, and the Special Sphutas now says so.',
+      'Updated the application version to v4.16.',
+    ],
+  },
+  {
     version: 'v4.15',
     date: '2026-11-05',
     title: 'Bhṛgu Pada financial MD–AD–PD analysis',

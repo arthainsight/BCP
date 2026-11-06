@@ -5,7 +5,7 @@
 import { calculateChart } from './ephemeris';
 import { jdFromLocal, localPartsFromJd } from './lunisolar';
 import { getUtcOffsetHours } from './timezone';
-import { AYANAMSA_OFFSET_RANGE, MOMENT_RANGES, PLACE_RANGES, readNumbers } from './apiValidation';
+import { AYANAMSA_OFFSET_RANGE, MOMENT_RANGES, PLACE_RANGES, calendarDateError, readNumbers } from './apiValidation';
 
 export interface AnnualRequest {
   birth: { year: number; month: number; day: number; hour: number; minute: number; second: number };
@@ -28,6 +28,8 @@ export async function parseAnnualRequest(searchParams: URLSearchParams): Promise
   const numbers = readNumbers(searchParams, { ...MOMENT_RANGES, ...PLACE_RANGES, ayanamsaOffset: AYANAMSA_OFFSET_RANGE });
   if ('error' in numbers) return { error: numbers.error };
   const { year, month, day, hour, minute, second, lat, lng, tz, ayanamsaOffset } = numbers.values;
+  const dateError = calendarDateError(year, month, day);
+  if (dateError) return { error: dateError };
   const birth = { year, month, day, hour, minute, second };
   const birthTz = tz;
   const birthJd = await jdFromLocal(birth.year, birth.month, birth.day, birth.hour, birth.minute, birth.second, birthTz);
