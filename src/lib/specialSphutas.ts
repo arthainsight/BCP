@@ -163,8 +163,10 @@ export function calculateSpecialSphutas(input: SphutaInput): SpecialSphuta[] {
   const moonFraction = (normalize(moon) % nakshatraSize) / nakshatraSize;
   const sree = point('SL', 'Sree Lagna', asc + moonFraction * 360);
 
-  // Bhṛgu Bindu: halfway between the Moon and Rahu.
-  const bhrigu = point('BB', 'Bhrigu Bindu', (normalize(moon) + normalize(rahu)) / 2);
+  // Bhṛgu Bindu: the middle of the arc that runs forward in the zodiac from Rahu to the Moon, which is the rule of JHora
+  // (and PyJHora). The sum of the two longitudes halved would be the middle of the other arc whenever the Moon's longitude is
+  // the lesser, 180° from it. BPHS does not give this point (nothing like it is in its 97 chapters); it is a Nāḍī teaching.
+  const bhrigu = point('BB', 'Bhrigu Bindu', normalize(rahu) + normalize(normalize(moon) - normalize(rahu)) / 2);
 
   // Āruḍha: the lagna lord's degree, in the sign counted from the lord.
   const lord = planets.find(planet => planet.name === SIGN_LORDS[ascSign - 1]);
