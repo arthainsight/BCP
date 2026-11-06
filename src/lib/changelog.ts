@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.18',
+    date: '2026-11-06',
+    title: 'The page opens with the chart of now at Porvoo',
+    changes: [
+      'The main page now opens with a North Indian chart of this moment at Porvoo, without a button pressed: the name is empty, the place is Porvoo (change it in the birth data form with the city lookup or the coordinates) and the date and the time are those of the moment of opening, by the clock of Porvoo, wherever the page is opened from.',
+      'A link made with SHARE still opens the chart it carries, and the chart style, the calculation settings and the display settings are the ones chosen before.',
+      'SETTINGS → display → "open with the chart of now at Porvoo": off makes the page open blank, as it did.',
+      'The browser tests start from the blank page; one new test covers the opening.',
+      'Updated the application version to v4.18.',
+    ],
+  },
+  {
     version: 'v4.17',
     date: '2026-11-06',
     title: 'Bhṛgu Bindu as in JHora',

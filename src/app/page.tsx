@@ -26,6 +26,7 @@ import { GrahaMarksContext } from '@/lib/grahaMarks';
 import { yogiRoles } from '@/lib/yogiPoints';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
+import { DEFAULT_PLACE, openWithChartEnabled, wallClockIn } from '@/lib/defaultChart';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { applyChartEdits, moveBody, resetBody, type ChartEdits } from '@/lib/chartEdit';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
@@ -50,6 +51,8 @@ type TabId = 'chart' | 'data' | 'grahas' | 'dasha' | 'palm' | 'library' | 'setti
 
 type CalculationOptions = {
   preserveCurrentPanel?: boolean;
+  /** The wide layout keeps the birth data form beside the chart instead of turning to the grahas table (the page opening with a chart). */
+  keepDataPanel?: boolean;
 };
 
 // The primary workspaces (and Settings) and the screens that show them. The wide layout always shows the chart on the
@@ -326,7 +329,7 @@ export default function Home() {
           setTransitPlanets([]);
           if (!options?.preserveCurrentPanel) {
             setActiveTab('chart');
-            setDesktopTab('grahas');
+            if (!options?.keepDataPanel) setDesktopTab('grahas');
             setDataOpen(false);
             setSplitDataOpen(false);
           }
@@ -437,8 +440,8 @@ export default function Home() {
     return () => window.clearTimeout(timer);
   }, [chartData, transitDatetime, handleCalculateTransit]);
 
-  const handleLoadChartSnapshot = useCallback(
-    async (snap: ChartSnapshot) => {
+  const loadChartSnapshot = useCallback(
+    async (snap: ChartSnapshot, options?: CalculationOptions) => {
       setBirthDatetime(snap.birthDatetime);
       setCity(snap.city);
       setManualLat(snap.manualLat);
@@ -470,22 +473,41 @@ export default function Home() {
       }
       if (tzOffset === null) return;
 
-      await performCalculation(snap.birthDatetime, lat, lng, tzOffset, snap.targetDate);
+      await performCalculation(snap.birthDatetime, lat, lng, tzOffset, snap.targetDate, options);
     },
     [performCalculation]
   );
+  // What the saved charts and the file actions call: a chart given as a whole, shown the usual way.
+  const handleLoadChartSnapshot = useCallback((snap: ChartSnapshot) => loadChartSnapshot(snap), [loadChartSnapshot]);
 
   // A link made with SHARE carries the birth data after the #: the form is filled in and the chart calculated, once the stored settings are in.
+  // Without one the page opens with the chart of this moment at Porvoo (unless Settings say to open blank): the name is left empty and
+  // the place and the moment are in the form to change.
   const sharedHandled = useRef(false);
   useEffect(() => {
     if (!settingsRestored || sharedHandled.current) return;
     sharedHandled.current = true;
     const shared = decodeShare(window.location.hash);
-    if (!shared) return;
+    if (!shared) {
+      if (!openWithChartEnabled()) return;
+      // The clock of the moment is read here, after mount: on the server it would be the time of the build; and the address
+      // cannot be read during the server render either, so all of this has to happen after mount, once.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      void loadChartSnapshot({
+        birthDatetime: wallClockIn(DEFAULT_PLACE.ianaTimezone),
+        city: DEFAULT_PLACE.city,
+        manualLat: DEFAULT_PLACE.latitude,
+        manualLng: DEFAULT_PLACE.longitude,
+        ianaTimezone: DEFAULT_PLACE.ianaTimezone,
+        tzOverride: '',
+        targetDate: getTodayString(),
+        targetTime: getNowTimeString(),
+        showCoords: true,
+      }, { keepDataPanel: true });
+      return;
+    }
     // The address is cleaned, so a reload does not start over and the data is not left in the address bar.
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    // The address cannot be read during the server render, so this has to happen after mount; it runs once.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void handleLoadChartSnapshot({
       birthDatetime: shared.birthDatetime,
       city: shared.city,
@@ -497,7 +519,7 @@ export default function Home() {
       targetTime: '12:00',
       showCoords: true,
     });
-  }, [settingsRestored, handleLoadChartSnapshot]);
+  }, [settingsRestored, handleLoadChartSnapshot, loadChartSnapshot]);
 
   // "Open in chart" in the Dasha event list: read every target-date layer and
   // the transits for the event's day.
