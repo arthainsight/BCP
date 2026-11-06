@@ -166,7 +166,7 @@ export default function AnalysisPanel({
               nakshatraAdjust={nakshatraAdjust}
             />
           ) : (
-            <div className="overflow-x-auto"><VargaMatrix chart={chart} /></div>
+            <div className="overflow-x-auto"><VargaMatrix chart={chart} method={chartDisplaySettings.vargaMethod} /></div>
           )}
         </div>
       )}

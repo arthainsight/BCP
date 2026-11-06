@@ -18,8 +18,10 @@ import { calcD30 } from './d30';
 import { calcD40 } from './d40';
 import { calcD45 } from './d45';
 import { calcD60 } from './d60';
+import { methodAppliesTo, parivrittiScheme, parivrittiSign, type VargaMethod } from './parivritti';
 
 export { getSignIndex, getDegreesInSign } from './utils';
+export { PARIVRITTI_DIVISIONS, VARGA_METHODS, isVargaMethod, methodAppliesTo, parivrittiScheme, parivrittiSign, type ParivrittiScheme, type VargaMethod } from './parivritti';
 export { calcD1, calcD2, calcD3, calcD4, calcD5, calcD6, calcD7, calcD8, calcD9, calcD10, calcD11,
          calcD12, calcD16, calcD20, calcD24, calcD27, calcD30, calcD40, calcD45, calcD60 };
 
@@ -83,8 +85,11 @@ const CALC_BY_DIVISION: Record<number, (lon: number) => number> = {
 
 /**
  * Returns the sign index for a single varga division.
- * Falls back to D1 (Rasi) if the division is not supported.
+ * Falls back to D1 (Rasi) if the division is not supported. With a Parivṛtti method the division that has a rule of that
+ * kind (see parivritti.ts) is placed by it; the others keep the Parāśara rule.
  */
-export function getVargaSignIndex(longitude: number, division: number): number {
+export function getVargaSignIndex(longitude: number, division: number, method: VargaMethod = 'parasara'): number {
+  const scheme = parivrittiScheme(method);
+  if (scheme !== null && methodAppliesTo(method, division)) return parivrittiSign(longitude, division, scheme);
   return (CALC_BY_DIVISION[division] ?? calcD1)(longitude);
 }

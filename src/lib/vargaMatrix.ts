@@ -1,5 +1,5 @@
 import type { ChartData } from '@/types';
-import { getVargaSignIndex } from '@/lib/varga';
+import { getVargaSignIndex, type VargaMethod } from '@/lib/varga';
 import { getDignity, SCORE_PLANETS, type Dignity, type RasiSigns } from '@/lib/shadbala';
 import { DEFAULT_BALA_OPTIONS, type BalaOptions } from '@/lib/balaOptions';
 import { vimsopakaViswa } from '@/lib/vimsopaka';
@@ -25,7 +25,7 @@ export const DASH_CELL: Cell = { sign: '—', signIndex: null, dignity: 'none' }
 export const formatScore = (value: number) => (Number.isFinite(value) ? value.toFixed(2).replace(/\.00$/, '') : '—');
 
 /** The sign of each body in each divisional chart, with its dignity there. */
-export function buildVargaMatrix(planets: Record<string, number>, lagna: number | undefined, divisions: number[]): Matrix {
+export function buildVargaMatrix(planets: Record<string, number>, lagna: number | undefined, divisions: number[], method: VargaMethod = 'parasara'): Matrix {
   const source: Record<string, number | undefined> = { Lagna: lagna, ...planets };
   const matrix: Matrix = {};
   for (const name of ROW_ORDER) {
@@ -36,7 +36,7 @@ export function buildVargaMatrix(planets: Record<string, number>, lagna: number 
         matrix[name][`D${division}`] = DASH_CELL;
         continue;
       }
-      const signIndex = getVargaSignIndex(longitude, division);
+      const signIndex = getVargaSignIndex(longitude, division, method);
       matrix[name][`D${division}`] = { sign: SIGN_ABBR[signIndex], signIndex, dignity: getDignity(name, signIndex) };
     }
   }

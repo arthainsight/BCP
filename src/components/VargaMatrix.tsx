@@ -1,6 +1,7 @@
 import type { ChartData } from '@/types';
 import { buildVargaMatrix, DEFAULT_DIVISIONS, DIGNITY_LABELS, mapPlanetLongitudes, ROW_ORDER } from '@/lib/vargaMatrix';
 import type { Dignity } from '@/lib/shadbala';
+import { methodAppliesTo, type VargaMethod } from '@/lib/varga';
 import { useT } from '@/lib/i18n';
 import { Heading, HEAD_CELL, ROW } from './balaShared';
 
@@ -23,19 +24,25 @@ function dignityCellClass(dignity: Dignity): string {
   }
 }
 
-export default function VargaMatrix({ chart }: { chart: ChartData | null | undefined }) {
+export default function VargaMatrix({ chart, method = 'parasara' }: { chart: ChartData | null | undefined; method?: VargaMethod }) {
   const t = useT();
   if (!chart) return <div className="flex items-center justify-center h-40 text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center px-4">{t('Calculate a chart first.')}</div>;
 
   const divisions = DEFAULT_DIVISIONS;
   const planets = mapPlanetLongitudes(chart);
   const lagna = typeof chart.ascendant?.longitude === 'number' ? chart.ascendant.longitude : undefined;
-  const matrix = buildVargaMatrix(planets, lagna, divisions);
+  const matrix = buildVargaMatrix(planets, lagna, divisions, method);
   const divisionList = divisions.map((division) => `D${division}`).join(', ');
+  const byMethod = divisions.filter(division => methodAppliesTo(method, division));
 
   return (
     <div className="space-y-5">
       <Heading command="varga.matrix">{divisionList}{t(' from existing sidereal longitudes. Cell colour = dignity; debilitated = 0 strength.')}</Heading>
+      {byMethod.length > 0 && (
+        <div className="text-[10px] font-mono text-amber-600 dark:text-amber-400">
+          {t('Parivṛtti rule (Settings → display):')} {byMethod.map(division => `D${division}`).join(', ')}. {t('The other divisions keep the Parāśara rule.')}
+        </div>
+      )}
       <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-700 rounded-lg">
         <table className="w-full min-w-[980px] border-collapse text-xs font-mono">
           <thead>

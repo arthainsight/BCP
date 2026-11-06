@@ -19,6 +19,7 @@ import { CHART_LAYER_LABELS, CHART_LAYER_SETTINGS, type ChartLayerKey } from './
 import { LANGUAGES, useT, type Language } from '@/lib/i18n';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { OPEN_WITH_CHART_KEY } from '@/lib/defaultChart';
+import { PARIVRITTI_DIVISIONS, isVargaMethod, parivrittiScheme, type VargaMethod } from '@/lib/varga';
 
 const YEAR_LABELS: Record<DashaYearLength, string> = {
   julian: 'Julian year',
@@ -36,6 +37,13 @@ interface Props {
   dashaSettings: DashaSettings;
   onUpdateDashaSettings: (update: Partial<DashaSettings>) => void;
 }
+
+const VARGA_METHOD_OPTIONS: { value: VargaMethod; label: string }[] = [
+  { value: 'parasara', label: 'Parāśara (the usual rule)' },
+  { value: 'parivritti-cyclic', label: 'Parivṛtti, cyclic' },
+  { value: 'parivritti-even-reverse', label: 'Parivṛtti, even signs reversed' },
+  { value: 'parivritti-alternate', label: 'Parivṛtti, alternate (Somanātha)' },
+];
 
 const SELECT = 'w-full px-2 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded text-xs font-mono text-zinc-700 dark:text-zinc-300';
 
@@ -189,6 +197,21 @@ export default function SettingsPanel(props: Props) {
               <option value="english">{t('English (Sun, Moon, Mars …)')}</option>
               <option value="sanskrit">{t('Sanskrit (Sūrya, Candra, Maṅgala …)')}</option>
             </select>
+          </label>
+
+          <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400">
+            {t('rule of the divisional charts')}
+            <select
+              className={`${SELECT} mt-1`}
+              value={chartDisplaySettings.vargaMethod ?? 'parasara'}
+              onChange={e => { if (isVargaMethod(e.target.value)) onUpdateChartDisplay?.({ vargaMethod: e.target.value }); }}
+            >
+              {VARGA_METHOD_OPTIONS.map(option => <option key={option.value} value={option.value}>{t(option.label)}</option>)}
+            </select>
+            <span className="mt-1 block text-[10px] text-zinc-400 dark:text-zinc-600">
+              {t('Parivṛtti lets the parts of the signs run on round the zodiac instead of starting afresh in every sign. Not in BPHS: the rules of PyJHora. The charts, the varga grid and the matrix follow it; the strengths (Ṣaḍbala, Vimśopaka) and the doṣas always use the Parāśara rule.')}
+              {parivrittiScheme(chartDisplaySettings.vargaMethod ?? 'parasara') !== null && ` ${t('Divisions with this rule:')} ${PARIVRITTI_DIVISIONS[parivrittiScheme(chartDisplaySettings.vargaMethod ?? 'parasara')!].map(division => `D${division}`).join(', ')}.`}
+            </span>
           </label>
 
           <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400">

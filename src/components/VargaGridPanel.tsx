@@ -147,7 +147,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
       {highlight && (
         <div className="space-y-1">
           <div className="flex flex-wrap gap-1">
-            {followPlanet(chart, highlight, divisions).map(place => (
+            {followPlanet(chart, highlight, divisions, chartDisplaySettings.vargaMethod).map(place => (
               <span
                 key={place.division}
                 title={[
@@ -180,7 +180,7 @@ export default function VargaGridPanel({ chart, chartStyle, chartDisplaySettings
                 {fill(t('{significance}. Houses are counted from the D{division} ascendant ({sign}).'), {
                   significance: t(VARGA_SIGNIFICATIONS[expanded]),
                   division: expanded,
-                  sign: SIGN_ABBR[buildVargaChart(chart, expanded).ascendantSign - 1],
+                  sign: SIGN_ABBR[buildVargaChart(chart, expanded, chartDisplaySettings.vargaMethod).ascendantSign - 1],
                 })}
                 {expanded !== 1 && t(' Degrees show the position within the divisional sign.')}
               </div>

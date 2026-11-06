@@ -31,6 +31,7 @@ import { parseTargetDateString } from '@/lib/dateInput';
 import { dashaYearMsFor, type DashaYearLength } from '@/lib/time';
 import { calculateBhriguPadaPratyantardashas, calculateBhriguProgressions } from '@/lib/bhriguPadaProgression';
 import { useT } from '@/lib/i18n';
+import { methodAppliesTo } from '@/lib/varga';
 
 export interface ChartSectionProps {
   bcp: BcpResult | null;
@@ -503,6 +504,11 @@ export default function ChartSection({
       })()}
 
         {!mixedShape(chartStyle) && <ChartDivisionBar selected={divisions} onChange={setDivisions} />}
+        {!mixedShape(chartStyle) && divisions.some(division => methodAppliesTo(chartDisplaySettings.vargaMethod, division)) && (
+          <div className="text-[10px] font-mono text-amber-600 dark:text-amber-400">
+            {t('Parivṛtti rule')}: {divisions.filter(division => methodAppliesTo(chartDisplaySettings.vargaMethod, division)).map(division => `D${division}`).join(', ')} · {t('Settings → display')}
+          </div>
+        )}
 
         <div ref={chartRef} className="space-y-2">
         <ChartExportButtons targetRef={chartRef} fileName={mixedShape(chartStyle) ? `chart-d1-d${outerDivision}` : `chart-${divisions.map(d => `d${d}`).join('-')}`} />
