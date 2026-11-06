@@ -13,7 +13,7 @@ assert.deepEqual(VARGA_GRID_PRESETS.shadvarga.divisions, [1, 2, 3, 9, 12, 30]);
 assert.deepEqual(VARGA_GRID_PRESETS.saptavarga.divisions, [1, 2, 3, 7, 9, 12, 30]);
 assert.deepEqual(VARGA_GRID_PRESETS.dashavarga.divisions, [1, 2, 3, 7, 9, 10, 12, 16, 30, 60]);
 assert.equal(VARGA_GRID_PRESETS.shodashavarga.divisions.length, 16);
-assert.deepEqual(VARGA_GRID_PRESETS.shodashavarga.divisions, VARGA_DIVISIONS.filter(d => d !== 5), 'all sixteen BPHS vargas (D5 is not one of them)');
+assert.deepEqual(VARGA_GRID_PRESETS.shodashavarga.divisions, VARGA_DIVISIONS.filter(d => ![5, 6, 8, 11].includes(d)), 'all sixteen BPHS vargas (D5, D6, D8 and D11 are not among them)');
 
 // Ṣaḍvarga is the default.
 assert.equal(DEFAULT_VARGA_GRID.preset, 'shadvarga');

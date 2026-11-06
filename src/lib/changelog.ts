@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.19',
+    date: '2026-11-06',
+    title: 'Divisional charts D6, D8 and D11',
+    changes: [
+      'Added the Ṣaṣṭhāṁśa (D6), the Aṣṭāṁśa (D8) and the Rudrāṁśa (D11) to the divisional charts: the chart picker, the varga grid, the mixed charts, the varga matrix and every list that takes a division now have them.',
+      'D6: six parts of 5°, odd signs from Aries and even signs from Libra. D8: eight parts of 3°45′, movable signs from Aries, fixed from Sagittarius, dual from Leo. D11: eleven parts, forward from the sign as far back from Aries as the natal sign is on from it (Aries from Aries, Taurus from Pisces, Gemini from Aquarius …), as in Sanjay Rath\'s teaching and PyJHora; B. V. Raman\'s other way of counting is not used.',
+      'These three are not among the sixteen vargas of BPHS 6.3–4 (the Sanskrit text was read for them), so the Ṣoḍaśavarga set is the same sixteen as before and the Vimśopaka schemes are unchanged.',
+      'Every division of the app, 28,500 signs from 150 charts, is now checked against PyJHora in the test suite (the first test of the divisions against another program); all of them agree.',
+      'Updated the application version to v4.19.',
+    ],
+  },
+  {
     version: 'v4.18',
     date: '2026-11-06',
     title: 'The page opens with the chart of now at Porvoo',

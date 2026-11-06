@@ -5,7 +5,7 @@ import { DEFAULT_BALA_OPTIONS, type BalaOptions } from '@/lib/balaOptions';
 import { vimsopakaViswa } from '@/lib/vimsopaka';
 import { SIGN_ABBR } from '@/lib/signs';
 
-export const DEFAULT_DIVISIONS = [1, 2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60];
+export const DEFAULT_DIVISIONS = [1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 16, 20, 24, 27, 30, 40, 45, 60];
 export const ROW_ORDER = ['Lagna', 'Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
 export const DIGNITY_LABELS: Record<Dignity, string> = { exalted: 'Ex', moolatrikona: 'MT', own: 'Own', friend: 'Fr', neutral: 'Neu', enemy: 'En', debilitated: 'Deb', none: '—' };
 export const VIMSOPAKA_SCHEMES = {
