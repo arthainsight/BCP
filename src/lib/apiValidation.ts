@@ -10,9 +10,13 @@ export interface NumberRange {
   fallback?: number;
 }
 
-/** The moment of birth (or of any chart) as the chart routes take it. Year, month and day are required. */
+/**
+ * The moment of birth (or of any chart) as the chart routes take it. Year, month and day are required.
+ * The year starts at 100: JavaScript's Date reads the years 0 to 99 as 1900 to 1999, so an earlier year would give the
+ * chart of another century without a word.
+ */
 export const MOMENT_RANGES = {
-  year: { min: 1, max: 9999 },
+  year: { min: 100, max: 9999 },
   month: { min: 1, max: 12 },
   day: { min: 1, max: 31 },
   hour: { min: 0, max: 23, fallback: 0 },
@@ -96,3 +100,13 @@ export function readIntList(params: URLSearchParams, key: string, { min, max }: 
   return [...values].sort((a, b) => a - b);
 }
 
+/**
+ * An error when the day does not exist in that month of that year (the 31st of February, the 29th of February of a year
+ * that is not a leap year); null when it does. Gregorian, as the dates of the routes are counted. Without it the date rolls
+ * over to the next month and the chart of another day is answered, and the day typed is repeated back as if it were the one used.
+ */
+export function calendarDateError(year: number, month: number, day: number): string | null {
+  const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  const length = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+  return Number.isInteger(day) && Number.isInteger(month) && day >= 1 && day <= length ? null : `day ${day} does not exist in month ${month} of ${year}`;
+}

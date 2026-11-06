@@ -35,6 +35,23 @@ async function main() {
   }
   assert.equal((await call(chart, `${BIRTH}&ayanamsa=nonsense&nodeMode=nonsense&sunrise=nonsense`)).status, 200, 'an unknown setting falls back to the usual one');
 
+  // A day that does not exist is refused, not rolled over to the next month, and a year before 100 is not read as 19xx.
+  for (const bad of [withParam(withParam(BIRTH, 'month', '2'), 'day', '31'), withParam(withParam(BIRTH, 'month', '4'), 'day', '31'), withParam(withParam(withParam(BIRTH, 'year', '1900'), 'month', '2'), 'day', '29'),
+    withParam(BIRTH, 'year', '50'), withParam(BIRTH, 'year', '99')]) {
+    const result = await call(chart, bad);
+    assert.equal(result.status, 400, bad);
+  }
+  assert.equal((await call(chart, withParam(withParam(withParam(BIRTH, 'year', '2000'), 'month', '2'), 'day', '29'))).status, 200, '29 February of a leap year');
+  assert.equal((await call(chart, withParam(BIRTH, 'year', '100'))).status, 200, 'the year 100');
+
+  // Where the Sun does not rise (the polar day) the special lagnas count from 06:00, and the chart says so.
+  const polar = await call(chart, 'year=2024&month=6&day=21&hour=12&lat=78.22&lng=15.65&tz=2');
+  assert.equal(polar.status, 200);
+  assert.equal((polar.body.specialSphutaTiming as { sunriseFallback?: boolean }).sunriseFallback, true, 'a stand-in sunrise is flagged');
+  assert.equal((good.body.specialSphutaTiming as { sunriseFallback?: boolean }).sunriseFallback, undefined, 'a real sunrise is not');
+  const manual = await call(chart, `year=2024&month=6&day=21&hour=12&lat=78.22&lng=15.65&tz=2&sunriseManual=04:30:00`);
+  assert.equal((manual.body.specialSphutaTiming as { sunriseFallback?: boolean }).sunriseFallback, undefined, 'a sunrise typed in is not a stand-in');
+
   // /api/sign-changes: a graha asked for again and again is calculated once; a request that is too long is refused.
   const one = await call(signChanges, 'start=2024-01-01&days=30&bodies=Moon');
   assert.equal(one.status, 200);
@@ -149,7 +166,7 @@ async function main() {
     const ok = await call(handler, annual + extra);
     assert.equal(ok.status, 200, `${name}: ${JSON.stringify(ok.body).slice(0, 200)}`);
     for (const bad of [`${BIRTH}${extra}`, withParam(annual + extra, 'lat', 'NaN'), withParam(annual + extra, 'tz', '40'), `${annual}${extra}&tpYear=99999999`, withParam(annual + extra, 'hour', 'abc'),
-      `${BIRTH}&target=2024-13-45${extra}`, `${BIRTH}&target=0000-01-01${extra}`, `${annual}${extra}&ayanamsaOffset=Infinity`, `month=8&day=15&target=2024-06-01${extra}`]) {
+      `${BIRTH}&target=2024-13-45${extra}`, withParam(withParam(annual + extra, 'month', '2'), 'day', '30'), withParam(annual + extra, 'year', '50'), `${BIRTH}&target=0000-01-01${extra}`, `${annual}${extra}&ayanamsaOffset=Infinity`, `month=8&day=15&target=2024-06-01${extra}`]) {
       const result = await call(handler, bad);
       assert.equal(result.status, 400, `${name} ${bad}`);
     }

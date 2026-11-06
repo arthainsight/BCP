@@ -131,6 +131,7 @@ export default function SpecialSphutasPanel({ chart, calculationSettings, naksha
         <div>
           {t('Time since sunrise')}: {timing.ishta.toFixed(3)} {t('ghatis')} · {timing.source === 'manual' ? t('manual sunrise') : timing.source === 'mean' ? t('mean-time sunrise') : t('true sunrise')} {formatClock(timing.sunriseUsed)}
         </div>
+        {timing.sunriseFallback && <div className="text-amber-600 dark:text-amber-400">{t('The Sun does not rise or set on this day at this latitude, so 06:00 stands in for sunrise; type a sunrise in Settings to use another.')}</div>}
         <div>{t('Another sunrise, for example the one another program shows, can be typed in Settings → calculations → sunrise for the special sphutas. The charts and the tables follow it.')}</div>
         {sphutas.some(sphuta => KHARA_KEYS.includes(sphuta.key)) && (
           <div>{t('The 22nd Drekkana and the 64th Navamsa are the Lagna turned 210°: the sign is the D3 / D9 sign of that point, and its nakshatra and pada are those of the point in the zodiac.')}</div>

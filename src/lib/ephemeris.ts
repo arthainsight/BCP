@@ -168,6 +168,8 @@ export async function calculateChart(
     sunriseUsed: sunriseManualHours ?? sunriseCalculated,
     sunriseCalculated,
     source: sunriseManualHours !== null ? 'manual' : sunriseMode,
+    // No sunrise on this day here (polar day or night): 06:00 stands in for it, and the chart says so.
+    ...(sunTimes.sunrise === undefined && sunriseManualHours === null ? { sunriseFallback: true } : {}),
   };
   const sphutas = calculateSpecialSphutas({
     ascendantLongitude: ascLon,

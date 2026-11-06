@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateChart } from "@/lib/ephemeris";
 import { parseClock } from "@/lib/specialSphutas";
-import { AYANAMSA_OFFSET_RANGE, MOMENT_RANGES, PLACE_RANGES, readNumbers } from "@/lib/apiValidation";
+import { AYANAMSA_OFFSET_RANGE, MOMENT_RANGES, PLACE_RANGES, calendarDateError, readNumbers } from "@/lib/apiValidation";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -9,6 +9,8 @@ export async function GET(request: NextRequest) {
   const numbers = readNumbers(searchParams, { ...MOMENT_RANGES, ...PLACE_RANGES, ayanamsaOffset: AYANAMSA_OFFSET_RANGE });
   if ("error" in numbers) return NextResponse.json({ error: numbers.error }, { status: 400 });
   const { year, month, day, hour, minute, second, lat, lng, tz, ayanamsaOffset } = numbers.values;
+  const dateError = calendarDateError(year, month, day);
+  if (dateError) return NextResponse.json({ error: dateError }, { status: 400 });
 
   const ayanamsa = searchParams.get("ayanamsa") || "lahiri";
   const nodeMode = searchParams.get("nodeMode") || "mean";

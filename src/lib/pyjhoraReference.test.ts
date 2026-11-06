@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { calculateChart } from './ephemeris';
-import { calculateVimshottari } from './vimshottari';
+import { calculateAntardashas, calculatePratyantardashas, calculateVimshottari } from './vimshottari';
 
 // ---------------------------------------------------------------------------
 // The app's calculations checked against another program: thirteen charts (both hemispheres, latitudes from Sydney to
@@ -25,6 +25,8 @@ type Reference = {
   planets: Record<string, number>;
   rahuTrue: number;
   vimsottari: { lord: string; start: [number, number, number, number] }[];
+  /** The antardashas of the first mahadasha as PyJHora lists them, from the start the whole period would have had (before birth). */
+  firstMahaAntardashas: { lord: string; start: [number, number, number, number]; years: number }[];
 };
 const { charts } = JSON.parse(readFileSync(new URL('./fixtures/pyjhoraCharts.json', import.meta.url), 'utf8')) as { charts: Reference[] };
 
@@ -86,6 +88,29 @@ async function main() {
       worstDays = Math.max(worstDays, Math.abs(days));
       assert.ok(Math.abs(days) <= 1.5, `${label}: mahadasha ${index + 1} of ${dasha.entries[index].lord} ends ${days.toFixed(2)} days from PyJHora's date`);
     }
+
+    // The first mahadasha is only the balance at birth, so its antardashas are those of the whole period from the start
+    // the whole would have had, and the ones over before birth are not listed (the one running at birth is cut at birth).
+    // PyJHora lists all nine, the first of them before birth: the end of each is the start of the next.
+    const toMs = ([y, m, d, hours]: [number, number, number, number]) => Date.UTC(y, m - 1, d) + hours * 3_600_000 - reference.tz * 3_600_000;
+    const listed = reference.firstMahaAntardashas;
+    assert.equal(listed.length, 9, `${label}: PyJHora lists nine antardashas of the first mahadasha`);
+    const theirEnds = [...listed.slice(1).map(item => toMs(item.start)), toMs(reference.vimsottari[1].start)];
+    const theirRunning = listed.map((item, index) => ({ lord: item.lord, years: item.years, end: theirEnds[index] })).filter(item => item.end > born);
+    const antardashas = calculateAntardashas(dasha.entries[0]);
+    assert.deepEqual(antardashas.map(item => item.lord), theirRunning.map(item => item.lord), `${label}: the antardashas of the balance mahadasha, from the one running at birth`);
+    assert.equal(antardashas[0].startDate.getTime(), born, `${label}: the antardasha running at birth is cut at birth`);
+    antardashas.forEach((item, index) => {
+      const days = (item.endDate.getTime() - theirRunning[index].end) / DAY;
+      worstDays = Math.max(worstDays, Math.abs(days));
+      assert.ok(Math.abs(days) <= 1.5, `${label}: antardasha ${item.lord} of the first mahadasha ends ${days.toFixed(2)} days from PyJHora's date`);
+    });
+    // Its pratyantardashas are cut in the same way: the whole of the antardasha, from where it would have begun, less what is over.
+    const running = antardashas[0];
+    const pratyantardashas = calculatePratyantardashas(running);
+    assert.ok(pratyantardashas.length >= 1 && pratyantardashas.length <= 9, `${label}: pratyantardashas of the running antardasha`);
+    assert.equal(pratyantardashas[0].startDate.getTime(), born, `${label}: the pratyantardasha running at birth is cut at birth`);
+    assert.ok(Math.abs(pratyantardashas.reduce((sum, item) => sum + item.durationYears, 0) - running.durationYears) < 1e-9, `${label}: the pratyantardashas fill the running antardasha`);
   }
 
   // Taken out, the offset is the nutation: it swings both ways through the years and is not a drift of the ayanamsa.

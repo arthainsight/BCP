@@ -164,7 +164,8 @@ export function calculateVds(input: VdsInput): VdsResult | null {
     const lord     = LORDS[(startIdx + i) % 9];
     const duration = i === 0 ? balance : YEARS[lord];
     const endDate  = addDashaYears(cursor, duration);
-    entries.push({ lord, startDate: cursor, endDate, durationYears: duration });
+    const cutShort = i === 0 && balance < YEARS[lord];
+    entries.push({ lord, startDate: cursor, endDate, durationYears: duration, ...(cutShort ? { fullDurationYears: YEARS[lord] } : {}) });
     cursor = endDate;
   }
 

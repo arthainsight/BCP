@@ -2,6 +2,7 @@
 
 import { NAKSHATRA_NAMES, NAKSHATRA_SIZE } from './nakshatras';
 import { addDashaYears } from './time';
+import { splitDashaPeriod } from './dashaSplit';
 
 const LORDS = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'] as const;
 
@@ -20,6 +21,8 @@ export interface MahadashaEntry {
   startDate: Date;
   endDate: Date;
   durationYears: number;
+  /** The length of the period when whole; only the balance at birth, which is cut short, carries it. */
+  fullDurationYears?: number;
 }
 
 export interface VimshottariResult {
@@ -47,7 +50,8 @@ export function calculateVimshottari(
     const lord = LORDS[(lordIndex + i) % 9];
     const duration = i === 0 ? YEARS[startLord] * fractionRemaining : YEARS[lord];
     const endDate = addDashaYears(cursor, duration);
-    entries.push({ lord, startDate: cursor, endDate, durationYears: duration });
+    const cutShort = i === 0 && fractionRemaining < 1;
+    entries.push({ lord, startDate: cursor, endDate, durationYears: duration, ...(cutShort ? { fullDurationYears: YEARS[startLord] } : {}) });
     cursor = endDate;
   }
 
@@ -61,18 +65,18 @@ export function calculateVimshottari(
 // Generic Vimshottari sub-period calculator.
 // Next level duration = parent duration * sub-lord years / 120.
 // The sub-period sequence starts from the parent lord.
+// A parent that is the balance at birth is cut short: its sub-periods are those of the whole period, from the moment
+// the whole would have begun, without the ones over before birth (see dashaSplit.ts).
 export function calculateSubDashas(parent: MahadashaEntry): MahadashaEntry[] {
   const parentLordIndex = LORDS.findIndex((l) => l === parent.lord);
-  let cursor = parent.startDate;
-
-  return LORDS.map((_, i) => {
+  return splitDashaPeriod(parent, LORDS.map((_, i) => {
     const lord = LORDS[(parentLordIndex + i) % 9];
-    const duration = (parent.durationYears * YEARS[lord]) / 120;
-    const endDate = addDashaYears(cursor, duration);
-    const entry: MahadashaEntry = { lord, startDate: cursor, endDate, durationYears: duration };
-    cursor = endDate;
-    return entry;
-  });
+    return {
+      weight: YEARS[lord],
+      build: ({ startDate, endDate, durationYears, fullDurationYears }): MahadashaEntry =>
+        ({ lord, startDate, endDate, durationYears, ...(fullDurationYears !== undefined ? { fullDurationYears } : {}) }),
+    };
+  }));
 }
 
 // AD duration = MD duration * AD lord years / 120

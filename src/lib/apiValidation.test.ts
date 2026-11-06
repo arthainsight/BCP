@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { AYANAMSA_OFFSET_RANGE, MOMENT_RANGES, PLACE_RANGES, readBodies, readClampedInt, readNumbers } from './apiValidation';
+import { AYANAMSA_OFFSET_RANGE, MOMENT_RANGES, PLACE_RANGES, calendarDateError, readBodies, readClampedInt, readNumbers } from './apiValidation';
 
 const query = (text: string) => new URLSearchParams(text);
 /** A good request with one parameter set to a value (replacing the one that was there). */
@@ -61,5 +61,19 @@ assert.deepEqual(readBodies('Pluto,Earth', allowed), [], 'not a graha of the lis
 for (const name of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
   assert.deepEqual(readBodies(`${name},Sun`, allowed), ['Sun'], `${name} is not a graha`);
 }
+
+// A day has to exist in its month: the month lengths, and February in leap and other years.
+assert.equal(calendarDateError(1947, 8, 15), null);
+assert.equal(calendarDateError(2000, 2, 29), null, '2000 is a leap year');
+assert.equal(calendarDateError(2024, 2, 29), null);
+assert.notEqual(calendarDateError(1900, 2, 29), null, '1900 is not a leap year');
+assert.notEqual(calendarDateError(2023, 2, 29), null);
+assert.notEqual(calendarDateError(1985, 2, 31), null);
+assert.notEqual(calendarDateError(1985, 4, 31), null);
+assert.equal(calendarDateError(1985, 12, 31), null);
+assert.notEqual(calendarDateError(1985, 1, 0), null);
+assert.notEqual(calendarDateError(1985, 1, 1.5), null);
+assert.ok('error' in readNumbers(query('year=50&month=6&day=1'), chartRanges), 'a year before 100 would be read as 19xx by Date');
+assert.ok('values' in readNumbers(query('year=100&month=6&day=1'), chartRanges));
 
 console.log('API validation tests passed');

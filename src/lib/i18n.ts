@@ -643,6 +643,7 @@ export const FI: Record<string, string> = {
   'Time since sunrise': 'Aika auringonnoususta',
   'ghatis': 'ghaṭīa',
   'mean-time sunrise': 'keskiaikainen auringonnousu',
+  'The Sun does not rise or set on this day at this latitude, so 06:00 stands in for sunrise; type a sunrise in Settings to use another.': 'Aurinko ei nouse eikä laske tänä päivänä tällä leveysasteella, joten auringonnousun tilalla on kello 06:00; kirjoita Asetuksiin toinen auringonnousu, jos haluat käyttää sitä.',
   'true sunrise': 'todellinen auringonnousu',
   'The 22nd Drekkana and the 64th Navamsa are the Lagna turned 210°: the sign is the D3 / D9 sign of that point, and its nakshatra and pada are those of the point in the zodiac.': '22nd Drekkana ja 64th Navamsa ovat lagna käännettynä 210°: merkki on pisteen D3- / D9-merkki, ja sen nakṣatra ja pada ovat pisteen paikka zodiakissa.',
   'sunrise for the special sphutas': 'auringonnousu erikoissphuṭoille',

@@ -63,10 +63,15 @@ for label, (year, month, day, hour, minute, second), lat, lng, tz in CHARTS:
     chart = charts.rasi_chart(jd, place)
     _, periods = vimsottari.get_vimsottari_dhasa_bhukthi(jd, place)
     mahadashas, last = [], None
-    for (maha, _antar), (y, m, d, h), _years in periods:
+    first_antardashas = []
+    for (maha, antar), (y, m, d, h), years in periods:
         if maha != last:
             mahadashas.append({'lord': NAMES[maha], 'start': [y, m, d, round(h, 3)]})
             last = maha
+        # The antardashas of the first mahadasha: the daśā of the balance at birth, whose antardashas begin
+        # before birth (the first listed is the first one that has not ended at birth, and it may be cut short).
+        if maha == periods[0][0][0] and len(mahadashas) == 1:
+            first_antardashas.append({'lord': NAMES[antar], 'start': [y, m, d, round(h, 3)], 'years': round(years, 6)})
     out.append({
         'label': label,
         'birth': [year, month, day, hour, minute, second],
@@ -76,6 +81,7 @@ for label, (year, month, day, hour, minute, second), lat, lng, tz in CHARTS:
         'planets': {NAMES[i]: position(chart[i + 1]) for i in range(9)},
         'rahuTrue': rahu_true,
         'vimsottari': mahadashas[:10],
+        'firstMahaAntardashas': first_antardashas,
     })
 text = json.dumps({'generator': 'PyJHora 4.8.7, pyswisseph 2.10.3.2, Lahiri, mean node', 'charts': out}, indent=1)
 if len(sys.argv) > 1:
