@@ -24,7 +24,10 @@ const near = (actual: number, expected: number, tolerance: number, label: string
 // --- The points that do not depend on the sunrise match the reference table to a few thousandths of a second -----
 // The Moon of the reference table is 0.0001° (0.4″) from ours, and Śrī Lagna turns it 27 times over.
 near(byKey.SL.longitude, longitudeOf(3, 8, 14, 2.06), 0.005, 'Sree Lagna, Gemini 8°14′02.06″');
-near(byKey.BB.longitude, longitudeOf(8, 11, 55, 29.73), 0.001, 'Bhrigu Bindu, Scorpio 11°55′29.73″');
+// Bhrigu Bindu is the middle of the arc from Rahu forward to the Moon. The reference table gives 11°55′29.73″ for it, which is
+// ours to the second; its sign is Scorpio, 180° from the point the arc gives (Taurus). JHora's own value for a chart with the
+// Moon the lesser of the two (below) is in Aries, where the arc puts it, so Taurus it is here.
+near(byKey.BB.longitude, longitudeOf(2, 11, 55, 29.73), 0.001, 'Bhrigu Bindu, Taurus 11°55′29.73″');
 assert.equal(byKey.AL.sign, 12, 'Arudha Lagna in Pisces');
 near(byKey.AL.degree, 11 + 36 / 60 + 43.54 / 3600, 0.0005, 'Arudha Lagna 11°36′43.54″, the degree of Mars');
 assert.equal(byKey.IL.sign, 2, 'Indu Lagna in Taurus');
@@ -45,7 +48,7 @@ near(byKey.PP.longitude, longitudeOf(12, 3, 54, 41.51), 0.002, 'Pranapada Lagna,
 assert.deepEqual(nakshatraAndPada(byKey.D22.longitude), { nakshatra: 'Ardra', pada: 4 });
 assert.deepEqual(nakshatraAndPada(byKey.N64.longitude), { nakshatra: 'Ardra', pada: 4 });
 assert.deepEqual(nakshatraAndPada(byKey.SL.longitude), { nakshatra: 'Ardra', pada: 1 });
-assert.deepEqual(nakshatraAndPada(byKey.BB.longitude), { nakshatra: 'Anuradha', pada: 3 });
+assert.deepEqual(nakshatraAndPada(byKey.BB.longitude), { nakshatra: 'Rohini', pada: 1 });
 assert.deepEqual(nakshatraAndPada(byKey.AL.longitude), { nakshatra: 'Uttara Bhadrapada', pada: 3 });
 assert.deepEqual(nakshatraAndPada(byKey.IL.longitude), { nakshatra: 'Rohini', pada: 4 });
 assert.deepEqual(nakshatraAndPada(byKey.VL.longitude), { nakshatra: 'Bharani', pada: 2 });
@@ -78,5 +81,21 @@ assert.equal(formatDms(25 + 30 / 60 + 26.51 / 3600), `25° 30' 26.51"`);
 assert.equal(formatDms(0.999999999), `1° 0' 0.00"`, 'rounding carries into the minutes and degrees');
 assert.deepEqual(nakshatraAndPada(0), { nakshatra: 'Ashwini', pada: 1 });
 assert.deepEqual(nakshatraAndPada(359.99), { nakshatra: 'Revati', pada: 4 });
+
+// --- Bhrigu Bindu against JHora ----------------------------------------------------------------------------------
+// JHora gives Aries 21°27′29.62″ for the chart of 13.10.1987 00:15:00 in Kotka (Lahiri, mean node). Our Moon (65.1636°) and
+// Rahu (337.7208°) are those of the chart, as the app calculates them; the Moon is the lesser, so the arc forward from Rahu runs
+// through 0° Aries and the point is in Aries. JHora's value is 56″ further on than the app's and PyJHora's (its ayanamsa or
+// its clock is a little other), so the tolerance is a minute of arc; the sign is the thing that a sum halved gets wrong.
+const kotka = calculateSpecialSphutas({ ...input, moonLongitude: 65.1636, rahuLongitude: 337.7208 }).find(s => s.key === 'BB')!;
+assert.equal(kotka.sign, 1, 'Bhrigu Bindu in Aries, as JHora has it');
+near(kotka.degree, 21 + 27 / 60 + 29.62 / 3600, 0.02, 'Bhrigu Bindu 21°27′29.62″ Aries');
+// The arc runs forward from Rahu: the same point whichever of the two is the greater, and the other arc is 180° away.
+const middle = (moon: number, rahu: number) => calculateSpecialSphutas({ ...input, moonLongitude: moon, rahuLongitude: rahu }).find(s => s.key === 'BB')!.longitude;
+near(middle(99.8, 35.0), 67.4, 1e-9, 'Moon greater than Rahu: the plain middle');
+near(middle(65, 337.5), 21.25, 1e-9, 'Moon less than Rahu: across 0° Aries');
+near(middle(350, 10), 180, 1e-9, 'Rahu at 10°, the Moon at 350°: the arc is 340° long, its middle 180°');
+near(middle(10, 350), 0, 1e-9, 'Rahu at 350°, the Moon at 10°: the arc is 20° long, its middle at 0°');
+near(middle(120, 120), 120, 1e-9, 'Moon on Rahu');
 
 console.log('Special sphuta tests passed');

@@ -1,5 +1,15 @@
 export const CHANGELOG = [
   {
+    version: 'v4.17',
+    date: '2026-11-06',
+    title: 'Bhṛgu Bindu as in JHora',
+    changes: [
+      'Bhṛgu Bindu is now the middle of the arc that runs forward in the zodiac from Rahu to the Moon, as JHora (and PyJHora) have it. Before, the two longitudes were added and halved, which gives the middle of the other arc, 180° from the right place, whenever the Moon\'s longitude is the lesser of the two (about half of all charts). For 13.10.1987 00:15 in Kotka JHora gives Aries 21°27′29.62″; the app now gives Aries 21°26′ (58″ short of the value of JHora, where PyJHora is 56″ short), where it gave Libra.',
+      'The Special Sphutas panel now says that BPHS does not give this point: nothing like it is in its 97 chapters (the Sanskrit text was searched), it is a Nāḍī teaching.',
+      'Updated the application version to v4.17.',
+    ],
+  },
+  {
     version: 'v4.16',
     date: '2026-11-06',
     title: 'Antardaśās of the balance daśā, and stricter chart requests',
