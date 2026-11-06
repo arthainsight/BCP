@@ -12,11 +12,11 @@
 import type { ChartData, PlanetData, SpecialLagna } from '@/types';
 import { getVargaSignIndex, getDegreesInSign } from './varga';
 
-export const VARGA_DIVISIONS = [1, 2, 3, 4, 5, 7, 9, 10, 12, 16, 20, 24, 27, 30, 40, 45, 60] as const;
+export const VARGA_DIVISIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20, 24, 27, 30, 40, 45, 60] as const;
 /** Traditional names, shown next to the Dn label. */
 export const VARGA_NAMES: Record<number, string> = {
-  1: 'Rāśi', 2: 'Horā', 3: 'Drekkāṇa', 4: 'Chaturthāṁśa', 5: 'Pañchāṁśa',
-  7: 'Saptāṁśa', 9: 'Navāṁśa', 10: 'Daśāṁśa', 12: 'Dvādaśāṁśa', 16: 'Ṣoḍaśāṁśa',
+  1: 'Rāśi', 2: 'Horā', 3: 'Drekkāṇa', 4: 'Chaturthāṁśa', 5: 'Pañchāṁśa', 6: 'Ṣaṣṭhāṁśa',
+  7: 'Saptāṁśa', 8: 'Aṣṭāṁśa', 9: 'Navāṁśa', 10: 'Daśāṁśa', 11: 'Rudrāṁśa', 12: 'Dvādaśāṁśa', 16: 'Ṣoḍaśāṁśa',
   20: 'Viṁśāṁśa', 24: 'Chaturviṁśāṁśa', 27: 'Bhāṁśa', 30: 'Triṁśāṁśa',
   40: 'Khavedāṁśa', 45: 'Akṣavedāṁśa', 60: 'Ṣaṣṭyāṁśa',
 };
@@ -28,9 +28,12 @@ export const VARGA_SIGNIFICATIONS: Record<number, string> = {
   3: 'Siblings, courage and initiative',
   4: 'Property, home and fortune',
   5: 'Fame, authority and merit',
+  6: 'Health, disease and enemies',
   7: 'Children and progeny',
+  8: 'Longevity, obstacles and sudden events',
   9: 'Marriage, dharma and inner strength',
   10: 'Career and action in the world',
+  11: 'Destruction and the end of things',
   12: 'Parents and ancestry',
   16: 'Vehicles, comforts and pleasures',
   20: 'Spiritual practice and worship',

@@ -60,7 +60,8 @@ assert.equal(DEFAULT_CHART_DISPLAY.mixedOuterDivision, 9);
 assert.equal(migrateChartDisplaySettings({}).mixedOuterDivision, 9, 'settings from before the mixed style use the navamsa');
 assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: 10 }).mixedOuterDivision, 10);
 assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: 60 }).mixedOuterDivision, 60);
-assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: 8 }).mixedOuterDivision, 9, 'a divisor that is not a varga falls back to the navamsa');
+assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: 8 }).mixedOuterDivision, 8, 'the Ashtamsa is a varga since v4.19');
+assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: 13 }).mixedOuterDivision, 9, 'a divisor that is not a varga falls back to the navamsa');
 assert.equal(migrateChartDisplaySettings({ mixedOuterDivision: '9' }).mixedOuterDivision, 9, 'a value of the wrong type is ignored');
 assert.equal(migrateChartDisplaySettings({ chartStyle: 'round' }).chartStyle, 'north', 'an unknown style falls back to North');
 

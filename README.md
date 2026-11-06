@@ -78,7 +78,7 @@ Overlap and Systems), among them:
 
 ### Strength and divisional analysis
 
-* Varga matrix (D1 → D60)
+* Varga matrix and charts: D1–D12 (with D5, D6, D8 and D11), D16, D20, D24, D27, D30, D40, D45 and D60; every division is checked against PyJHora in the tests
 * Bala view with a diagram and a table each: Ṣaḍbala (beta; against the required strength and its six parts), Bhāva Bala (beta; a column per house) and Viṁśopaka Bala (four schemes)
 * Sensitive degrees: Sandhi, Gandanta, Mṛtyu Bhāga, Puṣkara Navāṁśa and Puṣkara Bhāga and combustion for the Lagna, the grahas and Māndi, in the rāśi chart or in any divisional chart; marked in the graha table and in the hover text of the charts
 * Yogi, Sahayogi and Avayogi (in the Special Sphutas, and as a chart layer)
