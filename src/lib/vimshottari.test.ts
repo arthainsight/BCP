@@ -129,7 +129,7 @@ assert.ok(Math.abs(cycleSpan - CYCLE_YEARS) < 1e-6, 'a full cycle from a nakshat
 // ---------------------------------------------------------------------------
 // Sub-periods: proportional, contiguous, and starting from the parent lord.
 // ---------------------------------------------------------------------------
-function assertSubPeriods(parent: MahadashaEntry, children: MahadashaEntry[], label: string) {
+function assertWholeSubPeriods(parent: MahadashaEntry, children: MahadashaEntry[], label: string) {
   assert.equal(children.length, 9, `${label}: nine sub-periods`);
   assert.equal(children[0].lord, parent.lord, `${label}: starts from the parent lord`);
 
@@ -161,6 +161,47 @@ function assertSubPeriods(parent: MahadashaEntry, children: MahadashaEntry[], la
   }
 }
 
+// A period cut short (the balance at birth, or the antardasha running at birth) is not shared out afresh: its
+// sub-periods are those of the whole period, begun where the whole would have begun, less the ones over before birth.
+function assertCutSubPeriods(parent: MahadashaEntry, children: MahadashaEntry[], label: string) {
+  const whole = parent.fullDurationYears!;
+  assert.ok(whole > parent.durationYears, `${label}: a period cut short is shorter than the whole`);
+  assert.ok(children.length >= 1 && children.length <= 9, `${label}: between one and nine sub-periods remain`);
+
+  // The order continues around the wheel, starting from the first one not over at birth, and ends with the parent's last.
+  const parentIndex = LORD_ORDER.indexOf(parent.lord);
+  const firstIndex = parentIndex + (9 - children.length);
+  assert.deepEqual(
+    children.map((child) => child.lord),
+    Array.from({ length: children.length }, (_, step) => LORD_ORDER[(firstIndex + step) % 9]),
+    `${label}: the sub-periods that are left`,
+  );
+
+  // All but the first run their whole length, which is a share of the WHOLE period; the first is cut at the start.
+  children.forEach((child, step) => {
+    const wholeChild = (whole * LORD_YEARS[child.lord]) / CYCLE_YEARS;
+    if (step === 0) {
+      assert.ok(child.durationYears <= wholeChild + 1e-9, `${label}: the first sub-period is cut short, not stretched`);
+      if (child.durationYears < wholeChild - 1e-9) assert.ok(Math.abs((child.fullDurationYears ?? 0) - wholeChild) < 1e-9, `${label}: the cut sub-period remembers its whole length`);
+    } else {
+      assert.ok(Math.abs(child.durationYears - wholeChild) < 1e-9, `${label}: ${child.lord} runs its whole ${LORD_YEARS[child.lord]}/120 of the whole period`);
+    }
+  });
+
+  const summed = children.reduce((sum, child) => sum + child.durationYears, 0);
+  assert.ok(Math.abs(summed - parent.durationYears) < 1e-9, `${label}: the sub-periods fill what is left of the parent`);
+  assert.equal(children[0].startDate.getTime(), parent.startDate.getTime(), `${label}: aligned start`);
+  assert.ok(Math.abs(children[children.length - 1].endDate.getTime() - parent.endDate.getTime()) < 2, `${label}: aligned end`);
+  for (let step = 1; step < children.length; step += 1) {
+    assert.equal(children[step].startDate.getTime(), children[step - 1].endDate.getTime(), `${label}: contiguous`);
+  }
+}
+
+function assertSubPeriods(parent: MahadashaEntry, children: MahadashaEntry[], label: string) {
+  if (parent.fullDurationYears === undefined) assertWholeSubPeriods(parent, children, label);
+  else assertCutSubPeriods(parent, children, label);
+}
+
 const { entries } = calculateVimshottari(NAKSHATRA_SIZE * 4.5, birth);
 for (const md of entries) {
   const ads = calculateAntardashas(md);
@@ -175,6 +216,29 @@ const venusMd = entries.find((entry) => entry.lord === 'Venus')!;
 assert.ok(Math.abs(venusMd.durationYears - 20) < 1e-9, 'a full Venus mahadasha is 20 years');
 const venusVenus = calculateAntardashas(venusMd)[0];
 assert.ok(Math.abs(venusVenus.durationYears - (20 * 20) / 120) < 1e-9, 'Venus/Venus is 400/120 years');
+
+// The balance at birth, worked by hand. The Moon has passed exactly a quarter of Ashwini, so three quarters of the
+// Ketu period (5.25 of 7 years) remain and 1.75 years are over. The Ketu antardashas (7 × years / 120) are
+//   Ketu 0.4083, Venus 1.1667, Sun 0.35, Moon 0.5833, Mars 0.4083, Rahu 1.05, Jupiter 0.9333, Saturn 1.1083, Mercury 0.9917
+// which end at 0.4083, 1.575, 1.925, 2.5083, 2.9167, 3.9667, 4.9, 6.0083 and 7.0 years. At 1.75 years the Sun
+// antardasha (1.575 to 1.925) is running with 0.175 years left; the Moon to Mercury antardashas follow whole.
+{
+  const quarter = calculateVimshottari(NAKSHATRA_SIZE * 0.25, birth);
+  const md = quarter.entries[0];
+  assert.ok(Math.abs(md.durationYears - 5.25) < 1e-9 && md.fullDurationYears === 7, 'three quarters of the Ketu period remain');
+  const ads = calculateAntardashas(md);
+  assert.deepEqual(ads.map((ad) => ad.lord), ['Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'], 'Ketu-Ketu and Ketu-Venus are over at birth');
+  assert.ok(Math.abs(ads[0].durationYears - (7 * 6 / 120 - (1.75 - (7 * 7 / 120 + 7 * 20 / 120)))) < 1e-9, 'Ketu-Sun has what is left of its 0.35 years');
+  assert.ok(Math.abs(ads[0].fullDurationYears! - 0.35) < 1e-9, 'Ketu-Sun is a 0.35-year period, cut');
+  assert.equal(runningVimshottariLords(NAKSHATRA_SIZE * 0.25, birth, birth)?.ad, 'Sun', 'the antardasha running at birth');
+  // A pratyantardasha list inside the cut antardasha is cut in the same way and runs to the antardasha's end.
+  const pds = calculatePratyantardashas(ads[0]);
+  assert.equal(pds[0].startDate.getTime(), birth.getTime());
+  assert.ok(Math.abs(pds[pds.length - 1].endDate.getTime() - ads[0].endDate.getTime()) < 2, 'the pratyantardashas end with the antardasha');
+}
+// The Moon at the very start of a nakshatra leaves the whole period: nothing is cut and nothing carries a whole length.
+assert.equal(calculateVimshottari(0, birth).entries[0].fullDurationYears, undefined);
+assert.equal(calculateAntardashas(calculateVimshottari(0, birth).entries[0]).length, 9);
 
 // ---------------------------------------------------------------------------
 // Longitude handling at the extremes
