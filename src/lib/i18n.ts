@@ -643,6 +643,8 @@ export const FI: Record<string, string> = {
   'Time since sunrise': 'Aika auringonnoususta',
   'ghatis': 'ghaṭīa',
   'mean-time sunrise': 'keskiaikainen auringonnousu',
+  'open with the chart of now at Porvoo': 'avaa sivu Porvoon tämän hetken kartalla',
+  'The place and the moment are in the birth data form, to change. Off: the page opens blank.': 'Paikka ja hetki ovat syntymätietolomakkeessa, ja ne voi vaihtaa. Pois: sivu avautuu tyhjänä.',
   'Bhrigu Bindu is the middle of the arc from Rahu forward to the Moon, as in JHora. BPHS does not give it.': 'Bhṛgu Bindu on Rahusta eteenpäin Kuuhun ulottuvan kaaren keskipiste, kuten JHorassa. BPHS ei anna sitä.',
   'The Sun does not rise or set on this day at this latitude, so 06:00 stands in for sunrise; type a sunrise in Settings to use another.': 'Aurinko ei nouse eikä laske tänä päivänä tällä leveysasteella, joten auringonnousun tilalla on kello 06:00; kirjoita Asetuksiin toinen auringonnousu, jos haluat käyttää sitä.',
   'true sunrise': 'todellinen auringonnousu',

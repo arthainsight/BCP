@@ -17,6 +17,8 @@ import UpdatesPanel from './UpdatesPanel';
 import BackupPanel from './BackupPanel';
 import { CHART_LAYER_LABELS, CHART_LAYER_SETTINGS, type ChartLayerKey } from './chartLayers';
 import { LANGUAGES, useT, type Language } from '@/lib/i18n';
+import { useStoredFlag } from '@/hooks/useStoredFlag';
+import { OPEN_WITH_CHART_KEY } from '@/lib/defaultChart';
 
 const YEAR_LABELS: Record<DashaYearLength, string> = {
   julian: 'Julian year',
@@ -108,6 +110,7 @@ export default function SettingsPanel(props: Props) {
   } = props;
 
   const [displayOpen, setDisplayOpen] = useState(true);
+  const [openWithChart, toggleOpenWithChart] = useStoredFlag(OPEN_WITH_CHART_KEY, true);
   const [methodsOpen, setMethodsOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const selectedChartStyle = chartDisplaySettings.chartStyle ?? 'north';
@@ -186,6 +189,15 @@ export default function SettingsPanel(props: Props) {
               <option value="english">{t('English (Sun, Moon, Mars …)')}</option>
               <option value="sanskrit">{t('Sanskrit (Sūrya, Candra, Maṅgala …)')}</option>
             </select>
+          </label>
+
+          <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400">
+            {t('open with the chart of now at Porvoo')}
+            <select className={`${SELECT} mt-1`} value={openWithChart ? 'on' : 'off'} onChange={e => { if ((e.target.value === 'on') !== openWithChart) toggleOpenWithChart(); }}>
+              <option value="on">{t('on')}</option>
+              <option value="off">{t('off')}</option>
+            </select>
+            <span className="mt-1 block text-[10px] text-zinc-400 dark:text-zinc-600">{t('The place and the moment are in the birth data form, to change. Off: the page opens blank.')}</span>
           </label>
 
           <div className="space-y-2">

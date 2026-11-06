@@ -7,7 +7,13 @@ export default defineConfig({
   timeout: 90_000,
   retries: 0,
   reporter: process.env.CI ? 'github' : 'list',
-  use: { baseURL: 'http://localhost:3100', trace: 'retain-on-failure' },
+  // The page opens with the chart of now at Porvoo; the tests start from the blank page they were written for, and the one
+  // test of the opening (e2e/opening.spec.ts) puts the choice back.
+  use: {
+    baseURL: 'http://localhost:3100',
+    trace: 'retain-on-failure',
+    storageState: { cookies: [], origins: [{ origin: 'http://localhost:3100', localStorage: [{ name: 'openWithNowChart', value: 'false' }] }] },
+  },
   projects: [
     { name: 'phone', use: { ...devices['Pixel 7'], browserName: 'chromium' } },
     { name: 'desktop', use: { viewport: { width: 1440, height: 900 }, browserName: 'chromium' } },
