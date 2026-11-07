@@ -2,6 +2,7 @@ import { DEFAULT_CHART_DISPLAY, type ChartDisplaySettings } from '@/types';
 import { ALL_PARAYA_BODIES } from '@/lib/bnn/nadiParaya';
 import { clampFontScale } from '@/lib/chartFont';
 import { VARGA_DIVISIONS } from '@/lib/vargaChart';
+import { isVargaMethod } from '@/lib/varga/parivritti';
 
 /**
  * Reads stored chart display settings. Keys that are no longer settings (the
@@ -23,6 +24,8 @@ export function migrateChartDisplaySettings(stored: unknown): ChartDisplaySettin
   if (!['north', 'south', 'both', 'mixedNorth', 'mixedSouth'].includes(result.chartStyle as string)) result.chartStyle = DEFAULT_CHART_DISPLAY.chartStyle;
   // The outer chart of the mixed style is one of the vargas there are.
   if (!(VARGA_DIVISIONS as readonly number[]).includes(result.mixedOuterDivision as number)) result.mixedOuterDivision = DEFAULT_CHART_DISPLAY.mixedOuterDivision;
+  // The rule of the divisional charts is one of the four there are.
+  if (!isVargaMethod(result.vargaMethod)) result.vargaMethod = DEFAULT_CHART_DISPLAY.vargaMethod;
   // Keep the user's old selection. If the full original four were selected, add the newly supported Moon and Sun too.
   if (Array.isArray(parsed.parayaBodies)) {
     const selected = parsed.parayaBodies as unknown[];

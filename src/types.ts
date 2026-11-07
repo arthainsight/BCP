@@ -1,3 +1,4 @@
+import type { VargaMethod } from '@/lib/varga/parivritti';
 import type { DegreePrecision } from '@/lib/formatDegree';
 import type { PlanetMarks } from '@/lib/planetMarks';
 import type { NakshatraMode } from '@/lib/nakshatraZodiac';
@@ -167,6 +168,8 @@ export interface ChartDisplaySettings {
   chartFontScale: number;
   /** The varga chart drawn outside the D1 chart in the mixed style (the divisor: 9 is the navamsa). */
   mixedOuterDivision: number;
+  /** How the divisional charts place the parts of a sign: the Parāśara rule, or one of the three Parivṛtti ways (the strengths and the doṣas always use the Parāśara one). */
+  vargaMethod: VargaMethod;
 }
 
 export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
@@ -196,6 +199,7 @@ export const DEFAULT_CHART_DISPLAY: ChartDisplaySettings = {
   grahaNames: 'english',
   chartFontScale: 1,
   mixedOuterDivision: 9,
+  vargaMethod: 'parasara',
 };
 
 /** How the grahas are named on screen: English (Sun, Moon …) or Sanskrit (Sūrya, Candra …). */

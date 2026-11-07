@@ -1,5 +1,6 @@
 import type { ChartData } from '@/types';
 import { buildVargaChart } from './vargaChart';
+import type { VargaMethod } from './varga';
 import { signDignity, type SignDignity } from './dignity';
 
 // Where one graha falls across a set of divisional charts, for the "follow"
@@ -13,11 +14,11 @@ export interface VargaPlacement {
   sameAsRasi: boolean;
 }
 
-export function followPlanet(chart: ChartData, planet: string, divisions: number[]): VargaPlacement[] {
+export function followPlanet(chart: ChartData, planet: string, divisions: number[], method: VargaMethod = 'parasara'): VargaPlacement[] {
   const rasiSign = chart.planets.find(p => p.name === planet)?.sign;
   if (rasiSign === undefined) return [];
   return divisions.flatMap(division => {
-    const sign = buildVargaChart(chart, division).planets.find(p => p.name === planet)?.sign;
+    const sign = buildVargaChart(chart, division, method).planets.find(p => p.name === planet)?.sign;
     if (sign === undefined) return [];
     return [{ division, sign, dignity: signDignity(planet, sign), sameAsRasi: division !== 1 && sign === rasiSign }];
   });

@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.20',
+    date: '2026-11-06',
+    title: 'Parivṛtti rules for the divisional charts',
+    changes: [
+      'SETTINGS → display → "rule of the divisional charts": besides the Parāśara rule (the usual one, and the one chosen to begin with) the divisional charts can place the parts of the signs by one of three Parivṛtti rules, in which the parts of the twelve signs run on one after another round the zodiac instead of starting afresh in every sign: cyclic (all the signs forward), even signs reversed, and alternate (Somanātha: the odd signs forward from Aries, the even signs backward from Pisces).',
+      'The rules are those of PyJHora and are not in BPHS. They are given for D2 to D8, D10 to D12, D16, D20, D40 and D45 (the cyclic rule), the same and D27 (the other two), and D9 (the alternate rule only), the divisions PyJHora has them for; D24, D30 and D60, and D9 by the other two, keep the Parāśara rule. The Settings and the chart say which divisions follow the rule chosen.',
+      'The charts, the varga grid, the follow strip and the varga matrix follow the rule, the divisional Lagna with them. Ṣaḍbala, Vimśopaka, the Mahādoṣas and the other calculations that read a division always use the Parāśara rule.',
+      'All 67,500 signs of the three rules in the 45 combinations of rule and division are checked against PyJHora (150 charts) in the test suite; all agree. The reference file of the divisions is now one tenth of the size.',
+      'Updated the application version to v4.20.',
+    ],
+  },
+  {
     version: 'v4.19',
     date: '2026-11-06',
     title: 'Divisional charts D6, D8 and D11',

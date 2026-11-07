@@ -10,7 +10,7 @@
 // instead of repeating the rāśi degree.
 
 import type { ChartData, PlanetData, SpecialLagna } from '@/types';
-import { getVargaSignIndex, getDegreesInSign } from './varga';
+import { getVargaSignIndex, getDegreesInSign, type VargaMethod } from './varga';
 
 export const VARGA_DIVISIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 16, 20, 24, 27, 30, 40, 45, 60] as const;
 /** Traditional names, shown next to the Dn label. */
@@ -64,8 +64,8 @@ function vargaDegree(longitude: number, division: number): number {
 }
 
 /** A longitude in the given division: its sign, its degree inside that sign and the longitude that follows. */
-export function project(longitude: number, division: number): { sign: number; degree: number; longitude: number } {
-  const signIndex = getVargaSignIndex(longitude, division);
+export function project(longitude: number, division: number, method: VargaMethod = 'parasara'): { sign: number; degree: number; longitude: number } {
+  const signIndex = getVargaSignIndex(longitude, division, method);
   const degree = vargaDegree(longitude, division);
   return { sign: signIndex + 1, degree, longitude: signIndex * 30 + degree };
 }
@@ -75,12 +75,12 @@ export function project(longitude: number, division: number): { sign: number; de
  * positions unchanged. Houses are recomputed from the divisional ascendant, so
  * the whole-sign house numbering stays consistent with the drawn chart.
  */
-export function buildVargaChart(chart: ChartData, division: number): VargaChart {
-  const ascendant = project(chart.ascendant.longitude, division);
+export function buildVargaChart(chart: ChartData, division: number, method: VargaMethod = 'parasara'): VargaChart {
+  const ascendant = project(chart.ascendant.longitude, division, method);
   const ascendantSignIndex = ascendant.sign - 1;
 
   const planets: PlanetData[] = chart.planets.map((planet) => {
-    const projected = project(planet.longitude, division);
+    const projected = project(planet.longitude, division, method);
     return {
       ...planet,
       sign: projected.sign,
@@ -91,7 +91,7 @@ export function buildVargaChart(chart: ChartData, division: number): VargaChart 
   });
 
   const specialLagnas: SpecialLagna[] = (chart.specialLagnas ?? []).map((lagna) => {
-    const projected = project(lagna.longitude, division);
+    const projected = project(lagna.longitude, division, method);
     return { ...lagna, sign: projected.sign, degree: projected.degree, longitude: projected.longitude };
   });
 

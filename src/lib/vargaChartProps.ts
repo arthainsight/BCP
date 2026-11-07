@@ -27,7 +27,8 @@ interface Options {
 export function vargaChartProps({
   chart, division, compact, chartDisplaySettings, karakaByPlanet = {}, nakshatraAdjust = 0, dashaLords = null, highlight = null, onPlanetClick, transitPlanets, arudhaPadas = [], points,
 }: Options) {
-  const varga = buildVargaChart(chart, division);
+  const method = chartDisplaySettings.vargaMethod ?? 'parasara';
+  const varga = buildVargaChart(chart, division, method);
   const showLagnas = !compact && chartDisplaySettings.showSpecialLagnas;
   // The padas the viewer chose are marked in the division itself, small charts included.
   const padas = arudhaPadas.length > 0
@@ -35,7 +36,7 @@ export function vargaChartProps({
     : [];
   const marks = points
     ? pointsForDivision(selectedChartPoints(chart, points, atmakarakaOf(karakaByPlanet)), division)
-        .map(mark => ({ name: mark.name, ...project(mark.longitude, division) }))
+        .map(mark => ({ name: mark.name, ...project(mark.longitude, division, method) }))
     : [];
   return {
     activeYearHouse: 0,
@@ -61,7 +62,7 @@ export function vargaChartProps({
     highlightPlanet: highlight,
     onPlanetClick,
     ...(transitPlanets
-      ? { transitPlanets: buildVargaChart({ ...chart, planets: transitPlanets }, division).planets, showTransitPlanets: true }
+      ? { transitPlanets: buildVargaChart({ ...chart, planets: transitPlanets }, division, method).planets, showTransitPlanets: true }
       : {}),
   };
 }
