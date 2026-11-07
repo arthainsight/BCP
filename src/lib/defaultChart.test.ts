@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { DEFAULT_PLACE, OPEN_WITH_CHART_KEY, openWithChartEnabled, wallClockIn } from './defaultChart';
+import { DEFAULT_PLACE, OPEN_WITH_CHART_KEY, OPENING_CHOICES, isOpeningChoice, openingChoice, parseOpeningChoice, wallClockIn } from './defaultChart';
 import { parseBirthDatetimeForTz, localToUtcOffsetHours } from './timezone';
 
 // The clock of a place, in the form the birth data takes: dd.mm.yyyy hh.mm.ss.
@@ -27,16 +27,26 @@ assert.equal(localToUtcOffsetHours(DEFAULT_PLACE.ianaTimezone, parseBirthDatetim
 assert.equal(DEFAULT_PLACE.city, 'Porvoo');
 assert.ok(Math.abs(Number(DEFAULT_PLACE.latitude) - 60.39) < 0.05 && Math.abs(Number(DEFAULT_PLACE.longitude) - 25.66) < 0.05);
 
-// The choice to open blank: on unless it is stored as 'false'; without storage (the server, a closed store) it is on.
-assert.equal(openWithChartEnabled(), true, 'no storage: on');
+// What the page opens with: the visitor's place unless the browser stored another choice. Before v4.22 the choice was yes or no, and
+// 'false' (blank) must still mean blank, 'true' (the chart at Porvoo, as it was) the place of the visitor, Porvoo where there is none.
+assert.deepEqual([...OPENING_CHOICES], ['place', 'porvoo', 'blank']);
+assert.ok(OPENING_CHOICES.every(isOpeningChoice) && !isOpeningChoice('yes') && !isOpeningChoice(null));
+assert.equal(parseOpeningChoice(null), 'place', 'nothing stored: the place of the visitor');
+assert.equal(parseOpeningChoice('place'), 'place');
+assert.equal(parseOpeningChoice('porvoo'), 'porvoo');
+assert.equal(parseOpeningChoice('blank'), 'blank');
+assert.equal(parseOpeningChoice('false'), 'blank', 'the old "off" is blank');
+assert.equal(parseOpeningChoice('true'), 'place', 'the old "on" is the place of the visitor');
+assert.equal(parseOpeningChoice('nonsense'), 'place', 'anything else is the usual');
+assert.equal(openingChoice(), 'place', 'no storage: the place of the visitor');
 const store = new Map<string, string>();
 Object.assign(globalThis, { localStorage: { getItem: (key: string) => store.get(key) ?? null, setItem: (key: string, value: string) => void store.set(key, value) } });
-assert.equal(openWithChartEnabled(), true, 'nothing stored: on');
+assert.equal(openingChoice(), 'place', 'nothing stored');
+store.set(OPEN_WITH_CHART_KEY, 'blank');
+assert.equal(openingChoice(), 'blank');
 store.set(OPEN_WITH_CHART_KEY, 'false');
-assert.equal(openWithChartEnabled(), false, 'off when stored as false');
-store.set(OPEN_WITH_CHART_KEY, 'true');
-assert.equal(openWithChartEnabled(), true);
-store.set(OPEN_WITH_CHART_KEY, 'nonsense');
-assert.equal(openWithChartEnabled(), true, 'anything else is on');
+assert.equal(openingChoice(), 'blank', 'a choice stored by an older version');
+store.set(OPEN_WITH_CHART_KEY, 'porvoo');
+assert.equal(openingChoice(), 'porvoo');
 
 console.log('Default chart tests passed');

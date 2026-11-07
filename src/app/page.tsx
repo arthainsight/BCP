@@ -26,7 +26,8 @@ import { GrahaMarksContext } from '@/lib/grahaMarks';
 import { yogiRoles } from '@/lib/yogiPoints';
 import { ChartFontContext, clampFontScale } from '@/lib/chartFont';
 import { setSplitView, useSplitView } from '@/hooks/useSplitView';
-import { DEFAULT_PLACE, openWithChartEnabled, wallClockIn } from '@/lib/defaultChart';
+import { DEFAULT_PLACE, openingChoice, wallClockIn } from '@/lib/defaultChart';
+import { fetchVisitorPlace } from '@/lib/visitorPlace';
 import { useStoredFlag } from '@/hooks/useStoredFlag';
 import { applyChartEdits, moveBody, resetBody, type ChartEdits } from '@/lib/chartEdit';
 import { isSplitWorkspace, paneGridClass, paneSpanClass, togglePane, type SplitRows, type SplitWorkspace } from '@/lib/splitView';
@@ -489,25 +490,35 @@ export default function Home() {
     sharedHandled.current = true;
     const shared = decodeShare(window.location.hash);
     if (!shared) {
-      if (!openWithChartEnabled()) return;
+      const choice = openingChoice();
+      if (choice === 'blank') return;
       // The clock of the moment is read here, after mount: on the server it would be the time of the build; and the address
       // cannot be read during the server render either, so all of this has to happen after mount, once.
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      void loadChartSnapshot({
-        birthDatetime: wallClockIn(DEFAULT_PLACE.ianaTimezone),
-        city: DEFAULT_PLACE.city,
-        manualLat: DEFAULT_PLACE.latitude,
-        manualLng: DEFAULT_PLACE.longitude,
-        ianaTimezone: DEFAULT_PLACE.ianaTimezone,
+      const open = (place: { city: string; latitude: string; longitude: string; ianaTimezone: string }) => loadChartSnapshot({
+        birthDatetime: wallClockIn(place.ianaTimezone),
+        city: place.city,
+        manualLat: place.latitude,
+        manualLng: place.longitude,
+        ianaTimezone: place.ianaTimezone,
         tzOverride: '',
         targetDate: getTodayString(),
         targetTime: getNowTimeString(),
         showCoords: true,
       }, { keepDataPanel: true });
+      if (choice === 'porvoo') {
+        void open(DEFAULT_PLACE);
+        return;
+      }
+      // The place the visitor opens the page from, as the hosting platform has it; Porvoo where there is none (or it comes too late).
+      void fetchVisitorPlace().then(found => open(found
+        ? { city: found.city, latitude: String(Math.round(found.latitude * 10_000) / 10_000), longitude: String(Math.round(found.longitude * 10_000) / 10_000), ianaTimezone: found.timezone }
+        : DEFAULT_PLACE));
       return;
     }
     // The address is cleaned, so a reload does not start over and the data is not left in the address bar.
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    // The address cannot be read during the server render, so this has to happen after mount; it runs once.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void handleLoadChartSnapshot({
       birthDatetime: shared.birthDatetime,
       city: shared.city,
