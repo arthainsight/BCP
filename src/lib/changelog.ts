@@ -1,5 +1,18 @@
 export const CHANGELOG = [
   {
+    version: 'v4.21',
+    date: '2026-11-07',
+    title: 'Aṣṭakavarga: Śodhana, Piṇḍa, Prastāra and Kakṣyā',
+    changes: [
+      'ANALYSIS → Aṣṭakavarga now has four parts: Bhinna & Sarva (as before), Prastāra, Śodhana & Piṇḍa and Kakṣyā.',
+      'Trikoṇa Śodhana and Ekādhipatya Śodhana (BPHS 67–68) for each graha, shown step by step: the Bhinnāṣṭakavarga, after the Trikoṇa, and the Śodhita, with the signs that hold a graha marked. The Rāśi Piṇḍa, the Graha Piṇḍa and the Śodhya Piṇḍa of the seven grahas (BPHS 69).',
+      'The rules were read from the Sanskrit of the verses (docs/ashtakavarga-sources.md quotes them) and are the default. PyJHora differs from them in three things (the number of Virgo, 6 where the verse has 5; a sign with a graha against an empty one of the same value; the Lagna counted as a graha); its rules can be chosen in the view, and the page says how they differ.',
+      'The Prastāra of each graha: which of the eight bodies gives a bindu in each sign. The Kakṣyā of the seven grahas (the eight parts of 3°45′ of a sign and their lords); the Kakṣyā is not in BPHS 66–69 and is not checked against another program.',
+      'The Bhinna, Sarva and Prastāra tables, the reductions and the Piṇḍas are checked against PyJHora in the test suite: 32,760 numbers in 120 charts, every case of the Ekādhipatya rules among them; all agree under PyJHora\'s rules. Hand-worked vectors cover the verses\' own.',
+      'Updated the application version to v4.21.',
+    ],
+  },
+  {
     version: 'v4.20',
     date: '2026-11-06',
     title: 'Parivṛtti rules for the divisional charts',

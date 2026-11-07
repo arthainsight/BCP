@@ -32,9 +32,43 @@ The sthāna of the 2nd house of the Moon's chart is *kujāryau* (Mars and Jupite
 
 The app now follows the verses. If you hold another printed table for the Moon, the three entries above are where it will differ.
 
-## What is not in the app
+## The reductions, the Piṇḍas, the Prastāra and the Kakṣyā
 
-The reductions (*trikoṇa śodhana*, 67; *ekādhipatya śodhana*, 68), the multiplication into the Piṇḍas (69), the effects (70) and the longevity from the Aṣṭakavarga (71) are not calculated: the app shows the BAV and the SAV only.
+The app now works the reductions (*trikoṇa śodhana*, BPHS 67; *ekādhipatya śodhana*, 68) and the Piṇḍas (69) from the Sanskrit of the verses, in `src/lib/ashtakavargaShodhana.ts`; the effects (70) and the longevity from the Aṣṭakavarga (71) are not calculated. The views are in ANALYSIS → Aṣṭakavarga (Prastāra, Śodhana & Piṇḍa, Kakṣyā).
+
+### What the verses say (the Sanskrit of the edition of sanskritdocuments.org, chapters 67–69)
+
+| Verses | Text | The app |
+|---|---|---|
+| 67.2–3 | The trines: Aries, Leo, Sagittarius; Taurus, Virgo, Capricorn; Gemini, Libra, Aquarius; Cancer, Scorpio, Pisces | The four trines of the signs 0, 4, 8 and so on |
+| 67.4 | त्रिकोणेषु च यन्न्यूनं तत्तुल्यं त्रिषु शोधयेत् । एकस्मिन् भवने शून्यं तत् त्रिकोणं न शोधयेत् | The least of the three is taken from each; a sign with no bindu in the trine stops it |
+| 67.5 | समत्वे सर्वगेहेषु सर्वं संशोधयेद् बुधः | All three alike: all three become nought |
+| 68.1 | पूर्वं त्रिकोणं संशोध्य … ततः कुर्यादेकाधिपतिशोधनम् | The Ekādhipatya is worked on what the Trikoṇa leaves |
+| 68.3 | उभयोर्ग्रहसंयोगे न संशोध्यः कदाचन् | A graha in both signs: no reduction |
+| 68.3 | ग्रहयुक्ते फलैर्हीने ग्रहाभावे फलाधिके । ऊनेन सममन्यस्मिन् शोधयेद् ग्रहवर्जिते | The graha-held sign has the less, the empty one the more: the empty one is made equal to the lesser |
+| 68.4 | फलाधिके ग्रहैर्युक्ते चान्यस्मिन् सर्वमुत्सृजेत् | The graha-held sign has the more: the empty one goes (to nought) |
+| 68.5 | उभयत्र ग्रहभावे समत्वे सकलं त्यजेत् । सग्रहाग्रहयोस्तुल्ये सर्वं संशोध्यमग्रहे | Both empty and equal: both go; one held and one empty and equal: the empty one goes |
+| 68.2 | क्षीणेन सह चान्यस्मिन् … ग्रहवर्जिते | Both empty and unequal: the greater is brought down to the lesser |
+| 68.6 | कुलीरसिंहयो राश्योः पृथक् क्षेत्रं पृथक् फलम् | The Sun and the Moon own one sign each: no Ekādhipatya for them |
+| 69.1 | What is left × the number of the sign; in a sign with a graha, × the number of the graha | Rāśi Piṇḍa and Graha Piṇḍa; their sum is the Śodhya Piṇḍa |
+| 69.2–3 | गोसिंहौ दशभिर्गुण्यौ वसुभिर्युग्मवृश्चिकौ । सप्तभिस्तुलमेषौ च मृगकन्ये च पञ्चभिः । शेषाः स्वसंख्यया | Taurus, Leo 10; Gemini, Scorpio 8; Libra, Aries 7; Capricorn, Virgo 5; the rest by their own number: Cancer 4, Sagittarius 9, Aquarius 11, Pisces 12 (the sum is 96) |
+| 69.4 | जीवारशुक्रसौम्यानां दशाष्टनगसायकाः । पञ्च शेषग्रहाणां च | Jupiter 10, Mars 8, Venus 7, Mercury 5; the others (Sun, Moon, Saturn) 5 |
+
+The verses say *graha* for what makes a sign occupied; the app counts the nine grahas, Rahu and Ketu included, and not the Lagna. Rahu and Ketu have no number of their own in 69.4, so they make a sign occupied and add nothing to the Graha Piṇḍa.
+
+### What PyJHora does differently
+
+All of PyJHora's work (the Bhinna, Sarva and Prastāra tables, the reductions and the Piṇḍas, 32,760 numbers in 120 charts) is reproduced to the number by the app's `pyjhora` rules, which is what `src/lib/pyjhoraAshtakavarga.test.ts` checks. Three things in PyJHora are not what the verses say, and the `bphs` rules (the default) follow the verses:
+
+1. **The number of Virgo.** PyJHora has 6; the verse 69.3 says Capricorn and Virgo by five (*mṛgakanye ca pañcabhiḥ*), and the sum of the numbers is the 96 that the books give (PyJHora's is 97).
+2. **A sign with a graha against an empty one of the same value.** 68.5 reduces the empty one to nought; PyJHora keeps both.
+3. **The Lagna as a graha.** PyJHora makes a sign occupied by the Lagna alone; the verses speak of grahas.
+
+In the charts of the test (random placements) the Śodhya Piṇḍas differ in 487 of 840 cases between the two rules, nearly all of them because of the number of Virgo.
+
+### Prastāra and Kakṣyā
+
+The Prastāra is the table the Bhinnāṣṭakavarga is made of (the eight bodies that give a bindu, sign by sign); it is checked against PyJHora. The Kakṣyā (a sign in eight parts of 3°45′, ruled in the order Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon, the Lagna) is not in BPHS 66–69 and is not checked against another program; the order is the traditional one by the speed of the grahas.
 
 
 ## Varāhamihira: Bṛhajjātaka, chapter 9

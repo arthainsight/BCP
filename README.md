@@ -39,7 +39,7 @@ This is not meant to replace traditional study — it's meant to **accelerate it
 * North and South Indian styles
 * BCP (Bhṛgu Chakra Paddhati) year/month highlighting
 * Special lagnas and chara karakas
-* Ashtakavarga tables (SAV and per-planet BAV)
+* Ashtakavarga: SAV and per-planet BAV, the Prastāra, the Trikoṇa and Ekādhipatya Śodhana with the Rāśi, Graha and Śodhya Piṇḍas (from the Sanskrit of BPHS 67–69, checked against PyJHora), and the Kakṣyā
 * Mixed charts (the D1 chart inside, any varga outside, in the same houses)
 * Selectable ayanamsa, including a signed custom offset from Lahiri
 * Transits with automatic recalculation
@@ -133,7 +133,8 @@ Calculation accuracy is tracked explicitly rather than assumed.
   solstices and new and full Moons.
 * Ashtakavarga is pinned to the classical BPHS totals — per-planet BAV of
   48/49/39/54/56/52/39 summing to an SAV of 337. Those totals are properties of
-  the bindu table, so they hold for every chart and catch any drift in the rules.
+  the bindu table, so they hold for every chart; they do not catch two entries swapped, so the rows are also pinned to the verses and to
+  PyJHora, and so are the reductions and Piṇḍas (32,760 numbers in 120 charts).
 * Ṣaḍbala and Bhāva Bala components are labelled in the UI as exact or
   approximate (`~`). Do not read an approximated component as a precise value.
 

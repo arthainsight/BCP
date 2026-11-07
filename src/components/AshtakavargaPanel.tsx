@@ -5,6 +5,7 @@ import type { ChartData } from '@/types';
 import { buildAshtakavarga, mapAshtakavargaHousesToSigns } from '@/lib/ashtakavarga';
 import type { AshtakavargaPlanet, AshtakavargaSystem } from '@/lib/ashtakavarga';
 import { SIGN_ABBR } from '@/lib/signs';
+import { KakshyaView, PrastaraView, ShodhanaView } from './AshtakavargaReductions';
 
 import { useT } from '@/lib/i18n';
 const PLANET_ABBR: Record<string, string> = {
@@ -18,6 +19,7 @@ const PLANET_ABBR: Record<string, string> = {
 };
 
 type AvSelection = 'SAV' | AshtakavargaPlanet;
+type AvPart = 'bhinna' | 'prastara' | 'shodhana' | 'kakshya';
 
 function numberColor(value: number, isSav: boolean): string {
   const neutral = isSav ? value === 28 : value === 4;
@@ -74,6 +76,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
   const t = useT();
   const ascendantSign = chart.ascendant.sign;
   const [view, setView] = useState<'table' | 'north'>('table');
+  const [part, setPart] = useState<AvPart>('bhinna');
   const [selection, setSelection] = useState<AvSelection>('SAV');
   const [system, setSystem] = useState<AshtakavargaSystem>('Parashara');
   const { bav, sav } = buildAshtakavarga(chart, system);
@@ -87,10 +90,16 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
           <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Aṣṭakavarga</h3>
           <p className="text-[10px] font-mono text-zinc-400 dark:text-zinc-500">{t('Bhinna & Sarva · signs Ar–Pi')}</p>
         </div>
-        <div className="flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
+        {part === 'bhinna' && <div className="flex gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800">
           <button type="button" onClick={() => setView('table')} className={`rounded px-2.5 py-1 text-[10px] font-mono ${view === 'table' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>{t('Table')}</button>
           <button type="button" onClick={() => setView('north')} className={`rounded px-2.5 py-1 text-[10px] font-mono ${view === 'north' ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>{t('North Indian')}</button>
-        </div>
+        </div>}
+      </div>
+
+      <div className="mb-3 flex flex-wrap gap-1 rounded-lg bg-zinc-100 p-1 dark:bg-zinc-800" role="group" aria-label={t('Aṣṭakavarga parts')}>
+        {([['bhinna', 'Bhinna & Sarva'], ['prastara', 'Prastāra'], ['shodhana', 'Śodhana & Piṇḍa'], ['kakshya', 'Kakṣyā']] as const).map(([key, label]) => (
+          <button key={key} type="button" aria-pressed={part === key} onClick={() => setPart(key)} className={`rounded px-2.5 py-1 text-[10px] font-mono ${part === key ? 'bg-white text-emerald-700 shadow-sm dark:bg-zinc-700 dark:text-emerald-400' : 'text-zinc-500'}`}>{t(label)}</button>
+        ))}
       </div>
 
       <div className="mb-3 flex items-center gap-2">
@@ -103,7 +112,11 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
         </label>
       </div>
 
-      {view === 'north' ? (
+      {part === 'prastara' && <PrastaraView chart={chart} system={system} />}
+      {part === 'shodhana' && <ShodhanaView chart={chart} system={system} />}
+      {part === 'kakshya' && <KakshyaView chart={chart} system={system} />}
+
+      {part === 'bhinna' && (view === 'north' ? (
         <div>
           <label className="mb-3 block text-[10px] font-mono uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
             {t('Points')}
@@ -151,7 +164,7 @@ export default function AshtakavargaPanel({ chart }: { chart: ChartData }) {
           </tbody>
         </table>
       </div>
-      )}
+      ))}
     </div>
   );
 }
