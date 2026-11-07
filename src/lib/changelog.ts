@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.22',
+    date: '2026-11-07',
+    title: 'The page opens at the visitor\'s own place',
+    changes: [
+      'The chart the page opens with is now the chart of the moment at the visitor\'s own approximate place, not at Porvoo: the hosting platform works the place out from the address of the request, the app\'s own route /api/locale hands it back, and the clock of that place gives the date and the time. Where there is no place (another host, a local run, no answer within three seconds) the page opens at Porvoo, as before.',
+      'Nothing is stored and the address goes to no other service; the answer is never kept by a cache. The place is approximate and can be wrong (a VPN, a company or a mobile network): it is in the birth data form to change.',
+      'SETTINGS → display → "the page opens with": the chart of now at my place (the default), at Porvoo, or nothing (blank). The older yes or no of the setting is kept: an old "off" is blank.',
+      'Unit tests cover the headers (the names of towns that are percent-encoded, coordinates off the Earth, 0°, 0°, zones that do not exist) and the route; browser tests cover the opening at a given place, at Porvoo, and the setting.',
+      'Updated the application version to v4.22.',
+    ],
+  },
+  {
     version: 'v4.21',
     date: '2026-11-07',
     title: 'Aṣṭakavarga: Śodhana, Piṇḍa, Prastāra and Kakṣyā',

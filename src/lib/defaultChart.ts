@@ -9,15 +9,32 @@ export const DEFAULT_PLACE = {
   ianaTimezone: 'Europe/Helsinki',
 } as const;
 
-/** The key of the choice, in the browser's storage: the page opens with the chart unless this says 'false'. */
+/** The key of the choice, in the browser's storage. */
 export const OPEN_WITH_CHART_KEY = 'openWithNowChart';
 
-/** Whether the page opens with the chart of now. It is read at once, when the page has opened, not waited for. */
-export function openWithChartEnabled(): boolean {
+/**
+ * What the page opens with: the chart of now at the visitor's own (approximate) place, found from the address of the request
+ * ('place', the default; Porvoo when it cannot be found), the chart of now at Porvoo ('porvoo'), or nothing ('blank').
+ */
+export type OpeningChoice = 'place' | 'porvoo' | 'blank';
+export const OPENING_CHOICES: readonly OpeningChoice[] = ['place', 'porvoo', 'blank'];
+export const isOpeningChoice = (value: unknown): value is OpeningChoice => typeof value === 'string' && (OPENING_CHOICES as readonly string[]).includes(value);
+
+/**
+ * The choice from what the browser stored. Before v4.22 the choice was yes or no: 'false' was blank, and 'true' (and anything not stored)
+ * the chart at Porvoo, which is now the place of the visitor, Porvoo only where it is not found.
+ */
+export function parseOpeningChoice(stored: string | null): OpeningChoice {
+  if (isOpeningChoice(stored)) return stored;
+  return stored === 'false' ? 'blank' : 'place';
+}
+
+/** What the page opens with. It is read at once, when the page has opened, not waited for. */
+export function openingChoice(): OpeningChoice {
   try {
-    return localStorage.getItem(OPEN_WITH_CHART_KEY) !== 'false';
+    return parseOpeningChoice(localStorage.getItem(OPEN_WITH_CHART_KEY));
   } catch {
-    return true;
+    return 'place';
   }
 }
 

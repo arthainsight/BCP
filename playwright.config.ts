@@ -12,7 +12,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3100',
     trace: 'retain-on-failure',
-    storageState: { cookies: [], origins: [{ origin: 'http://localhost:3100', localStorage: [{ name: 'openWithNowChart', value: 'false' }] }] },
+    storageState: { cookies: [], origins: [{ origin: 'http://localhost:3100', localStorage: [{ name: 'openWithNowChart', value: 'blank' }] }] },
   },
   projects: [
     { name: 'phone', use: { ...devices['Pixel 7'], browserName: 'chromium' } },

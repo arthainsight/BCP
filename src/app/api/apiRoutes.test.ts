@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { NextRequest } from 'next/server';
 import { GET as chart } from './chart/route';
+import { GET as locale } from './locale/route';
 import { GET as muhurta } from './muhurta/route';
 import { GET as muhurtaFinder } from './muhurta-finder/route';
 import { GET as signChanges } from './sign-changes/route';
@@ -159,6 +160,18 @@ async function main() {
     assert.equal(result.status, 400, bad.slice(0, 40));
   }
   assert.equal((await call(muhurtaFinder, withParam(finder, 'days', '99999'))).status, 200, 'a span that is too long is cut to the longest');
+
+  // /api/locale: the place the hosting platform gives for the visitor, handed back, and never kept by a cache; empty where there is none.
+  const located = await locale(new NextRequest('http://localhost/api/locale', { headers: { 'x-vercel-ip-city': 'Z%C3%BCrich', 'x-vercel-ip-country': 'CH', 'x-vercel-ip-latitude': '47.3769', 'x-vercel-ip-longitude': '8.5417', 'x-vercel-ip-timezone': 'Europe/Zurich' } }));
+  assert.equal(located.status, 200);
+  assert.equal(located.headers.get('cache-control'), 'no-store', 'one visitor\'s place is not for another');
+  assert.deepEqual(await located.json(), { city: 'Zürich', country: 'CH', latitude: 47.3769, longitude: 8.5417, timezone: 'Europe/Zurich' });
+  const unlocated = await locale(new NextRequest('http://localhost/api/locale'));
+  assert.equal(unlocated.status, 200);
+  assert.deepEqual(await unlocated.json(), {}, 'no headers: no place, the page opens at Porvoo');
+  assert.equal(unlocated.headers.get('cache-control'), 'no-store');
+  const odd = await locale(new NextRequest('http://localhost/api/locale', { headers: { 'x-vercel-ip-latitude': '99', 'x-vercel-ip-longitude': '8', 'x-vercel-ip-timezone': 'Europe/Zurich' } }));
+  assert.deepEqual(await odd.json(), {}, 'coordinates off the Earth: no place');
 
   // The annual routes share one reading of the request.
   const annual = `${BIRTH}&target=2024-06-01`;

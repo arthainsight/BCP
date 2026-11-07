@@ -175,6 +175,14 @@ of `CHANGELOG` in `src/lib/changelog.ts`.
   backup can be encrypted with a password; a lost password cannot be recovered.
 * A shared link carries the birth data after the `#`, which a browser never sends
   to a server.
+* The page opens with a chart of the moment at the visitor's own place. The place
+  is the approximate one the hosting platform (Vercel) works out from the address
+  of the request and puts in headers; the app's own route (`/api/locale`) hands it
+  back and stores nothing, never lets a cache keep it, and sends the address to no
+  other service. It can be wrong (a VPN, a company or mobile network), so the place
+  is in the form to change, and Settings choose Porvoo or a blank page instead.
+  Where the headers are not there (another host, a local run) the page opens at
+  Porvoo. The browser's own location is not used.
 * The server adds `nosniff`, no framing, no referrer and a Permissions-Policy
   that withholds the camera and the location.
 
