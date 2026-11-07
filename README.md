@@ -39,7 +39,7 @@ This is not meant to replace traditional study — it's meant to **accelerate it
 * North and South Indian styles
 * BCP (Bhṛgu Chakra Paddhati) year/month highlighting
 * Special lagnas and chara karakas
-* Ashtakavarga: SAV and per-planet BAV, the Prastāra, the Trikoṇa and Ekādhipatya Śodhana with the Rāśi, Graha and Śodhya Piṇḍas (from the Sanskrit of BPHS 67–69, checked against PyJHora), and the Kakṣyā
+* Ashtakavarga: SAV and per-planet BAV, the Prastāra, the Trikoṇa and Ekādhipatya Śodhana with the Rāśi, Graha and Śodhya Piṇḍas (from the Sanskrit of BPHS 67–69, checked against PyJHora), the effects of BPHS 70 and 72 (the point of Saturn for each graha, the signs for auspicious acts, the Sarvāṣṭakavarga by house) and the Kakṣyā
 * Mixed charts (the D1 chart inside, any varga outside, in the same houses)
 * Selectable ayanamsa, including a signed custom offset from Lahiri
 * Transits with automatic recalculation

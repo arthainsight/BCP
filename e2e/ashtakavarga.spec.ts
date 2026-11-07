@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { calculateChart, selectWorkspace, visible } from './helpers';
 
 // The Aṣṭakavarga beyond the Bhinna and Sarva tables: the Prastāra, the Trikoṇa and Ekādhipatya Śodhana with the Piṇḍas (BPHS 67–69),
-// and the Kakṣyā. The numbers themselves are checked against PyJHora in the unit tests; here the views are there and agree with each other.
+// the effects (BPHS 70 and 72) and the Kakṣyā. The numbers themselves are checked against PyJHora in the unit tests; here the views are there and agree with each other.
 
 test('ANALYSIS Aṣṭakavarga shows the Prastāra, the Śodhana with the Piṇḍas and the Kakṣyā', async ({ page }) => {
   const errors: string[] = [];
@@ -34,6 +34,18 @@ test('ANALYSIS Aṣṭakavarga shows the Prastāra, the Śodhana with the Piṇ�
   // The rules of PyJHora can be chosen, and the page says how they differ.
   await visible(page, page.getByLabel('Rules')).selectOption('pyjhora');
   await expect(visible(page, page.getByText(/PyJHora differs from the verses/))).toBeVisible();
+
+  // The effects: the point of Saturn for each of the seven grahas, the Sun's and the Moon's signs, the houses and the three parts.
+  await part('Effects').click();
+  await expect(visible(page, page.locator('[data-phala-saturn]')).locator('tbody tr')).toHaveCount(7);
+  await expect(visible(page, page.locator('[data-phala-months]')).locator('tbody tr')).toHaveCount(2);
+  const houses = visible(page, page.locator('[data-phala-houses]'));
+  await expect(houses.locator('tbody tr')).toHaveCount(3);
+  // The twelve houses hold the whole Sarvāṣṭakavarga, 337 bindu.
+  const sav = (await houses.locator('tbody tr').nth(1).locator('td').allTextContents()).map(Number);
+  expect(sav).toHaveLength(12);
+  expect(sav.reduce((sum, value) => sum + value, 0)).toBe(337);
+  await expect(visible(page, page.locator('[data-phala-khandas]')).locator('tbody tr')).toHaveCount(3);
 
   // The Kakṣyā of the seven grahas.
   await part('Kakṣyā').click();

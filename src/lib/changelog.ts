@@ -1,5 +1,17 @@
 export const CHANGELOG = [
   {
+    version: 'v4.23',
+    date: '2026-11-07',
+    title: 'Aṣṭakavarga: what the numbers say',
+    changes: [
+      'ANALYSIS → Aṣṭakavarga → Effects (BPHS 70 and 72): what each graha\'s Aṣṭakavarga is for; for each graha the point of Saturn (the Śodhya Piṇḍa times the bindus of the house the verse names, divided by 27 and by 12: the nakṣatra and the sign, and their trines, in which Saturn troubles the father, the mother, brothers, kin and friends, children, the wife and the life); the signs with no bindu or the most in the Sun\'s and the Moon\'s Aṣṭakavarga for auspicious acts; the Sarvāṣṭakavarga by house with its classes (more than 30 good, 25 to 30 middling, fewer poor), the Lagna, and the three parts of the houses with the malefics in them.',
+      'The rules are read from the Sanskrit of the verses; where they are short, the choices made are named in docs/ashtakavarga-sources.md. None of it is checked against another program (PyJHora has none of it), and the page says so.',
+      'Not calculated: the length of life of BPHS 71 (the counts of the verses are not clear: days for a few rekhas and years for many) and the months of 72.11–29 with their dangers and the gifts to be given.',
+      'Hand-worked tests cover the remainders, the houses, the classes and the three parts; a browser test covers the view.',
+      'Updated the application version to v4.23.',
+    ],
+  },
+  {
     version: 'v4.22',
     date: '2026-11-07',
     title: 'The page opens at the visitor\'s own place',

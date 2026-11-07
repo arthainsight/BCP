@@ -66,6 +66,31 @@ All of PyJHora's work (the Bhinna, Sarva and Prastāra tables, the reductions an
 
 In the charts of the test (random placements) the Śodhya Piṇḍas differ in 487 of 840 cases between the two rules, nearly all of them because of the number of Virgo.
 
+## The effects: BPHS 70 and 72
+
+ANALYSIS → Aṣṭakavarga → Effects (`src/lib/ashtakavargaPhala.ts`). What is worked out is what the verses state as a rule; none of it is checked against another program (PyJHora has none of it), and where the verses are short the choice made is named here.
+
+| Verses | Text (the Sanskrit of the edition of sanskritdocuments.org) | The app |
+|---|---|---|
+| 70.1–4 | आत्मस्वभावशक्तिश्च पितृचिन्ता रवेः फलम् । मनोबुद्धिप्रसादश्च मातृचिन्ता मृगाङ्कतः … सर्वक्षयं च मरणं मन्देनैव निरीक्षयेत् | What each graha's Aṣṭakavarga is for: the Sun's the self and the father, the Moon's the mind and the mother, Mars's brothers and land, Mercury's livelihood and friends, Jupiter's body, learning, children and wealth, Venus's marriage and vehicles, Saturn's life, grief and death |
+| 70.5–6 | तत्तद्भावफलाङ्केन गुणयेद् योगपिण्डकम् । सप्तविंशोद्धृतं शेषतुल्यर्क्षे याति भानुजः यदा तदा तस्य तस्य भावस्यार्ति विनिर्दिशेत् | The Piṇḍa times the bindus of the house, divided by 27; Saturn in the nakṣatra of the remainder troubles the house |
+| 70.7–10 | अर्काश्रितर्क्षान्नवमो राशिः पितृ गृहं स्मृतम् … तत्त्रिकोणगते वापि … अर्कोद्धृतावशेषर्क्षे … तत्त्रिकोणर्क्षकं वापि पितृकष्टं | The Sun: the 9th from its sign is the father's; by 27 and by 12; Saturn in the nakṣatra or sign of the remainder or in its trine troubles the father |
+| 70.22–23, 70.24–27, 70.28–29, 70.30–33, 70.35–36, 70.37 and 70.41–42 | The 4th from the Moon (the mother), the 3rd from Mars (brothers), the 4th from Mercury (kin, friends), the 5th from Jupiter (children), the 7th from Venus (the wife, *jāmitra*), the 8th from Saturn (death) | The same working for each |
+| 70.19–21 | सूर्याष्टवर्गे यञ्छून्यं तन्मासे वत्सरेऽपि च । विवाहव्रतचूडादि शुभकर्म परित्यजेत् । यत्र रेखाधिका तत्र … शुभकर्म समाचरेत् । एवं चन्द्राष्टवर्गे च यत्र शून्यं भवेद् बहु … | The signs with no bindu in the Sun's and the Moon's Aṣṭakavarga are not for auspicious acts while the Sun or the Moon goes through them; those with the most favour them |
+| 72.3 | त्रिंशाधिकफला ये स्युः राशयस्ते शुभप्रदाः । पञ्चविंशादित्रिंशान्तफला मध्यफलाः स्मृताः । अतः क्षीणफला ये ते … कष्टदुःखदाः | A sign of the Sarvāṣṭakavarga: more than 30 good, 25 to 30 middling, fewer poor |
+| 72.8 | लग्नं फलाधिकं यस्य भोगवानर्थवान् हि सः । विपरीतेन दारिद्र्यं भवत्येव न संशयः | A Lagna with the more is of enjoyment and wealth, with the fewer of want |
+| 72.9–10 | दशावदिह भावानां कृत्वा खण्डत्रयं बुधः । पश्येत् पापसमारूढं खण्डे कष्टकरं वदेत् … क्रमाद् बाल्याद्यवस्थासु खण्डत्रयफलं वदेत् | The houses in three parts, a malefic in a part troubling its stage of life (childhood, adulthood, old age) |
+
+**What the verses leave open, and what the app took:**
+
+1. *Which bindus.* The verse says "the number of the house" (*bhāvaphala*); the app takes the bindus of the graha's own Bhinnāṣṭakavarga in that sign before the reductions. For Mars 70.25 speaks of the Trikoṇa Śodhana for land and the wife, which is not the same thing as the product of 70.24–27.
+2. *Which Piṇḍa.* The *yogapiṇḍa* of the verse is taken as the graha's Śodhya Piṇḍa (the Rāśi and the Graha Piṇḍa added), with the rules of the Śodhana of the page (the verses' own by default).
+3. *A remainder of nought* is taken as the divisor: the 27th nakṣatra (Revatī), the 12th sign (Pisces). A product of nought (no bindu in the house) gives no point.
+4. *The trine of a nakṣatra* is the nakṣatras nine and eighteen on from it; the trine of a sign the signs four and eight on.
+5. *The three parts of the houses* (72.9–10) are taken as four houses each, and the malefics as the Sun, Mars, Saturn, Rahu and Ketu.
+
+**What is not calculated.** BPHS 71 gives a length of life from the Aṣṭakavarga: days for a few rekhas and years for many, and half of the sum of what every graha gives (71.1–4). The numbers of the verses are not clear (days for nought to three rekhas but seven and a half days for four, then years for five and more), and a reading of them would be a guess, so the app does not give it; the Piṇḍāyu and the Aṃśāyu of the Ayurdāya panels are other methods. The months of 72.11–29, in which each number of rekhas of the sign of the month has a danger and a gift to give against it, are not given either.
+
 ### Prastāra and Kakṣyā
 
 The Prastāra is the table the Bhinnāṣṭakavarga is made of (the eight bodies that give a bindu, sign by sign); it is checked against PyJHora. The Kakṣyā (a sign in eight parts of 3°45′, ruled in the order Saturn, Jupiter, Mars, the Sun, Venus, Mercury, the Moon, the Lagna) is not in BPHS 66–69 and is not checked against another program; the order is the traditional one by the speed of the grahas.
